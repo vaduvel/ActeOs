@@ -12,6 +12,7 @@
     "authority_level": { "type": "string" },
     "competence_scope": { "type": "array", "items": { "type": "string" } },
     "legal_rank": { "type": ["string", "null"] },
+    "required_facts": { "type": "array", "items": { "type": "string" }, "description": "Optional: dezambiguizare facts the event collects; drives needs_facts." },
     "severity": { "type": "string", "enum": ["critical", "operational", "explanatory"] },
     "effective_from": { "type": "string", "format": "date" },
     "effective_to": { "type": ["string", "null"], "format": "date" },
@@ -23,10 +24,13 @@
         "type": "object",
         "required": ["type"],
         "properties": {
-          "type": { "type": "string", "enum": ["include_step", "exclude_step", "include_requirement", "set_requirement_obligation", "set_deadline", "attach_channel", "emit_warning", "block", "require_confirmation", "trigger_child_event", "set_freshness_state"] },
+          "type": { "type": "string", "enum": ["include_step", "exclude_step", "include_requirement", "set_requirement_obligation", "set_deadline", "attach_channel", "emit_warning", "emit_advice", "block", "require_confirmation", "override_rule", "trigger_child_event", "set_freshness_state"] },
           "step_id": { "type": "string" },
           "requirement_id": { "type": "string" },
           "channel_id": { "type": "string" },
+          "rule_id": { "type": "string" },
+          "event_type_id": { "type": "string" },
+          "tag": { "type": "string", "description": "Stable grouping tag for advice/warning/confirmation; golden fixtures assert on this." },
           "value": {},
           "message_ro": { "type": "string" }
         },

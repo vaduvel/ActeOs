@@ -10,7 +10,14 @@ requires-python = ">=3.13"
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "hypothesis>=6", "ruff>=0.5", "mypy>=1.10"]
+# The pure evaluator (ast/effects/ruleset/golden/orchestrator) needs no deps.
+# PyYAML is needed by the file loaders; jsonschema by the schema validator.
+authoring = ["pyyaml>=6", "jsonschema>=4.18"]
+dev = ["pytest>=8", "hypothesis>=6", "ruff>=0.5", "mypy>=1.10", "pyyaml>=6", "jsonschema>=4.18"]
+
+[project.scripts]
+wb-golden = "wb_rule_engine.authoring.cli:main"
+wb-validate = "wb_rule_engine.authoring.validate:validate_main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
