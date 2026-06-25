@@ -1,0 +1,329 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_TAX_DECISION_CONTEST
+event_type_id: ro.life.tax_decision_contest
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- act_type
+- days_since_communication
+- act_instruction_deadline_days
+- within_instruction_window
+- receiving_authority_known
+- grounds_ready
+- evidence_ready
+- suspension_requested
+- issuing_authority_scope
+rules:
+- id: rule.b13.tax_contest.timely
+  canonical_rule_id: tax_decision_contest.timely
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: act_type
+      values:
+      - tax_decision
+      - other_tax_admin_act
+    - op: gt
+      field: act_instruction_deadline_days
+      value: 0
+    - op: lte
+      field: days_since_communication
+      value: 99999
+  effects:
+  - type: include_step
+    step_id: compare_elapsed_days_with_act_contest_instruction
+  - type: include_requirement
+    requirement_id: req.copy_of_contested_tax_act
+  - type: include_requirement
+    requirement_id: req.proof_of_communication_date
+  source_claim_ids:
+  - claim.b13.tax_contest.scope_unverified
+  - claim.b13.tax_contest.deadline_unverified
+  status: in_review
+- id: rule.b13.tax_contest.within_instruction
+  canonical_rule_id: tax_decision_contest.within_instruction
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: act_type
+      values:
+      - tax_decision
+      - other_tax_admin_act
+    - op: gt
+      field: act_instruction_deadline_days
+      value: 0
+    - op: eq
+      field: within_instruction_window
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_tax_administrative_contest
+  - type: emit_advice
+    tag: act_instruction_deadline_must_be_verified
+    message_ro: Compară termenul afișat în act cu textul legal consolidat înainte de depunere.
+  source_claim_ids:
+  - claim.b13.tax_contest.deadline_unverified
+  status: in_review
+  note: Pragul de 45 zile este folosit exclusiv ca fixture de cercetare; promovarea cere claim normativ verificat.
+- id: rule.b13.tax_contest.after_instruction
+  canonical_rule_id: tax_decision_contest.after_instruction
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: act_instruction_deadline_days
+      value: 0
+    - op: eq
+      field: within_instruction_window
+      value: false
+  effects:
+  - type: emit_warning
+    tag: stated_tax_contest_window_may_be_exceeded
+    message_ro: Numărul de zile introdus depășește fereastra de lucru folosită în draft.
+  - type: require_confirmation
+    tag: urgent_legal_review_for_late_tax_contest
+    message_ro: Solicită verificare juridică imediată privind termenul și eventualele remedii.
+  source_claim_ids:
+  - claim.b13.tax_contest.deadline_unverified
+  status: in_review
+  note: Nu devine activ până când termenul exact nu este verificat din forma consolidată.
+- id: rule.b13.tax_contest.deadline_unknown
+  canonical_rule_id: tax_decision_contest.deadline
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lte
+    field: act_instruction_deadline_days
+    value: 0
+  effects:
+  - type: block
+    tag: tax_contest_deadline_not_confirmed
+    message_ro: Nu calcula termenul fără instrucțiunea actului și textul legal verificat.
+  - type: require_confirmation
+    tag: confirm_tax_contest_deadline
+    message_ro: Verifică termenul din act și din Codul de procedură fiscală.
+  source_claim_ids:
+  - claim.b13.tax_contest.deadline_unverified
+  status: in_review
+- id: rule.b13.tax_contest.enforcement
+  canonical_rule_id: tax_decision_contest.enforcement_act
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: act_type
+    value: enforcement_act
+  effects:
+  - type: block
+    tag: enforcement_act_requires_separate_route
+    message_ro: Nu folosi automat traseul contestației actului administrativ fiscal.
+  - type: require_confirmation
+    tag: confirm_enforcement_contest_route
+    message_ro: Clasifică actul de executare și calea procedurală aplicabilă.
+  source_claim_ids:
+  - claim.b13.tax_contest.enforcement_route_unverified
+  status: in_review
+- id: rule.b13.tax_contest.unknown_act
+  canonical_rule_id: tax_decision_contest.act_type
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: act_type
+    value: unknown
+  effects:
+  - type: block
+    tag: tax_act_type_unknown
+    message_ro: Identifică denumirea și natura juridică a actului primit.
+  - type: require_confirmation
+    tag: confirm_tax_act_is_contestable
+    message_ro: Confirmă dacă actul intră în sfera contestației fiscale.
+  source_claim_ids:
+  - claim.b13.tax_contest.scope_unverified
+  status: in_review
+- id: rule.b13.tax_contest.recipient
+  canonical_rule_id: tax_decision_contest.recipient
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: receiving_authority_known
+    value: false
+  effects:
+  - type: block
+    tag: tax_contest_recipient_unknown
+    message_ro: Nu trimite contestația până nu este confirmat organul de depunere.
+  - type: require_confirmation
+    tag: confirm_tax_contest_recipient
+    message_ro: Verifică instrucțiunea din act și competența procedurală.
+  source_claim_ids:
+  - claim.b13.tax_contest.recipient_unverified
+  status: in_review
+- id: rule.b13.tax_contest.grounds
+  canonical_rule_id: tax_decision_contest.grounds
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: grounds_ready
+    value: false
+  effects:
+  - type: block
+    tag: tax_contest_grounds_missing
+    message_ro: Formulează motivele de fapt și de drept înainte de depunere.
+  - type: include_requirement
+    requirement_id: req.tax_contest_factual_and_legal_grounds
+  source_claim_ids:
+  - claim.b13.tax_contest.content_unverified
+  status: in_review
+- id: rule.b13.tax_contest.evidence
+  canonical_rule_id: tax_decision_contest.evidence
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: evidence_ready
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.supporting_evidence_or_evidence_index
+  - type: emit_warning
+    tag: tax_contest_evidence_incomplete
+    message_ro: Inventariază înscrisurile și explică legătura lor cu motivele invocate.
+  source_claim_ids:
+  - claim.b13.tax_contest.content_unverified
+  status: in_review
+- id: rule.b13.tax_contest.suspension
+  canonical_rule_id: tax_decision_contest.suspension
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: suspension_requested
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_separate_suspension_procedure
+    message_ro: Nu presupune că simpla contestație suspendă executarea; verifică procedura separată.
+  - type: include_step
+    step_id: assess_separate_suspension_remedy
+  source_claim_ids:
+  - claim.b13.tax_contest.suspension_unverified
+  status: in_review
+- id: rule.b13.tax_contest.central
+  canonical_rule_id: tax_decision_contest.authority.central
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issuing_authority_scope
+    value: central_anaf
+  effects:
+  - type: include_step
+    step_id: read_anaf_act_contest_instructions
+  - type: require_confirmation
+    tag: confirm_anaf_submission_channel
+    message_ro: Confirmă canalul de depunere din actul comunicat și procedura ANAF curentă.
+  source_claim_ids:
+  - claim.b13.tax_contest.recipient_unverified
+  status: in_review
+- id: rule.b13.tax_contest.timisoara
+  canonical_rule_id: tax_decision_contest.authority.timisoara
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issuing_authority_scope
+    value: local_timisoara
+  effects:
+  - type: include_step
+    step_id: read_timisoara_tax_act_contest_instructions
+  - type: require_confirmation
+    tag: confirm_timisoara_tax_contest_channel
+    message_ro: Confirmă registratura sau canalul indicat de DFMT în act.
+  source_claim_ids:
+  - claim.b13.tax_contest.recipient_unverified
+  status: in_review
+- id: rule.b13.tax_contest.other_authority
+  canonical_rule_id: tax_decision_contest.authority.other
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: issuing_authority_scope
+    values:
+    - other_local
+    - unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_issuing_authority_contest_route
+    message_ro: Verifică procedura autorității emitente și competența de soluționare.
+  source_claim_ids:
+  - claim.b13.tax_contest.recipient_unverified
+  status: in_review
+- id: rule.b13.tax_contest.negative_days
+  canonical_rule_id: tax_decision_contest.communication_date
+  event_type_id: ro.life.tax_decision_contest
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lt
+    field: days_since_communication
+    value: 0
+  effects:
+  - type: flag_conflict
+    tag: negative_days_since_tax_act_communication
+    blocked_effect: calculate_tax_contest_window
+    message_ro: Data comunicării produce un număr negativ de zile.
+  source_claim_ids:
+  - claim.b13.tax_contest.deadline_unverified
+  status: in_review

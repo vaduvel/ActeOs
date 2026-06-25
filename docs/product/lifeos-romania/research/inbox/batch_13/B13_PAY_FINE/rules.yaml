@@ -1,0 +1,424 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_PAY_FINE
+event_type_id: ro.life.pay_fine
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- fine_domain
+- days_since_delivery
+- pv_mentions_reduced_payment
+- minimum_amount_known
+- applied_amount_known
+- construction_exception_applies
+- budget_destination
+- payment_channel_preference
+- wants_to_contest
+rules:
+- id: rule.b13.fine.general_reduced
+  canonical_rule_id: fine_payment.general_reduced
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: general
+    - op: lte
+      field: days_since_delivery
+      value: 15
+    - op: eq
+      field: pv_mentions_reduced_payment
+      value: true
+    - op: eq
+      field: minimum_amount_known
+      value: true
+  effects:
+  - type: include_step
+    step_id: pay_half_of_statutory_minimum_within_window
+  - type: include_requirement
+    requirement_id: req.statute_minimum_amount_and_payment_reference
+  - type: emit_advice
+    tag: general_reduction_is_half_statutory_minimum
+    message_ro: Baza este minimul din actul normativ, nu neapărat amenda aplicată în procesul-verbal.
+  source_claim_ids:
+  - claim.b13.fine.general_reduction
+  - claim.b13.fine.pv_mention
+  status: in_review
+- id: rule.b13.fine.general_late
+  canonical_rule_id: fine_payment.general_window
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: general
+    - op: gt
+      field: days_since_delivery
+      value: 15
+  effects:
+  - type: emit_warning
+    tag: general_reduced_payment_window_passed
+    message_ro: Fereastra generală de 15 zile pentru plata redusă a trecut.
+  - type: include_step
+    step_id: verify_full_fine_balance_and_pay
+  source_claim_ids:
+  - claim.b13.fine.general_reduction
+  status: in_review
+- id: rule.b13.fine.no_mention
+  canonical_rule_id: fine_payment.pv_mention
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: pv_mentions_reduced_payment
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_reduced_payment_when_pv_has_no_mention
+    message_ro: Nu aplica automat reducerea; verifică procesul-verbal și actul sancționator.
+  source_claim_ids:
+  - claim.b13.fine.pv_mention
+  status: in_review
+- id: rule.b13.fine.minimum_unknown
+  canonical_rule_id: fine_payment.minimum_amount
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: general
+    - op: lte
+      field: days_since_delivery
+      value: 15
+    - op: eq
+      field: minimum_amount_known
+      value: false
+  effects:
+  - type: block
+    tag: statutory_minimum_unknown
+    message_ro: Nu calcula suma redusă fără minimul amenzii din actul normativ.
+  - type: include_requirement
+    requirement_id: req.identify_statutory_minimum
+  source_claim_ids:
+  - claim.b13.fine.general_reduction
+  status: in_review
+- id: rule.b13.fine.construction_reduced
+  canonical_rule_id: fine_payment.construction_reduced
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: construction_urbanism
+    - op: lte
+      field: days_since_delivery
+      value: 15
+    - op: eq
+      field: pv_mentions_reduced_payment
+      value: true
+    - op: eq
+      field: construction_exception_applies
+      value: false
+    - op: eq
+      field: applied_amount_known
+      value: true
+  effects:
+  - type: include_step
+    step_id: pay_half_of_applied_construction_fine_within_window
+  - type: include_requirement
+    requirement_id: req.applied_fine_amount_and_payment_reference
+  - type: emit_advice
+    tag: construction_reduction_is_half_applied_amount
+    message_ro: Pentru această regulă specială, baza este amenda aplicată.
+  source_claim_ids:
+  - claim.b13.fine.construction_2026
+  - claim.b13.fine.pv_mention
+  status: in_review
+- id: rule.b13.fine.construction_exception_true
+  canonical_rule_id: fine_payment.construction_exception
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: construction_urbanism
+    - op: eq
+      field: construction_exception_applies
+      value: true
+  effects:
+  - type: emit_warning
+    tag: construction_reduced_payment_exception_applies
+    message_ro: Excepția legală indicată exclude ruta specială de plată redusă.
+  - type: include_step
+    step_id: verify_full_construction_fine_balance
+  source_claim_ids:
+  - claim.b13.fine.construction_exception
+  status: in_review
+- id: rule.b13.fine.construction_exception_unknown
+  canonical_rule_id: fine_payment.construction_exception
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: construction_urbanism
+    - op: eq
+      field: construction_exception_applies
+      value: unknown
+  effects:
+  - type: flag_conflict
+    tag: construction_reduction_exception_unknown
+    blocked_effect: show_construction_reduced_amount
+    message_ro: Nu este clar dacă fapta intră în excepția legală.
+  - type: require_confirmation
+    tag: confirm_construction_reduction_exception
+    message_ro: Verifică descrierea faptei și autorizația.
+  source_claim_ids:
+  - claim.b13.fine.construction_exception
+  status: in_review
+- id: rule.b13.fine.construction_amount_unknown
+  canonical_rule_id: fine_payment.construction_amount
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fine_domain
+      value: construction_urbanism
+    - op: eq
+      field: construction_exception_applies
+      value: false
+    - op: eq
+      field: applied_amount_known
+      value: false
+  effects:
+  - type: block
+    tag: applied_construction_fine_unknown
+    message_ro: Nu calcula jumătatea fără cuantumul amenzii aplicate.
+  source_claim_ids:
+  - claim.b13.fine.construction_2026
+  status: in_review
+- id: rule.b13.fine.online
+  canonical_rule_id: fine_payment.channel.online
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_channel_preference
+    value: online
+  effects:
+  - type: attach_channel
+    channel_id: ch.fine.online_official_payment
+  - type: emit_advice
+    tag: keep_electronic_payment_proof
+    message_ro: Păstrează dovada cu data și ora plății; nu trebuie predată în copie agentului constatator.
+  source_claim_ids:
+  - claim.b13.fine.channels
+  - claim.b13.fine.electronic_proof
+  status: in_review
+- id: rule.b13.fine.state_bank
+  canonical_rule_id: fine_payment.channel.state_bank
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: budget_destination
+      value: state
+    - op: eq
+      field: payment_channel_preference
+      value: bank
+  effects:
+  - type: attach_channel
+    channel_id: ch.fine.authorized_credit_institution
+  source_claim_ids:
+  - claim.b13.fine.channels
+  status: in_review
+- id: rule.b13.fine.state_treasury
+  canonical_rule_id: fine_payment.channel.state_treasury
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: budget_destination
+      value: state
+    - op: eq
+      field: payment_channel_preference
+      value: treasury
+  effects:
+  - type: attach_channel
+    channel_id: ch.fine.state_treasury
+  source_claim_ids:
+  - claim.b13.fine.channels
+  status: in_review
+- id: rule.b13.fine.local_cashier
+  canonical_rule_id: fine_payment.channel.local_cashier
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: budget_destination
+      value: local
+    - op: eq
+      field: payment_channel_preference
+      value: cashier
+  effects:
+  - type: attach_channel
+    channel_id: ch.fine.local_public_cashier
+  source_claim_ids:
+  - claim.b13.fine.channels
+  status: in_review
+- id: rule.b13.fine.budget_unknown
+  canonical_rule_id: fine_payment.budget
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: budget_destination
+    value: unknown
+  effects:
+  - type: block
+    tag: fine_budget_destination_unknown
+    message_ro: Identifică bugetul beneficiar și contul corect înainte de plată.
+  - type: require_confirmation
+    tag: confirm_fine_payment_destination
+    message_ro: Verifică datele de plată din procesul-verbal sau canalul oficial.
+  source_claim_ids:
+  - claim.b13.fine.channels
+  status: in_review
+- id: rule.b13.fine.channel_unknown
+  canonical_rule_id: fine_payment.channel
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_channel_preference
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: choose_official_fine_payment_channel
+    message_ro: Alege un canal oficial compatibil cu bugetul beneficiar.
+  source_claim_ids:
+  - claim.b13.fine.channels
+  status: in_review
+- id: rule.b13.fine.complaint
+  canonical_rule_id: fine_payment.complaint
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: wants_to_contest
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_contravention_complaint
+  - type: emit_warning
+    tag: contravention_complaint_15_day_window
+    message_ro: Plângerea are termen de 15 zile de la înmânarea sau comunicarea procesului-verbal.
+  - type: require_confirmation
+    tag: confirm_competent_court_and_filing
+    message_ro: Verifică instanța și modalitatea de depunere indicate în procesul-verbal și lege.
+  source_claim_ids:
+  - claim.b13.fine.complaint
+  status: in_review
+- id: rule.b13.fine.special_domain
+  canonical_rule_id: fine_payment.special_domain
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: fine_domain
+    values:
+    - traffic
+    - other_special
+  effects:
+  - type: require_confirmation
+    tag: confirm_special_fine_rules
+    message_ro: Verifică actul sancționator pentru cuantum, derogări și datele de plată.
+  source_claim_ids:
+  - claim.b13.fine.special_law_gap
+  status: in_review
+- id: rule.b13.fine.negative_days
+  canonical_rule_id: fine_payment.delivery_date
+  event_type_id: ro.life.pay_fine
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lt
+    field: days_since_delivery
+    value: 0
+  effects:
+  - type: flag_conflict
+    tag: negative_days_since_fine_delivery
+    blocked_effect: calculate_fine_payment_window
+    message_ro: Data înmânării sau comunicării produce un număr negativ de zile.
+  source_claim_ids:
+  - claim.b13.fine.general_reduction
+  status: in_review

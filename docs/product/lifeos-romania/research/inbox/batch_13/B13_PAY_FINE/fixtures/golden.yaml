@@ -1,0 +1,489 @@
+batch_id: B13_PAY_FINE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.pay_fine
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: PF01
+  desc: Amendă generală în primele 15 zile, plată online
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: ok
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+- id: PF02
+  desc: Amendă generală exact în ziua 15
+  facts:
+    fine_domain: general
+    days_since_delivery: 15
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: ok
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+- id: PF03
+  desc: Amendă generală după ziua 15
+  facts:
+    fine_domain: general
+    days_since_delivery: 16
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_full_fine_balance_and_pay
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    warnings_present:
+    - general_reduced_payment_window_passed
+- id: PF04
+  desc: Procesul-verbal nu menționează plata redusă
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: false
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: ok
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    needs_confirmation:
+    - confirm_reduced_payment_when_pv_has_no_mention
+- id: PF05
+  desc: Minimul legal al amenzii nu este cunoscut
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: false
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: blocked
+    requirements:
+    - req.identify_statutory_minimum
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+- id: PF06
+  desc: Amendă construcții eligibilă pentru regula specială
+  facts:
+    fine_domain: construction_urbanism
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: ok
+    included_steps:
+    - pay_half_of_applied_construction_fine_within_window
+    requirements:
+    - req.applied_fine_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - construction_reduction_is_half_applied_amount
+    - keep_electronic_payment_proof
+- id: PF07
+  desc: Amendă construcții aflată în excepția legală
+  facts:
+    fine_domain: construction_urbanism
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: true
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_full_construction_fine_balance
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    warnings_present:
+    - construction_reduced_payment_exception_applies
+- id: PF08
+  desc: Nu este clar dacă se aplică excepția din construcții
+  facts:
+    fine_domain: construction_urbanism
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: unknown
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: conflicting
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    needs_confirmation:
+    - confirm_construction_reduction_exception
+    conflicts:
+    - construction_reduction_exception_unknown
+    blocked_effects:
+    - show_construction_reduced_amount
+- id: PF09
+  desc: Amenda aplicată pentru construcții nu este cunoscută
+  facts:
+    fine_domain: construction_urbanism
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: false
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: blocked
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+- id: PF10
+  desc: Utilizatorul vrea și să conteste procesul-verbal
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: true
+  expect:
+    status: ok
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    - prepare_contravention_complaint
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+    warnings_present:
+    - contravention_complaint_15_day_window
+    needs_confirmation:
+    - confirm_competent_court_and_filing
+- id: PF11
+  desc: Amendă la bugetul de stat plătită prin Trezorerie
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: state
+    payment_channel_preference: treasury
+    wants_to_contest: false
+  expect:
+    status: ok
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.state_treasury
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+- id: PF12
+  desc: Bugetul beneficiar nu este cunoscut
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: unknown
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: blocked
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+    needs_confirmation:
+    - confirm_fine_payment_destination
+- id: PF13
+  desc: Lipsește faptul obligatoriu fine_domain
+  facts:
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    missing_facts:
+    - fine_domain
+- id: PF14
+  desc: Lipsește faptul obligatoriu days_since_delivery
+  facts:
+    fine_domain: general
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    missing_facts:
+    - days_since_delivery
+- id: PF15
+  desc: Lipsește faptul obligatoriu pv_mentions_reduced_payment
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    missing_facts:
+    - pv_mentions_reduced_payment
+- id: PF16
+  desc: Lipsește faptul obligatoriu minimum_amount_known
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - keep_electronic_payment_proof
+    missing_facts:
+    - minimum_amount_known
+- id: PF17
+  desc: Lipsește faptul obligatoriu applied_amount_known
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+    missing_facts:
+    - applied_amount_known
+- id: PF18
+  desc: Lipsește faptul obligatoriu construction_exception_applies
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    budget_destination: local
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+    missing_facts:
+    - construction_exception_applies
+- id: PF19
+  desc: Lipsește faptul obligatoriu budget_destination
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    payment_channel_preference: online
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+    missing_facts:
+    - budget_destination
+- id: PF20
+  desc: Lipsește faptul obligatoriu payment_channel_preference
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    wants_to_contest: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    missing_facts:
+    - payment_channel_preference
+- id: PF21
+  desc: Lipsește faptul obligatoriu wants_to_contest
+  facts:
+    fine_domain: general
+    days_since_delivery: 5
+    pv_mentions_reduced_payment: true
+    minimum_amount_known: true
+    applied_amount_known: true
+    construction_exception_applies: false
+    budget_destination: local
+    payment_channel_preference: online
+  expect:
+    status: needs_facts
+    included_steps:
+    - pay_half_of_statutory_minimum_within_window
+    requirements:
+    - req.statute_minimum_amount_and_payment_reference
+    channels:
+    - ch.fine.online_official_payment
+    advice_tags:
+    - general_reduction_is_half_statutory_minimum
+    - keep_electronic_payment_proof
+    missing_facts:
+    - wants_to_contest
+- id: PF22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - fine_domain
+    - days_since_delivery
+    - pv_mentions_reduced_payment
+    - minimum_amount_known
+    - applied_amount_known
+    - construction_exception_applies
+    - budget_destination
+    - payment_channel_preference
+    - wants_to_contest

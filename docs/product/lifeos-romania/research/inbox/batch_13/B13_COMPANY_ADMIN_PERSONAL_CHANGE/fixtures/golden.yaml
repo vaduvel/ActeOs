@@ -1,0 +1,610 @@
+batch_id: B13_COMPANY_ADMIN_PERSONAL_CHANGE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.company_admin_personal_change
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: CA01
+  desc: Aceeași persoană, date noi, depunere electronică pregătită
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+- id: CA02
+  desc: Administrator nou numit
+  facts:
+    change_scope: administrator_replacement
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_replacement
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.new_administrator_identity_documents
+    - req.case_specific_administrator_documents
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - fiscal_record_obtained_ex_officio
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+- id: CA03
+  desc: Date noi și administrator înlocuit în același act
+  facts:
+    change_scope: both
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    - register_administrator_replacement
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    - req.new_administrator_identity_documents
+    - req.case_specific_administrator_documents
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - fiscal_record_obtained_ex_officio
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+- id: CA04
+  desc: Depunere chiar în ziua 15
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 15
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+- id: CA05
+  desc: Depunere în ziua 16
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 16
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    warnings_present:
+    - onrc_general_filing_window_exceeded
+    needs_confirmation:
+    - confirm_late_onrc_filing_consequences
+- id: CA06
+  desc: Ruta electronică fără semnătură calificată
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: false
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    advice_tags:
+    - onrc_general_15_day_window
+    - use_counter_or_post_without_qes
+    - registrar_one_working_day_target
+- id: CA07
+  desc: Depunere la ghișeu
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: counter
+    qualified_signature_available: false
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.counter
+    advice_tags:
+    - onrc_general_15_day_window
+    - registrar_one_working_day_target
+- id: CA08
+  desc: Depunere prin poștă sau curier
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: post_courier
+    qualified_signature_available: false
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    - req.certified_copy_requester_identity_for_post
+    channels:
+    - ch.onrc.post_courier
+    advice_tags:
+    - onrc_general_15_day_window
+    - registrar_one_working_day_target
+- id: CA09
+  desc: Formalități făcute prin reprezentant
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: true
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    - req.power_for_onrc_formalities
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+- id: CA10
+  desc: Schimbarea afectează beneficiarul real
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: true
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    - req.beneficial_owner_declaration_if_applicable
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+- id: CA11
+  desc: Dosarul este incomplet
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: incomplete
+    tariff_note_obtained: true
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    warnings_present:
+    - onrc_rejection_risk
+- id: CA12
+  desc: Nu este clar dacă dosarul este complet
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: unknown
+    tariff_note_obtained: true
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    needs_confirmation:
+    - confirm_case_specific_onrc_documents
+- id: CA13
+  desc: Nota de calcul a tarifului nu a fost obținută
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: false
+  expect:
+    status: ok
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    needs_confirmation:
+    - confirm_onrc_tariff_note
+- id: CA14
+  desc: Lipsește faptul obligatoriu change_scope
+  facts:
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    missing_facts:
+    - change_scope
+- id: CA15
+  desc: Lipsește faptul obligatoriu days_since_modifying_act
+  facts:
+    change_scope: same_person_identification_data
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    missing_facts:
+    - days_since_modifying_act
+- id: CA16
+  desc: Lipsește faptul obligatoriu submission_channel
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    advice_tags:
+    - onrc_general_15_day_window
+    - registrar_one_working_day_target
+    missing_facts:
+    - submission_channel
+- id: CA17
+  desc: Lipsește faptul obligatoriu qualified_signature_available
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    advice_tags:
+    - onrc_general_15_day_window
+    - registrar_one_working_day_target
+    missing_facts:
+    - qualified_signature_available
+- id: CA18
+  desc: Lipsește faptul obligatoriu representative_used
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    beneficial_owner_affected: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    missing_facts:
+    - representative_used
+- id: CA19
+  desc: Lipsește faptul obligatoriu beneficial_owner_affected
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    documents_ready: complete
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    missing_facts:
+    - beneficial_owner_affected
+- id: CA20
+  desc: Lipsește faptul obligatoriu documents_ready
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    tariff_note_obtained: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    missing_facts:
+    - documents_ready
+- id: CA21
+  desc: Lipsește faptul obligatoriu tariff_note_obtained
+  facts:
+    change_scope: same_person_identification_data
+    days_since_modifying_act: 7
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+    beneficial_owner_affected: false
+    documents_ready: complete
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    - register_administrator_identification_change
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    - req.proof_new_identification_data
+    - req.updated_articles_of_association
+    channels:
+    - ch.onrc.online_portal
+    advice_tags:
+    - onrc_general_15_day_window
+    - electronic_documents_require_qes
+    - registrar_one_working_day_target
+    missing_facts:
+    - tariff_note_obtained
+- id: CA22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_onrc_mention_application
+    requirements:
+    - req.onrc_registration_application
+    - req.competent_body_resolution
+    advice_tags:
+    - registrar_one_working_day_target
+    missing_facts:
+    - change_scope
+    - days_since_modifying_act
+    - submission_channel
+    - qualified_signature_available
+    - representative_used
+    - beneficial_owner_affected
+    - documents_ready
+    - tariff_note_obtained

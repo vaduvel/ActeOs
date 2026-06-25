@@ -1,0 +1,567 @@
+batch_id: B13_DECLARE_RENTAL_INCOME
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.declare_rental_income
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: RI01
+  desc: Contract nou semnat, C168 inițial și venit raportabil
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI02
+  desc: Contract modificat și C168 depus anterior
+  facts:
+    landlord_is_individual: true
+    contract_status: modified
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: true
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - prepare_rectifying_or_update_c168_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_c168_modification_or_termination_fields
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI03
+  desc: Contract încetat și C168 depus anterior
+  facts:
+    landlord_is_individual: true
+    contract_status: terminated
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: true
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - prepare_rectifying_or_update_c168_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_c168_modification_or_termination_fields
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI04
+  desc: Contractul nu este semnat
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: false
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: blocked
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI05
+  desc: Lipsește arhiva ZIP obligatorie
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: false
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: blocked
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI06
+  desc: Locatorul este persoană juridică
+  facts:
+    landlord_is_individual: false
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: blocked
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - assess_rental_income_in_individual_tax_return
+    advice_tags:
+    - route_legal_entity_rental_to_business_tax
+    - use_initial_c168_request
+- id: RI07
+  desc: An fiscal 2023 cu structura curentă
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2023
+  expect:
+    status: blocked
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    - confirm_historical_rental_contract_form
+- id: RI08
+  desc: Venitul nu este raportabil în acest traseu
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: false
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI09
+  desc: Chiriaș persoană juridică și reținere la sursă
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: legal_entity
+    withholding_at_source: true
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    - confirm_withholding_and_cass_reporting
+- id: RI10
+  desc: Tipul chiriașului este necunoscut
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: unknown
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    - confirm_tenant_type_for_tax_treatment
+- id: RI11
+  desc: Contract modificat dar nu există o cerere C168 anterioară confirmată
+  facts:
+    landlord_is_individual: true
+    contract_status: modified
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+- id: RI12
+  desc: Nu există un contract activ de declarat
+  facts:
+    landlord_is_individual: true
+    contract_status: none
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: false
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: ok
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+- id: RI13
+  desc: Lipsește faptul obligatoriu landlord_is_individual
+  facts:
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - assess_rental_income_in_individual_tax_return
+    advice_tags:
+    - use_initial_c168_request
+    missing_facts:
+    - landlord_is_individual
+- id: RI14
+  desc: Lipsește faptul obligatoriu contract_status
+  facts:
+    landlord_is_individual: true
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - assess_rental_income_in_individual_tax_return
+    missing_facts:
+    - contract_status
+- id: RI15
+  desc: Lipsește faptul obligatoriu contract_signed
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - contract_signed
+- id: RI16
+  desc: Lipsește faptul obligatoriu contract_attachment_zip_ready
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - contract_attachment_zip_ready
+- id: RI17
+  desc: Lipsește faptul obligatoriu c168_already_submitted
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - c168_already_submitted
+- id: RI18
+  desc: Lipsește faptul obligatoriu has_reportable_rental_income
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    tenant_type: individual
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - has_reportable_rental_income
+- id: RI19
+  desc: Lipsește faptul obligatoriu tenant_type
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    withholding_at_source: false
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - tenant_type
+- id: RI20
+  desc: Lipsește faptul obligatoriu withholding_at_source
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    tax_year: 2026
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - withholding_at_source
+- id: RI21
+  desc: Lipsește faptul obligatoriu tax_year
+  facts:
+    landlord_is_individual: true
+    contract_status: new
+    contract_signed: true
+    contract_attachment_zip_ready: true
+    c168_already_submitted: false
+    has_reportable_rental_income: true
+    tenant_type: individual
+    withholding_at_source: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    - prepare_c168_rental_contract_request
+    - assess_rental_income_in_individual_tax_return
+    requirements:
+    - req.signed_rental_contract
+    - req.c168_contract_scan_zip
+    channels:
+    - ch.anaf.c168_web
+    advice_tags:
+    - use_initial_c168_request
+    needs_confirmation:
+    - confirm_c168_filing_deadline
+    missing_facts:
+    - tax_year
+- id: RI22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_rental_contract_and_tax_obligations
+    missing_facts:
+    - landlord_is_individual
+    - contract_status
+    - contract_signed
+    - contract_attachment_zip_ready
+    - c168_already_submitted
+    - has_reportable_rental_income
+    - tenant_type
+    - withholding_at_source
+    - tax_year

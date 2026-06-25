@@ -1,0 +1,529 @@
+batch_id: B13_TAX_DECISION_CONTEST
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.tax_decision_contest
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: TC01
+  desc: Decizie fiscală în fereastra indicată de act
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: ok
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+- id: TC02
+  desc: Numărul de zile depășește termenul citit din act
+  facts:
+    act_type: tax_decision
+    days_since_communication: 50
+    act_instruction_deadline_days: 45
+    within_instruction_window: false
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: ok
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    warnings_present:
+    - stated_tax_contest_window_may_be_exceeded
+    needs_confirmation:
+    - urgent_legal_review_for_late_tax_contest
+    - confirm_anaf_submission_channel
+- id: TC03
+  desc: Termenul din act nu a fost identificat
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 0
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: blocked
+    included_steps:
+    - read_anaf_act_contest_instructions
+    needs_confirmation:
+    - confirm_tax_contest_deadline
+    - confirm_anaf_submission_channel
+- id: TC04
+  desc: Alt act administrativ fiscal
+  facts:
+    act_type: other_tax_admin_act
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: ok
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+- id: TC05
+  desc: Act de executare fiscală
+  facts:
+    act_type: enforcement_act
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: blocked
+    included_steps:
+    - read_anaf_act_contest_instructions
+    needs_confirmation:
+    - confirm_enforcement_contest_route
+    - confirm_anaf_submission_channel
+- id: TC06
+  desc: Tipul actului este necunoscut
+  facts:
+    act_type: unknown
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: blocked
+    included_steps:
+    - read_anaf_act_contest_instructions
+    needs_confirmation:
+    - confirm_tax_act_is_contestable
+    - confirm_anaf_submission_channel
+- id: TC07
+  desc: Organul de depunere nu este cunoscut
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: false
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: blocked
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_tax_contest_recipient
+    - confirm_anaf_submission_channel
+- id: TC08
+  desc: Motivele contestației nu sunt pregătite
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: false
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: blocked
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    - req.tax_contest_factual_and_legal_grounds
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+- id: TC09
+  desc: Dovezile nu sunt încă inventariate
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: false
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: ok
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    - req.supporting_evidence_or_evidence_index
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    warnings_present:
+    - tax_contest_evidence_incomplete
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+- id: TC10
+  desc: Utilizatorul urmărește și suspendarea
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: true
+    issuing_authority_scope: central_anaf
+  expect:
+    status: ok
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - assess_separate_suspension_remedy
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_separate_suspension_procedure
+    - confirm_anaf_submission_channel
+- id: TC11
+  desc: Act emis de organul fiscal Timișoara
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: local_timisoara
+  expect:
+    status: ok
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_timisoara_tax_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_timisoara_tax_contest_channel
+- id: TC12
+  desc: Data comunicării produce zile negative
+  facts:
+    act_type: tax_decision
+    days_since_communication: -1
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: conflicting
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    conflicts:
+    - negative_days_since_tax_act_communication
+    blocked_effects:
+    - calculate_tax_contest_window
+- id: TC13
+  desc: Lipsește faptul obligatoriu act_type
+  facts:
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - read_anaf_act_contest_instructions
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - act_type
+- id: TC14
+  desc: Lipsește faptul obligatoriu days_since_communication
+  facts:
+    act_type: tax_decision
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - days_since_communication
+- id: TC15
+  desc: Lipsește faptul obligatoriu act_instruction_deadline_days
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - read_anaf_act_contest_instructions
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - act_instruction_deadline_days
+- id: TC16
+  desc: Lipsește faptul obligatoriu within_instruction_window
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - within_instruction_window
+- id: TC17
+  desc: Lipsește faptul obligatoriu receiving_authority_known
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - receiving_authority_known
+- id: TC18
+  desc: Lipsește faptul obligatoriu grounds_ready
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    evidence_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - grounds_ready
+- id: TC19
+  desc: Lipsește faptul obligatoriu evidence_ready
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    suspension_requested: false
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - evidence_ready
+- id: TC20
+  desc: Lipsește faptul obligatoriu suspension_requested
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    issuing_authority_scope: central_anaf
+  expect:
+    status: needs_facts
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    - read_anaf_act_contest_instructions
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    needs_confirmation:
+    - confirm_anaf_submission_channel
+    missing_facts:
+    - suspension_requested
+- id: TC21
+  desc: Lipsește faptul obligatoriu issuing_authority_scope
+  facts:
+    act_type: tax_decision
+    days_since_communication: 10
+    act_instruction_deadline_days: 45
+    within_instruction_window: true
+    receiving_authority_known: true
+    grounds_ready: true
+    evidence_ready: true
+    suspension_requested: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - compare_elapsed_days_with_act_contest_instruction
+    - prepare_tax_administrative_contest
+    requirements:
+    - req.copy_of_contested_tax_act
+    - req.proof_of_communication_date
+    advice_tags:
+    - act_instruction_deadline_must_be_verified
+    missing_facts:
+    - issuing_authority_scope
+- id: TC22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - act_type
+    - days_since_communication
+    - act_instruction_deadline_days
+    - within_instruction_window
+    - receiving_authority_known
+    - grounds_ready
+    - evidence_ready
+    - suspension_requested
+    - issuing_authority_scope

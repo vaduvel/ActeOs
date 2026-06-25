@@ -1,0 +1,227 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_VAT_REGISTRATION
+event_type_id: ro.life.vat_registration
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- already_vat_registered
+- registration_reason
+- fiscal_vector_update_needed
+- form700_access_available
+- electronic_submission_ready
+- effective_date_confirmed
+rules:
+- id: rule.b13.vat.assess
+  canonical_rule_id: vat.registration.assess
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: confirm_vat_registration_basis
+  source_claim_ids:
+  - claim.b13.vat.form700_purpose
+  - claim.b13.vat.threshold_unverified
+  status: draft
+- id: rule.b13.vat.already_registered
+  canonical_rule_id: vat.registration.existing
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: already_vat_registered
+    value: true
+  effects:
+  - type: emit_advice
+    tag: vat_registration_already_exists
+    message_ro: Verifică dacă este necesară o modificare a vectorului fiscal, nu o înregistrare nouă.
+  - type: include_step
+    step_id: verify_existing_vat_registration_status
+  source_claim_ids:
+  - claim.b13.vat.form700_purpose
+  status: in_review
+- id: rule.b13.vat.form700_route
+  canonical_rule_id: vat.registration.form700
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: already_vat_registered
+      value: false
+    - op: in
+      field: registration_reason
+      values:
+      - threshold_confirmed_exceeded
+      - voluntary_confirmed
+    - op: eq
+      field: fiscal_vector_update_needed
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_form_700_vat_registration
+  - type: include_requirement
+    requirement_id: req.current_form_700_package
+  - type: attach_channel
+    channel_id: ch.anaf.form700_electronic
+  source_claim_ids:
+  - claim.b13.vat.form700_purpose
+  - claim.b13.vat.form700_current_order
+  status: in_review
+- id: rule.b13.vat.no_vector_update
+  canonical_rule_id: vat.registration.vector
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: already_vat_registered
+      value: false
+    - op: eq
+      field: fiscal_vector_update_needed
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_correct_vat_registration_procedure
+    message_ro: Confirmă de ce nu este necesară actualizarea vectorului fiscal înainte de a exclude formularul 700.
+  source_claim_ids:
+  - claim.b13.vat.form700_purpose
+  status: in_review
+- id: rule.b13.vat.special_intra_eu
+  canonical_rule_id: vat.registration.special_route
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_reason
+    value: special_intra_eu
+  effects:
+  - type: include_step
+    step_id: assess_special_vat_registration_route
+  - type: require_confirmation
+    tag: confirm_special_vat_registration_and_form301_scope
+    message_ro: Separă înregistrarea specială de obligația de a depune decontul 301.
+  - type: emit_warning
+    tag: do_not_substitute_form301_for_form700
+    message_ro: Formularul 301 este un decont special, nu formularul general de actualizare a vectorului fiscal.
+  source_claim_ids:
+  - claim.b13.vat.form301_distinct
+  status: in_review
+- id: rule.b13.vat.reason_unknown
+  canonical_rule_id: vat.registration.reason
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_reason
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_vat_registration_basis
+    message_ro: 'Confirmă temeiul material: plafon, opțiune sau regim special.'
+  - type: block
+    tag: vat_basis_not_confirmed
+    message_ro: Nu depune automat fără temeiul de înregistrare confirmat.
+  source_claim_ids:
+  - claim.b13.vat.threshold_unverified
+  status: in_review
+- id: rule.b13.vat.not_applicable
+  canonical_rule_id: vat.registration.not_applicable
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_reason
+    value: not_applicable
+  effects:
+  - type: emit_advice
+    tag: no_vat_registration_trigger_confirmed
+    message_ro: Nu a fost confirmat un trigger de înregistrare TVA.
+  source_claim_ids:
+  - claim.b13.vat.threshold_unverified
+  status: in_review
+- id: rule.b13.vat.effective_date_missing
+  canonical_rule_id: vat.registration.effective_date
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: effective_date_confirmed
+    value: false
+  effects:
+  - type: block
+    tag: vat_effective_date_unconfirmed
+    message_ro: Data efectivă trebuie confirmată înainte de completarea declarației.
+  - type: require_confirmation
+    tag: confirm_vat_effective_date
+    message_ro: Verifică data aplicabilă potrivit temeiului și situației fiscale.
+  source_claim_ids:
+  - claim.b13.vat.threshold_unverified
+  status: in_review
+- id: rule.b13.vat.form_unavailable
+  canonical_rule_id: vat.registration.form_access
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: form700_access_available
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_form700_access
+    message_ro: Accesează numai versiunea curentă din pagina oficială ANAF.
+  - type: emit_warning
+    tag: do_not_use_cached_form700
+    message_ro: Nu folosi un PDF sau program local vechi neverificat.
+  source_claim_ids:
+  - claim.b13.vat.form700_freshness
+  status: in_review
+- id: rule.b13.vat.electronic_not_ready
+  canonical_rule_id: vat.registration.electronic_readiness
+  event_type_id: ro.life.vat_registration
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: electronic_submission_ready
+    value: false
+  effects:
+  - type: block
+    tag: anaf_electronic_submission_not_ready
+    message_ro: Pregătește accesul și semnarea necesare depunerii electronice.
+  source_claim_ids:
+  - claim.b13.vat.form700_purpose
+  status: in_review
