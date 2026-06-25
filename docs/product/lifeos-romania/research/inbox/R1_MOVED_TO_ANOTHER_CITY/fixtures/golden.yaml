@@ -1,0 +1,91 @@
+batch_id: R1_MOVED_TO_ANOTHER_CITY
+defaults:
+  event_type_id: life.moved_to_another_city
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: M01
+    desc: mutare simpla fara vehicul/utilitati/copii
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, triggered_events: [life.moved_home] }
+  - id: M02
+    desc: cu vehicul - declanseaza talon + taxa auto
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: true, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, triggered_events: [life.moved_home, life.vehicle_change_address, life.local_tax_declaration] }
+  - id: M03
+    desc: vehicul dar fara schimbare UAT - fara taxa noua
+    facts: { move_date: '2026-06-20', crosses_uat: false, owns_vehicle: true, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, triggered_events: [life.moved_home, life.vehicle_change_address], events_absent: [life.local_tax_declaration] }
+  - id: M04
+    desc: titular utilitati - declanseaza 3 schimbari
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: true, has_children_in_school: false }
+    expect: { status: ok, triggered_events: [life.moved_home, life.change_electricity_holder, life.change_gas_holder, life.change_water_holder] }
+  - id: M05
+    desc: copii la scoala - advice transfer
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: true }
+    expect: { status: ok, advice_present: [school_transfer] }
+  - id: M06
+    desc: caz complet (toate)
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: true, is_utility_holder: true, has_children_in_school: true }
+    expect: { status: ok, triggered_events: [life.moved_home, life.vehicle_change_address, life.local_tax_declaration, life.change_electricity_holder, life.change_gas_holder, life.change_water_holder], advice_present: [school_transfer] }
+  - id: M07
+    desc: moved_home mereu declansat
+    facts: { move_date: '2026-06-20', crosses_uat: false, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, triggered_events: [life.moved_home] }
+  - id: M08
+    desc: transfer fiscal auto ramane in_review
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: true, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, needs_confirmation: [vehicle_tax_new_uat] }
+  - id: M09
+    desc: lipseste move_date
+    facts: { crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: needs_facts, missing_facts: [move_date] }
+  - id: M10
+    desc: lipseste crosses_uat
+    facts: { move_date: '2026-06-20', owns_vehicle: true, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: needs_facts, missing_facts: [crosses_uat] }
+  - id: M11
+    desc: lipseste owns_vehicle
+    facts: { move_date: '2026-06-20', crosses_uat: true, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: needs_facts, missing_facts: [owns_vehicle] }
+  - id: M12
+    desc: lipseste is_utility_holder
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, has_children_in_school: false }
+    expect: { status: needs_facts, missing_facts: [is_utility_holder] }
+  - id: M13
+    desc: lipseste has_children_in_school
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false }
+    expect: { status: needs_facts, missing_facts: [has_children_in_school] }
+  - id: M14
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [move_date, crosses_uat, owns_vehicle, is_utility_holder, has_children_in_school] }
+  - id: M15
+    desc: fara vehicul - fara talon
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, events_absent: [life.vehicle_change_address] }
+  - id: M16
+    desc: fara utilitati - fara schimbari utilitati
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, events_absent: [life.change_electricity_holder] }
+  - id: M17
+    desc: fara copii - fara advice scoala
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, advice_absent: [school_transfer] }
+  - id: M18
+    desc: vehicul + UAT - warning taxa prezent
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: true, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, warnings_present: [vehicle_tax_new_uat] }
+  - id: M19
+    desc: mutare in viitor
+    facts: { move_date: '2026-12-01', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: false }
+    expect: { status: ok, warnings: [future_move_date] }
+  - id: M20
+    desc: vehicul fara UAT + utilitati
+    facts: { move_date: '2026-06-20', crosses_uat: false, owns_vehicle: true, is_utility_holder: true, has_children_in_school: false }
+    expect: { status: ok, triggered_events: [life.moved_home, life.vehicle_change_address, life.change_electricity_holder], events_absent: [life.local_tax_declaration] }
+  - id: M21
+    desc: doar copii la scoala + mutare simpla
+    facts: { move_date: '2026-06-20', crosses_uat: true, owns_vehicle: false, is_utility_holder: false, has_children_in_school: true }
+    expect: { status: ok, triggered_events: [life.moved_home], advice_present: [school_transfer] }

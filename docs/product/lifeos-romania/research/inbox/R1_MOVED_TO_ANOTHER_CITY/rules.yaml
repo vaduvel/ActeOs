@@ -1,0 +1,78 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_MOVED_TO_ANOTHER_CITY
+event_type_id: life.moved_to_another_city
+status: draft
+rules:
+  - id: rule.mac.trigger_moved_home
+    canonical_rule_id: moved_to_another_city.trigger_moved_home
+    event_type_id: life.moved_to_another_city
+    jurisdiction_ids: [ro]
+    severity: critical
+    effective_from: '2005-09-14'
+    when: { op: const, value: true }
+    effects:
+      - { type: trigger_child_event, event_type_id: life.moved_home }
+    source_claim_ids: []
+    status: draft
+  - id: rule.mac.trigger_vehicle_change_address
+    canonical_rule_id: moved_to_another_city.trigger_vehicle_change_address
+    event_type_id: life.moved_to_another_city
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: owns_vehicle
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.vehicle_change_address }
+    source_claim_ids: []
+    status: draft
+  - id: rule.mac.trigger_vehicle_tax_new_uat
+    canonical_rule_id: moved_to_another_city.trigger_vehicle_tax_new_uat
+    event_type_id: life.moved_to_another_city
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: operational
+    effective_from: '2016-01-01'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: owns_vehicle, value: true }
+        - { op: eq, field: crosses_uat, value: true }
+    effects:
+      - { type: trigger_child_event, event_type_id: life.local_tax_declaration }
+      - { type: emit_warning, message_ro: 'La schimbarea localitatii, impozitul auto trece la noua UAT; declara vehiculul la noul organ fiscal local.' }
+      - { type: require_confirmation, message_ro: 'Procedura exacta de transfer fiscal intre UAT se confirma din Codul fiscal.' }
+    source_claim_ids: [claim.mac.vehicle_tax_at_new_domicile]
+    status: in_review
+  - id: rule.mac.trigger_utilities
+    canonical_rule_id: moved_to_another_city.trigger_utilities
+    event_type_id: life.moved_to_another_city
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2005-09-14'
+    when:
+      op: eq
+      field: is_utility_holder
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.change_electricity_holder }
+      - { type: trigger_child_event, event_type_id: life.change_gas_holder }
+      - { type: trigger_child_event, event_type_id: life.change_water_holder }
+    source_claim_ids: []
+    status: draft
+  - id: rule.mac.school_advice
+    canonical_rule_id: moved_to_another_city.school_advice
+    event_type_id: life.moved_to_another_city
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2005-09-14'
+    when:
+      op: eq
+      field: has_children_in_school
+      value: true
+    effects:
+      - { type: emit_advice, message_ro: 'Pentru copii, initiaza transferul/inscrierea la unitatea de invatamant de la noua adresa.' }
+    source_claim_ids: []
+    status: draft
