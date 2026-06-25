@@ -1,0 +1,820 @@
+{
+  "schema_version": "1.0.0",
+  "rule_id": "ro.edu.preschool.enrollment.2026",
+  "revision": 1,
+  "intent_id": "education.preschool.enrollment",
+  "title": "Înscriere și reînscriere în învățământul preșcolar 2026–2027",
+  "status": "approved",
+  "risk_class": "high",
+  "jurisdiction": {
+    "country_code": "RO",
+    "scope_codes": [
+      "ro"
+    ],
+    "authority_scope": "national",
+    "inheritance_mode": "base",
+    "parent_rule_id": null,
+    "competence_basis_claim_ids": [
+      "claim.preschool.calendar"
+    ]
+  },
+  "temporal": {
+    "effective_from": "2026-04-28T00:00:00+03:00",
+    "effective_to": "2027-09-01T00:00:00+03:00",
+    "timezone": "Europe/Bucharest",
+    "reference_year": "2026-2027"
+  },
+  "facts": [
+    {
+      "id": "child.birth_date",
+      "type": "date",
+      "label": "Data nașterii copilului",
+      "reason": "Stabilește nivelul și eligibilitatea de vârstă.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "journey.evaluated_date",
+      "type": "date",
+      "label": "Data evaluării traseului",
+      "reason": "Selectează etapa și termenele în vigoare.",
+      "sensitive": false,
+      "required_for_resolution": true,
+      "derive": {
+        "function": "date_from_context",
+        "inputs": []
+      }
+    },
+    {
+      "id": "enrollment.is_reenrollment",
+      "type": "boolean",
+      "label": "Copilul continuă în aceeași unitate?",
+      "reason": "Separă reînscrierea de o înscriere nouă.",
+      "sensitive": false,
+      "required_for_resolution": true
+    },
+    {
+      "id": "program.type",
+      "type": "enum",
+      "label": "Ce program dorești?",
+      "reason": "Programul prelungit schimbă documentele necesare.",
+      "sensitive": false,
+      "required_for_resolution": true,
+      "options": [
+        {
+          "value": "normal",
+          "label": "Program normal"
+        },
+        {
+          "value": "extended",
+          "label": "Program prelungit"
+        }
+      ]
+    },
+    {
+      "id": "submission.channel",
+      "type": "enum",
+      "label": "Cum trimiți cererea?",
+      "reason": "Emailul sau poșta atrag o declarație suplimentară.",
+      "sensitive": false,
+      "required_for_resolution": true,
+      "options": [
+        {
+          "value": "in_person",
+          "label": "La unitate"
+        },
+        {
+          "value": "email",
+          "label": "Email"
+        },
+        {
+          "value": "post",
+          "label": "Poștă"
+        }
+      ]
+    },
+    {
+      "id": "family.parents_divorced",
+      "type": "boolean",
+      "label": "Părinții sunt divorțați?",
+      "reason": "Poate fi necesară dovada autorității părintești.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "criteria.has_supporting_documents",
+      "type": "boolean",
+      "label": "Invoci criterii generale sau specifice?",
+      "reason": "Criteriile trebuie dovedite cu documentele indicate.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "application.stage1_submitted",
+      "type": "boolean",
+      "label": "Ai depus deja în Etapa I?",
+      "reason": "Stabilește ruta de continuare după prima etapă.",
+      "sensitive": false,
+      "required_for_resolution": false
+    },
+    {
+      "id": "application.stage2_submitted",
+      "type": "boolean",
+      "label": "Ai depus deja în Etapa II?",
+      "reason": "Stabilește ruta către ajustări.",
+      "sensitive": false,
+      "required_for_resolution": false
+    },
+    {
+      "id": "child.start_date",
+      "type": "date",
+      "label": "Prima zi la grădiniță",
+      "reason": "Calculează momentul corect pentru documentele medicale.",
+      "sensitive": true,
+      "required_for_resolution": false
+    }
+  ],
+  "gates": [
+    {
+      "id": "gate.preschool.age_warning",
+      "priority": 10,
+      "when": {
+        "fact": "child.birth_date",
+        "operator": "date_after",
+        "value": "2023-09-01"
+      },
+      "effect": "needs_confirmation",
+      "code": "preschool.age.local_confirmation",
+      "message": "Copilul poate fi sub intervalul uzual pentru nivelul preșcolar; confirmă nivelul și locurile disponibile.",
+      "recovery_actions": [
+        "Verifică opțiunea antepreșcolar sau solicită informație unității."
+      ],
+      "source_claim_ids": [
+        "claim.preschool.age"
+      ]
+    },
+    {
+      "id": "gate.preschool.after_adjustments",
+      "priority": 20,
+      "when": {
+        "fact": "journey.evaluated_date",
+        "operator": "date_after",
+        "value": "2026-08-27"
+      },
+      "effect": "needs_confirmation",
+      "code": "preschool.calendar.standard_window_closed",
+      "message": "Perioadele standard din calendar s-au încheiat; este necesară confirmarea locurilor și procedurii locale.",
+      "recovery_actions": [
+        "Contactează inspectoratul și unitățile cu locuri publicate."
+      ],
+      "source_claim_ids": [
+        "claim.preschool.calendar"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "step.preschool.choose_options",
+      "title": "Alege cele trei opțiuni",
+      "instruction": "Selectează trei unități în ordinea preferințelor și verifică programul, locurile și criteriile publicate de fiecare.",
+      "sequence_hint": 10,
+      "applies_when": {
+        "fact": "enrollment.is_reenrollment",
+        "operator": "is_false"
+      },
+      "depends_on": [],
+      "requirements": [
+        {
+          "id": "req.preschool.three_options",
+          "title": "Trei unități trecute în cerere",
+          "description": "Ordinea exprimă preferința, nu prioritatea temporală.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "electronic",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.three_options"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "institution_schedule",
+        "starts_at": null,
+        "ends_at": null,
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.preschool.calendar"
+        ]
+      },
+      "completion_evidence": "Ai o ordine clară pentru toate cele trei opțiuni și ai consultat criteriile fiecărei unități.",
+      "recovery_actions": [
+        "Dacă datele locale lipsesc, folosește întrebarea de confirmare generată de aplicație."
+      ],
+      "official_channel_ids": [
+        "channel.edu.preschool"
+      ],
+      "source_claim_ids": [
+        "claim.preschool.three_options",
+        "claim.preschool.not_first_come"
+      ]
+    },
+    {
+      "id": "step.preschool.prepare_dossier",
+      "title": "Pregătește dosarul",
+      "instruction": "Adună documentele obligatorii și numai documentele condiționale care se aplică situației tale.",
+      "sequence_hint": 20,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [],
+      "requirements": [
+        {
+          "id": "req.preschool.application",
+          "title": "Cerere-tip",
+          "description": "Cererea aferentă etapei și unităților alese.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original",
+            "electronic",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.documents"
+          ]
+        },
+        {
+          "id": "req.preschool.birth_certificate_copy",
+          "title": "Copie certificat de naștere copil",
+          "description": "Originalul este prezentat la validare.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "names_consistent"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.documents",
+            "claim.preschool.validation"
+          ]
+        },
+        {
+          "id": "req.preschool.parent_ids_copy",
+          "title": "Copii acte de identitate părinți/reprezentant",
+          "description": "Actele trebuie să fie valabile la validare.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "not_expired",
+            "names_consistent"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.documents"
+          ]
+        },
+        {
+          "id": "req.preschool.employment_certificates",
+          "title": "Adeverințe de angajat sau document privind concediul de creștere",
+          "description": "Se aplică programului prelungit.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "fact": "program.type",
+            "operator": "equals",
+            "value": "extended"
+          },
+          "accepted_forms": [
+            "original",
+            "electronic",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "has_signature",
+            "date_within_window",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.employment"
+          ]
+        },
+        {
+          "id": "req.preschool.criteria_documents",
+          "title": "Documente pentru criteriile invocate",
+          "description": "Tipul exact depinde de criteriile generale și specifice ale unității.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "fact": "criteria.has_supporting_documents",
+            "operator": "is_true"
+          },
+          "accepted_forms": [
+            "original",
+            "copy",
+            "electronic",
+            "certified_copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.documents"
+          ]
+        },
+        {
+          "id": "req.preschool.remote_declaration",
+          "title": "Declarație privind veridicitatea informațiilor",
+          "description": "Necesară la transmiterea prin email sau poștă.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "fact": "submission.channel",
+            "operator": "in",
+            "values": [
+              "email",
+              "post"
+            ]
+          },
+          "accepted_forms": [
+            "declaration",
+            "electronic",
+            "original"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "has_signature"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.remote_declaration"
+          ]
+        },
+        {
+          "id": "req.preschool.parental_authority",
+          "title": "Dovada autorității părintești și a locuinței minorului",
+          "description": "Se aplică în situația părinților divorțați.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "fact": "family.parents_divorced",
+            "operator": "is_true"
+          },
+          "accepted_forms": [
+            "original",
+            "copy",
+            "certified_copy",
+            "electronic"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "page_count",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.parental_authority"
+          ]
+        },
+        {
+          "id": "req.preschool.medical_clinical",
+          "title": "Adeverință medicală: copil sănătos clinic",
+          "description": "Se adaugă la începutul anului, nu în dosarul inițial.",
+          "obligation": "mandatory",
+          "timing": "later",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "start_date"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "has_signature"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.medical_later"
+          ]
+        },
+        {
+          "id": "req.preschool.epidemiological",
+          "title": "Aviz epidemiologic/dovada de vaccinare",
+          "description": "Obține-l cu maximum cinci zile înaintea începerii frecventării.",
+          "obligation": "mandatory",
+          "timing": "later",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original"
+          ],
+          "validity": {
+            "max_age_days": 5,
+            "must_be_valid_at": "start_date"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "date_within_window",
+            "has_signature"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.medical_later"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "institution_schedule",
+        "starts_at": null,
+        "ends_at": null,
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.preschool.calendar"
+        ]
+      },
+      "completion_evidence": "Toate cerințele aplicabile sunt pregătite formal; documentele medicale sunt programate pentru momentul corect.",
+      "recovery_actions": [
+        "Nu obține avizul epidemiologic prea devreme.",
+        "Pentru criterii locale nepublicate, cere lista exactă în scris."
+      ],
+      "official_channel_ids": [
+        "channel.edu.preschool"
+      ],
+      "source_claim_ids": [
+        "claim.preschool.documents",
+        "claim.preschool.medical_later"
+      ]
+    },
+    {
+      "id": "step.preschool.submit_validate",
+      "title": "Depune și validează cererea",
+      "instruction": "Depune prin canalul acceptat și mergi la unitate pentru validare, cu originalele cerute.",
+      "sequence_hint": 30,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [
+        "step.preschool.prepare_dossier"
+      ],
+      "requirements": [
+        {
+          "id": "req.preschool.original_parent_id",
+          "title": "Actul părintelui/reprezentantului în original",
+          "description": "Se prezintă la validare.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "not_expired",
+            "correct_document_type"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.validation"
+          ]
+        },
+        {
+          "id": "req.preschool.original_birth_certificate",
+          "title": "Certificatul de naștere în original",
+          "description": "Se prezintă la validare.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "correct_document_type"
+          ],
+          "source_claim_ids": [
+            "claim.preschool.validation"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "institution_schedule",
+        "starts_at": null,
+        "ends_at": null,
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.preschool.calendar"
+        ]
+      },
+      "completion_evidence": "Ai confirmarea validării sau un număr de înregistrare verificabil.",
+      "recovery_actions": [
+        "Dacă nu poți valida în perioada curentă, aplicația recalculează următoarea etapă disponibilă."
+      ],
+      "official_channel_ids": [
+        "channel.edu.preschool"
+      ],
+      "source_claim_ids": [
+        "claim.preschool.validation",
+        "claim.preschool.calendar"
+      ]
+    },
+    {
+      "id": "step.preschool.results_recovery",
+      "title": "Verifică rezultatul și continuă",
+      "instruction": "Urmărește rezultatul oficial. Dacă nu există loc, folosește etapa următoare sau ajustările, conform datei și locurilor publicate.",
+      "sequence_hint": 40,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [
+        "step.preschool.submit_validate"
+      ],
+      "requirements": [],
+      "deadline": {
+        "kind": "institution_schedule",
+        "starts_at": null,
+        "ends_at": "2026-08-28T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.preschool.calendar"
+        ]
+      },
+      "completion_evidence": "Copilul este înscris oficial sau ai pornit ruta de etapă următoare/ajustări.",
+      "recovery_actions": [
+        "Etapa II: verifică locurile rămase și depune o nouă cerere în perioada aplicabilă.",
+        "Ajustări: contactează inspectoratul și depune dosarul conform procedurii județene."
+      ],
+      "official_channel_ids": [
+        "channel.edu.preschool"
+      ],
+      "source_claim_ids": [
+        "claim.preschool.calendar"
+      ]
+    }
+  ],
+  "official_channels": [
+    {
+      "id": "channel.edu.preschool",
+      "type": "web",
+      "label": "Ministerul Educației — ghid oficial preșcolar",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "integration_status": "DEEP_LINK",
+      "official_domain": "edu.ro",
+      "source_claim_ids": [
+        "claim.preschool.documents"
+      ]
+    }
+  ],
+  "source_claims": [
+    {
+      "id": "claim.preschool.age",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Nivelul preșcolar vizează copiii de 3–6 ani; înscrierea depinde de locurile aprobate.",
+      "locator": "FAQ lines 128-135",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.three_options",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Cererea de înscriere include trei opțiuni de unități.",
+      "locator": "FAQ lines 185-190",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.documents",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Dosarul conține cererea, copii ale certificatului de naștere și actelor părinților, plus documentele condiționale aplicabile.",
+      "locator": "FAQ lines 185-198",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.employment",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Pentru program prelungit sau nivel antepreșcolar sunt cerute adeverințele de angajat ori documentul privind concediul de creștere.",
+      "locator": "FAQ lines 192-195",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.remote_declaration",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Transmiterea prin email sau poștă atrage declarația privind veridicitatea informațiilor.",
+      "locator": "FAQ line 196",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.parental_authority",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "În situația părinților divorțați se dovedește exercitarea autorității părintești și locuința minorului.",
+      "locator": "FAQ line 198",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.medical_later",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Documentele medicale se adaugă la începutul anului; avizul epidemiologic este emis cu cel mult cinci zile înaintea începerii frecventării.",
+      "locator": "FAQ lines 200-203",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.validation",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Dosarul se validează la unitate, în prezența părintelui, cu actul părintelui și certificatul copilului în original.",
+      "locator": "FAQ lines 204-206",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.not_first_come",
+      "source_id": "edu_preschool_faq_2026",
+      "url": "https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Numărul de înregistrare nu este criteriu; la suprasolicitare se aplică criterii generale și specifice.",
+      "locator": "FAQ lines 145-151",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.preschool.calendar",
+      "source_id": "legis_preschool_calendar_3707_2026",
+      "url": "https://legislatie.just.ro/Public/DetaliiDocument/309970",
+      "publisher": "Ministerul Educației și Cercetării / Portal Legislativ",
+      "authority_level": "national_normative",
+      "evidence_summary": "Calendarul 2026 stabilește reînscrierile 18–22 mai, Etapa I 25 mai–18 iunie, Etapa II 22 iunie–9 iulie și ajustările 17–27 august.",
+      "locator": "Ordin 3707/2026, anexă lines 63-83",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-04-28T00:00:00+03:00",
+      "effective_to": "2026-09-05T00:00:00+03:00",
+      "confidence": "verified"
+    }
+  ],
+  "freshness": {
+    "class": "critical",
+    "last_verified_at": "2026-06-25T12:00:00+03:00",
+    "review_due_at": "2026-07-02T12:00:00+03:00",
+    "hard_expiry_at": "2026-09-05T00:00:00+03:00",
+    "on_expiry": "block"
+  },
+  "metadata": {
+    "owner": "content.education.ro",
+    "language": "ro-RO",
+    "release_channel": "canary",
+    "test_fixture_ids": [
+      "route.preschool.extended.two_parents",
+      "route.preschool.remote.divorced",
+      "route.preschool.after_adjustments"
+    ],
+    "change_summary": "Seed național R1 bazat pe ghidul și calendarul oficial 2026–2027. Necesită override-uri locale separate.",
+    "reviewers": [
+      {
+        "role": "content",
+        "reviewed_at": "2026-06-25T12:00:00+03:00"
+      },
+      {
+        "role": "legal",
+        "reviewed_at": "2026-06-25T12:00:00+03:00"
+      }
+    ]
+  }
+}

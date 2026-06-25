@@ -1,0 +1,786 @@
+{
+  "schema_version": "1.0.0",
+  "rule_id": "ro.edu.primary.preparatory.2026",
+  "revision": 1,
+  "intent_id": "education.primary.preparatory_enrollment",
+  "title": "Înscriere în clasa pregătitoare 2026–2027",
+  "status": "approved",
+  "risk_class": "high",
+  "jurisdiction": {
+    "country_code": "RO",
+    "scope_codes": [
+      "ro"
+    ],
+    "authority_scope": "national",
+    "inheritance_mode": "base",
+    "parent_rule_id": null,
+    "competence_basis_claim_ids": [
+      "claim.primary.age"
+    ]
+  },
+  "temporal": {
+    "effective_from": "2026-02-26T00:00:00+02:00",
+    "effective_to": "2027-09-01T00:00:00+03:00",
+    "timezone": "Europe/Bucharest",
+    "reference_year": "2026-2027"
+  },
+  "facts": [
+    {
+      "id": "child.birth_date",
+      "type": "date",
+      "label": "Data nașterii copilului",
+      "reason": "Stabilește ruta de eligibilitate și necesitatea recomandării/evaluării.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "journey.evaluated_date",
+      "type": "date",
+      "label": "Data evaluării traseului",
+      "reason": "Stabilește dacă perioada standard este activă.",
+      "sensitive": false,
+      "required_for_resolution": true,
+      "derive": {
+        "function": "date_from_context",
+        "inputs": []
+      }
+    },
+    {
+      "id": "child.attended_kindergarten",
+      "type": "boolean",
+      "label": "Copilul a frecventat grădinița?",
+      "reason": "Stabilește cine emite recomandarea.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "child.returned_from_abroad",
+      "type": "boolean",
+      "label": "Copilul s-a întors din străinătate?",
+      "reason": "Poate impune evaluarea CJRAE/CMBRAE.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "school.choice",
+      "type": "enum",
+      "label": "Ce școală alegi?",
+      "reason": "Altă școală decât circumscripția schimbă garanția și criteriile.",
+      "sensitive": false,
+      "required_for_resolution": true,
+      "options": [
+        {
+          "value": "circumscription",
+          "label": "Școala de circumscripție"
+        },
+        {
+          "value": "other",
+          "label": "Altă școală"
+        }
+      ]
+    },
+    {
+      "id": "school.reserve_circumscription",
+      "type": "boolean",
+      "label": "Vrei să păstrezi locul la școala de circumscripție?",
+      "reason": "Este ruta de siguranță dacă alegi altă unitate.",
+      "sensitive": false,
+      "required_for_resolution": false
+    },
+    {
+      "id": "family.parents_divorced",
+      "type": "boolean",
+      "label": "Părinții sunt divorțați?",
+      "reason": "Poate fi necesară hotărârea privind autoritatea părintească.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "criteria.has_supporting_documents",
+      "type": "boolean",
+      "label": "Invoci criterii generale sau specifice?",
+      "reason": "Documentele doveditoare trebuie adăugate.",
+      "sensitive": true,
+      "required_for_resolution": true
+    },
+    {
+      "id": "submission.channel",
+      "type": "enum",
+      "label": "Cum completezi cererea?",
+      "reason": "Online nu elimină validarea la școală.",
+      "sensitive": false,
+      "required_for_resolution": true,
+      "options": [
+        {
+          "value": "online",
+          "label": "Online"
+        },
+        {
+          "value": "school",
+          "label": "La școală"
+        }
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "gate.primary.too_young",
+      "priority": 10,
+      "when": {
+        "fact": "child.birth_date",
+        "operator": "date_after",
+        "value": "2020-12-31"
+      },
+      "effect": "block",
+      "code": "primary.age.not_eligible_standard",
+      "message": "Copilul nu intră în fereastra standard de vârstă pentru clasa pregătitoare 2026–2027.",
+      "recovery_actions": [
+        "Verifică menținerea în grupa mare sau o situație excepțională la inspectorat."
+      ],
+      "source_claim_ids": [
+        "claim.primary.age"
+      ]
+    },
+    {
+      "id": "gate.primary.late_standard_calendar",
+      "priority": 20,
+      "when": {
+        "fact": "journey.evaluated_date",
+        "operator": "date_after",
+        "value": "2026-06-16"
+      },
+      "effect": "needs_confirmation",
+      "code": "primary.calendar.standard_stages_closed",
+      "message": "Etapele standard afișate pentru 2026 s-au încheiat; ruta curentă trebuie confirmată la inspectorat/școală.",
+      "recovery_actions": [
+        "Contactează inspectoratul pentru situația de înscriere rămasă."
+      ],
+      "source_claim_ids": [
+        "claim.primary.calendar"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "step.primary.obtain_recommendation",
+      "title": "Obține recomandarea de la grădiniță",
+      "instruction": "Solicită recomandarea pentru clasa pregătitoare de la unitatea preșcolară.",
+      "sequence_hint": 10,
+      "applies_when": {
+        "all": [
+          {
+            "fact": "child.birth_date",
+            "operator": "between",
+            "lower": "2020-09-01",
+            "upper": "2020-12-31"
+          },
+          {
+            "fact": "child.attended_kindergarten",
+            "operator": "is_true"
+          },
+          {
+            "fact": "child.returned_from_abroad",
+            "operator": "is_false"
+          }
+        ]
+      },
+      "depends_on": [],
+      "requirements": [
+        {
+          "id": "req.primary.recommendation",
+          "title": "Recomandare pentru înscrierea în clasa pregătitoare",
+          "description": "Se aplică ferestrei 1 septembrie–31 decembrie când copilul a frecventat grădinița.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original",
+            "electronic",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "has_signature"
+          ],
+          "source_claim_ids": [
+            "claim.primary.age"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "institution_schedule",
+        "starts_at": "2026-03-16T00:00:00+02:00",
+        "ends_at": "2026-03-30T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.primary.evaluation"
+        ]
+      },
+      "completion_evidence": "Ai primit recomandarea și o poți atașa dosarului.",
+      "recovery_actions": [
+        "Dacă perioada a trecut, cere procedura de soluționare excepțională inspectoratului."
+      ],
+      "official_channel_ids": [
+        "channel.edu.primary"
+      ],
+      "source_claim_ids": [
+        "claim.primary.age",
+        "claim.primary.evaluation"
+      ]
+    },
+    {
+      "id": "step.primary.cjrae_evaluation",
+      "title": "Solicită evaluarea CJRAE/CMBRAE",
+      "instruction": "Depune cererea de evaluare și participă la programarea comunicată.",
+      "sequence_hint": 10,
+      "applies_when": {
+        "all": [
+          {
+            "fact": "child.birth_date",
+            "operator": "between",
+            "lower": "2020-09-01",
+            "upper": "2020-12-31"
+          },
+          {
+            "any": [
+              {
+                "fact": "child.attended_kindergarten",
+                "operator": "is_false"
+              },
+              {
+                "fact": "child.returned_from_abroad",
+                "operator": "is_true"
+              }
+            ]
+          }
+        ]
+      },
+      "depends_on": [],
+      "requirements": [
+        {
+          "id": "req.primary.evaluation_request",
+          "title": "Cerere de evaluare CJRAE/CMBRAE",
+          "description": "Centrul stabilește programarea și emite recomandarea.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "original",
+            "electronic",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "has_signature"
+          ],
+          "source_claim_ids": [
+            "claim.primary.evaluation"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "fixed_window",
+        "starts_at": "2026-03-16T00:00:00+02:00",
+        "ends_at": "2026-03-30T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.primary.evaluation"
+        ]
+      },
+      "completion_evidence": "Ai recomandarea/evaluarea emisă de CJRAE/CMBRAE.",
+      "recovery_actions": [
+        "Pentru termen depășit, contactează comisia județeană."
+      ],
+      "official_channel_ids": [
+        "channel.edu.primary"
+      ],
+      "source_claim_ids": [
+        "claim.primary.evaluation"
+      ]
+    },
+    {
+      "id": "step.primary.choose_school",
+      "title": "Alege școala și ruta de siguranță",
+      "instruction": "Confirmă școala de circumscripție sau selectează altă școală și, dacă dorești, rezervă locul de circumscripție.",
+      "sequence_hint": 20,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [],
+      "requirements": [
+        {
+          "id": "req.primary.reserve_circumscription",
+          "title": "Bifarea rezervării locului la circumscripție",
+          "description": "Recomandată când alegi altă școală; opțiunea trebuie confirmată în cerere.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "all": [
+              {
+                "fact": "school.choice",
+                "operator": "equals",
+                "value": "other"
+              },
+              {
+                "fact": "school.reserve_circumscription",
+                "operator": "is_true"
+              }
+            ]
+          },
+          "accepted_forms": [
+            "electronic",
+            "original",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.primary.circumscription"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "fixed_window",
+        "starts_at": "2026-03-31T00:00:00+03:00",
+        "ends_at": "2026-05-06T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.primary.calendar"
+        ]
+      },
+      "completion_evidence": "Școala aleasă și opțiunea de circumscripție sunt confirmate în cerere.",
+      "recovery_actions": [
+        "Nu considera altă școală garantată; verifică locurile și criteriile."
+      ],
+      "official_channel_ids": [
+        "channel.edu.primary",
+        "channel.edu.primary.form"
+      ],
+      "source_claim_ids": [
+        "claim.primary.circumscription"
+      ]
+    },
+    {
+      "id": "step.primary.prepare_dossier",
+      "title": "Pregătește dosarul",
+      "instruction": "Pregătește documentele generale și condiționale aplicabile.",
+      "sequence_hint": 30,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [
+        "step.primary.choose_school"
+      ],
+      "requirements": [
+        {
+          "id": "req.primary.application",
+          "title": "Cerere-tip de înscriere",
+          "description": "Completată online sau la unitate.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "electronic",
+            "original",
+            "copy"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "submission"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.primary.documents"
+          ]
+        },
+        {
+          "id": "req.primary.parent_id",
+          "title": "Actul de identitate al părintelui/tutorelui — copie și original",
+          "description": "Originalul se prezintă la validare.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "copy",
+            "original"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "not_expired"
+          ],
+          "source_claim_ids": [
+            "claim.primary.documents"
+          ]
+        },
+        {
+          "id": "req.primary.birth_certificate",
+          "title": "Certificatul de naștere al copilului — copie și original",
+          "description": "Originalul se prezintă la validare.",
+          "obligation": "mandatory",
+          "timing": "now",
+          "applies_when": {
+            "constant": true
+          },
+          "accepted_forms": [
+            "copy",
+            "original"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "names_consistent"
+          ],
+          "source_claim_ids": [
+            "claim.primary.documents"
+          ]
+        },
+        {
+          "id": "req.primary.divorce_order",
+          "title": "Hotărârea definitivă privind autoritatea părintească și locuința minorului",
+          "description": "Se aplică părinților divorțați.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "fact": "family.parents_divorced",
+            "operator": "is_true"
+          },
+          "accepted_forms": [
+            "original",
+            "copy",
+            "certified_copy",
+            "electronic"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "page_count",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.primary.documents"
+          ]
+        },
+        {
+          "id": "req.primary.criteria_documents",
+          "title": "Documente pentru criterii generale/specifice",
+          "description": "Se aplică în special la altă școală, dacă sunt invocate criterii.",
+          "obligation": "conditional",
+          "timing": "now",
+          "applies_when": {
+            "fact": "criteria.has_supporting_documents",
+            "operator": "is_true"
+          },
+          "accepted_forms": [
+            "original",
+            "copy",
+            "certified_copy",
+            "electronic"
+          ],
+          "validity": {
+            "max_age_days": null,
+            "must_be_valid_at": "validation"
+          },
+          "readiness_checks": [
+            "exists",
+            "readable",
+            "correct_document_type",
+            "user_confirmed"
+          ],
+          "source_claim_ids": [
+            "claim.primary.criteria"
+          ]
+        }
+      ],
+      "deadline": {
+        "kind": "fixed_window",
+        "starts_at": "2026-03-31T00:00:00+03:00",
+        "ends_at": "2026-05-06T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.primary.calendar"
+        ]
+      },
+      "completion_evidence": "Toate documentele aplicabile sunt pregătite, inclusiv originalele pentru validare.",
+      "recovery_actions": [
+        "Pentru criteriile specifice, verifică documentele publicate de școala aleasă."
+      ],
+      "official_channel_ids": [
+        "channel.edu.primary"
+      ],
+      "source_claim_ids": [
+        "claim.primary.documents",
+        "claim.primary.criteria"
+      ]
+    },
+    {
+      "id": "step.primary.submit_validate",
+      "title": "Completează și validează cererea",
+      "instruction": "Completează în perioada oficială și validează la școala aleasă; completarea online singură nu finalizează înscrierea.",
+      "sequence_hint": 40,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [
+        "step.primary.prepare_dossier"
+      ],
+      "requirements": [],
+      "deadline": {
+        "kind": "fixed_window",
+        "starts_at": "2026-03-31T00:00:00+03:00",
+        "ends_at": "2026-05-06T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.primary.calendar"
+        ]
+      },
+      "completion_evidence": "Cererea a fost validată la unitate și ai o confirmare verificabilă.",
+      "recovery_actions": [
+        "Dacă termenul standard a trecut, cere soluția aplicabilă inspectoratului."
+      ],
+      "official_channel_ids": [
+        "channel.edu.primary",
+        "channel.edu.primary.form"
+      ],
+      "source_claim_ids": [
+        "claim.primary.validation",
+        "claim.primary.calendar"
+      ]
+    },
+    {
+      "id": "step.primary.check_result",
+      "title": "Verifică rezultatul",
+      "instruction": "Verifică lista oficială și urmează ruta de circumscripție sau etapa ulterioară, după caz.",
+      "sequence_hint": 50,
+      "applies_when": {
+        "constant": true
+      },
+      "depends_on": [
+        "step.primary.submit_validate"
+      ],
+      "requirements": [],
+      "deadline": {
+        "kind": "fixed_instant",
+        "starts_at": null,
+        "ends_at": "2026-06-16T23:59:59+03:00",
+        "relative_to_fact": null,
+        "offset_days": null,
+        "timezone": "Europe/Bucharest",
+        "source_claim_ids": [
+          "claim.primary.calendar"
+        ]
+      },
+      "completion_evidence": "Copilul apare înscris oficial sau ai instrucțiunea oficială pentru rezolvarea situației rămase.",
+      "recovery_actions": [
+        "Dacă altă școală nu are loc, folosește rezervarea circumscripției dacă a fost bifată.",
+        "Pentru situații rămase după etape, contactează inspectoratul."
+      ],
+      "official_channel_ids": [
+        "channel.edu.primary"
+      ],
+      "source_claim_ids": [
+        "claim.primary.circumscription",
+        "claim.primary.calendar"
+      ]
+    }
+  ],
+  "official_channels": [
+    {
+      "id": "channel.edu.primary",
+      "type": "web",
+      "label": "Ministerul Educației — ghid oficial clasa pregătitoare",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "integration_status": "DEEP_LINK",
+      "official_domain": "edu.ro",
+      "source_claim_ids": [
+        "claim.primary.documents"
+      ]
+    },
+    {
+      "id": "channel.edu.primary.form",
+      "type": "web",
+      "label": "Formularul oficial de înscriere",
+      "url": "https://inscriere.edu.ro/",
+      "integration_status": "DEEP_LINK",
+      "official_domain": "inscriere.edu.ro",
+      "source_claim_ids": [
+        "claim.primary.validation"
+      ]
+    }
+  ],
+  "source_claims": [
+    {
+      "id": "claim.primary.age",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Copiii care împlinesc 6 ani până la 31 august se înscriu; cei care împlinesc între 1 septembrie și 31 decembrie au nevoie de recomandare sau evaluare.",
+      "locator": "FAQ lines 126-134",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.primary.evaluation",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Evaluarea CJRAE/CMBRAE se adresează copiilor care nu au frecventat grădinița sau s-au întors din străinătate; în 2026 este programată 16–30 martie.",
+      "locator": "FAQ lines 131-155",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.primary.circumscription",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "La școala de circumscripție copilul este înscris după validare; la altă unitate depinde de locuri și criterii, iar locul de circumscripție poate fi rezervat.",
+      "locator": "FAQ lines 160-167",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.primary.validation",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Cererea poate fi completată online, dar trebuie validată la unitatea aleasă.",
+      "locator": "FAQ lines 168-174 and 226-228",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.primary.documents",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Dosarul include cererea, actul părintelui și certificatul copilului în copie și original, plus recomandarea și documentele pentru criterii când se aplică.",
+      "locator": "FAQ lines 175-184",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.primary.calendar",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Cererile se completează/depun 31 martie–6 mai 2026; rezultatele sunt afișate la 21 mai și 16 iunie pentru cele două etape.",
+      "locator": "FAQ lines 185-192",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2026-06-17T00:00:00+03:00",
+      "confidence": "verified"
+    },
+    {
+      "id": "claim.primary.criteria",
+      "source_id": "edu_primary_faq_2026",
+      "url": "https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar",
+      "publisher": "Ministerul Educației și Cercetării",
+      "authority_level": "national_operational",
+      "evidence_summary": "Pentru altă școală, criteriile generale și apoi cele specifice se aplică la suprasolicitare, pe bază de documente doveditoare.",
+      "locator": "FAQ lines 193-208",
+      "accessed_at": "2026-06-25",
+      "effective_from": "2026-01-01T00:00:00+02:00",
+      "effective_to": "2027-09-01T00:00:00+03:00",
+      "confidence": "verified"
+    }
+  ],
+  "freshness": {
+    "class": "critical",
+    "last_verified_at": "2026-06-25T12:00:00+03:00",
+    "review_due_at": "2026-07-25T12:00:00+03:00",
+    "hard_expiry_at": "2026-09-05T00:00:00+03:00",
+    "on_expiry": "block"
+  },
+  "metadata": {
+    "owner": "content.education.ro",
+    "language": "ro-RO",
+    "release_channel": "canary",
+    "test_fixture_ids": [
+      "route.primary.direct.circumscription",
+      "route.primary.recommendation.other_school",
+      "route.primary.cjrae",
+      "route.primary.late"
+    ],
+    "change_summary": "Seed național R1 bazat pe ghidul oficial 2026–2027. Circumscripțiile și criteriile locale nu sunt incluse și nu trebuie inventate.",
+    "reviewers": [
+      {
+        "role": "content",
+        "reviewed_at": "2026-06-25T12:00:00+03:00"
+      },
+      {
+        "role": "legal",
+        "reviewed_at": "2026-06-25T12:00:00+03:00"
+      }
+    ]
+  }
+}

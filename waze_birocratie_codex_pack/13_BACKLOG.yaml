@@ -1,0 +1,1353 @@
+version: 3.0.0
+generated_at: '2026-06-25'
+product: Waze pentru birocrație
+execution_policy:
+  ordering: phase_then_dependencies_then_priority
+  story_complete_when: all_acceptance_and_tests_pass_and_DoD_is_met
+  status_file: IMPLEMENTATION_STATUS.md
+  adr_directory: docs/adr
+  forbidden:
+  - runtime_llm_procedural_decisions
+  - free_text_executable_conditions
+  - production_fake_data
+  - hardcoded_secrets
+  - silent_critical_stale_rules
+  - document_authenticity_claim_without_registry
+epics:
+- id: EP00
+  title: Repository foundation
+  outcome: Monorepo reproducibil, toolchain blocat și comenzi unice.
+  stories:
+  - id: WB-001
+    title: Inițializează monorepo și convențiile
+    phase: P0
+    priority: P0
+    depends_on: []
+    owned_paths:
+    - apps/
+    - services/
+    - packages/
+    - infra/
+    - docs/
+    acceptance:
+    - Structura respectă 07_ARCHITECTURE.md
+    - Există README root și IMPLEMENTATION_STATUS.md
+    - Nu există cod demo în path-uri de producție
+    required_tests:
+    - make doctor
+    - repo tree snapshot
+    notes: ''
+  - id: WB-002
+    title: Configurează toolchains și lockfiles
+    phase: P0
+    priority: P0
+    depends_on:
+    - WB-001
+    owned_paths:
+    - gradle/
+    - pyproject.toml
+    - pnpm-lock.yaml
+    - mise.toml
+    acceptance:
+    - JDK/Python/Node/pnpm sunt pin-uite
+    - Dependency locks sunt comise
+    - Buildul e reproductibil în CI
+    required_tests:
+    - make doctor
+    - make bootstrap
+    notes: ''
+  - id: WB-003
+    title: Adaugă Docker Compose local
+    phase: P0
+    priority: P0
+    depends_on:
+    - WB-001
+    owned_paths:
+    - infra/local/
+    - docker-compose.yml
+    - .env.example
+    acceptance:
+    - Postgres, object storage, mail catcher și servicii pornesc
+    - Healthchecks există
+    - Secretele locale sunt placeholder
+    required_tests:
+    - make up
+    - make smoke-local
+    notes: ''
+  - id: WB-004
+    title: Configurează CI de bază
+    phase: P0
+    priority: P0
+    depends_on:
+    - WB-002
+    owned_paths:
+    - .github/workflows/
+    acceptance:
+    - PR rulează lint/type/test/build
+    - Cache-urile nu ascund eșecuri
+    - Artefactele și rapoartele sunt păstrate
+    required_tests:
+    - CI workflow lint
+    - dry run local where supported
+    notes: ''
+  - id: WB-005
+    title: Adaugă template ADR și convenții
+    phase: P0
+    priority: P1
+    depends_on:
+    - WB-001
+    owned_paths:
+    - docs/adr/
+    - CONTRIBUTING.md
+    acceptance:
+    - ADR include context, decizie, consecințe și status
+    - Conventional commits și ownership sunt documentate
+    required_tests:
+    - doc lint
+    notes: ''
+- id: EP01
+  title: Canonical contracts and domain
+  outcome: Un singur model tipat folosit de API, engine, Android și portal.
+  stories:
+  - id: WB-010
+    title: Implementează JSON Schema pentru reguli
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-002
+    owned_paths:
+    - packages/contracts/
+    acceptance:
+    - Schema validează seedurile
+    - additionalProperties false în obiectele critice
+    - Condițiile text libere sunt imposibile
+    required_tests:
+    - schema positive/negative fixtures
+    notes: ''
+  - id: WB-011
+    title: Implementează schema journey/route
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-010
+    owned_paths:
+    - packages/contracts/
+    acceptance:
+    - Contractele includ hash, date, provenance și confidence
+    - Unknown este reprezentat explicit
+    required_tests:
+    - schema tests
+    notes: ''
+  - id: WB-012
+    title: Generează modele Python/Kotlin/TypeScript
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-010
+    - WB-011
+    owned_paths:
+    - packages/contracts/generated/
+    acceptance:
+    - Generarea este deterministă
+    - CI eșuează la drift
+    - Tipurile nu sunt editate manual
+    required_tests:
+    - generate twice and diff
+    - compile consumers
+    notes: ''
+  - id: WB-013
+    title: Implementează codurile canonice de eroare
+    phase: P1
+    priority: P1
+    depends_on:
+    - WB-011
+    owned_paths:
+    - packages/contracts/errors/
+    acceptance:
+    - Problem+JSON are cod stabil și trace_id
+    - UI poate localiza mesajele fără parsing text
+    required_tests:
+    - contract tests
+    notes: ''
+  - id: WB-014
+    title: Implementează canonical JSON și hashing
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-011
+    owned_paths:
+    - packages/canonical/
+    acceptance:
+    - Cheile sunt sortate și formatele temporale normalizate
+    - Hash-urile sunt SHA-256 lowercase
+    - Teste cross-language dau același rezultat
+    required_tests:
+    - golden hash tests Python/Kotlin/TS
+    notes: ''
+- id: EP02
+  title: Database and migrations
+  outcome: Model persistent securizat, auditabil și reversibil.
+  stories:
+  - id: WB-020
+    title: Configurează SQLAlchemy/Alembic și schema inițială
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-003
+    owned_paths:
+    - services/api/app/db/
+    - services/api/alembic/
+    acceptance:
+    - Migrarea creează schema din 09_DATABASE_SCHEMA.sql
+    - Upgrade pe DB goală și downgrade de test funcționează
+    - Timezone UTC în DB
+    required_tests:
+    - migration up/down/up
+    notes: ''
+  - id: WB-021
+    title: Implementează repositories și unit of work
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-020
+    owned_paths:
+    - services/api/app/repositories/
+    acceptance:
+    - Query-uri parametrizate
+    - Tranzacții explicite
+    - Nicio entitate de domeniu nu depinde direct de ORM
+    required_tests:
+    - repository integration tests
+    notes: ''
+  - id: WB-022
+    title: Implementează criptarea câmpurilor sensibile
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-020
+    owned_paths:
+    - services/api/app/security/
+    acceptance:
+    - Envelope encryption și key version
+    - AAD leagă ciphertext de owner/entity
+    - Cheile nu apar în DB/loguri
+    required_tests:
+    - encrypt/decrypt/rotation tests
+    notes: ''
+  - id: WB-023
+    title: Implementează audit append-only
+    phase: P1
+    priority: P0
+    depends_on:
+    - WB-020
+    - WB-022
+    owned_paths:
+    - services/api/app/audit/
+    acceptance:
+    - Update/delete audit sunt blocate
+    - Hash chain se verifică
+    - Payloadul este PII-scrubbed
+    required_tests:
+    - tamper detection test
+    - PII log test
+    notes: ''
+  - id: WB-024
+    title: Implementează idempotency store
+    phase: P1
+    priority: P1
+    depends_on:
+    - WB-020
+    owned_paths:
+    - services/api/app/idempotency/
+    acceptance:
+    - Aceeași cheie+cerere returnează același răspuns
+    - Aceeași cheie+alt request produce conflict
+    - TTL cleanup există
+    required_tests:
+    - concurrency integration tests
+    notes: ''
+- id: EP03
+  title: Deterministic rule engine
+  outcome: Ruta este pură, reproductibilă, explicabilă și fără LLM.
+  stories:
+  - id: WB-030
+    title: Implementează AST și evaluator predicate
+    phase: P2
+    priority: P0
+    depends_on:
+    - WB-010
+    - WB-014
+    owned_paths:
+    - packages/rule_engine/
+    acceptance:
+    - Operatorii din 04_DOMAIN_MODEL.md sunt implementați
+    - Three-valued logic este documentată
+    - Nu există eval/exec
+    required_tests:
+    - unit + property tests
+    notes: ''
+  - id: WB-031
+    title: Implementează resolver temporal și jurisdicțional
+    phase: P2
+    priority: P0
+    depends_on:
+    - WB-030
+    owned_paths:
+    - packages/rule_engine/
+    acceptance:
+    - Aplicabilitatea folosește date absolute și timezone
+    - Competența/rangul/teritoriul sunt validate
+    - Conflictul nerezolvat blochează verde
+    required_tests:
+    - boundary/date/conflict tests
+    notes: ''
+  - id: WB-032
+    title: Implementează graph builder și topological sort
+    phase: P2
+    priority: P0
+    depends_on:
+    - WB-030
+    owned_paths:
+    - packages/rule_engine/
+    acceptance:
+    - Ordine stabilă la egalitate
+    - Ciclurile produc eroare publicare
+    - Pașii inaplicabili sunt eliminați justificat
+    required_tests:
+    - graph property tests
+    notes: ''
+  - id: WB-033
+    title: Implementează freshness gate
+    phase: P2
+    priority: P0
+    depends_on:
+    - WB-031
+    owned_paths:
+    - packages/rule_engine/
+    acceptance:
+    - Clasa critică expirată blochează rezoluția
+    - Datele stale nu sunt servite tăcut
+    - Outputul include issue și recovery
+    required_tests:
+    - freshness matrix tests
+    notes: ''
+  - id: WB-034
+    title: Implementează route resolution și hash
+    phase: P2
+    priority: P0
+    depends_on:
+    - WB-031
+    - WB-032
+    - WB-033
+    owned_paths:
+    - packages/rule_engine/
+    acceptance:
+    - Outputul respectă contractul
+    - facts_hash/bundle_hash/route_hash sunt reproductibile
+    - Missing facts sunt ordonate determinist
+    required_tests:
+    - golden route tests
+    - cross-run reproducibility
+    notes: ''
+  - id: WB-035
+    title: Implementează route diff/recalculation
+    phase: P2
+    priority: P1
+    depends_on:
+    - WB-034
+    owned_paths:
+    - packages/rule_engine/
+    acceptance:
+    - Diff identifică pași/cerințe/termene schimbate
+    - Statusurile utilizatorului se păstrează numai când semantica este aceeași
+    required_tests:
+    - recalculation fixtures
+    notes: ''
+- id: EP04
+  title: Source ingestion and content governance
+  outcome: Sursele sunt monitorizate, versionate și publicate numai după review.
+  stories:
+  - id: WB-040
+    title: Implementează source registry și fetch policies
+    phase: P3
+    priority: P0
+    depends_on:
+    - WB-020
+    owned_paths:
+    - services/worker/app/sources/
+    - services/api/app/content/
+    acceptance:
+    - Doar https și domenii/redirecturi validate
+    - Respectă robots/rate limits
+    - SSRF controls active
+    required_tests:
+    - SSRF tests
+    - redirect tests
+    notes: ''
+  - id: WB-041
+    title: Implementează snapshot normalizer și storage
+    phase: P3
+    priority: P0
+    depends_on:
+    - WB-040
+    owned_paths:
+    - services/worker/app/snapshots/
+    acceptance:
+    - Păstrează raw evidence și text normalizat separat
+    - SHA-256 și metadata complete
+    - PDF nu este OCR-uit dacă textul poate fi extras
+    required_tests:
+    - HTML/PDF fixture tests
+    notes: ''
+  - id: WB-042
+    title: Implementează change detection și severity
+    phase: P3
+    priority: P0
+    depends_on:
+    - WB-041
+    owned_paths:
+    - services/worker/app/diff/
+    acceptance:
+    - Diff cosmetic nu blochează
+    - Schimbările de termen/document sunt critical
+    - Impact candidates sunt calculați
+    required_tests:
+    - diff classification fixtures
+    notes: ''
+  - id: WB-043
+    title: Implementează AI candidate extraction sandbox
+    phase: P3
+    priority: P1
+    depends_on:
+    - WB-041
+    - WB-010
+    owned_paths:
+    - services/worker/app/extraction/
+    acceptance:
+    - Output strict schema
+    - Fiecare claim are evidence locator
+    - Outputul este mereu draft
+    - Providerul poate fi disabled
+    required_tests:
+    - mock provider tests
+    - malformed output tests
+    notes: ''
+  - id: WB-044
+    title: Implementează review/publish/rollback services
+    phase: P3
+    priority: P0
+    depends_on:
+    - WB-023
+    - WB-042
+    owned_paths:
+    - services/api/app/content/
+    acceptance:
+    - High/critical cer două aprobări distincte
+    - Publish este atomic
+    - Rollback nu șterge istoricul
+    required_tests:
+    - RBAC/concurrency/rollback tests
+    notes: ''
+  - id: WB-045
+    title: Implementează staleness scheduler și alerts
+    phase: P3
+    priority: P0
+    depends_on:
+    - WB-040
+    - WB-044
+    owned_paths:
+    - services/worker/app/scheduling/
+    acceptance:
+    - next_review_at este calculat
+    - Eșecurile repetate escaladează
+    - Regulile afectate sunt marcate înainte de expirare
+    required_tests:
+    - time travel tests
+    notes: ''
+- id: EP05
+  title: Public API and journey service
+  outcome: Clienții pot crea, rezolva și urmări trasee fără PII în loguri.
+  stories:
+  - id: WB-050
+    title: Bootstrap FastAPI și middleware standard
+    phase: P4
+    priority: P0
+    depends_on:
+    - WB-020
+    - WB-013
+    owned_paths:
+    - services/api/app/main.py
+    - services/api/app/middleware/
+    acceptance:
+    - Health/readiness, trace ID, problem+json
+    - CORS explicit și secure headers
+    - Structured logs scrubbed
+    required_tests:
+    - API smoke
+    - header tests
+    notes: ''
+  - id: WB-051
+    title: Implementează catalog endpoints
+    phase: P4
+    priority: P1
+    depends_on:
+    - WB-050
+    owned_paths:
+    - services/api/app/modules/catalog/
+    acceptance:
+    - Doar journeys publicabile sunt listate
+    - Căutarea nu generează intenții noi
+    - Cache invalidat la publish
+    required_tests:
+    - contract/integration tests
+    notes: ''
+  - id: WB-052
+    title: Implementează route resolve endpoint
+    phase: P4
+    priority: P0
+    depends_on:
+    - WB-034
+    - WB-050
+    owned_paths:
+    - services/api/app/modules/routes/
+    acceptance:
+    - Nu face call extern
+    - P95 țintă respectat
+    - Conflict/stale folosesc 409 codificat
+    required_tests:
+    - contract/load tests
+    notes: ''
+  - id: WB-053
+    title: Implementează journey CRUD și facts
+    phase: P4
+    priority: P0
+    depends_on:
+    - WB-021
+    - WB-052
+    owned_paths:
+    - services/api/app/modules/journeys/
+    acceptance:
+    - Ownership prin device/account subject
+    - Facts sunt criptate
+    - Delete respectă retenția
+    required_tests:
+    - IDOR and lifecycle tests
+    notes: ''
+  - id: WB-054
+    title: Implementează checklist/recalculation state
+    phase: P4
+    priority: P0
+    depends_on:
+    - WB-035
+    - WB-053
+    owned_paths:
+    - services/api/app/modules/journeys/
+    acceptance:
+    - Statusurile sunt reconciliate deterministic
+    - Diff este vizibil clientului
+    - Concurrency folosește optimistic lock
+    required_tests:
+    - concurrent update tests
+    notes: ''
+  - id: WB-055
+    title: Implementează evidence și feedback endpoints
+    phase: P4
+    priority: P1
+    depends_on:
+    - WB-041
+    - WB-053
+    owned_paths:
+    - services/api/app/modules/evidence/
+    - services/api/app/modules/feedback/
+    acceptance:
+    - Evidence public nu expune storage intern
+    - Feedback creează incident, nu regulă
+    - Contactul este separat/pseudonimizat
+    required_tests:
+    - privacy/contract tests
+    notes: ''
+- id: EP06
+  title: Curator portal
+  outcome: Echipa poate menține adevărul fără editare directă în DB.
+  stories:
+  - id: WB-060
+    title: Bootstrap Next.js portal și OIDC/RBAC
+    phase: P5
+    priority: P0
+    depends_on:
+    - WB-044
+    owned_paths:
+    - apps/curator/
+    acceptance:
+    - Roluri content/legal/publisher/admin
+    - Session secure cookies
+    - Route guards server-side
+    required_tests:
+    - authz e2e
+    notes: ''
+  - id: WB-061
+    title: Construiește source registry dashboard
+    phase: P5
+    priority: P1
+    depends_on:
+    - WB-060
+    - WB-040
+    owned_paths:
+    - apps/curator/app/sources/
+    acceptance:
+    - Filtre stale/failures/jurisdiction
+    - Fetch manual are confirmation
+    - URL și policy sunt validate
+    required_tests:
+    - UI/API integration tests
+    notes: ''
+  - id: WB-062
+    title: Construiește snapshot diff viewer
+    phase: P5
+    priority: P0
+    depends_on:
+    - WB-061
+    - WB-042
+    owned_paths:
+    - apps/curator/app/snapshots/
+    acceptance:
+    - Raw și semantic side-by-side
+    - Evidence locator vizibil
+    - Impact și severitate editabile cu audit
+    required_tests:
+    - visual/e2e tests
+    notes: ''
+  - id: WB-063
+    title: Construiește structured rule editor
+    phase: P5
+    priority: P0
+    depends_on:
+    - WB-010
+    - WB-060
+    owned_paths:
+    - apps/curator/app/rules/
+    acceptance:
+    - Predicate builder tipat
+    - Schema validate live
+    - Nu există câmp executabil text liber
+    required_tests:
+    - component/schema e2e
+    notes: ''
+  - id: WB-064
+    title: Construiește review/publish/rollback UI
+    phase: P5
+    priority: P0
+    depends_on:
+    - WB-044
+    - WB-063
+    owned_paths:
+    - apps/curator/app/review/
+    acceptance:
+    - Checklist și rationale obligatorii
+    - Self-approval critic blocat
+    - Impact/golden tests vizibile înainte de publish
+    required_tests:
+    - RBAC/publish e2e
+    notes: ''
+  - id: WB-065
+    title: Construiește operations dashboard
+    phase: P5
+    priority: P1
+    depends_on:
+    - WB-045
+    - WB-055
+    owned_paths:
+    - apps/curator/app/operations/
+    acceptance:
+    - Staleness, conflicts, feedback, jobs
+    - SLA breach alerts
+    - Nicio PII brută în listări
+    required_tests:
+    - privacy/e2e tests
+    notes: ''
+- id: EP07
+  title: Android application core
+  outcome: Aplicație nativă accesibilă, offline-capable și fără cont obligatoriu.
+  stories:
+  - id: WB-070
+    title: Bootstrap Android modular architecture
+    phase: P6
+    priority: P0
+    depends_on:
+    - WB-012
+    - WB-051
+    owned_paths:
+    - apps/android/
+    acceptance:
+    - Compose, navigation, DI, networking, Room/DataStore
+    - Build variants local/staging/prod
+    - No secret in APK
+    required_tests:
+    - assembleDebug
+    - architecture tests
+    notes: ''
+  - id: WB-071
+    title: Implementează onboarding și localitate
+    phase: P6
+    priority: P0
+    depends_on:
+    - WB-070
+    owned_paths:
+    - apps/android/feature/onboarding/
+    acceptance:
+    - Fără cont obligatoriu
+    - Data control copy exact
+    - Localitatea poate fi schimbată
+    required_tests:
+    - Compose UI tests
+    - accessibility
+    notes: ''
+  - id: WB-072
+    title: Implementează home/search/dezambiguizare
+    phase: P6
+    priority: P0
+    depends_on:
+    - WB-071
+    owned_paths:
+    - apps/android/feature/home/
+    acceptance:
+    - Mapare la catalog controlat
+    - Trasee preview sunt etichetate/ascunse conform flag
+    - Offline cache
+    required_tests:
+    - UI/offline tests
+    notes: ''
+  - id: WB-073
+    title: Implementează chestionar din fact definitions
+    phase: P6
+    priority: P0
+    depends_on:
+    - WB-072
+    - WB-052
+    owned_paths:
+    - apps/android/feature/questionnaire/
+    acceptance:
+    - O întrebare per ecran
+    - Why/retention visible
+    - Tipuri și validare locale
+    required_tests:
+    - branch UI tests
+    notes: ''
+  - id: WB-074
+    title: Implementează route timeline și next action
+    phase: P6
+    priority: P0
+    depends_on:
+    - WB-073
+    owned_paths:
+    - apps/android/feature/journey/
+    acceptance:
+    - Standardul celor 5 întrebări
+    - Deadline absolute
+    - Confidence/source contextual
+    required_tests:
+    - golden UI flows
+    notes: ''
+  - id: WB-075
+    title: Implementează checklist și states
+    phase: P6
+    priority: P0
+    depends_on:
+    - WB-074
+    owned_paths:
+    - apps/android/feature/dossier/
+    acceptance:
+    - Acum/condițional/mai târziu
+    - Status persistence offline
+    - Unknown nu apare ca ready
+    required_tests:
+    - state restoration tests
+    notes: ''
+  - id: WB-076
+    title: Implementează evidence, official channel și feedback
+    phase: P6
+    priority: P1
+    depends_on:
+    - WB-074
+    - WB-055
+    owned_paths:
+    - apps/android/feature/evidence/
+    - apps/android/feature/feedback/
+    acceptance:
+    - Link allowlist și warning extern
+    - Evidence excerpt + date
+    - Feedback privacy notice
+    required_tests:
+    - deep link/security/UI tests
+    notes: ''
+  - id: WB-077
+    title: Implementează recalculation diff
+    phase: P6
+    priority: P1
+    depends_on:
+    - WB-054
+    - WB-074
+    owned_paths:
+    - apps/android/feature/recalculation/
+    acceptance:
+    - Arată ce s-a schimbat
+    - Userul acceptă ruta nouă
+    - Stările incompatibile nu migrează
+    required_tests:
+    - recalculation e2e
+    notes: ''
+- id: EP08
+  title: Local document readiness
+  outcome: Documentele sunt verificate formal pe dispozitiv, fără promisiuni false.
+  stories:
+  - id: WB-080
+    title: Implementează document vault local
+    phase: P7
+    priority: P0
+    depends_on:
+    - WB-070
+    owned_paths:
+    - apps/android/core/documents/
+    acceptance:
+    - SAF import și copie criptată opțională în app storage
+    - Cheie Android Keystore
+    - Delete/export control
+    required_tests:
+    - instrumented crypto/storage tests
+    notes: ''
+  - id: WB-081
+    title: Implementează OCR pipeline local
+    phase: P7
+    priority: P0
+    depends_on:
+    - WB-080
+    owned_paths:
+    - apps/android/core/ocr/
+    acceptance:
+    - ML Kit bundled sau pinned
+    - Orientation/crop/quality checks
+    - Nicio rețea implicită
+    required_tests:
+    - fixture benchmark
+    - airplane mode test
+    notes: ''
+  - id: WB-082
+    title: Implementează document classifier și field extraction
+    phase: P7
+    priority: P0
+    depends_on:
+    - WB-081
+    owned_paths:
+    - apps/android/core/document_analysis/
+    acceptance:
+    - Classifier bounded la tipuri R1
+    - Confidence tehnic, nu juridic
+    - User confirm înainte de persist
+    required_tests:
+    - positive/negative fixtures
+    notes: ''
+  - id: WB-083
+    title: Implementează readiness rules
+    phase: P7
+    priority: P0
+    depends_on:
+    - WB-082
+    - WB-075
+    owned_paths:
+    - apps/android/core/document_analysis/
+    acceptance:
+    - exists/not_expired/field_present/page_count/legibility
+    - Signature poate fi unable_to_check
+    - No authenticity verdict
+    required_tests:
+    - finding matrix tests
+    notes: ''
+  - id: WB-084
+    title: Implementează review UI și redaction
+    phase: P7
+    priority: P1
+    depends_on:
+    - WB-083
+    owned_paths:
+    - apps/android/feature/document_review/
+    acceptance:
+    - Câmpurile sensibile sunt mascate
+    - Userul corectează sau respinge extracția
+    - Findings sunt acționabile
+    required_tests:
+    - screenshot/accessibility/privacy tests
+    notes: ''
+  - id: WB-085
+    title: Implementează metadata sync opt-in
+    phase: P7
+    priority: P2
+    depends_on:
+    - WB-084
+    - WB-053
+    owned_paths:
+    - apps/android/core/sync/
+    acceptance:
+    - Default off
+    - Nu trimite image/OCR raw
+    - Consimțământ revocabil
+    required_tests:
+    - network inspection tests
+    notes: ''
+- id: EP09
+  title: Verified education content
+  outcome: R1 are două trasee reale, complete și publicabile.
+  stories:
+  - id: WB-090
+    title: Importă source registry oficial R1
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-041
+    owned_paths:
+    - seed/sources/
+    - content/
+    acceptance:
+    - URL/publisher/accessed_at/freshness complete
+    - Snapshot evidence archived
+    - No unofficial source as decisive
+    required_tests:
+    - source registry validation
+    notes: ''
+  - id: WB-091
+    title: Curează bundle național preșcolar 2026-2027
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-090
+    - WB-034
+    owned_paths:
+    - seed/rules/preschool_ro_2026.json
+    acceptance:
+    - 3 opțiuni, documente, validare, medical timing, not-first-come modeled
+    - Toate critical claims au evidence
+    - Boundary dates tested
+    required_tests:
+    - preschool route fixtures
+    notes: ''
+  - id: WB-092
+    title: Adaugă override Timiș/Timișoara preșcolar
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-091
+    owned_paths:
+    - content/ro/timis/
+    acceptance:
+    - Unități/criterii/adrese numai din surse locale curente
+    - Gaps devin needs_confirmation
+    - Owner și review SLA setate
+    required_tests:
+    - local fixtures + human review
+    notes: ''
+  - id: WB-093
+    title: Curează bundle național clasa pregătitoare 2026-2027
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-090
+    - WB-034
+    owned_paths:
+    - seed/rules/primary_ro_2026.json
+    acceptance:
+    - Age windows/recommendation/evaluation/circumscription modeled
+    - Online vs validation modeled conform sursei
+    - All branches tested
+    required_tests:
+    - primary route fixtures
+    notes: ''
+  - id: WB-094
+    title: Importă circumscripții și date locale Timiș
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-093
+    owned_paths:
+    - content/ro/timis/
+    acceptance:
+    - Adresele sunt normalizate și versionate
+    - Ambiguitățile cer confirmare
+    - No geocoding guess decides legal school
+    required_tests:
+    - address/circumscription fixtures
+    notes: ''
+  - id: WB-095
+    title: Rule bundle certification R1
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-092
+    - WB-094
+    owned_paths:
+    - content/release/
+    acceptance:
+    - Two-person review
+    - 100% provenance critical
+    - Golden routes pass
+    - Publish canary then production
+    required_tests:
+    - content gate report
+    notes: ''
+- id: EP10
+  title: Official channels and reminders
+  outcome: Utilizatorul ajunge la destinația oficială și nu ratează termenul.
+  stories:
+  - id: WB-100
+    title: Implementează official domain allowlist
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-090
+    owned_paths:
+    - packages/official_channels/
+    acceptance:
+    - Domeniile vin din registry versionat
+    - Redirectul final este verificat
+    - HTTP/nonofficial blocked or warned
+    required_tests:
+    - redirect/phishing-like tests
+    notes: ''
+  - id: WB-101
+    title: Implementează channel cards și deep links
+    phase: P8
+    priority: P0
+    depends_on:
+    - WB-076
+    - WB-100
+    owned_paths:
+    - apps/android/feature/official_channel/
+    acceptance:
+    - Tip integrare vizibil intern
+    - Fără simulare ROeID/ANAF
+    - External browser intent safe
+    required_tests:
+    - deep link e2e
+    notes: ''
+  - id: WB-102
+    title: Implementează reminders locale
+    phase: P8
+    priority: P1
+    depends_on:
+    - WB-074
+    owned_paths:
+    - apps/android/core/reminders/
+    acceptance:
+    - Timezone/DST corect
+    - Permission progressive
+    - No sensitive text on lockscreen by default
+    required_tests:
+    - time travel/notification tests
+    notes: ''
+  - id: WB-103
+    title: Implementează push pentru rule change opt-in
+    phase: P8
+    priority: P2
+    depends_on:
+    - WB-045
+    - WB-102
+    owned_paths:
+    - services/api/app/notifications/
+    - apps/android/core/push/
+    acceptance:
+    - Token pseudonimizat
+    - Only relevant journey alerts
+    - User can disable/delete
+    required_tests:
+    - privacy/integration tests
+    notes: ''
+- id: EP11
+  title: Security, privacy and compliance
+  outcome: Baseline MASVS/ASVS, DPIA și controale operaționale.
+  stories:
+  - id: WB-110
+    title: Threat model și data flow diagrams
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-001
+    owned_paths:
+    - docs/security/
+    acceptance:
+    - STRIDE/LINDDUN acoperă toate trust boundaries
+    - Minor data and documents explicit
+    - Mitigations mapped to stories
+    required_tests:
+    - security review
+    notes: ''
+  - id: WB-111
+    title: Configurează secret management și key rotation
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-022
+    owned_paths:
+    - infra/
+    - docs/runbooks/
+    acceptance:
+    - No long-lived secrets in CI
+    - Rotation documented/tested
+    - Break-glass audited
+    required_tests:
+    - secret scan
+    - rotation drill
+    notes: ''
+  - id: WB-112
+    title: Implementează API authz/rate limits/security headers
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-050
+    - WB-060
+    owned_paths:
+    - services/api/app/security/
+    acceptance:
+    - BOLA/IDOR protected
+    - Curator scopes enforced
+    - Rate limits by risk
+    required_tests:
+    - ASVS auth tests
+    - DAST
+    notes: ''
+  - id: WB-113
+    title: Implementează mobile hardening
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-080
+    owned_paths:
+    - apps/android/
+    acceptance:
+    - Network security config
+    - Backup exclusions
+    - Release signing outside repo
+    - Sensitive screen policy configurable
+    required_tests:
+    - MASVS checklist
+    - APK analysis
+    notes: ''
+  - id: WB-114
+    title: Implementează privacy controls
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-053
+    - WB-085
+    owned_paths:
+    - apps/android/feature/privacy/
+    - services/api/app/privacy/
+    acceptance:
+    - Export/delete/consent history
+    - Analytics off respected
+    - Retention jobs tested
+    required_tests:
+    - DSAR/delete e2e
+    notes: ''
+  - id: WB-115
+    title: Finalizează DPIA și notices
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-110
+    - WB-114
+    owned_paths:
+    - docs/legal/
+    acceptance:
+    - Purposes/legal bases/retention/processors documented
+    - Children data assessed
+    - No dark patterns
+    required_tests:
+    - legal sign-off gate
+    notes: ''
+- id: EP12
+  title: Observability and operations
+  outcome: Sistemul poate fi operat, diagnosticat și restaurat fără expunere de date.
+  stories:
+  - id: WB-120
+    title: Implementează structured logging și tracing
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-050
+    owned_paths:
+    - packages/observability/
+    acceptance:
+    - Trace cross-service
+    - PII scrubbing allowlist
+    - Sampling documented
+    required_tests:
+    - log leak tests
+    notes: ''
+  - id: WB-121
+    title: Implementează metrics și dashboards
+    phase: P9
+    priority: P1
+    depends_on:
+    - WB-120
+    owned_paths:
+    - infra/observability/
+    acceptance:
+    - SLO API, jobs, rule freshness, content incidents
+    - North Star event definitions
+    - No high-cardinality PII labels
+    required_tests:
+    - dashboard provision test
+    notes: ''
+  - id: WB-122
+    title: Implementează alerts și runbooks
+    phase: P9
+    priority: P1
+    depends_on:
+    - WB-121
+    owned_paths:
+    - docs/runbooks/
+    acceptance:
+    - Alert has owner/severity/runbook
+    - Critical stale and publish failures page operator
+    - Noise budget
+    required_tests:
+    - alert simulation
+    notes: ''
+  - id: WB-123
+    title: Implementează backups și restore drill
+    phase: P9
+    priority: P0
+    depends_on:
+    - WB-020
+    - WB-041
+    owned_paths:
+    - infra/backup/
+    - docs/runbooks/
+    acceptance:
+    - Encrypted backups
+    - Restore into isolated environment
+    - RPO/RTO measured
+    required_tests:
+    - quarterly drill script
+    notes: ''
+  - id: WB-124
+    title: Implementează audit export și integrity check
+    phase: P9
+    priority: P1
+    depends_on:
+    - WB-023
+    - WB-120
+    owned_paths:
+    - services/api/app/audit/
+    acceptance:
+    - Hash chain verifier
+    - Filtered export for audit
+    - Tamper alert
+    required_tests:
+    - integrity drill
+    notes: ''
+- id: EP13
+  title: Release engineering and launch
+  outcome: Staging și producție sunt reproductibile, observabile și rollback-safe.
+  stories:
+  - id: WB-130
+    title: Containerizează API și worker
+    phase: P10
+    priority: P0
+    depends_on:
+    - WB-050
+    - WB-045
+    owned_paths:
+    - services/api/Dockerfile
+    - services/worker/Dockerfile
+    acceptance:
+    - Non-root, read-only filesystem where possible
+    - SBOM and signed image
+    - Healthchecks
+    required_tests:
+    - container scan
+    - runtime smoke
+    notes: ''
+  - id: WB-131
+    title: Configurează IaC și environments
+    phase: P10
+    priority: P0
+    depends_on:
+    - WB-130
+    - WB-060
+    owned_paths:
+    - infra/
+    acceptance:
+    - dev/staging/prod separated
+    - EU region documented
+    - No manual drift for critical resources
+    required_tests:
+    - IaC plan policy
+    notes: ''
+  - id: WB-132
+    title: Configurează deployment pipelines
+    phase: P10
+    priority: P0
+    depends_on:
+    - WB-131
+    - WB-004
+    owned_paths:
+    - .github/workflows/
+    acceptance:
+    - Staging automatic, prod approval
+    - Migration expand/contract
+    - Canary and rollback
+    required_tests:
+    - deployment rehearsal
+    notes: ''
+  - id: WB-133
+    title: Rule bundle release pipeline
+    phase: P10
+    priority: P0
+    depends_on:
+    - WB-095
+    - WB-044
+    owned_paths:
+    - content/release/
+    - .github/workflows/
+    acceptance:
+    - Content release independent of app release
+    - Signature/hash verification
+    - Emergency retire path
+    required_tests:
+    - canary/rollback drill
+    notes: ''
+  - id: WB-134
+    title: Preproduction acceptance
+    phase: P10
+    priority: P0
+    depends_on:
+    - WB-115
+    - WB-123
+    - WB-132
+    - WB-133
+    owned_paths:
+    - docs/release/
+    acceptance:
+    - All DoD gates pass
+    - Real-device accessibility test
+    - Content owners sign
+    - No P0/P1 open
+    required_tests:
+    - make test-all
+    - release checklist
+    notes: ''
+  - id: WB-135
+    title: Production launch and hypercare
+    phase: P10
+    priority: P0
+    depends_on:
+    - WB-134
+    owned_paths:
+    - docs/release/
+    acceptance:
+    - 5% canary then gradual rollout
+    - Metrics and incident channel staffed
+    - Rollback thresholds explicit
+    required_tests:
+    - production smoke
+    - post-launch review
+    notes: ''

@@ -1,0 +1,982 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/waze-birocratie/rule.schema.json",
+  "title": "Canonical administrative journey rule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rule_id",
+    "revision",
+    "intent_id",
+    "title",
+    "status",
+    "risk_class",
+    "jurisdiction",
+    "temporal",
+    "facts",
+    "gates",
+    "steps",
+    "official_channels",
+    "source_claims",
+    "freshness",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "rule_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "intent_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_review",
+        "approved",
+        "published",
+        "retired"
+      ]
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "jurisdiction": {
+      "$ref": "#/$defs/jurisdiction"
+    },
+    "temporal": {
+      "$ref": "#/$defs/temporal"
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/factDefinition"
+      },
+      "minItems": 1
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/gate"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/step"
+      },
+      "minItems": 1
+    },
+    "official_channels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/officialChannel"
+      }
+    },
+    "source_claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceClaim"
+      },
+      "minItems": 1
+    },
+    "freshness": {
+      "$ref": "#/$defs/freshness"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]{1,191}$"
+    },
+    "isoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "jurisdiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "country_code",
+        "scope_codes",
+        "authority_scope",
+        "inheritance_mode"
+      ],
+      "properties": {
+        "country_code": {
+          "type": "string",
+          "const": "RO"
+        },
+        "scope_codes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "minItems": 1
+        },
+        "authority_scope": {
+          "type": "string",
+          "enum": [
+            "eu",
+            "national",
+            "county",
+            "uat",
+            "institution"
+          ]
+        },
+        "inheritance_mode": {
+          "type": "string",
+          "enum": [
+            "base",
+            "lawful_override",
+            "supplement"
+          ]
+        },
+        "parent_rule_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stableId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "competence_basis_claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        }
+      }
+    },
+    "temporal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effective_from",
+        "effective_to",
+        "timezone",
+        "reference_year"
+      ],
+      "properties": {
+        "effective_from": {
+          "$ref": "#/$defs/isoDateTime"
+        },
+        "effective_to": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timezone": {
+          "type": "string",
+          "const": "Europe/Bucharest"
+        },
+        "reference_year": {
+          "type": "string",
+          "pattern": "^20[0-9]{2}(-20[0-9]{2})?$"
+        }
+      }
+    },
+    "factDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "label",
+        "reason",
+        "sensitive",
+        "required_for_resolution"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "boolean",
+            "string",
+            "enum",
+            "integer",
+            "decimal",
+            "date",
+            "datetime",
+            "jurisdiction_ref"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "sensitive": {
+          "type": "boolean"
+        },
+        "required_for_resolution": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "label"
+            ],
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "integer",
+                  "boolean"
+                ]
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "derive": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "function",
+            "inputs"
+          ],
+          "properties": {
+            "function": {
+              "type": "string",
+              "enum": [
+                "age_on_date",
+                "date_from_context",
+                "jurisdiction_from_context"
+              ]
+            },
+            "inputs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/stableId"
+              }
+            }
+          }
+        }
+      }
+    },
+    "predicate": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "constant"
+          ],
+          "properties": {
+            "constant": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fact",
+            "operator"
+          ],
+          "properties": {
+            "fact": {
+              "$ref": "#/$defs/stableId"
+            },
+            "operator": {
+              "type": "string",
+              "enum": [
+                "exists",
+                "not_exists",
+                "equals",
+                "not_equals",
+                "in",
+                "not_in",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "between",
+                "date_before",
+                "date_on_or_before",
+                "date_after",
+                "date_on_or_after",
+                "is_true",
+                "is_false"
+              ]
+            },
+            "value": {},
+            "values": {
+              "type": "array",
+              "items": {}
+            },
+            "lower": {},
+            "upper": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "all"
+          ],
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/predicate"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "any"
+          ],
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/predicate"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "not"
+          ],
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/predicate"
+            }
+          }
+        }
+      ]
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "priority",
+        "when",
+        "effect",
+        "code",
+        "message",
+        "source_claim_ids"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "when": {
+          "$ref": "#/$defs/predicate"
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "block",
+            "warn",
+            "needs_confirmation"
+          ]
+        },
+        "code": {
+          "$ref": "#/$defs/stableId"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "recovery_actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "source_claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "deadline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "timezone",
+        "source_claim_ids"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "fixed_window",
+            "fixed_instant",
+            "relative",
+            "institution_schedule",
+            "none"
+          ]
+        },
+        "starts_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ends_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relative_to_fact": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/stableId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offset_days": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timezone": {
+          "type": "string",
+          "const": "Europe/Bucharest"
+        },
+        "source_claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "obligation",
+        "timing",
+        "applies_when",
+        "accepted_forms",
+        "readiness_checks",
+        "source_claim_ids"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 300
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "obligation": {
+          "type": "string",
+          "enum": [
+            "mandatory",
+            "conditional",
+            "optional"
+          ]
+        },
+        "timing": {
+          "type": "string",
+          "enum": [
+            "now",
+            "later"
+          ]
+        },
+        "applies_when": {
+          "$ref": "#/$defs/predicate"
+        },
+        "accepted_forms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "original",
+              "copy",
+              "electronic",
+              "certified_copy",
+              "declaration"
+            ]
+          },
+          "minItems": 1
+        },
+        "validity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_age_days": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "must_be_valid_at": {
+              "type": "string",
+              "enum": [
+                "submission",
+                "validation",
+                "start_date",
+                "none"
+              ]
+            }
+          }
+        },
+        "readiness_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "exists",
+              "readable",
+              "correct_document_type",
+              "not_expired",
+              "field_present",
+              "names_consistent",
+              "address_consistent",
+              "page_count",
+              "has_signature",
+              "has_stamp",
+              "date_within_window",
+              "user_confirmed"
+            ]
+          },
+          "minItems": 1
+        },
+        "source_claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "instruction",
+        "sequence_hint",
+        "applies_when",
+        "depends_on",
+        "requirements",
+        "deadline",
+        "completion_evidence",
+        "recovery_actions",
+        "official_channel_ids",
+        "source_claim_ids"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1500
+        },
+        "sequence_hint": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applies_when": {
+          "$ref": "#/$defs/predicate"
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/requirement"
+          }
+        },
+        "deadline": {
+          "$ref": "#/$defs/deadline"
+        },
+        "completion_evidence": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 800
+        },
+        "recovery_actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "official_channel_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "source_claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "officialChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "label",
+        "url",
+        "integration_status",
+        "official_domain",
+        "source_claim_ids"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "physical",
+            "phone",
+            "email",
+            "deep_link"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "url": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "integration_status": {
+          "type": "string",
+          "enum": [
+            "SOURCE_ONLY",
+            "DEEP_LINK",
+            "NOT_CONFIGURED",
+            "SANDBOX",
+            "ACTIVE"
+          ]
+        },
+        "official_domain": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        }
+      }
+    },
+    "sourceClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source_id",
+        "url",
+        "publisher",
+        "authority_level",
+        "evidence_summary",
+        "locator",
+        "accessed_at",
+        "confidence"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "source_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "authority_level": {
+          "type": "string",
+          "enum": [
+            "eu",
+            "national_normative",
+            "national_operational",
+            "county",
+            "uat",
+            "institution"
+          ]
+        },
+        "evidence_summary": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1500
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "accessed_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "effective_from": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effective_to": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/isoDateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "verified_with_local_gap",
+            "needs_confirmation",
+            "conflicting",
+            "expired"
+          ]
+        }
+      }
+    },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "last_verified_at",
+        "review_due_at",
+        "hard_expiry_at",
+        "on_expiry"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "operational",
+            "explanatory"
+          ]
+        },
+        "last_verified_at": {
+          "$ref": "#/$defs/isoDateTime"
+        },
+        "review_due_at": {
+          "$ref": "#/$defs/isoDateTime"
+        },
+        "hard_expiry_at": {
+          "$ref": "#/$defs/isoDateTime"
+        },
+        "on_expiry": {
+          "type": "string",
+          "enum": [
+            "block",
+            "needs_confirmation",
+            "warn"
+          ]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "language",
+        "release_channel",
+        "test_fixture_ids",
+        "change_summary"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string",
+          "minLength": 2
+        },
+        "language": {
+          "type": "string",
+          "const": "ro-RO"
+        },
+        "release_channel": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "canary",
+            "production"
+          ]
+        },
+        "test_fixture_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "change_summary": {
+          "type": "string",
+          "minLength": 3
+        },
+        "reviewers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role",
+              "reviewed_at"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "content",
+                  "legal",
+                  "publisher"
+                ]
+              },
+              "reviewed_at": {
+                "$ref": "#/$defs/isoDateTime"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

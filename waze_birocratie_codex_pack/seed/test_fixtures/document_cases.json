@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0.0",
+  "fixture_policy": "TEST_ONLY_SYNTHETIC_METADATA_NO_IMAGES",
+  "cases": [
+    {
+      "id": "doc.id.valid",
+      "document_type": "identity_card",
+      "input": {
+        "readable": true,
+        "type_match": true,
+        "expiry_date": "2029-01-01",
+        "pages_expected": 1,
+        "pages_found": 1
+      },
+      "expected_findings": []
+    },
+    {
+      "id": "doc.id.expired",
+      "document_type": "identity_card",
+      "input": {
+        "readable": true,
+        "type_match": true,
+        "expiry_date": "2025-12-31",
+        "evaluation_date": "2026-06-25"
+      },
+      "expected_findings": [
+        "document.expired"
+      ]
+    },
+    {
+      "id": "doc.birth_cert.unreadable",
+      "document_type": "birth_certificate",
+      "input": {
+        "readable": false,
+        "type_match": true
+      },
+      "expected_findings": [
+        "document.unreadable"
+      ]
+    },
+    {
+      "id": "doc.wrong_type",
+      "document_type": "identity_card",
+      "input": {
+        "readable": true,
+        "type_match": false,
+        "expected_type": "employment_certificate"
+      },
+      "expected_findings": [
+        "document.wrong_type"
+      ]
+    },
+    {
+      "id": "doc.employment.no_signature",
+      "document_type": "employment_certificate",
+      "input": {
+        "readable": true,
+        "type_match": true,
+        "signature_state": "not_detected"
+      },
+      "expected_findings": [
+        "document.signature_missing"
+      ]
+    },
+    {
+      "id": "doc.employment.signature_unknown",
+      "document_type": "employment_certificate",
+      "input": {
+        "readable": true,
+        "type_match": true,
+        "signature_state": "unable_to_check"
+      },
+      "expected_findings": [
+        "document.signature_unable_to_check"
+      ]
+    },
+    {
+      "id": "doc.order.missing_page",
+      "document_type": "court_order",
+      "input": {
+        "readable": true,
+        "type_match": true,
+        "pages_expected": 5,
+        "pages_found": 4
+      },
+      "expected_findings": [
+        "document.page_missing"
+      ]
+    },
+    {
+      "id": "doc.epidemiological.too_early",
+      "document_type": "epidemiological_notice",
+      "input": {
+        "issue_date": "2026-08-20",
+        "start_date": "2026-09-07",
+        "max_age_days": 5
+      },
+      "expected_findings": [
+        "document.outside_validity_window"
+      ]
+    },
+    {
+      "id": "doc.authenticity.always_unknown",
+      "document_type": "birth_certificate",
+      "input": {
+        "readable": true,
+        "type_match": true,
+        "registry_check": false
+      },
+      "expected_authenticity": "not_verified"
+    }
+  ]
+}

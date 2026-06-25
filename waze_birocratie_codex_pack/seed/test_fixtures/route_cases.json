@@ -1,0 +1,242 @@
+{
+  "schema_version": "1.0.0",
+  "fixture_policy": "TEST_ONLY_NO_REAL_PERSONAL_DATA",
+  "cases": [
+    {
+      "id": "route.preschool.extended.two_parents",
+      "rule_id": "ro.edu.preschool.enrollment.2026",
+      "evaluated_at": "2026-06-25T10:00:00+03:00",
+      "facts": {
+        "child.birth_date": "2022-04-15",
+        "journey.evaluated_date": "2026-06-25",
+        "enrollment.is_reenrollment": false,
+        "program.type": "extended",
+        "submission.channel": "in_person",
+        "family.parents_divorced": false,
+        "criteria.has_supporting_documents": false,
+        "application.stage1_submitted": false,
+        "application.stage2_submitted": false,
+        "child.start_date": "2026-09-07"
+      },
+      "expected": {
+        "status": "resolved",
+        "required_steps": [
+          "step.preschool.choose_options",
+          "step.preschool.prepare_dossier",
+          "step.preschool.submit_validate",
+          "step.preschool.results_recovery"
+        ],
+        "required_requirements": [
+          "req.preschool.application",
+          "req.preschool.birth_certificate_copy",
+          "req.preschool.parent_ids_copy",
+          "req.preschool.employment_certificates",
+          "req.preschool.medical_clinical",
+          "req.preschool.epidemiological",
+          "req.preschool.original_parent_id",
+          "req.preschool.original_birth_certificate"
+        ],
+        "excluded_requirements": [
+          "req.preschool.remote_declaration",
+          "req.preschool.parental_authority"
+        ],
+        "issues_must_include": []
+      }
+    },
+    {
+      "id": "route.preschool.remote.divorced",
+      "rule_id": "ro.edu.preschool.enrollment.2026",
+      "evaluated_at": "2026-05-26T10:00:00+03:00",
+      "facts": {
+        "child.birth_date": "2021-10-10",
+        "journey.evaluated_date": "2026-05-26",
+        "enrollment.is_reenrollment": false,
+        "program.type": "normal",
+        "submission.channel": "email",
+        "family.parents_divorced": true,
+        "criteria.has_supporting_documents": true,
+        "application.stage1_submitted": false,
+        "application.stage2_submitted": false,
+        "child.start_date": "2026-09-07"
+      },
+      "expected": {
+        "status": "resolved",
+        "required_requirements": [
+          "req.preschool.remote_declaration",
+          "req.preschool.parental_authority",
+          "req.preschool.criteria_documents"
+        ],
+        "excluded_requirements": [
+          "req.preschool.employment_certificates"
+        ],
+        "issues_must_include": []
+      }
+    },
+    {
+      "id": "route.preschool.after_adjustments",
+      "rule_id": "ro.edu.preschool.enrollment.2026",
+      "evaluated_at": "2026-09-10T10:00:00+03:00",
+      "facts": {
+        "child.birth_date": "2022-01-10",
+        "journey.evaluated_date": "2026-09-10",
+        "enrollment.is_reenrollment": false,
+        "program.type": "normal",
+        "submission.channel": "in_person",
+        "family.parents_divorced": false,
+        "criteria.has_supporting_documents": false
+      },
+      "expected": {
+        "status": "resolved",
+        "confidence_at_most": "needs_confirmation",
+        "issues_must_include": [
+          "preschool.calendar.standard_window_closed"
+        ]
+      }
+    },
+    {
+      "id": "route.primary.direct.circumscription",
+      "rule_id": "ro.edu.primary.preparatory.2026",
+      "evaluated_at": "2026-04-10T10:00:00+03:00",
+      "facts": {
+        "child.birth_date": "2020-05-20",
+        "journey.evaluated_date": "2026-04-10",
+        "child.attended_kindergarten": true,
+        "child.returned_from_abroad": false,
+        "school.choice": "circumscription",
+        "school.reserve_circumscription": false,
+        "family.parents_divorced": false,
+        "criteria.has_supporting_documents": false,
+        "submission.channel": "online"
+      },
+      "expected": {
+        "status": "resolved",
+        "required_steps": [
+          "step.primary.choose_school",
+          "step.primary.prepare_dossier",
+          "step.primary.submit_validate",
+          "step.primary.check_result"
+        ],
+        "excluded_steps": [
+          "step.primary.obtain_recommendation",
+          "step.primary.cjrae_evaluation"
+        ],
+        "required_requirements": [
+          "req.primary.application",
+          "req.primary.parent_id",
+          "req.primary.birth_certificate"
+        ],
+        "issues_must_include": []
+      }
+    },
+    {
+      "id": "route.primary.recommendation.other_school",
+      "rule_id": "ro.edu.primary.preparatory.2026",
+      "evaluated_at": "2026-03-20T10:00:00+02:00",
+      "facts": {
+        "child.birth_date": "2020-10-12",
+        "journey.evaluated_date": "2026-03-20",
+        "child.attended_kindergarten": true,
+        "child.returned_from_abroad": false,
+        "school.choice": "other",
+        "school.reserve_circumscription": true,
+        "family.parents_divorced": true,
+        "criteria.has_supporting_documents": true,
+        "submission.channel": "school"
+      },
+      "expected": {
+        "status": "resolved",
+        "required_steps": [
+          "step.primary.obtain_recommendation",
+          "step.primary.choose_school",
+          "step.primary.prepare_dossier",
+          "step.primary.submit_validate",
+          "step.primary.check_result"
+        ],
+        "required_requirements": [
+          "req.primary.recommendation",
+          "req.primary.reserve_circumscription",
+          "req.primary.divorce_order",
+          "req.primary.criteria_documents"
+        ],
+        "excluded_steps": [
+          "step.primary.cjrae_evaluation"
+        ],
+        "issues_must_include": []
+      }
+    },
+    {
+      "id": "route.primary.cjrae",
+      "rule_id": "ro.edu.primary.preparatory.2026",
+      "evaluated_at": "2026-03-18T10:00:00+02:00",
+      "facts": {
+        "child.birth_date": "2020-11-01",
+        "journey.evaluated_date": "2026-03-18",
+        "child.attended_kindergarten": false,
+        "child.returned_from_abroad": false,
+        "school.choice": "circumscription",
+        "school.reserve_circumscription": false,
+        "family.parents_divorced": false,
+        "criteria.has_supporting_documents": false,
+        "submission.channel": "online"
+      },
+      "expected": {
+        "status": "resolved",
+        "required_steps": [
+          "step.primary.cjrae_evaluation"
+        ],
+        "excluded_steps": [
+          "step.primary.obtain_recommendation"
+        ],
+        "required_requirements": [
+          "req.primary.evaluation_request"
+        ],
+        "issues_must_include": []
+      }
+    },
+    {
+      "id": "route.primary.too_young",
+      "rule_id": "ro.edu.primary.preparatory.2026",
+      "evaluated_at": "2026-04-01T10:00:00+03:00",
+      "facts": {
+        "child.birth_date": "2021-01-01",
+        "journey.evaluated_date": "2026-04-01",
+        "child.attended_kindergarten": true,
+        "child.returned_from_abroad": false,
+        "school.choice": "circumscription",
+        "school.reserve_circumscription": false,
+        "family.parents_divorced": false,
+        "criteria.has_supporting_documents": false,
+        "submission.channel": "school"
+      },
+      "expected": {
+        "status": "blocked",
+        "issues_must_include": [
+          "primary.age.not_eligible_standard"
+        ]
+      }
+    },
+    {
+      "id": "route.primary.late",
+      "rule_id": "ro.edu.primary.preparatory.2026",
+      "evaluated_at": "2026-06-25T10:00:00+03:00",
+      "facts": {
+        "child.birth_date": "2020-06-01",
+        "journey.evaluated_date": "2026-06-25",
+        "child.attended_kindergarten": true,
+        "child.returned_from_abroad": false,
+        "school.choice": "circumscription",
+        "school.reserve_circumscription": false,
+        "family.parents_divorced": false,
+        "criteria.has_supporting_documents": false,
+        "submission.channel": "school"
+      },
+      "expected": {
+        "status": "resolved",
+        "confidence_at_most": "needs_confirmation",
+        "issues_must_include": [
+          "primary.calendar.standard_stages_closed"
+        ]
+      }
+    }
+  ]
+}

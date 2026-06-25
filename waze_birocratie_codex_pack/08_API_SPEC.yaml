@@ -1,0 +1,893 @@
+openapi: 3.1.0
+info:
+  title: Waze pentru birocrație API
+  version: 1.0.0
+  description: |
+    Contractul API pentru catalog, trasee, călătorii, feedback și operațiuni de curare.
+    Motorul de rutare este determinist. Niciun endpoint public nu invocă un LLM pentru decizii procedurale.
+servers:
+  - url: http://localhost:8000
+    description: local
+  - url: https://api.staging.example.invalid
+    description: staging placeholder
+security: []
+tags:
+  - name: System
+  - name: Catalog
+  - name: Routes
+  - name: Journeys
+  - name: Evidence
+  - name: Feedback
+  - name: Curator
+paths:
+  /health/live:
+    get:
+      tags: [System]
+      operationId: healthLive
+      responses:
+        '200':
+          description: Procesul rulează.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /health/ready:
+    get:
+      tags: [System]
+      operationId: healthReady
+      responses:
+        '200':
+          description: Dependențele obligatorii sunt disponibile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /v1/catalog/intents:
+    get:
+      tags: [Catalog]
+      operationId: listIntents
+      parameters:
+        - $ref: '#/components/parameters/Locale'
+        - name: query
+          in: query
+          schema: {type: string, maxLength: 120}
+        - name: release_status
+          in: query
+          schema:
+            type: string
+            enum: [production, preview]
+            default: production
+      responses:
+        '200':
+          description: Intenții publicabile pentru jurisdicția implicită sau toate intențiile disponibile.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/IntentSummary'}
+  /v1/catalog/jurisdictions:
+    get:
+      tags: [Catalog]
+      operationId: listJurisdictions
+      parameters:
+        - name: parent_id
+          in: query
+          schema: {$ref: '#/components/schemas/Uuid'}
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [country, county, uat, institution]
+        - name: query
+          in: query
+          schema: {type: string, maxLength: 120}
+      responses:
+        '200':
+          description: Jurisdicții active.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/Jurisdiction'}
+  /v1/routes/resolve:
+    post:
+      tags: [Routes]
+      operationId: resolveRoute
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RouteResolveRequest'}
+      responses:
+        '200':
+          description: Traseu determinist rezolvat sau lista faptelor lipsă.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RouteResolution'}
+        '409':
+          description: Bundle indisponibil, expirat sau cu conflict critic.
+          content:
+            application/problem+json:
+              schema: {$ref: '#/components/schemas/Problem'}
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /v1/journeys:
+    post:
+      tags: [Journeys]
+      operationId: createJourney
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateJourneyRequest'}
+      responses:
+        '201':
+          description: Călătorie creată.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Journey'}
+        '409':
+          $ref: '#/components/responses/Conflict'
+    get:
+      tags: [Journeys]
+      operationId: listJourneys
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, archived]
+      responses:
+        '200':
+          description: Călătoriile dispozitivului sau contului curent.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/JourneySummary'}
+  /v1/journeys/{journey_id}:
+    get:
+      tags: [Journeys]
+      operationId: getJourney
+      parameters:
+        - $ref: '#/components/parameters/JourneyId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Călătoria și ultima rezoluție.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Journey'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      tags: [Journeys]
+      operationId: deleteJourney
+      parameters:
+        - $ref: '#/components/parameters/JourneyId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '204': {description: Călătoria și datele asociate au fost șterse sau programate pentru ștergere sigură.}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /v1/journeys/{journey_id}/facts:
+    patch:
+      tags: [Journeys]
+      operationId: updateJourneyFacts
+      parameters:
+        - $ref: '#/components/parameters/JourneyId'
+        - $ref: '#/components/parameters/DeviceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [facts]
+              properties:
+                facts:
+                  type: array
+                  minItems: 1
+                  items: {$ref: '#/components/schemas/FactInput'}
+      responses:
+        '200':
+          description: Fapte salvate și traseu recalculat.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Journey'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /v1/journeys/{journey_id}/recalculate:
+    post:
+      tags: [Journeys]
+      operationId: recalculateJourney
+      parameters:
+        - $ref: '#/components/parameters/JourneyId'
+        - $ref: '#/components/parameters/DeviceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                evaluated_at: {type: string, format: date-time}
+                target_bundle_id: {$ref: '#/components/schemas/Uuid'}
+                reason:
+                  type: string
+                  enum: [user_change, new_bundle, missed_deadline, rejection, expired_document]
+      responses:
+        '200':
+          description: Recalculare și diff față de ruta anterioară.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RecalculationResult'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /v1/journeys/{journey_id}/requirements/{requirement_id}:
+    patch:
+      tags: [Journeys]
+      operationId: updateRequirementState
+      parameters:
+        - $ref: '#/components/parameters/JourneyId'
+        - name: requirement_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/StableId'}
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [not_started, ready, blocked, in_progress, submitted, completed, not_applicable]
+                note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Cerință actualizată.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RequirementState'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /v1/journeys/{journey_id}/document-analyses:
+    post:
+      tags: [Journeys]
+      operationId: registerLocalDocumentAnalysis
+      description: |
+        Înregistrează numai rezultatele confirmate de utilizator ale analizei locale. Imaginile și OCR raw nu sunt acceptate
+        de acest endpoint. Uploadul securizat, dacă va fi activat ulterior, are contract separat și feature flag.
+      parameters:
+        - $ref: '#/components/parameters/JourneyId'
+        - $ref: '#/components/parameters/DeviceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DocumentAnalysisInput'}
+      responses:
+        '201':
+          description: Metadata și findings salvate.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DocumentAnalysis'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /v1/evidence/{claim_id}:
+    get:
+      tags: [Evidence]
+      operationId: getClaimEvidence
+      parameters:
+        - name: claim_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
+      responses:
+        '200':
+          description: Proveniența publică a unui claim.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SourceClaim'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /v1/feedback:
+    post:
+      tags: [Feedback]
+      operationId: submitFeedback
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FeedbackInput'}
+      responses:
+        '202':
+          description: Incident de verificare creat; feedbackul nu modifică automat regula.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [incident_id, status]
+                properties:
+                  incident_id: {$ref: '#/components/schemas/Uuid'}
+                  status: {type: string, const: queued_for_review}
+  /v1/curator/sources:
+    get:
+      tags: [Curator]
+      operationId: curatorListSources
+      security: [{curatorBearer: [sources:read]}]
+      parameters:
+        - name: status
+          in: query
+          schema: {type: string, enum: [active, paused, retired]}
+        - name: stale_only
+          in: query
+          schema: {type: boolean, default: false}
+      responses:
+        '200':
+          description: Registry de surse.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/Source'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      tags: [Curator]
+      operationId: curatorCreateSource
+      security: [{curatorBearer: [sources:write]}]
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateSourceRequest'}
+      responses:
+        '201':
+          description: Sursă creată.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Source'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /v1/curator/sources/{source_id}/fetch:
+    post:
+      tags: [Curator]
+      operationId: curatorFetchSource
+      security: [{curatorBearer: [sources:write]}]
+      parameters:
+        - name: source_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Job de fetch creat.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [job_id, status]
+                properties:
+                  job_id: {$ref: '#/components/schemas/Uuid'}
+                  status: {type: string, enum: [queued, running]}
+  /v1/curator/source-snapshots/{snapshot_id}/draft:
+    post:
+      tags: [Curator]
+      operationId: curatorCreateDraftFromSnapshot
+      security: [{curatorBearer: [rules:write]}]
+      parameters:
+        - name: snapshot_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [intent_id, jurisdiction_id]
+              properties:
+                intent_id: {$ref: '#/components/schemas/StableId'}
+                jurisdiction_id: {$ref: '#/components/schemas/Uuid'}
+                use_ai_extraction: {type: boolean, default: true}
+      responses:
+        '202':
+          description: Draft sau job de extracție creat. Outputul nu este publicat automat.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [draft_id, status]
+                properties:
+                  draft_id: {$ref: '#/components/schemas/Uuid'}
+                  status: {type: string, enum: [draft, extracting]}
+  /v1/curator/rule-versions/{rule_version_id}/review:
+    post:
+      tags: [Curator]
+      operationId: curatorReviewRuleVersion
+      security: [{curatorBearer: [rules:review]}]
+      parameters:
+        - name: rule_version_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, rationale]
+              properties:
+                decision: {type: string, enum: [approve, request_changes, reject]}
+                rationale: {type: string, minLength: 10, maxLength: 4000}
+                checklist:
+                  type: object
+                  additionalProperties: {type: boolean}
+      responses:
+        '200':
+          description: Review înregistrat.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RuleVersionStatus'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /v1/curator/bundles/{bundle_id}/publish:
+    post:
+      tags: [Curator]
+      operationId: curatorPublishBundle
+      security: [{curatorBearer: [rules:publish]}]
+      parameters:
+        - name: bundle_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel]
+              properties:
+                channel: {type: string, enum: [canary, production]}
+                reason: {type: string, minLength: 10, maxLength: 1000}
+                expected_previous_bundle_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+      responses:
+        '200':
+          description: Bundle publicat atomic.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/BundlePublication'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /v1/curator/bundles/{bundle_id}/rollback:
+    post:
+      tags: [Curator]
+      operationId: curatorRollbackBundle
+      security: [{curatorBearer: [rules:publish]}]
+      parameters:
+        - name: bundle_id
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Uuid'}
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target_publication_id, reason]
+              properties:
+                target_publication_id: {$ref: '#/components/schemas/Uuid'}
+                reason: {type: string, minLength: 20, maxLength: 2000}
+      responses:
+        '200':
+          description: Pointerul de producție a revenit atomic la publicația selectată.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/BundlePublication'}
+components:
+  securitySchemes:
+    curatorBearer:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.invalid/authorize
+          tokenUrl: https://auth.example.invalid/oauth/token
+          scopes:
+            sources:read: Citește surse
+            sources:write: Administrează surse
+            rules:write: Editează drafturi
+            rules:review: Revizuiește reguli
+            rules:publish: Publică sau retrage bundle-uri
+  parameters:
+    Locale:
+      name: Accept-Language
+      in: header
+      required: false
+      schema: {type: string, default: ro-RO}
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: {type: string, minLength: 16, maxLength: 128}
+    DeviceId:
+      name: X-Device-Id
+      in: header
+      required: true
+      schema: {$ref: '#/components/schemas/Uuid'}
+    JourneyId:
+      name: journey_id
+      in: path
+      required: true
+      schema: {$ref: '#/components/schemas/Uuid'}
+  responses:
+    ValidationError:
+      description: Datele nu respectă contractul.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+    NotFound:
+      description: Resursa nu există sau nu aparține contextului curent.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+    Conflict:
+      description: Conflict de versiune, stare sau idempotency.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+    Unauthorized:
+      description: Autentificare sau scope insuficient.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+    ServiceUnavailable:
+      description: O dependență obligatorie nu este disponibilă.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+    StableId:
+      type: string
+      pattern: '^[a-z0-9][a-z0-9_.-]{2,127}$'
+    HealthResponse:
+      type: object
+      required: [status, version, timestamp]
+      properties:
+        status: {type: string, enum: [ok, degraded]}
+        version: {type: string}
+        timestamp: {type: string, format: date-time}
+        checks: {type: object, additionalProperties: {type: string}}
+    Problem:
+      type: object
+      required: [type, title, status, code, trace_id]
+      properties:
+        type: {type: string, format: uri-reference}
+        title: {type: string}
+        status: {type: integer, minimum: 400, maximum: 599}
+        code: {$ref: '#/components/schemas/StableId'}
+        detail: {type: string}
+        instance: {type: string}
+        trace_id: {type: string}
+        field_errors:
+          type: array
+          items:
+            type: object
+            required: [path, code, message]
+            properties:
+              path: {type: string}
+              code: {$ref: '#/components/schemas/StableId'}
+              message: {type: string}
+    IntentSummary:
+      type: object
+      required: [id, title, category, release_status]
+      properties:
+        id: {$ref: '#/components/schemas/StableId'}
+        title: {type: string}
+        short_description: {type: string}
+        category: {type: string}
+        keywords: {type: array, items: {type: string}}
+        release_status: {type: string, enum: [production, preview]}
+    Jurisdiction:
+      type: object
+      required: [id, code, name, type, timezone]
+      properties:
+        id: {$ref: '#/components/schemas/Uuid'}
+        parent_id: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+        code: {$ref: '#/components/schemas/StableId'}
+        name: {type: string}
+        type: {type: string, enum: [country, county, uat, institution]}
+        timezone: {type: string, const: Europe/Bucharest}
+    FactInput:
+      type: object
+      required: [fact_id, value]
+      properties:
+        fact_id: {$ref: '#/components/schemas/StableId'}
+        value: {}
+        source: {type: string, enum: [user, derived, document_confirmed], default: user}
+    RouteResolveRequest:
+      type: object
+      additionalProperties: false
+      required: [intent_id, jurisdiction_id, evaluated_at, facts]
+      properties:
+        intent_id: {$ref: '#/components/schemas/StableId'}
+        jurisdiction_id: {$ref: '#/components/schemas/Uuid'}
+        evaluated_at: {type: string, format: date-time}
+        preferred_bundle_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        facts:
+          type: array
+          items: {$ref: '#/components/schemas/FactInput'}
+    RouteResolution:
+      type: object
+      required: [status, evaluated_at, facts_hash, engine_version]
+      properties:
+        status: {type: string, enum: [resolved, needs_facts, blocked]}
+        route_hash: {oneOf: [{type: string, pattern: '^[a-f0-9]{64}$'}, {type: 'null'}]}
+        rule_bundle_hash: {oneOf: [{type: string, pattern: '^[a-f0-9]{64}$'}, {type: 'null'}]}
+        facts_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        engine_version: {type: string}
+        evaluated_at: {type: string, format: date-time}
+        missing_facts:
+          type: array
+          items: {$ref: '#/components/schemas/FactQuestion'}
+        steps:
+          type: array
+          items: {$ref: '#/components/schemas/ResolvedStep'}
+        blocking_issues:
+          type: array
+          items: {$ref: '#/components/schemas/RouteIssue'}
+        confidence: {$ref: '#/components/schemas/ConfidenceState'}
+    FactQuestion:
+      type: object
+      required: [fact_id, label, value_type, reason]
+      properties:
+        fact_id: {$ref: '#/components/schemas/StableId'}
+        label: {type: string}
+        value_type: {type: string, enum: [boolean, string, enum, integer, decimal, date, datetime, jurisdiction_ref]}
+        options: {type: array, items: {type: object, additionalProperties: true}}
+        reason: {type: string}
+        sensitive: {type: boolean, default: false}
+    ResolvedStep:
+      type: object
+      required: [id, title, sequence, state, requirements, completion_evidence]
+      properties:
+        id: {$ref: '#/components/schemas/StableId'}
+        title: {type: string}
+        sequence: {type: integer, minimum: 1}
+        state: {type: string, enum: [upcoming, actionable, blocked, completed, skipped]}
+        instruction: {type: string}
+        deadline: {oneOf: [{$ref: '#/components/schemas/Deadline'}, {type: 'null'}]}
+        requirements:
+          type: array
+          items: {$ref: '#/components/schemas/ResolvedRequirement'}
+        completion_evidence: {type: string}
+        recovery_actions: {type: array, items: {type: string}}
+        source_claim_ids: {type: array, items: {$ref: '#/components/schemas/Uuid'}}
+    ResolvedRequirement:
+      type: object
+      required: [id, title, obligation, applies, readiness_checks]
+      properties:
+        id: {$ref: '#/components/schemas/StableId'}
+        title: {type: string}
+        obligation: {type: string, enum: [mandatory, conditional, optional, later]}
+        applies: {type: string, enum: [yes, no, unknown]}
+        reason: {type: string}
+        accepted_forms: {type: array, items: {type: string, enum: [original, copy, electronic, certified_copy]}}
+        readiness_checks: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+        source_claim_ids: {type: array, items: {$ref: '#/components/schemas/Uuid'}}
+    Deadline:
+      type: object
+      required: [timezone]
+      properties:
+        starts_at: {type: string, format: date-time}
+        ends_at: {type: string, format: date-time}
+        timezone: {type: string, const: Europe/Bucharest}
+        derived_from: {type: string, enum: [fixed, calendar_rule, institution_schedule]}
+    RouteIssue:
+      type: object
+      required: [code, severity, message]
+      properties:
+        code: {$ref: '#/components/schemas/StableId'}
+        severity: {type: string, enum: [blocking, warning, info]}
+        message: {type: string}
+        source_claim_ids: {type: array, items: {$ref: '#/components/schemas/Uuid'}}
+    ConfidenceState:
+      type: string
+      enum: [verified, verified_with_local_gap, needs_confirmation, conflicting, expired]
+    CreateJourneyRequest:
+      type: object
+      required: [intent_id, jurisdiction_id, evaluated_at, facts]
+      properties:
+        intent_id: {$ref: '#/components/schemas/StableId'}
+        jurisdiction_id: {$ref: '#/components/schemas/Uuid'}
+        evaluated_at: {type: string, format: date-time}
+        title_override: {type: string, maxLength: 120}
+        facts: {type: array, items: {$ref: '#/components/schemas/FactInput'}}
+    JourneySummary:
+      type: object
+      required: [id, intent_id, title, status, updated_at]
+      properties:
+        id: {$ref: '#/components/schemas/Uuid'}
+        intent_id: {$ref: '#/components/schemas/StableId'}
+        title: {type: string}
+        status: {type: string, enum: [active, completed, archived]}
+        next_action_title: {type: string}
+        next_deadline: {oneOf: [{type: string, format: date-time}, {type: 'null'}]}
+        updated_at: {type: string, format: date-time}
+    Journey:
+      allOf:
+        - $ref: '#/components/schemas/JourneySummary'
+        - type: object
+          required: [jurisdiction_id, created_at, resolution]
+          properties:
+            jurisdiction_id: {$ref: '#/components/schemas/Uuid'}
+            created_at: {type: string, format: date-time}
+            facts: {type: array, items: {$ref: '#/components/schemas/FactInput'}}
+            resolution: {$ref: '#/components/schemas/RouteResolution'}
+            requirement_states:
+              type: array
+              items: {$ref: '#/components/schemas/RequirementState'}
+    RequirementState:
+      type: object
+      required: [requirement_id, status, updated_at]
+      properties:
+        requirement_id: {$ref: '#/components/schemas/StableId'}
+        status: {type: string, enum: [not_started, ready, blocked, in_progress, submitted, completed, not_applicable]}
+        note: {type: string}
+        updated_at: {type: string, format: date-time}
+    RecalculationResult:
+      type: object
+      required: [previous_route_hash, resolution, diff]
+      properties:
+        previous_route_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        resolution: {$ref: '#/components/schemas/RouteResolution'}
+        diff:
+          type: object
+          required: [added_steps, removed_steps, changed_requirements, deadline_changes]
+          properties:
+            added_steps: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+            removed_steps: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+            changed_requirements: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+            deadline_changes: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+    DocumentAnalysisInput:
+      type: object
+      additionalProperties: false
+      required: [local_document_id, requirement_id, document_type, user_confirmed, findings]
+      properties:
+        local_document_id: {$ref: '#/components/schemas/Uuid'}
+        requirement_id: {$ref: '#/components/schemas/StableId'}
+        document_type: {$ref: '#/components/schemas/StableId'}
+        user_confirmed: {type: boolean, const: true}
+        extracted_fields:
+          type: object
+          description: Numai câmpuri minimizate și confirmate; câmpurile de mare risc pot fi reprezentate prin prezență/hash, nu valoare.
+          additionalProperties: true
+        findings:
+          type: array
+          items: {$ref: '#/components/schemas/DocumentFinding'}
+        analyzer_version: {type: string}
+    DocumentAnalysis:
+      allOf:
+        - $ref: '#/components/schemas/DocumentAnalysisInput'
+        - type: object
+          required: [id, created_at]
+          properties:
+            id: {$ref: '#/components/schemas/Uuid'}
+            created_at: {type: string, format: date-time}
+    DocumentFinding:
+      type: object
+      required: [code, severity, status, message]
+      properties:
+        code: {$ref: '#/components/schemas/StableId'}
+        severity: {type: string, enum: [blocking, warning, info, unknown]}
+        status: {type: string, enum: [detected, not_detected, unable_to_check]}
+        message: {type: string, maxLength: 500}
+        field_ref: {type: string}
+    SourceClaim:
+      type: object
+      required: [id, claim_text, source, evidence_excerpt, accessed_at, confidence]
+      properties:
+        id: {$ref: '#/components/schemas/Uuid'}
+        claim_text: {type: string}
+        source: {$ref: '#/components/schemas/Source'}
+        evidence_excerpt: {type: string, maxLength: 1000}
+        locator: {type: string, description: Selector, pagină sau ancoră internă în snapshot.}
+        effective_from: {oneOf: [{type: string, format: date-time}, {type: 'null'}]}
+        effective_to: {oneOf: [{type: string, format: date-time}, {type: 'null'}]}
+        accessed_at: {type: string, format: date-time}
+        confidence: {$ref: '#/components/schemas/ConfidenceState'}
+    Source:
+      type: object
+      required: [id, canonical_url, publisher, authority_level, status, freshness_class]
+      properties:
+        id: {$ref: '#/components/schemas/Uuid'}
+        canonical_url: {type: string, format: uri, maxLength: 2048}
+        publisher: {type: string}
+        authority_level: {type: string, enum: [eu, national_normative, national_operational, county, uat, institution, signal_only]}
+        jurisdiction_id: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+        status: {type: string, enum: [active, paused, retired]}
+        freshness_class: {type: string, enum: [critical, operational, explanatory]}
+        review_interval_days: {type: integer, minimum: 1, maximum: 730}
+        last_verified_at: {oneOf: [{type: string, format: date-time}, {type: 'null'}]}
+    CreateSourceRequest:
+      type: object
+      required: [canonical_url, publisher, authority_level, freshness_class, review_interval_days]
+      properties:
+        canonical_url: {type: string, format: uri}
+        publisher: {type: string, minLength: 2}
+        authority_level: {type: string, enum: [eu, national_normative, national_operational, county, uat, institution, signal_only]}
+        jurisdiction_id: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+        freshness_class: {type: string, enum: [critical, operational, explanatory]}
+        review_interval_days: {type: integer, minimum: 1, maximum: 730}
+        fetch_policy:
+          type: object
+          additionalProperties: true
+    FeedbackInput:
+      type: object
+      required: [type, message]
+      properties:
+        journey_id: {oneOf: [{$ref: '#/components/schemas/Uuid'}, {type: 'null'}]}
+        rule_bundle_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        step_id: {$ref: '#/components/schemas/StableId'}
+        requirement_id: {$ref: '#/components/schemas/StableId'}
+        type:
+          type: string
+          enum: [extra_document_requested, wrong_schedule, wrong_address, broken_link, accepted_first_time, other]
+        message: {type: string, minLength: 5, maxLength: 4000}
+        consent_to_contact: {type: boolean, default: false}
+        contact_token: {type: string, description: Token separat/pseudonimizat; nu email liber în acest payload.}
+    RuleVersionStatus:
+      type: object
+      required: [rule_version_id, status, reviews_required, reviews_received]
+      properties:
+        rule_version_id: {$ref: '#/components/schemas/Uuid'}
+        status: {type: string, enum: [draft, in_review, changes_requested, approved, rejected, published, retired]}
+        reviews_required: {type: integer}
+        reviews_received: {type: integer}
+    BundlePublication:
+      type: object
+      required: [publication_id, bundle_id, bundle_hash, channel, published_at]
+      properties:
+        publication_id: {$ref: '#/components/schemas/Uuid'}
+        bundle_id: {$ref: '#/components/schemas/Uuid'}
+        bundle_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        channel: {type: string, enum: [canary, production]}
+        published_at: {type: string, format: date-time}
