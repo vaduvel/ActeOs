@@ -14,7 +14,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # --- shared scalar types -----------------------------------------------------
 StableId = Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9_.-]{2,127}$")]
-Sha256 = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
+# Canonical content hashes are self-describing: 'sha256:' + 64 hex chars, the
+# exact form produced by the rule engine and stored in the database.
+Sha256 = Annotated[str, Field(pattern=r"^sha256:[a-f0-9]{64}$")]
 Uuid = Annotated[str, Field(min_length=1)]
 
 ConfidenceState = Literal[
@@ -26,6 +28,9 @@ RequirementStatusValue = Literal[
     "not_started", "ready", "blocked", "in_progress", "submitted", "completed", "not_applicable"
 ]
 FactSource = Literal["user", "derived", "document_confirmed"]
+ValueType = Literal[
+    "boolean", "string", "enum", "integer", "decimal", "date", "datetime", "jurisdiction_ref"
+]
 
 
 class HealthResponse(BaseModel):
@@ -64,9 +69,7 @@ class FactInput(BaseModel):
 class FactQuestion(BaseModel):
     fact_id: StableId
     label: str
-    value_type: Literal[
-        "boolean", "string", "enum", "integer", "decimal", "date", "datetime", "jurisdiction_ref"
-    ]
+    value_type: ValueType
     options: list[dict[str, Any]] | None = None
     reason: str
     sensitive: bool = False
@@ -185,7 +188,7 @@ class RouteDiff(BaseModel):
 
 
 class RecalculationResult(BaseModel):
-    previous_route_hash: Sha256
+    previous_route_hash: Optional[Sha256] = None
     resolution: RouteResolution
     diff: RouteDiff
 
@@ -215,10 +218,10 @@ class SourceClaim(BaseModel):
     claim_text: str
     source: Source
     evidence_excerpt: str = Field(max_length=1000)
-    locator: str | None = None
+    locator: dict[str, Any] | None = None
     effective_from: Optional[datetime] = None
     effective_to: Optional[datetime] = None
-    accessed_at: datetime
+    accessed_at: Optional[datetime] = None
     confidence: ConfidenceState
 
 
