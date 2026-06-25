@@ -1,0 +1,615 @@
+batch_id: batch18.foundation_registration
+event_type_id: ro.life.foundation_registration
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.foundation_registration.01
+  case_ro: Scop lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.foundation_registration.02
+  case_ro: Standard 1 fondator 10x
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.03
+  case_ro: Fără fondator
+  facts:
+    goal: register_foundation
+    founder_count: 0
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    seat_county: other
+  expect:
+    status: blocked
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.04
+  case_ro: Standard 9.99x
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 9.99
+    seat_county: other
+  expect:
+    status: blocked
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.05
+  case_ro: Standard 12x
+  facts:
+    goal: register_foundation
+    founder_count: 2
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 12
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.06
+  case_ro: Fundraising 2x
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: true
+    initial_assets_multiple: 2
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - special_assets_threshold_2x
+- id: fx.foundation_registration.07
+  case_ro: Fundraising 1.5x
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: true
+    initial_assets_multiple: 1.5
+    seat_county: other
+  expect:
+    status: blocked
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - special_assets_threshold_2x
+- id: fx.foundation_registration.08
+  case_ro: Aport imobiliar
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    immovable_contribution: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.authentic_form_statute
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.09
+  case_ro: Aport mobil
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    immovable_contribution: false
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+    - private_signature_statute_allowed
+- id: fx.foundation_registration.10
+  case_ro: Excepție beneficiar
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    founders_only_natural: true
+    board_only_natural: true
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+    - beneficial_owner_declaration_exemption
+- id: fx.foundation_registration.11
+  case_ro: Fondator juridic
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    founders_only_natural: false
+    board_only_natural: true
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.beneficial_owner_declaration
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.12
+  case_ro: Consiliu juridic
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    founders_only_natural: true
+    board_only_natural: false
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.beneficial_owner_declaration
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.13
+  case_ro: Beneficiari neidentificabili
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    founders_only_natural: true
+    board_only_natural: true
+    beneficiaries_identifiable_from_file: false
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.beneficial_owner_declaration
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.14
+  case_ro: Documente străine
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    foreign_documents: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.certified_copies_and_legalized_romanian_translations
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.15
+  case_ro: Activități religioase
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    religious_activities: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.cult_ministry_advisory_opinion_if_applicable
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.16
+  case_ro: Nume Național
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    name_has_national_or_roman: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    - step.obtain_sgg_prior_name_approval
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.sgg_prior_approval
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.17
+  case_ro: Nume confundabil
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    name_confuses_public_authority: true
+    seat_county: other
+  expect:
+    status: blocked
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.18
+  case_ro: Fără activitate sediu
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    no_activity_at_seat: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+    - no_condominium_destination_approval
+- id: fx.foundation_registration.19
+  case_ro: Activitate reglementată
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    regulated_activities: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    - step.obtain_sector_authorizations_before_activity
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+    warnings:
+    - do_not_start_regulated_activity_before_authorization
+- id: fx.foundation_registration.20
+  case_ro: Sediu Timiș
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    seat_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_foundation_register
+    - channel.judecatoria_timisoara_to_confirm
+    advice_tags:
+    - standard_assets_threshold_10x
+    confirmations:
+    - timisoara_court_local_filing_mechanics
+- id: fx.foundation_registration.21
+  case_ro: Cumul imobil străin cult
+  facts:
+    goal: register_foundation
+    founder_count: 2
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 15
+    immovable_contribution: true
+    foreign_documents: true
+    religious_activities: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.authentic_form_statute
+    - req.certified_copies_and_legalized_romanian_translations
+    - req.cult_ministry_advisory_opinion_if_applicable
+    channels:
+    - channel.district_court_association_foundation_register
+    advice_tags:
+    - standard_assets_threshold_10x
+- id: fx.foundation_registration.22
+  case_ro: Cumul Timiș nume reglementat
+  facts:
+    goal: register_foundation
+    founder_count: 1
+    fundraising_only_for_other_ngos: false
+    initial_assets_multiple: 10
+    seat_county: timis
+    name_has_national_or_roman: true
+    regulated_activities: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.reserve_or_verify_foundation_name
+    - step.prepare_foundation_statute
+    - step.establish_initial_foundation_assets
+    - step.file_at_district_court_of_seat
+    - step.obtain_sgg_prior_name_approval
+    - step.obtain_sector_authorizations_before_activity
+    requirements:
+    - req.foundation_statute
+    - req.seat_proof
+    - req.initial_assets_proof
+    - req.founders_and_board_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.sgg_prior_approval
+    channels:
+    - channel.district_court_association_foundation_register
+    - channel.judecatoria_timisoara_to_confirm
+    advice_tags:
+    - standard_assets_threshold_10x
+    warnings:
+    - do_not_start_regulated_activity_before_authorization
+    confirmations:
+    - timisoara_court_local_filing_mechanics

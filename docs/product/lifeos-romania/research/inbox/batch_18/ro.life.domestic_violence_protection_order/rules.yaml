@@ -1,0 +1,484 @@
+batch_id: batch18.domestic_violence_protection_order
+event_type_id: ro.life.domestic_violence_protection_order
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.domestic_violence_protection_order.emergency
+  canonical_rule_id: canonical.domestic_violence_protection_order.emergency
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: emergency_help
+  effects:
+  - type: include_step
+    step_id: step.call_112_now
+  - type: emit_warning
+    tag: immediate_safety_first
+    message_ro: În pericol imediat, sună la 112 și mergi într-un loc sigur dacă poți face asta fără risc.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.emergency_112
+  status: active
+- id: rule.b18.domestic_violence_protection_order.danger_any_goal
+  canonical_rule_id: canonical.domestic_violence_protection_order.danger_any_goal
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: immediate_danger
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.call_112_now
+  - type: emit_warning
+    tag: immediate_danger_112
+    message_ro: 'Pericol imediat: apelează 112; traseul administrativ nu trebuie să întârzie intervenția.'
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.emergency_112
+  status: active
+- id: rule.b18.domestic_violence_protection_order.provisional_base
+  canonical_rule_id: canonical.domestic_violence_protection_order.provisional_base
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: request_provisional_order
+  effects:
+  - type: include_step
+    step_id: step.contact_police_for_risk_assessment
+  - type: include_step
+    step_id: step.provide_available_evidence_safely
+  - type: attach_channel
+    channel_id: channel.police_or_112_if_emergency
+  - type: emit_advice
+    tag: provisional_120_hours
+    message_ro: Ordinul provizoriu durează 120 de ore și produce obligații imediat.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_trigger
+  - b18.domestic_violence_protection_order.provisional_measures
+  - b18.domestic_violence_protection_order.provisional_duration_flow
+  status: active
+- id: rule.b18.domestic_violence_protection_order.provisional_imminent_true
+  canonical_rule_id: canonical.domestic_violence_protection_order.provisional_imminent_true
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_provisional_order
+    - op: eq
+      field: imminent_risk
+      value: true
+  effects:
+  - type: emit_advice
+    tag: police_may_issue_after_assessment
+    message_ro: Polițistul decide emiterea după evaluarea riscului și a probelor.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_trigger
+  status: active
+- id: rule.b18.domestic_violence_protection_order.provisional_imminent_false
+  canonical_rule_id: canonical.domestic_violence_protection_order.provisional_imminent_false
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_provisional_order
+    - op: eq
+      field: imminent_risk
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.prepare_court_protection_order_request
+  - type: emit_advice
+    tag: court_route_if_no_provisional_conditions
+    message_ro: Dacă nu sunt întrunite condițiile pentru ordin provizoriu, rămâne disponibilă cererea la instanță.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_trigger
+  - b18.domestic_violence_protection_order.court_competence_fee
+  status: active
+- id: rule.b18.domestic_violence_protection_order.provisional_imminent_missing
+  canonical_rule_id: canonical.domestic_violence_protection_order.provisional_imminent_missing
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_provisional_order
+    - op: missing
+      field: imminent_risk
+  effects:
+  - type: require_confirmation
+    tag: confirm_imminent_risk_assessment
+    message_ro: Risc iminent este constatat de poliție; nu poate fi auto-declarat ca rezultat juridic.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_trigger
+  status: active
+- id: rule.b18.domestic_violence_protection_order.court_base
+  canonical_rule_id: canonical.domestic_violence_protection_order.court_base
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: request_court_order
+  effects:
+  - type: include_step
+    step_id: step.identify_competent_district_court
+  - type: include_step
+    step_id: step.complete_statutory_protection_order_form
+  - type: include_step
+    step_id: step.file_protection_order_request
+  - type: include_requirement
+    requirement_id: req.statutory_protection_order_form
+  - type: attach_channel
+    channel_id: channel.competent_district_court
+  - type: emit_advice
+    tag: no_stamp_duty
+    message_ro: Cererea este scutită de taxa judiciară de timbru.
+  - type: emit_advice
+    tag: mandatory_legal_assistance
+    message_ro: Asistența juridică este obligatorie pentru ambele părți.
+  - type: emit_advice
+    tag: court_target_72_hours
+    message_ro: Legea prevede soluționarea în maximum 72 de ore, cu excepția fluxului după ordin provizoriu.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.court_competence_fee
+  - b18.domestic_violence_protection_order.applicants_form
+  - b18.domestic_violence_protection_order.legal_aid_72h
+  - b18.domestic_violence_protection_order.court_measures
+  status: active
+- id: rule.b18.domestic_violence_protection_order.court_prior_recent
+  canonical_rule_id: canonical.domestic_violence_protection_order.court_prior_recent
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_court_order
+    - op: eq
+      field: prior_order_expired_within_5_years
+      value: true
+  effects:
+  - type: emit_advice
+    tag: maximum_duration_24_months
+    message_ro: Pentru un nou ordin emis în 5 ani de la expirarea unuia anterior, durata poate ajunge la 24 de luni.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.duration_repeat
+  status: active
+- id: rule.b18.domestic_violence_protection_order.court_no_prior_recent
+  canonical_rule_id: canonical.domestic_violence_protection_order.court_no_prior_recent
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_court_order
+    - op: eq
+      field: prior_order_expired_within_5_years
+      value: false
+  effects:
+  - type: emit_advice
+    tag: maximum_duration_12_months
+    message_ro: Durata măsurilor nu poate depăși 12 luni.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.duration_repeat
+  status: active
+- id: rule.b18.domestic_violence_protection_order.court_prior_unknown
+  canonical_rule_id: canonical.domestic_violence_protection_order.court_prior_unknown
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_court_order
+    - op: missing
+      field: prior_order_expired_within_5_years
+  effects:
+  - type: require_confirmation
+    tag: confirm_prior_order_history
+    message_ro: Confirmă dacă există un ordin anterior expirat în ultimii 5 ani.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.duration_repeat
+  status: active
+- id: rule.b18.domestic_violence_protection_order.court_location_missing
+  canonical_rule_id: canonical.domestic_violence_protection_order.court_location_missing
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: request_court_order
+    - op: missing
+      field: competence_basis
+  effects:
+  - type: require_confirmation
+    tag: confirm_competent_court_basis
+    message_ro: Precizează domiciliul/reședința victimei sau locul faptelor pentru identificarea judecătoriei.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.court_competence_fee
+  status: active
+- id: rule.b18.domestic_violence_protection_order.contest_provisional
+  canonical_rule_id: canonical.domestic_violence_protection_order.contest_provisional
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: contest_provisional_order
+  effects:
+  - type: include_step
+    step_id: step.file_provisional_order_contest
+  - type: attach_channel
+    channel_id: channel.competent_district_court
+  - type: emit_warning
+    tag: provisional_contest_48_hours
+    message_ro: Contestația se depune în 48 de ore de la comunicare.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_contest
+  status: active
+- id: rule.b18.domestic_violence_protection_order.contest_communication_missing
+  canonical_rule_id: canonical.domestic_violence_protection_order.contest_communication_missing
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: contest_provisional_order
+    - op: missing
+      field: order_communicated
+  effects:
+  - type: require_confirmation
+    tag: confirm_provisional_communication_time
+    message_ro: Momentul comunicării este necesar pentru calculul termenului de 48 de ore.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_contest
+  status: active
+- id: rule.b18.domestic_violence_protection_order.appeal_court
+  canonical_rule_id: canonical.domestic_violence_protection_order.appeal_court
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: appeal_court_order
+  effects:
+  - type: include_step
+    step_id: step.file_protection_order_appeal
+  - type: attach_channel
+    channel_id: channel.competent_appeal_court_via_procedural_route
+  - type: emit_warning
+    tag: court_order_appeal_3_days
+    message_ro: Apelul are termen de 3 zile; punctul de pornire depinde de citarea părților.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.appeal_3_days
+  status: active
+- id: rule.b18.domestic_violence_protection_order.appeal_anchor_missing
+  canonical_rule_id: canonical.domestic_violence_protection_order.appeal_anchor_missing
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: appeal_court_order
+    - op: missing
+      field: decision_with_parties_cited
+  effects:
+  - type: require_confirmation
+    tag: confirm_appeal_deadline_anchor
+    message_ro: 'Confirmă dacă hotărârea s-a dat cu citarea părților: termenul curge de la pronunțare sau comunicare.'
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.appeal_3_days
+  status: active
+- id: rule.b18.domestic_violence_protection_order.report_breach
+  canonical_rule_id: canonical.domestic_violence_protection_order.report_breach
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: report_order_breach
+  effects:
+  - type: include_step
+    step_id: step.contact_police_about_order_breach
+  - type: attach_channel
+    channel_id: channel.police_or_112_if_emergency
+  - type: emit_warning
+    tag: breach_is_criminal_offence
+    message_ro: Încălcarea măsurilor ordinului constituie infracțiune; în pericol imediat sună la 112.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.execution_breach
+  - b18.domestic_violence_protection_order.emergency_112
+  status: active
+- id: rule.b18.domestic_violence_protection_order.information
+  canonical_rule_id: canonical.domestic_violence_protection_order.information
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: get_information
+  effects:
+  - type: include_step
+    step_id: step.compare_provisional_and_court_order_routes
+  - type: emit_advice
+    tag: provisional_vs_court_route
+    message_ro: Ordinul provizoriu este emis de poliție după evaluarea riscului iminent; ordinul de protecție este emis de
+      judecătorie.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.provisional_trigger
+  - b18.domestic_violence_protection_order.court_competence_fee
+  status: active
+- id: rule.b18.domestic_violence_protection_order.timis_local
+  canonical_rule_id: canonical.domestic_violence_protection_order.timis_local
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro.county.timis
+  - ro.uat.timisoara
+  authority_level: county
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - request_court_order
+      - contest_provisional_order
+      - appeal_court_order
+    - op: eq
+      field: county
+      value: timis
+  effects:
+  - type: require_confirmation
+    tag: confirm_timisoara_court_filing_mechanics
+    message_ro: Competența se stabilește legal, dar programul și canalul concret al instanței trebuie verificate local.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.local_filing_gap
+  status: active
+- id: rule.b18.domestic_violence_protection_order.unknown_goal
+  canonical_rule_id: canonical.domestic_violence_protection_order.unknown_goal
+  event_type_id: ro.life.domestic_violence_protection_order
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: goal
+    - op: not_in
+      field: goal
+      values:
+      - emergency_help
+      - request_provisional_order
+      - request_court_order
+      - contest_provisional_order
+      - appeal_court_order
+      - report_order_breach
+      - get_information
+  effects:
+  - type: require_confirmation
+    tag: confirm_domestic_violence_protection_goal
+    message_ro: Precizează dacă ai nevoie de intervenție imediată, ordin provizoriu, ordin judecătoresc, contestație, apel
+      sau raportarea încălcării.
+  source_claim_ids:
+  - b18.domestic_violence_protection_order.local_filing_gap
+  status: active

@@ -1,0 +1,247 @@
+batch_id: batch18.military_certificate
+event_type_id: ro.life.military_certificate
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.military_certificate.reserve_id_base
+  canonical_rule_id: canonical.military_certificate.reserve_id_base
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: reserve_retired_id
+  effects:
+  - type: include_step
+    step_id: step.determine_reserve_transition_stage
+  - type: include_step
+    step_id: step.submit_written_request_for_reserve_id
+  - type: include_requirement
+    requirement_id: req.written_request
+  - type: attach_channel
+    channel_id: channel.mapn_transitioning_structure_or_military_center
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_scope
+  - b18.military_certificate.reserve_id_issuer
+  status: active
+- id: rule.b18.military_certificate.transition_now
+  canonical_rule_id: canonical.military_certificate.transition_now
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: reserve_retired_id
+    - op: eq
+      field: transitioning_now
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: channel.structure_initiating_transition_to_reserve
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_issuer
+  status: active
+- id: rule.b18.military_certificate.already_reserve
+  canonical_rule_id: canonical.military_certificate.already_reserve
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: reserve_retired_id
+    - op: eq
+      field: already_in_reserve_or_retired
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_issuer
+  status: active
+- id: rule.b18.military_certificate.source_other
+  canonical_rule_id: canonical.military_certificate.source_other
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: reserve_retired_id
+    - op: eq
+      field: source_from_mapn
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: reserve_id_source_eligibility
+    message_ro: Confirmă documentul corect pentru altă proveniență.
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_scope
+  status: active
+- id: rule.b18.military_certificate.not_pensioner
+  canonical_rule_id: canonical.military_certificate.not_pensioner
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: reserve_retired_id
+    - op: eq
+      field: is_military_pensioner
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: reserve_id_pensioner_eligibility
+    message_ro: Confirmă eligibilitatea pentru această legitimație.
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_scope
+  status: active
+- id: rule.b18.military_certificate.replace_base
+  canonical_rule_id: canonical.military_certificate.replace_base
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: replace_lost_reserve_retired_id
+  effects:
+  - type: include_step
+    step_id: step.report_lost_or_stolen_reserve_id
+  - type: include_step
+    step_id: step.publish_nullity_in_army_administrative_bulletin
+  - type: include_step
+    step_id: step.request_replacement_reserve_id
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  - type: emit_warning
+    tag: publication_cost_holder
+    message_ro: Costurile publicării sunt suportate de titular.
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_loss
+  status: active
+- id: rule.b18.military_certificate.loss_missing
+  canonical_rule_id: canonical.military_certificate.loss_missing
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: replace_lost_reserve_retired_id
+    - op: missing
+      field: loss_type
+  effects:
+  - type: require_confirmation
+    tag: loss_type
+    message_ro: Precizează pierdut, furat sau deteriorat.
+  source_claim_ids:
+  - b18.military_certificate.reserve_id_loss
+  status: active
+- id: rule.b18.military_certificate.booklet
+  canonical_rule_id: canonical.military_certificate.booklet
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: military_booklet
+  effects:
+  - type: include_step
+    step_id: step.contact_military_center_for_booklet_route
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  - type: require_confirmation
+    tag: military_booklet_checklist
+    message_ro: Confirmă checklistul, termenul și taxa.
+  source_claim_ids:
+  - b18.military_certificate.booklet_gap
+  status: in_review
+- id: rule.b18.military_certificate.attestation
+  canonical_rule_id: canonical.military_certificate.attestation
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: military_status_attestation
+  effects:
+  - type: include_step
+    step_id: step.request_exact_military_status_document
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  - type: require_confirmation
+    tag: military_status_attestation_checklist
+    message_ro: Confirmă denumirea actului, documentele, termenul și taxa.
+  source_claim_ids:
+  - b18.military_certificate.attestation_gap
+  status: in_review
+- id: rule.b18.military_certificate.unknown
+  canonical_rule_id: canonical.military_certificate.unknown
+  event_type_id: ro.life.military_certificate
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: unknown
+  effects:
+  - type: include_step
+    step_id: step.identify_exact_military_document
+  - type: require_confirmation
+    tag: exact_military_document
+    message_ro: Alege între legitimație, livret și adeverință.
+  source_claim_ids:
+  - b18.military_certificate.attestation_gap
+  status: in_review

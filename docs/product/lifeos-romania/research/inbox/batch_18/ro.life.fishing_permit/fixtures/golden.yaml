@@ -1,0 +1,468 @@
+batch_id: batch18.fishing_permit
+event_type_id: ro.life.fishing_permit
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.fishing_permit.01
+  case_ro: Intenție lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.fishing_permit.02
+  case_ro: Regim apă lipsă
+  facts:
+    goal: obtain_permit
+    restrictions_checked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_water_regime
+- id: fx.fishing_permit.03
+  case_ro: Delta cu acces și restricții verificate
+  facts:
+    goal: obtain_permit
+    water_regime: delta_rbdd
+    tourist_access_permit: true
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.obtain_arbdd_recreational_fishing_permit
+    - step.obtain_or_verify_tourist_access_permit
+    requirements:
+    - req.arbdd_recreational_fishing_permit
+    - req.rbdd_tourist_access_permit
+    channels:
+    - channel.arbdd_online_permits
+    advice_tags:
+    - delta_fishing_permit_0_ron
+    warnings:
+    - permit_does_not_override_restrictions
+- id: fx.fishing_permit.04
+  case_ro: Delta fără permis acces turist
+  facts:
+    goal: obtain_permit
+    water_regime: delta_rbdd
+    tourist_access_permit: false
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.obtain_arbdd_recreational_fishing_permit
+    - step.obtain_or_verify_tourist_access_permit
+    requirements:
+    - req.arbdd_recreational_fishing_permit
+    - req.rbdd_tourist_access_permit
+    channels:
+    - channel.arbdd_online_permits
+    advice_tags:
+    - delta_fishing_permit_0_ron
+    warnings:
+    - permit_does_not_override_restrictions
+    - tourist_access_permit_required
+- id: fx.fishing_permit.05
+  case_ro: Delta fără informație despre acces
+  facts:
+    goal: obtain_permit
+    water_regime: delta_rbdd
+    restrictions_checked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.obtain_arbdd_recreational_fishing_permit
+    - step.obtain_or_verify_tourist_access_permit
+    requirements:
+    - req.arbdd_recreational_fishing_permit
+    - req.rbdd_tourist_access_permit
+    channels:
+    - channel.arbdd_online_permits
+    advice_tags:
+    - delta_fishing_permit_0_ron
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_tourist_access_permit
+- id: fx.fishing_permit.06
+  case_ro: Delta fără verificarea restricțiilor
+  facts:
+    goal: obtain_permit
+    water_regime: delta_rbdd
+    tourist_access_permit: true
+    restrictions_checked: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.obtain_arbdd_recreational_fishing_permit
+    - step.obtain_or_verify_tourist_access_permit
+    requirements:
+    - req.arbdd_recreational_fishing_permit
+    - req.rbdd_tourist_access_permit
+    channels:
+    - channel.arbdd_online_permits
+    advice_tags:
+    - delta_fishing_permit_0_ron
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - current_restrictions_not_checked
+- id: fx.fishing_permit.07
+  case_ro: Apă de frontieră Timiș cu aviz
+  facts:
+    goal: obtain_permit
+    water_regime: border_water
+    border_region: timis
+    border_approval: true
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    - channel.itpf_timisoara
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    - timisoara_border_authority
+    warnings:
+    - permit_does_not_override_restrictions
+- id: fx.fishing_permit.08
+  case_ro: Apă de frontieră Timiș fără aviz
+  facts:
+    goal: obtain_permit
+    water_regime: border_water
+    border_region: timis
+    border_approval: false
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    - channel.itpf_timisoara
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    - timisoara_border_authority
+    warnings:
+    - permit_does_not_override_restrictions
+    - border_approval_missing
+- id: fx.fishing_permit.09
+  case_ro: Apă de frontieră fără starea avizului
+  facts:
+    goal: obtain_permit
+    water_regime: border_water
+    border_region: other
+    restrictions_checked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_border_approval
+- id: fx.fishing_permit.10
+  case_ro: Ape maritime interioare cu aviz
+  facts:
+    goal: check_required_permits
+    water_regime: internal_maritime_water
+    border_approval: true
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    warnings:
+    - permit_does_not_override_restrictions
+- id: fx.fishing_permit.11
+  case_ro: Marea teritorială fără aviz
+  facts:
+    goal: check_required_permits
+    water_regime: territorial_sea
+    border_approval: false
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    warnings:
+    - permit_does_not_override_restrictions
+    - border_approval_missing
+- id: fx.fishing_permit.12
+  case_ro: Delta și frontieră cu toate documentele
+  facts:
+    goal: obtain_permit
+    water_regime: delta_and_border
+    tourist_access_permit: true
+    border_approval: true
+    border_region: other
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    warnings:
+    - permit_does_not_override_restrictions
+- id: fx.fishing_permit.13
+  case_ro: Delta și frontieră fără aviz
+  facts:
+    goal: obtain_permit
+    water_regime: delta_and_border
+    tourist_access_permit: true
+    border_approval: false
+    border_region: timis
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    - channel.itpf_timisoara
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    - timisoara_border_authority
+    warnings:
+    - permit_does_not_override_restrictions
+    - border_approval_missing
+- id: fx.fishing_permit.14
+  case_ro: Altă apă administrată
+  facts:
+    goal: obtain_permit
+    water_regime: other_administered_water
+    restrictions_checked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.identify_water_administrator
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_current_administrator_permit
+- id: fx.fishing_permit.15
+  case_ro: Altă apă fără verificarea restricțiilor
+  facts:
+    goal: obtain_permit
+    water_regime: other_administered_water
+    restrictions_checked: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.identify_water_administrator
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - current_restrictions_not_checked
+    - confirm_current_administrator_permit
+- id: fx.fishing_permit.16
+  case_ro: Regim necunoscut
+  facts:
+    goal: obtain_permit
+    water_regime: private_lake_unknown
+    restrictions_checked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - unknown_water_regime
+- id: fx.fishing_permit.17
+  case_ro: Verific doar permisele Delta
+  facts:
+    goal: check_required_permits
+    water_regime: delta_rbdd
+    tourist_access_permit: true
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.obtain_arbdd_recreational_fishing_permit
+    - step.obtain_or_verify_tourist_access_permit
+    requirements:
+    - req.arbdd_recreational_fishing_permit
+    - req.rbdd_tourist_access_permit
+    channels:
+    - channel.arbdd_online_permits
+    advice_tags:
+    - delta_fishing_permit_0_ron
+    warnings:
+    - permit_does_not_override_restrictions
+- id: fx.fishing_permit.18
+  case_ro: Verific doar avizul de frontieră
+  facts:
+    goal: check_required_permits
+    water_regime: border_water
+    border_approval: true
+    border_region: other
+    restrictions_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    warnings:
+    - permit_does_not_override_restrictions
+- id: fx.fishing_permit.19
+  case_ro: Delta, restricții neprecizate
+  facts:
+    goal: check_required_permits
+    water_regime: delta_rbdd
+    tourist_access_permit: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.obtain_arbdd_recreational_fishing_permit
+    - step.obtain_or_verify_tourist_access_permit
+    requirements:
+    - req.arbdd_recreational_fishing_permit
+    - req.rbdd_tourist_access_permit
+    channels:
+    - channel.arbdd_online_permits
+    advice_tags:
+    - delta_fishing_permit_0_ron
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_current_restrictions
+- id: fx.fishing_permit.20
+  case_ro: Frontieră, restricții neprecizate
+  facts:
+    goal: check_required_permits
+    water_regime: border_water
+    border_approval: true
+    border_region: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.request_border_police_prior_approval
+    requirements:
+    - req.border_police_prior_approval
+    channels:
+    - channel.border_police_online_or_territorial
+    - channel.itpf_timisoara
+    advice_tags:
+    - border_approval_30_days_one_year
+    - sport_fishing_no_separate_approval_file
+    - timisoara_border_authority
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_current_restrictions
+- id: fx.fishing_permit.21
+  case_ro: Altă apă, restricții neprecizate
+  facts:
+    goal: check_required_permits
+    water_regime: other_administered_water
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_water_regime_and_administrator
+    - step.check_current_fishing_restrictions
+    - step.identify_water_administrator
+    warnings:
+    - permit_does_not_override_restrictions
+    confirmations:
+    - confirm_current_restrictions
+    - confirm_current_administrator_permit
+- id: fx.fishing_permit.22
+  case_ro: Scop necunoscut
+  facts:
+    goal: commercial_fishing
+    water_regime: border_water
+    restrictions_checked: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - confirm_border_approval
+    - confirm_fishing_intent

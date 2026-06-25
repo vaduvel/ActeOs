@@ -1,0 +1,409 @@
+batch_id: batch18.fishing_permit
+event_type_id: ro.life.fishing_permit
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.fishing_permit.base
+  canonical_rule_id: canonical.fishing_permit.base
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: in
+    field: goal
+    values:
+    - obtain_permit
+    - check_required_permits
+  effects:
+  - type: include_step
+    step_id: step.identify_water_regime_and_administrator
+  - type: include_step
+    step_id: step.check_current_fishing_restrictions
+  - type: emit_warning
+    tag: permit_does_not_override_restrictions
+    message_ro: Permisul sau avizul nu înlătură prohibițiile și restricțiile aplicabile.
+  source_claim_ids:
+  - b18.fishing_permit.administrator_route_gap
+  - b18.fishing_permit.restrictions_gap
+  status: active
+- id: rule.b18.fishing_permit.water_regime_missing
+  canonical_rule_id: canonical.fishing_permit.water_regime_missing
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: missing
+      field: water_regime
+  effects:
+  - type: require_confirmation
+    tag: confirm_water_regime
+    message_ro: Precizează dacă apa este în RBDD, în zona de frontieră/marea teritorială sau sub alt administrator.
+  source_claim_ids:
+  - b18.fishing_permit.administrator_route_gap
+  status: active
+- id: rule.b18.fishing_permit.restrictions_missing
+  canonical_rule_id: canonical.fishing_permit.restrictions_missing
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: missing
+      field: restrictions_checked
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_restrictions
+    message_ro: Verifică restricțiile curente pentru data, sectorul și specia alese.
+  source_claim_ids:
+  - b18.fishing_permit.restrictions_gap
+  status: active
+- id: rule.b18.fishing_permit.restrictions_not_checked
+  canonical_rule_id: canonical.fishing_permit.restrictions_not_checked
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: eq
+      field: restrictions_checked
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: current_restrictions_not_checked
+    message_ro: Nu considera traseul complet până la verificarea restricțiilor curente.
+  source_claim_ids:
+  - b18.fishing_permit.restrictions_gap
+  status: active
+- id: rule.b18.fishing_permit.delta
+  canonical_rule_id: canonical.fishing_permit.delta
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: eq
+      field: water_regime
+      value: delta_rbdd
+  effects:
+  - type: include_step
+    step_id: step.obtain_arbdd_recreational_fishing_permit
+  - type: include_step
+    step_id: step.obtain_or_verify_tourist_access_permit
+  - type: include_requirement
+    requirement_id: req.arbdd_recreational_fishing_permit
+  - type: include_requirement
+    requirement_id: req.rbdd_tourist_access_permit
+  - type: attach_channel
+    channel_id: channel.arbdd_online_permits
+  - type: emit_advice
+    tag: delta_fishing_permit_0_ron
+    message_ro: Portalul ARBDD afișează 0 RON pentru permisul de pescuit recreativ.
+  source_claim_ids:
+  - b18.fishing_permit.delta_permit
+  status: active
+- id: rule.b18.fishing_permit.delta_tourist_false
+  canonical_rule_id: canonical.fishing_permit.delta_tourist_false
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: water_regime
+      value: delta_rbdd
+    - op: eq
+      field: tourist_access_permit
+      value: false
+  effects:
+  - type: emit_warning
+    tag: tourist_access_permit_required
+    message_ro: Permisul de pescuit ARBDD este publicat ca valabil împreună cu permisul de acces turist.
+  source_claim_ids:
+  - b18.fishing_permit.delta_permit
+  status: active
+- id: rule.b18.fishing_permit.delta_tourist_missing
+  canonical_rule_id: canonical.fishing_permit.delta_tourist_missing
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: water_regime
+      value: delta_rbdd
+    - op: missing
+      field: tourist_access_permit
+  effects:
+  - type: require_confirmation
+    tag: confirm_tourist_access_permit
+    message_ro: Confirmă dacă ai și permisul de acces turist aplicabil.
+  source_claim_ids:
+  - b18.fishing_permit.delta_permit
+  status: active
+- id: rule.b18.fishing_permit.border
+  canonical_rule_id: canonical.fishing_permit.border
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: in
+      field: water_regime
+      values:
+      - border_water
+      - internal_maritime_water
+      - territorial_sea
+      - delta_and_border
+  effects:
+  - type: include_step
+    step_id: step.request_border_police_prior_approval
+  - type: include_requirement
+    requirement_id: req.border_police_prior_approval
+  - type: attach_channel
+    channel_id: channel.border_police_online_or_territorial
+  - type: emit_advice
+    tag: border_approval_30_days_one_year
+    message_ro: Poliția de Frontieră publică termen de acordare 30 zile și valabilitate un an.
+  - type: emit_advice
+    tag: sport_fishing_no_separate_approval_file
+    message_ro: Pagina de activități avizate arată că pentru pescuit sportiv nu este necesar dosar de avizare.
+  source_claim_ids:
+  - b18.fishing_permit.border_approval
+  - b18.fishing_permit.border_channel
+  - b18.fishing_permit.border_term_validity
+  - b18.fishing_permit.border_no_file
+  status: active
+- id: rule.b18.fishing_permit.border_approval_false
+  canonical_rule_id: canonical.fishing_permit.border_approval_false
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: water_regime
+      values:
+      - border_water
+      - internal_maritime_water
+      - territorial_sea
+      - delta_and_border
+    - op: eq
+      field: border_approval
+      value: false
+  effects:
+  - type: emit_warning
+    tag: border_approval_missing
+    message_ro: Nu începe pescuitul în zona vizată fără avizul prealabil.
+  source_claim_ids:
+  - b18.fishing_permit.border_approval
+  status: active
+- id: rule.b18.fishing_permit.border_approval_missing
+  canonical_rule_id: canonical.fishing_permit.border_approval_missing
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: water_regime
+      values:
+      - border_water
+      - internal_maritime_water
+      - territorial_sea
+      - delta_and_border
+    - op: missing
+      field: border_approval
+  effects:
+  - type: require_confirmation
+    tag: confirm_border_approval
+    message_ro: Confirmă dacă avizul Poliției de Frontieră a fost obținut.
+  source_claim_ids:
+  - b18.fishing_permit.border_approval
+  status: active
+- id: rule.b18.fishing_permit.timis_border
+  canonical_rule_id: canonical.fishing_permit.timis_border
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro.county.timis
+  - ro.uat.timisoara
+  authority_level: county
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: water_regime
+      values:
+      - border_water
+      - delta_and_border
+    - op: eq
+      field: border_region
+      value: timis
+  effects:
+  - type: attach_channel
+    channel_id: channel.itpf_timisoara
+  - type: emit_advice
+    tag: timisoara_border_authority
+    message_ro: Lista oficială include Inspectoratul Teritorial al Poliției de Frontieră Timișoara.
+  source_claim_ids:
+  - b18.fishing_permit.border_channel
+  status: active
+- id: rule.b18.fishing_permit.other_water
+  canonical_rule_id: canonical.fishing_permit.other_water
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: eq
+      field: water_regime
+      value: other_administered_water
+  effects:
+  - type: include_step
+    step_id: step.identify_water_administrator
+  - type: require_confirmation
+    tag: confirm_current_administrator_permit
+    message_ro: Confirmă emitentul și procedura actuală direct la administratorul apei.
+  source_claim_ids:
+  - b18.fishing_permit.administrator_route_gap
+  status: active
+- id: rule.b18.fishing_permit.unknown_water
+  canonical_rule_id: canonical.fishing_permit.unknown_water
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+    - op: exists
+      field: water_regime
+    - op: not_in
+      field: water_regime
+      values:
+      - delta_rbdd
+      - border_water
+      - internal_maritime_water
+      - territorial_sea
+      - delta_and_border
+      - other_administered_water
+  effects:
+  - type: require_confirmation
+    tag: unknown_water_regime
+    message_ro: Regimul apei introdus nu este recunoscut în rutele verificate.
+  source_claim_ids:
+  - b18.fishing_permit.administrator_route_gap
+  status: active
+- id: rule.b18.fishing_permit.unknown_goal
+  canonical_rule_id: canonical.fishing_permit.unknown_goal
+  event_type_id: ro.life.fishing_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: goal
+    - op: not_in
+      field: goal
+      values:
+      - obtain_permit
+      - check_required_permits
+  effects:
+  - type: require_confirmation
+    tag: confirm_fishing_intent
+    message_ro: Evenimentul acoperă obținerea și verificarea permiselor/avizelor pentru pescuit recreativ.
+  source_claim_ids:
+  - b18.fishing_permit.administrator_route_gap
+  status: active

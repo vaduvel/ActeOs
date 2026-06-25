@@ -1,0 +1,321 @@
+batch_id: batch18.military_certificate
+event_type_id: ro.life.military_certificate
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.military_certificate.01
+  case_ro: Obiectiv lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.military_certificate.02
+  case_ro: Legitimație la trecere
+  facts:
+    goal: reserve_retired_id
+    transitioning_now: true
+    source_from_mapn: true
+    is_military_pensioner: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.determine_reserve_transition_stage
+    - step.submit_written_request_for_reserve_id
+    requirements:
+    - req.written_request
+    channels:
+    - channel.mapn_transitioning_structure_or_military_center
+    - channel.structure_initiating_transition_to_reserve
+- id: fx.military_certificate.03
+  case_ro: Legitimație deja în rezervă
+  facts:
+    goal: reserve_retired_id
+    already_in_reserve_or_retired: true
+    source_from_mapn: true
+    is_military_pensioner: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.determine_reserve_transition_stage
+    - step.submit_written_request_for_reserve_id
+    requirements:
+    - req.written_request
+    channels:
+    - channel.mapn_transitioning_structure_or_military_center
+    - channel.military_center_at_domicile
+- id: fx.military_certificate.04
+  case_ro: Alt sistem
+  facts:
+    goal: reserve_retired_id
+    already_in_reserve_or_retired: true
+    source_from_mapn: false
+    is_military_pensioner: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_reserve_transition_stage
+    - step.submit_written_request_for_reserve_id
+    requirements:
+    - req.written_request
+    channels:
+    - channel.mapn_transitioning_structure_or_military_center
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_id_source_eligibility
+- id: fx.military_certificate.05
+  case_ro: Nu este pensionar militar
+  facts:
+    goal: reserve_retired_id
+    source_from_mapn: true
+    is_military_pensioner: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_reserve_transition_stage
+    - step.submit_written_request_for_reserve_id
+    requirements:
+    - req.written_request
+    channels:
+    - channel.mapn_transitioning_structure_or_military_center
+    confirmations:
+    - reserve_id_pensioner_eligibility
+- id: fx.military_certificate.06
+  case_ro: Ambele condiții neîndeplinite
+  facts:
+    goal: reserve_retired_id
+    source_from_mapn: false
+    is_military_pensioner: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_reserve_transition_stage
+    - step.submit_written_request_for_reserve_id
+    requirements:
+    - req.written_request
+    channels:
+    - channel.mapn_transitioning_structure_or_military_center
+    confirmations:
+    - reserve_id_source_eligibility
+    - reserve_id_pensioner_eligibility
+- id: fx.military_certificate.07
+  case_ro: Înlocuire pierdut
+  facts:
+    goal: replace_lost_reserve_retired_id
+    loss_type: lost
+  expect:
+    status: resolved
+    included_steps:
+    - step.report_lost_or_stolen_reserve_id
+    - step.publish_nullity_in_army_administrative_bulletin
+    - step.request_replacement_reserve_id
+    channels:
+    - channel.military_center_at_domicile
+    warnings:
+    - publication_cost_holder
+- id: fx.military_certificate.08
+  case_ro: Înlocuire furat
+  facts:
+    goal: replace_lost_reserve_retired_id
+    loss_type: stolen
+  expect:
+    status: resolved
+    included_steps:
+    - step.report_lost_or_stolen_reserve_id
+    - step.publish_nullity_in_army_administrative_bulletin
+    - step.request_replacement_reserve_id
+    channels:
+    - channel.military_center_at_domicile
+    warnings:
+    - publication_cost_holder
+- id: fx.military_certificate.09
+  case_ro: Înlocuire deteriorat
+  facts:
+    goal: replace_lost_reserve_retired_id
+    loss_type: damaged
+  expect:
+    status: resolved
+    included_steps:
+    - step.report_lost_or_stolen_reserve_id
+    - step.publish_nullity_in_army_administrative_bulletin
+    - step.request_replacement_reserve_id
+    channels:
+    - channel.military_center_at_domicile
+    warnings:
+    - publication_cost_holder
+- id: fx.military_certificate.10
+  case_ro: Înlocuire fără motiv
+  facts:
+    goal: replace_lost_reserve_retired_id
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.report_lost_or_stolen_reserve_id
+    - step.publish_nullity_in_army_administrative_bulletin
+    - step.request_replacement_reserve_id
+    channels:
+    - channel.military_center_at_domicile
+    warnings:
+    - publication_cost_holder
+    confirmations:
+    - loss_type
+- id: fx.military_certificate.11
+  case_ro: Livret pierdut
+  facts:
+    goal: military_booklet
+    loss_type: lost
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.contact_military_center_for_booklet_route
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_booklet_checklist
+- id: fx.military_certificate.12
+  case_ro: Livret furat
+  facts:
+    goal: military_booklet
+    loss_type: stolen
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.contact_military_center_for_booklet_route
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_booklet_checklist
+- id: fx.military_certificate.13
+  case_ro: Livret deteriorat
+  facts:
+    goal: military_booklet
+    loss_type: damaged
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.contact_military_center_for_booklet_route
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_booklet_checklist
+- id: fx.military_certificate.14
+  case_ro: Livret generic
+  facts:
+    goal: military_booklet
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.contact_military_center_for_booklet_route
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_booklet_checklist
+- id: fx.military_certificate.15
+  case_ro: Adeverință generică
+  facts:
+    goal: military_status_attestation
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_exact_military_status_document
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_status_attestation_checklist
+- id: fx.military_certificate.16
+  case_ro: Adeverință angajator
+  facts:
+    goal: military_status_attestation
+    purpose: employment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_exact_military_status_document
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_status_attestation_checklist
+- id: fx.military_certificate.17
+  case_ro: Adeverință pensie
+  facts:
+    goal: military_status_attestation
+    purpose: pension
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_exact_military_status_document
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_status_attestation_checklist
+- id: fx.military_certificate.18
+  case_ro: Adeverință extern
+  facts:
+    goal: military_status_attestation
+    purpose: foreign_authority
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_exact_military_status_document
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_status_attestation_checklist
+- id: fx.military_certificate.19
+  case_ro: Document necunoscut
+  facts:
+    goal: unknown
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_exact_military_document
+    confirmations:
+    - exact_military_document
+- id: fx.military_certificate.20
+  case_ro: Legitimație fără stadiu
+  facts:
+    goal: reserve_retired_id
+    source_from_mapn: true
+    is_military_pensioner: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.determine_reserve_transition_stage
+    - step.submit_written_request_for_reserve_id
+    requirements:
+    - req.written_request
+    channels:
+    - channel.mapn_transitioning_structure_or_military_center
+- id: fx.military_certificate.21
+  case_ro: Înlocuire pierdut MApN
+  facts:
+    goal: replace_lost_reserve_retired_id
+    loss_type: lost
+    source_from_mapn: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.report_lost_or_stolen_reserve_id
+    - step.publish_nullity_in_army_administrative_bulletin
+    - step.request_replacement_reserve_id
+    channels:
+    - channel.military_center_at_domicile
+    warnings:
+    - publication_cost_holder
+- id: fx.military_certificate.22
+  case_ro: Livret statut neclar
+  facts:
+    goal: military_booklet
+    current_status: unknown
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.contact_military_center_for_booklet_route
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - military_booklet_checklist

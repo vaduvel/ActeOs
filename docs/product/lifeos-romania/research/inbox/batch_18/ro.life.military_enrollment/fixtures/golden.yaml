@@ -1,0 +1,540 @@
+batch_id: batch18.military_enrollment
+event_type_id: ro.life.military_enrollment
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.military_enrollment.01
+  case_ro: Intenție lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.military_enrollment.02
+  case_ro: SGP eligibil
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+    branch: infanterie
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.03
+  case_ro: SGP 17 ani
+  facts:
+    goal: soldier_professional
+    age: 17
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 10
+  expect:
+    status: blocked
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.04
+  case_ro: SGP 46 ani
+  facts:
+    goal: soldier_professional
+    age: 46
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+  expect:
+    status: blocked
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.05
+  case_ro: SGP fără cetățenie
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: false
+    stable_domicile_ro: true
+    education_classes: 12
+  expect:
+    status: blocked
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.06
+  case_ro: SGP fără domiciliu
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: false
+    education_classes: 12
+  expect:
+    status: blocked
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.07
+  case_ro: SGP 9 clase
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 9
+  expect:
+    status: blocked
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.08
+  case_ro: SGP auto
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+    branch: auto
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    - req.driving_licence_categories_b_and_c
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.09
+  case_ro: SGP geniu
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+    branch: geniu
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    - req.driving_licence_categories_b_and_c
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.10
+  case_ro: SGP studii străine
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+    foreign_studies: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    - req.foreign_studies_recognition_document
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.11
+  case_ro: SGP rezervist
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+    is_reservist: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    - req.military_booklet_if_reservist
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.12
+  case_ro: SGP din rezerva voluntară
+  facts:
+    goal: soldier_professional
+    age: 25
+    romanian_citizen: true
+    stable_domicile_ro: true
+    education_classes: 12
+    comes_from_volunteer_reserve: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_available_sgp_unit
+    - step.submit_sgp_application_at_unit
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_proof_min_10_classes
+    - req.family_doctor_certificate_valid_90_days
+    - req.mapn_contract_if_from_volunteer_reserve
+    channels:
+    - channel.mapn_unit_with_available_sgp_posts
+    advice_tags:
+    - sgp_campaign_2026
+- id: fx.military_enrollment.13
+  case_ro: RV soldat 50
+  facts:
+    goal: volunteer_reservist
+    age: 50
+    rv_category: soldier_or_ranked
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+    has_military_training: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.14
+  case_ro: RV soldat 51
+  facts:
+    goal: volunteer_reservist
+    age: 51
+    rv_category: soldier_or_ranked
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+  expect:
+    status: blocked
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.15
+  case_ro: RV cadru 55
+  facts:
+    goal: volunteer_reservist
+    age: 55
+    rv_category: cadre
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+    has_military_training: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.16
+  case_ro: RV cadru 56
+  facts:
+    goal: volunteer_reservist
+    age: 56
+    rv_category: cadre
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+  expect:
+    status: blocked
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.17
+  case_ro: RV condamnare
+  facts:
+    goal: volunteer_reservist
+    age: 35
+    rv_category: cadre
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: true
+  expect:
+    status: blocked
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.18
+  case_ro: RV fără cetățenie
+  facts:
+    goal: volunteer_reservist
+    age: 35
+    rv_category: cadre
+    romanian_citizen: false
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+  expect:
+    status: blocked
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.19
+  case_ro: RV fără domiciliu
+  facts:
+    goal: volunteer_reservist
+    age: 35
+    rv_category: cadre
+    romanian_citizen: true
+    stable_domicile_ro: false
+    final_conviction_unrehabilitated: false
+  expect:
+    status: blocked
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+- id: fx.military_enrollment.20
+  case_ro: RV fără pregătire
+  facts:
+    goal: volunteer_reservist
+    age: 35
+    rv_category: cadre
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+    has_military_training: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - initial_training_may_apply
+- id: fx.military_enrollment.21
+  case_ro: RV post cu permis
+  facts:
+    goal: volunteer_reservist
+    age: 35
+    rv_category: soldier_or_ranked
+    romanian_citizen: true
+    stable_domicile_ro: true
+    final_conviction_unrehabilitated: false
+    has_military_training: false
+    post_requires_driving: true
+    is_reservist: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_military_center_at_domicile
+    - step.submit_volunteer_reservist_file
+    - step.complete_military_selection
+    - step.complete_medical_examination
+    requirements:
+    - req.application
+    - req.identity_card
+    - req.birth_certificate
+    - req.criminal_record_max_6_months
+    - req.education_and_competence_documents
+    - req.military_booklet_if_reservist
+    - req.driving_licence_required_by_post
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - initial_training_may_apply
+- id: fx.military_enrollment.22
+  case_ro: Altă carieră
+  facts:
+    goal: military_school_or_other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_exact_military_career_route
+    confirmations:
+    - exact_military_route

@@ -1,0 +1,407 @@
+batch_id: batch18.weapon_permit
+event_type_id: ro.life.weapon_permit
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.weapon_permit.01
+  case_ro: Intenție lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.weapon_permit.02
+  case_ro: Prima armă în Timiș, categorie și scop cunoscute
+  facts:
+    goal: first_acquisition
+    weapon_category_known: true
+    purpose_known: true
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_weapon_category_and_purpose
+    - step.prepare_first_acquisition_file
+    - step.submit_to_territorial_aesp
+    requirements:
+    - req.medical_certificate_original_and_copy
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - authorization_valid_90_days
+    - timis_public_schedule
+    confirmations:
+    - confirm_exact_first_file
+- id: fx.weapon_permit.03
+  case_ro: Prima armă în alt județ
+  facts:
+    goal: first_acquisition
+    weapon_category_known: true
+    purpose_known: true
+    domicile_county: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_weapon_category_and_purpose
+    - step.prepare_first_acquisition_file
+    - step.submit_to_territorial_aesp
+    requirements:
+    - req.medical_certificate_original_and_copy
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - authorization_valid_90_days
+    - use_territorial_aesp
+    confirmations:
+    - confirm_exact_first_file
+- id: fx.weapon_permit.04
+  case_ro: Prima armă fără categoria stabilită
+  facts:
+    goal: first_acquisition
+    purpose_known: true
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_weapon_category_and_purpose
+    - step.prepare_first_acquisition_file
+    - step.submit_to_territorial_aesp
+    requirements:
+    - req.medical_certificate_original_and_copy
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - authorization_valid_90_days
+    - timis_public_schedule
+    confirmations:
+    - confirm_weapon_category
+    - confirm_exact_first_file
+- id: fx.weapon_permit.05
+  case_ro: Prima armă fără scop stabilit
+  facts:
+    goal: first_acquisition
+    weapon_category_known: true
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.determine_weapon_category_and_purpose
+    - step.prepare_first_acquisition_file
+    - step.submit_to_territorial_aesp
+    requirements:
+    - req.medical_certificate_original_and_copy
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - authorization_valid_90_days
+    - timis_public_schedule
+    confirmations:
+    - confirm_weapon_purpose
+    - confirm_exact_first_file
+- id: fx.weapon_permit.06
+  case_ro: Prelungire permis încă valabil
+  facts:
+    goal: extend_permit
+    permit_not_expired: true
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.check_permit_expiry
+    - step.prepare_extension_file
+    - step.submit_extension_before_expiry
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    confirmations:
+    - confirm_exact_extension_file
+- id: fx.weapon_permit.07
+  case_ro: Prelungire permis expirat
+  facts:
+    goal: extend_permit
+    permit_not_expired: false
+    domicile_county: timis
+  expect:
+    status: blocked
+    included_steps:
+    - step.check_permit_expiry
+    - step.prepare_extension_file
+    - step.submit_extension_before_expiry
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    warnings:
+    - permit_expired
+    confirmations:
+    - confirm_exact_extension_file
+- id: fx.weapon_permit.08
+  case_ro: Prelungire fără data expirării
+  facts:
+    goal: extend_permit
+    domicile_county: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.check_permit_expiry
+    - step.prepare_extension_file
+    - step.submit_extension_before_expiry
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - use_territorial_aesp
+    confirmations:
+    - confirm_exact_extension_file
+    - confirm_permit_validity
+- id: fx.weapon_permit.09
+  case_ro: Înlocuire permis pierdut
+  facts:
+    goal: replace_document
+    loss_reason: lost
+    domicile_county: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_loss_theft_destruction
+    - step.request_replacement_document
+    - step.publish_event_in_official_gazette
+    requirements:
+    - req.proof_of_official_gazette_publication
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+- id: fx.weapon_permit.10
+  case_ro: Înlocuire permis furat
+  facts:
+    goal: replace_document
+    loss_reason: stolen
+    domicile_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_loss_theft_destruction
+    - step.request_replacement_document
+    - step.publish_event_in_official_gazette
+    requirements:
+    - req.proof_of_official_gazette_publication
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - use_territorial_aesp
+- id: fx.weapon_permit.11
+  case_ro: Înlocuire permis distrus
+  facts:
+    goal: replace_document
+    loss_reason: destroyed
+    domicile_county: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_loss_theft_destruction
+    - step.request_replacement_document
+    - step.publish_event_in_official_gazette
+    requirements:
+    - req.proof_of_official_gazette_publication
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+- id: fx.weapon_permit.12
+  case_ro: Înlocuire permis deteriorat
+  facts:
+    goal: replace_document
+    loss_reason: damaged
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_loss_theft_destruction
+    - step.request_replacement_document
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    confirmations:
+    - confirm_damaged_document_route
+- id: fx.weapon_permit.13
+  case_ro: Înlocuire fără motiv precizat
+  facts:
+    goal: replace_document
+    domicile_county: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_loss_theft_destruction
+    - step.request_replacement_document
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - use_territorial_aesp
+    confirmations:
+    - confirm_document_event
+- id: fx.weapon_permit.14
+  case_ro: Certificat deținător categoria D
+  facts:
+    goal: category_d_certificate
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.verify_weapon_is_category_d_in_permit
+    - step.request_holder_certificate
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    confirmations:
+    - confirm_category_d_eligibility
+- id: fx.weapon_permit.15
+  case_ro: Radiere după 3 zile
+  facts:
+    goal: strike_off_transferred_weapon
+    days_since_transfer: 3
+    domicile_county: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.request_weapon_strike_off
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    warnings:
+    - strike_off_10_days
+- id: fx.weapon_permit.16
+  case_ro: Radiere în ziua 10
+  facts:
+    goal: strike_off_transferred_weapon
+    days_since_transfer: 10
+    domicile_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.request_weapon_strike_off
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - use_territorial_aesp
+    warnings:
+    - strike_off_10_days
+- id: fx.weapon_permit.17
+  case_ro: Radiere după 11 zile
+  facts:
+    goal: strike_off_transferred_weapon
+    days_since_transfer: 11
+    domicile_county: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.request_weapon_strike_off
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    warnings:
+    - strike_off_10_days
+    - strike_off_deadline_exceeded
+- id: fx.weapon_permit.18
+  case_ro: Radiere fără data transferului
+  facts:
+    goal: strike_off_transferred_weapon
+    domicile_county: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_weapon_strike_off
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - use_territorial_aesp
+    warnings:
+    - strike_off_10_days
+    confirmations:
+    - confirm_transfer_date
+- id: fx.weapon_permit.19
+  case_ro: Schimbare domiciliu după 2 zile
+  facts:
+    goal: change_domicile_in_permit
+    days_since_domicile_change: 2
+    domicile_county: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.notify_domicile_change
+    - step.update_weapon_storage_location
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    warnings:
+    - domicile_change_10_days
+- id: fx.weapon_permit.20
+  case_ro: Schimbare domiciliu în ziua 10
+  facts:
+    goal: change_domicile_in_permit
+    days_since_domicile_change: 10
+    domicile_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.notify_domicile_change
+    - step.update_weapon_storage_location
+    channels:
+    - channel.territorial_police_aesp
+    advice_tags:
+    - use_territorial_aesp
+    warnings:
+    - domicile_change_10_days
+- id: fx.weapon_permit.21
+  case_ro: Schimbare domiciliu după 15 zile
+  facts:
+    goal: change_domicile_in_permit
+    days_since_domicile_change: 15
+    domicile_county: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.notify_domicile_change
+    - step.update_weapon_storage_location
+    channels:
+    - channel.territorial_police_aesp
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    warnings:
+    - domicile_change_10_days
+    - domicile_change_deadline_exceeded
+- id: fx.weapon_permit.22
+  case_ro: Procedură necunoscută
+  facts:
+    goal: carry_weapon_abroad
+    domicile_county: timis
+  expect:
+    status: needs_confirmation
+    channels:
+    - channel.ipj_timis_aesp
+    advice_tags:
+    - timis_public_schedule
+    confirmations:
+    - confirm_weapon_procedure

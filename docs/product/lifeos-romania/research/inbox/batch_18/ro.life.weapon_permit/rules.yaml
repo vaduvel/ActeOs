@@ -1,0 +1,532 @@
+batch_id: batch18.weapon_permit
+event_type_id: ro.life.weapon_permit
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.weapon_permit.first_base
+  canonical_rule_id: canonical.weapon_permit.first_base
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: first_acquisition
+  effects:
+  - type: include_step
+    step_id: step.determine_weapon_category_and_purpose
+  - type: include_step
+    step_id: step.prepare_first_acquisition_file
+  - type: include_step
+    step_id: step.submit_to_territorial_aesp
+  - type: include_requirement
+    requirement_id: req.medical_certificate_original_and_copy
+  - type: attach_channel
+    channel_id: channel.territorial_police_aesp
+  - type: emit_advice
+    tag: authorization_valid_90_days
+    message_ro: Autorizația de procurare este valabilă 90 de zile.
+  source_claim_ids:
+  - b18.weapon_permit.first_route
+  - b18.weapon_permit.authorization_90_days
+  - b18.weapon_permit.medical
+  status: active
+- id: rule.b18.weapon_permit.first_category_missing
+  canonical_rule_id: canonical.weapon_permit.first_category_missing
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: first_acquisition
+    - op: missing
+      field: weapon_category_known
+  effects:
+  - type: require_confirmation
+    tag: confirm_weapon_category
+    message_ro: Categoria armei trebuie stabilită înaintea checklistului.
+  source_claim_ids:
+  - b18.weapon_permit.checklist_scope_gap
+  status: active
+- id: rule.b18.weapon_permit.first_purpose_missing
+  canonical_rule_id: canonical.weapon_permit.first_purpose_missing
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: first_acquisition
+    - op: missing
+      field: purpose_known
+  effects:
+  - type: require_confirmation
+    tag: confirm_weapon_purpose
+    message_ro: Scopul procurării trebuie stabilit înaintea checklistului.
+  source_claim_ids:
+  - b18.weapon_permit.checklist_scope_gap
+  status: active
+- id: rule.b18.weapon_permit.first_checklist
+  canonical_rule_id: canonical.weapon_permit.first_checklist
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: first_acquisition
+  effects:
+  - type: require_confirmation
+    tag: confirm_exact_first_file
+    message_ro: Verifică dosarul exact potrivit categoriei și scopului.
+  source_claim_ids:
+  - b18.weapon_permit.checklist_scope_gap
+  status: active
+- id: rule.b18.weapon_permit.extend_base
+  canonical_rule_id: canonical.weapon_permit.extend_base
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: extend_permit
+  effects:
+  - type: include_step
+    step_id: step.check_permit_expiry
+  - type: include_step
+    step_id: step.prepare_extension_file
+  - type: include_step
+    step_id: step.submit_extension_before_expiry
+  - type: attach_channel
+    channel_id: channel.territorial_police_aesp
+  - type: require_confirmation
+    tag: confirm_exact_extension_file
+    message_ro: Verifică documentele aplicabile prelungirii.
+  source_claim_ids:
+  - b18.weapon_permit.extension_route
+  - b18.weapon_permit.checklist_scope_gap
+  status: active
+- id: rule.b18.weapon_permit.extend_expired
+  canonical_rule_id: canonical.weapon_permit.extend_expired
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: extend_permit
+    - op: eq
+      field: permit_not_expired
+      value: false
+  effects:
+  - type: block
+    code: permit_already_expired
+    message_ro: Ruta standard de prelungire înainte de expirare nu mai este aplicabilă.
+  - type: emit_warning
+    tag: permit_expired
+    message_ro: Contactează imediat structura AESP pentru situația permisului expirat.
+  source_claim_ids:
+  - b18.weapon_permit.extension_route
+  status: active
+- id: rule.b18.weapon_permit.extend_expiry_unknown
+  canonical_rule_id: canonical.weapon_permit.extend_expiry_unknown
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: extend_permit
+    - op: missing
+      field: permit_not_expired
+  effects:
+  - type: require_confirmation
+    tag: confirm_permit_validity
+    message_ro: Confirmă dacă permisul este încă valabil.
+  source_claim_ids:
+  - b18.weapon_permit.extension_route
+  status: active
+- id: rule.b18.weapon_permit.replace_base
+  canonical_rule_id: canonical.weapon_permit.replace_base
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: replace_document
+  effects:
+  - type: include_step
+    step_id: step.identify_loss_theft_destruction
+  - type: include_step
+    step_id: step.request_replacement_document
+  - type: attach_channel
+    channel_id: channel.territorial_police_aesp
+  source_claim_ids:
+  - b18.weapon_permit.replacement
+  status: active
+- id: rule.b18.weapon_permit.replace_publication
+  canonical_rule_id: canonical.weapon_permit.replace_publication
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: replace_document
+    - op: in
+      field: loss_reason
+      values:
+      - lost
+      - stolen
+      - destroyed
+  effects:
+  - type: include_step
+    step_id: step.publish_event_in_official_gazette
+  - type: include_requirement
+    requirement_id: req.proof_of_official_gazette_publication
+  source_claim_ids:
+  - b18.weapon_permit.replacement
+  status: active
+- id: rule.b18.weapon_permit.replace_damaged
+  canonical_rule_id: canonical.weapon_permit.replace_damaged
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: replace_document
+    - op: eq
+      field: loss_reason
+      value: damaged
+  effects:
+  - type: require_confirmation
+    tag: confirm_damaged_document_route
+    message_ro: Pagina centrală citată acoperă explicit furtul, pierderea și distrugerea; ruta pentru document deteriorat
+      trebuie confirmată.
+  source_claim_ids:
+  - b18.weapon_permit.replacement
+  status: active
+- id: rule.b18.weapon_permit.replace_reason_missing
+  canonical_rule_id: canonical.weapon_permit.replace_reason_missing
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: replace_document
+    - op: missing
+      field: loss_reason
+  effects:
+  - type: require_confirmation
+    tag: confirm_document_event
+    message_ro: Precizează dacă documentul a fost pierdut, furat, distrus sau deteriorat.
+  source_claim_ids:
+  - b18.weapon_permit.replacement
+  status: active
+- id: rule.b18.weapon_permit.category_d_base
+  canonical_rule_id: canonical.weapon_permit.category_d_base
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: category_d_certificate
+  effects:
+  - type: include_step
+    step_id: step.verify_weapon_is_category_d_in_permit
+  - type: include_step
+    step_id: step.request_holder_certificate
+  - type: attach_channel
+    channel_id: channel.territorial_police_aesp
+  - type: require_confirmation
+    tag: confirm_category_d_eligibility
+    message_ro: Confirmă încadrarea exactă a armei în categoria D.
+  source_claim_ids:
+  - b18.weapon_permit.category_d
+  - b18.weapon_permit.checklist_scope_gap
+  status: active
+- id: rule.b18.weapon_permit.strike_off_base
+  canonical_rule_id: canonical.weapon_permit.strike_off_base
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: strike_off_transferred_weapon
+  effects:
+  - type: include_step
+    step_id: step.request_weapon_strike_off
+  - type: attach_channel
+    channel_id: channel.territorial_police_aesp
+  - type: emit_warning
+    tag: strike_off_10_days
+    message_ro: Solicită radierea în cel mult 10 zile de la înstrăinare.
+  source_claim_ids:
+  - b18.weapon_permit.strike_off
+  status: active
+- id: rule.b18.weapon_permit.strike_off_overdue
+  canonical_rule_id: canonical.weapon_permit.strike_off_overdue
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: strike_off_transferred_weapon
+    - op: gt
+      field: days_since_transfer
+      value: 10
+  effects:
+  - type: emit_warning
+    tag: strike_off_deadline_exceeded
+    message_ro: Termenul publicat de 10 zile este depășit; contactează imediat AESP.
+  source_claim_ids:
+  - b18.weapon_permit.strike_off
+  status: active
+- id: rule.b18.weapon_permit.strike_off_days_missing
+  canonical_rule_id: canonical.weapon_permit.strike_off_days_missing
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: strike_off_transferred_weapon
+    - op: missing
+      field: days_since_transfer
+  effects:
+  - type: require_confirmation
+    tag: confirm_transfer_date
+    message_ro: Confirmă data înstrăinării pentru evaluarea termenului.
+  source_claim_ids:
+  - b18.weapon_permit.strike_off
+  status: active
+- id: rule.b18.weapon_permit.domicile_base
+  canonical_rule_id: canonical.weapon_permit.domicile_base
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: change_domicile_in_permit
+  effects:
+  - type: include_step
+    step_id: step.notify_domicile_change
+  - type: include_step
+    step_id: step.update_weapon_storage_location
+  - type: attach_channel
+    channel_id: channel.territorial_police_aesp
+  - type: emit_warning
+    tag: domicile_change_10_days
+    message_ro: Anunță modificarea în termen de 10 zile.
+  source_claim_ids:
+  - b18.weapon_permit.domicile_change
+  status: active
+- id: rule.b18.weapon_permit.domicile_overdue
+  canonical_rule_id: canonical.weapon_permit.domicile_overdue
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: change_domicile_in_permit
+    - op: gt
+      field: days_since_domicile_change
+      value: 10
+  effects:
+  - type: emit_warning
+    tag: domicile_change_deadline_exceeded
+    message_ro: Termenul publicat de 10 zile este depășit; contactează AESP.
+  source_claim_ids:
+  - b18.weapon_permit.domicile_change
+  status: active
+- id: rule.b18.weapon_permit.domicile_days_missing
+  canonical_rule_id: canonical.weapon_permit.domicile_days_missing
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: change_domicile_in_permit
+    - op: missing
+      field: days_since_domicile_change
+  effects:
+  - type: require_confirmation
+    tag: confirm_domicile_change_date
+    message_ro: Confirmă data schimbării domiciliului.
+  source_claim_ids:
+  - b18.weapon_permit.domicile_change
+  status: active
+- id: rule.b18.weapon_permit.timis_channel
+  canonical_rule_id: canonical.weapon_permit.timis_channel
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro.county.timis
+  - ro.uat.timisoara
+  authority_level: county
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: domicile_county
+    value: timis
+  effects:
+  - type: attach_channel
+    channel_id: channel.ipj_timis_aesp
+  - type: emit_advice
+    tag: timis_public_schedule
+    message_ro: IPJ Timiș publică program cu publicul luni și joi și o adresă dedicată.
+  source_claim_ids:
+  - b18.weapon_permit.timis_channel
+  status: active
+- id: rule.b18.weapon_permit.other_county
+  canonical_rule_id: canonical.weapon_permit.other_county
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: goal
+      values:
+      - first_acquisition
+      - extend_permit
+      - replace_document
+      - category_d_certificate
+      - strike_off_transferred_weapon
+      - change_domicile_in_permit
+    - op: eq
+      field: domicile_county
+      value: other
+  effects:
+  - type: emit_advice
+    tag: use_territorial_aesp
+    message_ro: Folosește structura AESP competentă pentru domiciliul sau reședința ta.
+  source_claim_ids:
+  - b18.weapon_permit.first_route
+  status: active
+- id: rule.b18.weapon_permit.unknown_goal
+  canonical_rule_id: canonical.weapon_permit.unknown_goal
+  event_type_id: ro.life.weapon_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: goal
+    - op: not_in
+      field: goal
+      values:
+      - first_acquisition
+      - extend_permit
+      - replace_document
+      - category_d_certificate
+      - strike_off_transferred_weapon
+      - change_domicile_in_permit
+  effects:
+  - type: require_confirmation
+    tag: confirm_weapon_procedure
+    message_ro: Procedura cerută nu este una dintre rutele verificate în acest eveniment.
+  source_claim_ids:
+  - b18.weapon_permit.checklist_scope_gap
+  status: active
