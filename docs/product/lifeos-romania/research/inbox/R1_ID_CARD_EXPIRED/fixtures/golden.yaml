@@ -1,0 +1,93 @@
+batch_id: R1_ID_CARD_EXPIRED
+defaults:
+  event_type_id: life.id_card_expired
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: E01
+    desc: in fereastra (60 zile pana la expirare), are toate actele
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24', has_all_documents: true }
+    expect: { status: conflicting, included_steps: [renew_identity_card], warnings: [renew_window], conflicts: [sanction_amount] }
+  - id: E02
+    desc: prea devreme (300 zile pana la expirare)
+    facts: { id_card_type: ci_simpla, expiry_date: '2027-04-21', has_all_documents: true }
+    expect: { status: conflicting, warnings: [too_early] }
+  - id: E03
+    desc: la limita - exact 180 zile inainte
+    facts: { id_card_type: buletin, expiry_date: '2026-12-22', has_all_documents: true }
+    expect: { status: conflicting, included_steps: [renew_identity_card] }
+  - id: E04
+    desc: la limita - exact 15 zile inainte
+    facts: { id_card_type: buletin, expiry_date: '2026-07-10', has_all_documents: true }
+    expect: { status: conflicting, included_steps: [renew_identity_card] }
+  - id: E05
+    desc: mai putin de 15 zile inainte (intarziat)
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-07-05', has_all_documents: true }
+    expect: { status: conflicting, warnings: [overdue], confirmations: [sanction_amount] }
+  - id: E06
+    desc: deja expirat
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-05-01', has_all_documents: true }
+    expect: { status: conflicting, warnings: [overdue] }
+  - id: E07
+    desc: lipsesc documente - carte provizorie
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24', has_all_documents: false }
+    expect: { status: conflicting, included_steps: [renew_identity_card, issue_provisional_card], requirements: [req.three_photos] }
+  - id: E08
+    desc: CEI in fereastra
+    facts: { id_card_type: cei, expiry_date: '2026-08-24', has_all_documents: true }
+    expect: { status: conflicting, included_steps: [renew_identity_card] }
+  - id: E09
+    desc: lipseste expiry_date
+    facts: { id_card_type: ci_simpla, has_all_documents: true }
+    expect: { status: needs_facts, missing_facts: [expiry_date] }
+  - id: E10
+    desc: lipseste id_card_type
+    facts: { expiry_date: '2026-08-24', has_all_documents: true }
+    expect: { status: needs_facts, missing_facts: [id_card_type] }
+  - id: E11
+    desc: lipseste has_all_documents - regula provizorie nu se evalueaza
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24' }
+    expect: { status: needs_facts, missing_facts: [has_all_documents] }
+  - id: E12
+    desc: conflict de sanctiune mereu vizibil (regula const)
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24', has_all_documents: true }
+    expect: { status: conflicting, conflicts: [sanction_amount], blocked_effects: [sanction_amount_display] }
+  - id: E13
+    desc: pastrarea actului vechi - mesaj explicativ prezent
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24', has_all_documents: true }
+    expect: { status: conflicting, warnings_present: [keep_old] }
+  - id: E14
+    desc: provizorie + intarziat
+    facts: { id_card_type: buletin, expiry_date: '2026-06-01', has_all_documents: false }
+    expect: { status: conflicting, included_steps: [renew_identity_card, issue_provisional_card], warnings: [overdue] }
+  - id: E15
+    desc: jurisdictie alt judet - fara canal Timisoara
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24', has_all_documents: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: conflicting, included_steps: [renew_identity_card], channels_absent: [ch.dep_timisoara] }
+  - id: E16
+    desc: expiry_date invalid (format gresit)
+    facts: { id_card_type: ci_simpla, expiry_date: '24-08-2026', has_all_documents: true }
+    expect: { status: needs_facts, note: 'data invalida tratata ca fapt lipsa valid' }
+  - id: E17
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [id_card_type, expiry_date, has_all_documents] }
+  - id: E18
+    desc: in fereastra, are documente, CEI - fara provizorie
+    facts: { id_card_type: cei, expiry_date: '2026-09-30', has_all_documents: true }
+    expect: { status: conflicting, steps_absent: [issue_provisional_card] }
+  - id: E19
+    desc: foarte aproape de expirare (10 zile) - intarziat
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-07-05', has_all_documents: true }
+    reference_date: '2026-06-25'
+    expect: { status: conflicting, warnings: [overdue] }
+  - id: E20
+    desc: reference_date dupa expirare cu 1 an
+    facts: { id_card_type: ci_simpla, expiry_date: '2025-06-25', has_all_documents: true }
+    expect: { status: conflicting, warnings: [overdue] }
+  - id: E21
+    desc: provizorie ceruta + jurisdictie Timisoara - canal atasat
+    facts: { id_card_type: ci_simpla, expiry_date: '2026-08-24', has_all_documents: false }
+    expect: { status: conflicting, included_steps: [renew_identity_card, issue_provisional_card], channels: [ch.dep_timisoara] }
