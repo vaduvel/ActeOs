@@ -1,0 +1,84 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_VEHICLE_LOCAL_TAX_DECLARATION
+event_type_id: life.vehicle_local_tax_declare
+status: draft
+rules:
+  - id: rule.vtax.declare_30d
+    canonical_rule_id: vehicle_local_tax_declare.declare_30d
+    event_type_id: life.vehicle_local_tax_declare
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: file_vehicle_tax_declaration }
+      - { type: set_deadline, step_id: file_vehicle_tax_declaration, value: { kind: relative_days, anchor: acquisition_date, days: 30 } }
+      - { type: include_requirement, requirement_id: req.vehicle_tax_form }
+    source_claim_ids: [claim.vtax.declare_30d, claim.vtax.docs]
+    status: draft
+  - id: rule.vtax.form_by_weight
+    canonical_rule_id: vehicle_local_tax_declare.form_by_weight
+    event_type_id: life.vehicle_local_tax_declare
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2016-01-01'
+    when:
+      op: eq
+      field: weight_class
+      value: over_12t
+    effects:
+      - { type: include_requirement, requirement_id: req.vehicle_tax_form_over_12t }
+      - { type: emit_warning, message_ro: 'Pentru vehicule peste 12 tone se foloseste formularul de declaratie distinct.' }
+    source_claim_ids: [claim.vtax.weight_form_split]
+    status: draft
+  - id: rule.vtax.seller_fiscal_cert
+    canonical_rule_id: vehicle_local_tax_declare.seller_fiscal_cert
+    event_type_id: life.vehicle_local_tax_declare
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2016-01-01'
+    when:
+      op: eq
+      field: acquisition_type
+      value: bought_ro
+    effects:
+      - { type: include_requirement, requirement_id: req.seller_fiscal_certificate }
+    source_claim_ids: [claim.vtax.docs]
+    status: draft
+  - id: rule.vtax.owner_dec31_info
+    canonical_rule_id: vehicle_local_tax_declare.owner_dec31_info
+    event_type_id: life.vehicle_local_tax_declare
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Impozitul se datoreaza pentru tot anul de cine detine vehiculul la 31 decembrie al anului anterior.' }
+    source_claim_ids: [claim.vtax.owner_dec31]
+    status: draft
+  - id: rule.vtax.salubritate_not_tm
+    canonical_rule_id: vehicle_local_tax_declare.salubritate_local
+    event_type_id: life.vehicle_local_tax_declare
+    jurisdiction_ids: [ro.b]
+    authority_level: institution
+    severity: operational
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_requirement, requirement_id: req.salubritate_contract }
+    source_claim_ids: [claim.vtax.salubritate_local]
+    status: in_review
+    note: aplicabil zonelor unde se cere (ex. Bucuresti); NU se promoveaza pentru Timisoara fara confirmare DFMT.
+  - id: rule.vtax.tm_channel
+    canonical_rule_id: vehicle_local_tax_declare.tm_channel
+    event_type_id: life.vehicle_local_tax_declare
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.dfmt_timisoara }
+    source_claim_ids: [claim.vtax.tm_channel]
+    status: in_review
