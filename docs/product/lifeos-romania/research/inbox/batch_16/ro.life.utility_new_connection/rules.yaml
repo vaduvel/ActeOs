@@ -1,0 +1,1305 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B16_UTILITY_NEW_CONNECTION
+event_type_id: ro.life.utility_new_connection
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- utility_type
+- pilot_area
+- existing_connection_status
+- applicant_role
+- title_or_use_document_status
+- owner_consent_status
+- operator_code
+- technical_approval_status
+- network_extension_needed
+- operator_contract_status
+rules:
+- id: rule.unc.classify
+  canonical_rule_id: utility_new_connection.classify
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_utility_location_and_existing_connection
+  - type: emit_advice
+    tag: new_connection_is_multistage
+    message_ro: Separă eligibilitatea și avizul de contract, execuție, recepție și activare.
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  - claim.unc.water_three_steps
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.utility_unknown
+  canonical_rule_id: utility_new_connection.utility_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: utility_type
+    value: unknown
+  effects:
+  - type: include_step
+    step_id: identify_requested_utility
+  - type: require_confirmation
+    tag: utility_type
+    message_ro: 'Confirmă utilitatea: electricitate, gaze, apă/canal, termoficare sau internet fix.'
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  - claim.unc.water_three_steps
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.existing_active
+  canonical_rule_id: utility_new_connection.existing_active
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: existing_connection_status
+    value: existing_active
+  effects:
+  - type: include_step
+    step_id: verify_existing_point_and_contract
+  - type: emit_warning
+    tag: new_connection_may_be_wrong_route
+    message_ro: Un racord activ indică de regulă o problemă de contract, titular sau furnizare, nu un racord nou.
+  - type: block
+    tag: duplicate_new_connection_route
+    message_ro: Nu porni automat o a doua racordare fără confirmarea operatorului.
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  - claim.unc.water_three_steps
+  status: in_review
+- id: rule.unc.existing_inactive
+  canonical_rule_id: utility_new_connection.existing_inactive
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: existing_connection_status
+    value: existing_inactive
+  effects:
+  - type: include_step
+    step_id: request_operator_reactivation_or_new_connection_assessment
+  - type: require_confirmation
+    tag: reactivation_vs_new_connection
+    message_ro: Operatorul trebuie să stabilească dacă se reactivează racordul existent sau se deschide unul nou.
+  source_claim_ids:
+  - claim.unc.heat_case_specific
+  - claim.unc.electricity_stages
+  status: in_review
+- id: rule.unc.existing_unknown
+  canonical_rule_id: utility_new_connection.existing_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: existing_connection_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: existing_connection_status
+    message_ro: Verifică dacă există deja branșament/racord și dacă este activ.
+  source_claim_ids:
+  - claim.unc.water_three_steps
+  status: in_review
+- id: rule.unc.title_missing
+  canonical_rule_id: utility_new_connection.title_missing
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: title_or_use_document_status
+      value: unavailable
+  effects:
+  - type: block
+    tag: title_or_use_evidence_missing
+    message_ro: Dosarul Aquatim nu poate fi finalizat fără actul aplicabil privind imobilul sau folosința.
+  - type: include_requirement
+    requirement_id: req.title_or_use_document
+  source_claim_ids:
+  - claim.unc.water_property_and_consent
+  status: in_review
+- id: rule.unc.title_missing_other
+  canonical_rule_id: utility_new_connection.title_missing_other
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: title_or_use_document_status
+      value: unavailable
+    - op: not
+      arg:
+        op: all
+        args:
+        - op: eq
+          field: utility_type
+          value: water_sewer
+        - op: eq
+          field: operator_code
+          value: aquatim
+  effects:
+  - type: require_confirmation
+    tag: operator_title_or_use_document
+    message_ro: Confirmă la operatorul competent ce dovadă asupra imobilului sau folosinței este obligatorie; rulesetul nu
+      extrapolează lista Aquatim.
+  source_claim_ids:
+  - claim.unc.electricity_document_hub
+  - claim.unc.gas_steps
+  - claim.unc.heat_case_specific
+  status: in_review
+- id: rule.unc.title_unknown
+  canonical_rule_id: utility_new_connection.title_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: title_or_use_document_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: title_or_use_document
+    message_ro: Confirmă ce act dovedește proprietatea sau folosința imobilului.
+  source_claim_ids:
+  - claim.unc.water_approval_submission
+  status: in_review
+- id: rule.unc.applicant_unknown
+  canonical_rule_id: utility_new_connection.applicant_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: applicant_role
+    message_ro: Stabilește dacă solicitantul este proprietar, chiriaș/utilizator, societate, asociație sau dezvoltator.
+  source_claim_ids:
+  - claim.unc.water_three_steps
+  status: in_review
+- id: rule.unc.tenant_consent_missing
+  canonical_rule_id: utility_new_connection.tenant_consent_missing
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: applicant_role
+      value: tenant_user
+    - op: eq
+      field: owner_consent_status
+      value: unavailable
+  effects:
+  - type: block
+    tag: owner_consent_missing
+    message_ro: Pentru ruta Aquatim pe numele chiriașului este publicat acordul scris al proprietarului.
+  - type: include_requirement
+    requirement_id: req.owner_written_consent
+  source_claim_ids:
+  - claim.unc.water_property_and_consent
+  status: in_review
+- id: rule.unc.tenant_consent_missing_other
+  canonical_rule_id: utility_new_connection.tenant_consent_missing_other
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_role
+      value: tenant_user
+    - op: eq
+      field: owner_consent_status
+      value: unavailable
+    - op: not
+      arg:
+        op: all
+        args:
+        - op: eq
+          field: utility_type
+          value: water_sewer
+        - op: eq
+          field: operator_code
+          value: aquatim
+  effects:
+  - type: require_confirmation
+    tag: operator_owner_consent_requirement
+    message_ro: Confirmă direct la operator dacă este obligatoriu acordul proprietarului și forma acceptată.
+  source_claim_ids:
+  - claim.unc.electricity_document_hub
+  - claim.unc.gas_steps
+  - claim.unc.heat_case_specific
+  status: in_review
+- id: rule.unc.tenant_consent_unknown
+  canonical_rule_id: utility_new_connection.tenant_consent_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_role
+      value: tenant_user
+    - op: eq
+      field: owner_consent_status
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: owner_consent_requirement
+    message_ro: Confirmă dacă operatorul cere acordul proprietarului și în ce formă.
+  source_claim_ids:
+  - claim.unc.water_contract_15
+  status: in_review
+- id: rule.unc.extension_unknown
+  canonical_rule_id: utility_new_connection.extension_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: network_extension_needed
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: network_extension_need
+    message_ro: Operatorul trebuie să stabilească dacă este suficient un branșament sau este necesară extinderea rețelei.
+  source_claim_ids:
+  - claim.unc.water_extension_docs
+  - claim.unc.electricity_atr_30
+  status: in_review
+- id: rule.unc.operator_mismatch
+  canonical_rule_id: utility_new_connection.operator_mismatch
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: any
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: utility_type
+        value: electricity
+      - op: not
+        arg:
+          op: in
+          field: operator_code
+          values:
+          - retele_electrice
+          - other
+          - unknown
+    - op: all
+      args:
+      - op: eq
+        field: utility_type
+        value: water_sewer
+      - op: not
+        arg:
+          op: in
+          field: operator_code
+          values:
+          - aquatim
+          - other
+          - unknown
+    - op: all
+      args:
+      - op: eq
+        field: utility_type
+        value: natural_gas
+      - op: not
+        arg:
+          op: in
+          field: operator_code
+          values:
+          - gas_operator_confirmed
+          - other
+          - unknown
+    - op: all
+      args:
+      - op: eq
+        field: utility_type
+        value: district_heat
+      - op: not
+        arg:
+          op: in
+          field: operator_code
+          values:
+          - colterm
+          - other
+          - unknown
+    - op: all
+      args:
+      - op: eq
+        field: utility_type
+        value: fixed_internet
+      - op: not
+        arg:
+          op: in
+          field: operator_code
+          values:
+          - digi
+          - orange
+          - other
+          - unknown
+  effects:
+  - type: block
+    tag: operator_utility_mismatch
+    message_ro: Operatorul selectat nu corespunde utilității; oprește checklistul pentru a evita documente greșite.
+  - type: include_step
+    step_id: correct_utility_operator_pair
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  - claim.unc.water_three_steps
+  - claim.unc.gas_operator_lookup
+  status: in_review
+- id: rule.unc.electric_operator_unknown
+  canonical_rule_id: utility_new_connection.electric_operator_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: electricity
+    - op: eq
+      field: operator_code
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: identify_electricity_distribution_operator
+  - type: require_confirmation
+    tag: electricity_operator
+    message_ro: Confirmă operatorul de distribuție pentru adresă înainte de a aplica termenele Rețele Electrice.
+  source_claim_ids:
+  - claim.unc.electricity_channels
+  status: in_review
+- id: rule.unc.electric_other_operator
+  canonical_rule_id: utility_new_connection.electric_other_operator
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: electricity
+    - op: eq
+      field: operator_code
+      value: other
+  effects:
+  - type: include_step
+    step_id: obtain_electric_operator_live_connection_route
+  - type: require_confirmation
+    tag: electric_operator_specific_rules
+    message_ro: Nu extrapola termenele și formularele Rețele Electrice altui operator.
+  source_claim_ids:
+  - claim.unc.electricity_review_10
+  - claim.unc.electricity_atr_30
+  status: in_review
+- id: rule.unc.electric_start
+  canonical_rule_id: utility_new_connection.electric_start
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: electricity
+    - op: eq
+      field: operator_code
+      value: retele_electrice
+    - op: eq
+      field: technical_approval_status
+      value: not_requested
+  effects:
+  - type: include_step
+    step_id: submit_electricity_connection_request_and_documents
+  - type: attach_channel
+    channel_id: ch.retele_electrice_connection
+  - type: include_requirement
+    requirement_id: req.official_electricity_atr_document_set
+  - type: emit_advice
+    tag: electric_review_10_working_days
+    message_ro: Operatorul publică maximum 10 zile lucrătoare pentru evaluarea cererii/documentației.
+  - type: emit_advice
+    tag: electric_atr_stage_30_calendar_days
+    message_ro: Operatorul publică 30 de zile calendaristice pentru etapa de stabilire a soluției și ATR.
+  - type: emit_warning
+    tag: electric_cost_not_fixed
+    message_ro: Costul se stabilește prin soluția tehnică și contract; nu există un preț universal în ruleset.
+  source_claim_ids:
+  - claim.unc.electricity_channels
+  - claim.unc.electricity_document_hub
+  - claim.unc.electricity_review_10
+  - claim.unc.electricity_atr_30
+  - claim.unc.electricity_cost_in_contract
+  status: in_review
+- id: rule.unc.electric_requested
+  canonical_rule_id: utility_new_connection.electric_requested
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: electricity
+    - op: eq
+      field: operator_code
+      value: retele_electrice
+    - op: eq
+      field: technical_approval_status
+      value: requested
+  effects:
+  - type: include_step
+    step_id: track_electricity_document_review_and_atr
+  - type: attach_channel
+    channel_id: ch.retele_electrice_connection
+  - type: emit_advice
+    tag: electric_review_10_working_days
+    message_ro: Verificarea documentației este publicată cu maximum 10 zile lucrătoare.
+  source_claim_ids:
+  - claim.unc.electricity_review_10
+  status: in_review
+- id: rule.unc.electric_contract
+  canonical_rule_id: utility_new_connection.electric_contract
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: electricity
+    - op: eq
+      field: operator_code
+      value: retele_electrice
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: in
+      field: operator_contract_status
+      values:
+      - not_started
+      - pending
+      - unknown
+  effects:
+  - type: include_step
+    step_id: request_and_sign_electricity_connection_contract
+  - type: emit_advice
+    tag: electric_contract_proposal_5_working_days
+    message_ro: Pentru date complete și corecte, pagina publică maximum cinci zile lucrătoare pentru contractul propus.
+  - type: emit_warning
+    tag: electric_contract_contains_costs
+    message_ro: Folosește suma și condițiile din contractul emis pentru cazul concret.
+  source_claim_ids:
+  - claim.unc.electricity_contract_5
+  - claim.unc.electricity_cost_in_contract
+  status: in_review
+- id: rule.unc.electric_ready
+  canonical_rule_id: utility_new_connection.electric_ready
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: electricity
+    - op: eq
+      field: operator_code
+      value: retele_electrice
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: eq
+      field: operator_contract_status
+      value: signed
+  effects:
+  - type: include_step
+    step_id: handoff_to_electricity_connection_construction
+  - type: trigger_child_event
+    event_type_id: ro.life.utility_connection_construction
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  status: in_review
+- id: rule.unc.water_unknown_operator
+  canonical_rule_id: utility_new_connection.water_unknown_operator
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: identify_water_sewer_operator
+  - type: require_confirmation
+    tag: water_operator
+    message_ro: Confirmă operatorul de apă/canal pentru localitate și adresă.
+  source_claim_ids:
+  - claim.unc.water_three_steps
+  status: in_review
+- id: rule.unc.water_other_operator
+  canonical_rule_id: utility_new_connection.water_other_operator
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: other
+  effects:
+  - type: include_step
+    step_id: obtain_local_water_operator_route
+  - type: require_confirmation
+    tag: local_water_checklist
+    message_ro: Checklistul Aquatim nu se aplică automat altui operator sau UAT.
+  source_claim_ids:
+  - claim.unc.water_three_steps
+  status: in_review
+- id: rule.unc.water_start
+  canonical_rule_id: utility_new_connection.water_start
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: technical_approval_status
+      value: not_requested
+  effects:
+  - type: include_step
+    step_id: submit_aquatim_technical_approval_file
+  - type: attach_channel
+    channel_id: ch.aquatim_technical_approval
+  - type: include_requirement
+    requirement_id: req.aquatim_technical_approval_request
+  - type: include_requirement
+    requirement_id: req.aquatim_specific_annexes
+  - type: include_requirement
+    requirement_id: req.aquatim_gdpr_consent
+  - type: emit_advice
+    tag: aquatim_approval_fee_84_70
+    message_ro: La data accesării, Aquatim publică taxa de avizare de 84,70 lei cu TVA, plătibilă pe factura emisă după înregistrare.
+  - type: emit_warning
+    tag: aquatim_fee_recheck_at_payment
+    message_ro: Reverifică suma pe factura curentă înainte de plată.
+  source_claim_ids:
+  - claim.unc.water_approval_submission
+  - claim.unc.water_approval_fee
+  status: in_review
+- id: rule.unc.water_requested
+  canonical_rule_id: utility_new_connection.water_requested
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: technical_approval_status
+      value: requested
+  effects:
+  - type: include_step
+    step_id: track_aquatim_technical_approval_and_invoice
+  - type: attach_channel
+    channel_id: ch.aquatim_technical_approval
+  - type: emit_warning
+    tag: approval_not_issued_yet
+    message_ro: Nu porni proiectarea sau execuția ca și cum avizul ar fi emis.
+  source_claim_ids:
+  - claim.unc.water_approval_submission
+  - claim.unc.water_approval_fee
+  status: in_review
+- id: rule.unc.water_contract
+  canonical_rule_id: utility_new_connection.water_contract
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: in
+      field: operator_contract_status
+      values:
+      - not_started
+      - pending
+      - unknown
+  effects:
+  - type: include_step
+    step_id: submit_or_complete_aquatim_service_contract
+  - type: attach_channel
+    channel_id: ch.aquatim_contract
+  - type: emit_advice
+    tag: aquatim_contract_file_15_working_days
+    message_ro: Aquatim publică maximum 15 zile lucrătoare pentru procesarea dosarului și întocmirea contractului.
+  - type: emit_warning
+    tag: aquatim_contract_effect_after_reception
+    message_ro: Pentru branșament/racord nou, contractul intră în vigoare după recepția lucrării și a contorului.
+  source_claim_ids:
+  - claim.unc.water_contract_15
+  - claim.unc.water_contract_after_reception
+  status: in_review
+- id: rule.unc.water_extension
+  canonical_rule_id: utility_new_connection.water_extension
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: network_extension_needed
+      value: 'yes'
+  effects:
+  - type: include_step
+    step_id: prepare_aquatim_network_extension_approval
+  - type: include_requirement
+    requirement_id: req.urbanism_certificate
+  - type: include_requirement
+    requirement_id: req.land_registry_extract_for_extension_land
+  - type: include_requirement
+    requirement_id: req.technical_execution_design
+  - type: include_requirement
+    requirement_id: req.utility_network_placement_approval
+  - type: include_requirement
+    requirement_id: req.documents_imposed_by_urbanism_certificate
+  - type: emit_warning
+    tag: extension_is_not_simple_branch
+    message_ro: Extinderea rețelei are documentație distinctă de simplul branșament/racord.
+  source_claim_ids:
+  - claim.unc.water_extension_docs
+  status: in_review
+- id: rule.unc.water_ready
+  canonical_rule_id: utility_new_connection.water_ready
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: in
+      field: operator_contract_status
+      values:
+      - prepared
+      - signed
+  effects:
+  - type: include_step
+    step_id: handoff_to_water_connection_construction
+  - type: trigger_child_event
+    event_type_id: ro.life.utility_connection_construction
+  source_claim_ids:
+  - claim.unc.water_three_steps
+  - claim.unc.water_contract_after_reception
+  status: in_review
+- id: rule.unc.water_area_gap
+  canonical_rule_id: utility_new_connection.water_area_gap
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: water_sewer
+    - op: eq
+      field: operator_code
+      value: aquatim
+    - op: in
+      field: pilot_area
+      values:
+      - timis_other
+      - other_uat
+      - unknown
+  effects:
+  - type: require_confirmation
+    tag: aquatim_service_area_and_local_channel
+    message_ro: Confirmă acoperirea exactă Aquatim, sucursala și cerințele locale pentru adresă.
+  source_claim_ids:
+  - claim.unc.water_approval_submission
+  status: in_review
+- id: rule.unc.gas_operator_unknown
+  canonical_rule_id: utility_new_connection.gas_operator_unknown
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: natural_gas
+    - op: eq
+      field: operator_code
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: lookup_gas_distribution_operator_in_anre_registry
+  - type: attach_channel
+    channel_id: ch.anre_gas_licence_registry
+  - type: require_confirmation
+    tag: gas_distribution_operator
+    message_ro: Selectează operatorul pentru zona obiectivului din lista oficială ANRE; nu îl deduce doar din județ.
+  source_claim_ids:
+  - claim.unc.gas_operator_lookup
+  status: in_review
+- id: rule.unc.gas_other_operator
+  canonical_rule_id: utility_new_connection.gas_other_operator
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: natural_gas
+    - op: eq
+      field: operator_code
+      value: other
+  effects:
+  - type: include_step
+    step_id: verify_gas_operator_licence_and_area
+  - type: attach_channel
+    channel_id: ch.anre_gas_licence_registry
+  - type: require_confirmation
+    tag: gas_operator_area
+    message_ro: Confirmă că operatorul ales deservește exact adresa.
+  source_claim_ids:
+  - claim.unc.gas_operator_lookup
+  status: in_review
+- id: rule.unc.gas_start
+  canonical_rule_id: utility_new_connection.gas_start
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: natural_gas
+    - op: eq
+      field: operator_code
+      value: gas_operator_confirmed
+    - op: eq
+      field: technical_approval_status
+      value: not_requested
+  effects:
+  - type: include_step
+    step_id: submit_gas_atr_request_and_operator_document_set
+  - type: include_requirement
+    requirement_id: req.gas_operator_atr_request
+  - type: include_requirement
+    requirement_id: req.gas_operator_document_set
+  - type: emit_warning
+    tag: gas_atr_fee_invoice_specific
+    message_ro: ANRE confirmă existența facturii pentru elaborarea ATR, dar cuantumul se ia numai de la operatorul competent.
+  source_claim_ids:
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.gas_requested
+  canonical_rule_id: utility_new_connection.gas_requested
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: natural_gas
+    - op: eq
+      field: technical_approval_status
+      value: requested
+  effects:
+  - type: include_step
+    step_id: track_gas_atr_invoice_payment_and_issuance
+  source_claim_ids:
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.gas_contract
+  canonical_rule_id: utility_new_connection.gas_contract
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: natural_gas
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: in
+      field: operator_contract_status
+      values:
+      - not_started
+      - pending
+      - unknown
+  effects:
+  - type: include_step
+    step_id: sign_gas_connection_contract
+  - type: emit_warning
+    tag: gas_contract_terms_operator_specific
+    message_ro: Folosește contractul și costurile emise de operatorul competent pentru adresă.
+  source_claim_ids:
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.gas_ready
+  canonical_rule_id: utility_new_connection.gas_ready
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: natural_gas
+    - op: eq
+      field: operator_code
+      value: gas_operator_confirmed
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: eq
+      field: operator_contract_status
+      value: signed
+  effects:
+  - type: include_step
+    step_id: handoff_to_gas_connection_construction
+  - type: trigger_child_event
+    event_type_id: ro.life.utility_connection_construction
+  source_claim_ids:
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.heat_colterm
+  canonical_rule_id: utility_new_connection.heat_colterm
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: district_heat
+    - op: eq
+      field: operator_code
+      value: colterm
+  effects:
+  - type: include_step
+    step_id: submit_colterm_standard_connection_request_for_technical_review
+  - type: attach_channel
+    channel_id: ch.colterm_connection
+  - type: emit_warning
+    tag: colterm_connection_page_stale
+    message_ro: Pagina oficială identificată este datată 2016; formularul, canalul și condițiile se reconfirmă.
+  - type: require_confirmation
+    tag: colterm_current_connection_conditions
+    message_ro: Așteaptă răspunsul tehnic adaptat cazului și confirmă toate formalitățile curente.
+  source_claim_ids:
+  - claim.unc.heat_case_specific
+  status: in_review
+- id: rule.unc.heat_other
+  canonical_rule_id: utility_new_connection.heat_other
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: district_heat
+    - op: in
+      field: operator_code
+      values:
+      - other
+      - unknown
+  effects:
+  - type: include_step
+    step_id: identify_and_contact_local_heat_operator
+  - type: require_confirmation
+    tag: local_heat_connection_route
+    message_ro: Racordarea la termoficare este locală; confirmă operatorul și regulamentul UAT.
+  source_claim_ids:
+  - claim.unc.heat_case_specific
+  status: in_review
+- id: rule.unc.heat_ready
+  canonical_rule_id: utility_new_connection.heat_ready
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: district_heat
+    - op: eq
+      field: operator_code
+      value: colterm
+    - op: eq
+      field: technical_approval_status
+      value: issued
+    - op: eq
+      field: operator_contract_status
+      value: signed
+  effects:
+  - type: include_step
+    step_id: handoff_to_heat_connection_construction
+  - type: trigger_child_event
+    event_type_id: ro.life.utility_connection_construction
+  source_claim_ids:
+  - claim.unc.heat_case_specific
+  status: in_review
+- id: rule.unc.internet_digi_start
+  canonical_rule_id: utility_new_connection.internet_digi_start
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: fixed_internet
+    - op: eq
+      field: operator_code
+      value: digi
+    - op: in
+      field: operator_contract_status
+      values:
+      - not_started
+      - pending
+      - unknown
+  effects:
+  - type: include_step
+    step_id: check_digi_availability_and_sign_service_contract
+  - type: attach_channel
+    channel_id: ch.digi_new_service
+  - type: emit_warning
+    tag: digi_installation_term_starts_from_contract
+    message_ro: Termenul publicat de instalare pornește de la semnarea contractului, dacă nu este stabilit alt termen.
+  source_claim_ids:
+  - claim.unc.digi_current_contract
+  - claim.unc.digi_install_90
+  status: in_review
+- id: rule.unc.internet_digi_ready
+  canonical_rule_id: utility_new_connection.internet_digi_ready
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: fixed_internet
+    - op: eq
+      field: operator_code
+      value: digi
+    - op: eq
+      field: operator_contract_status
+      value: signed
+  effects:
+  - type: include_step
+    step_id: handoff_to_digi_installation
+  - type: trigger_child_event
+    event_type_id: ro.life.utility_connection_construction
+  - type: emit_advice
+    tag: digi_installation_max_90_days_unless_other_term
+    message_ro: Condițiile 2026 publică maximum 90 de zile, dacă nu este prevăzut sau agreat alt termen.
+  source_claim_ids:
+  - claim.unc.digi_install_90
+  status: in_review
+- id: rule.unc.internet_other
+  canonical_rule_id: utility_new_connection.internet_other
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: utility_type
+      value: fixed_internet
+    - op: in
+      field: operator_code
+      values:
+      - orange
+      - other
+      - unknown
+  effects:
+  - type: include_step
+    step_id: obtain_provider_coverage_offer_and_installation_terms
+  - type: require_confirmation
+    tag: internet_provider_new_connection_terms
+    message_ro: Confirmă acoperirea, costurile, echipamentele, autorizațiile și termenul în oferta furnizorului ales.
+  - type: emit_warning
+    tag: digi_deadline_not_portable
+    message_ro: Nu aplica termenul DIGI altui furnizor.
+  source_claim_ids:
+  - claim.unc.digi_install_90
+  status: in_review
+- id: rule.unc.technical_rejected
+  canonical_rule_id: utility_new_connection.technical_rejected
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: technical_approval_status
+    value: rejected
+  effects:
+  - type: block
+    tag: technical_approval_rejected
+    message_ro: Nu trece la contract sau execuție după respingerea avizului/ATR.
+  - type: include_step
+    step_id: review_operator_rejection_and_correction_route
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  - claim.unc.water_three_steps
+  - claim.unc.gas_steps
+  status: in_review
+- id: rule.unc.contract_rejected
+  canonical_rule_id: utility_new_connection.contract_rejected
+  event_type_id: ro.life.utility_new_connection
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: operator_contract_status
+    value: rejected
+  effects:
+  - type: block
+    tag: operator_contract_not_concluded
+    message_ro: Fără contractul specific utilității nu se deschide automat execuția.
+  - type: include_step
+    step_id: review_contract_rejection_or_alternative
+  source_claim_ids:
+  - claim.unc.electricity_stages
+  - claim.unc.gas_steps
+  - claim.unc.water_three_steps
+  status: in_review

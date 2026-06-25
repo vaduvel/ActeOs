@@ -1,0 +1,735 @@
+batch_id: B16_CHANGE_INTERNET_HOLDER
+defaults:
+  event_type_id: ro.life.change_internet_holder
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.cih.001
+  desc: Orange, persoană fizică, cesiune voluntară la aceeași adresă, acord în așteptare.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - obtain_or_wait_for_orange_written_approval
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    needs_confirmation:
+    - orange_written_approval
+- id: fx.cih.002
+  desc: Orange, cesiune aprobată în scris la aceeași adresă.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: granted
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+- id: fx.cih.003
+  desc: Orange, transfer și mutare la altă adresă.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: property_transfer
+    same_service_address: 'no'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: not_requested
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - obtain_orange_prior_relocation_approval
+    - schedule_orange_technician_for_equipment
+    - obtain_or_wait_for_orange_written_approval
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    warnings_present:
+    - orange_transfer_costs_not_precalculated
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    - req.orange_equipment_handover_or_move
+    needs_confirmation:
+    - orange_written_approval
+- id: fx.cih.004
+  desc: Orange a refuzat cesiunea.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: denied
+  expect:
+    status: blocked
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - request_written_reason_or_alternative_contract_route
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    blocks:
+    - orange_assignment_not_approved
+- id: fx.cih.005
+  desc: Orange Business, segmentul juridic trebuie confirmat.
+  facts:
+    provider: orange
+    customer_type: business
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - confirm_orange_business_segment_and_channel
+    - obtain_or_wait_for_orange_written_approval
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    channels:
+    - ch.orange_assignment
+    - ch.orange_business
+    requirements:
+    - req.orange_standard_assignment_contract
+    needs_confirmation:
+    - orange_business_segment
+    - orange_written_approval
+- id: fx.cih.006
+  desc: Orange, titularul a decedat.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: legal_successor
+    same_service_address: 'yes'
+    current_holder_participation: deceased
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - obtain_or_wait_for_orange_written_approval
+    - open_provider_deceased_holder_or_successor_route
+    advice_tags:
+    - provider_specific_assignment
+    needs_confirmation:
+    - orange_written_approval
+    - deceased_holder_documents
+- id: fx.cih.007
+  desc: DIGI, schimbare voluntară cerută personal.
+  facts:
+    provider: digi
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - submit_digi_beneficiary_change_form_or_addendum
+    advice_tags:
+    - provider_specific_assignment
+    - digi_terms_current_2026
+    - digi_effective_next_month
+    channels:
+    - ch.digi_customer_relations
+    requirements:
+    - req.digi_standard_form_or_addendum
+- id: fx.cih.008
+  desc: DIGI, cumpărător reprezentat prin procură.
+  facts:
+    provider: digi
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: property_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: power_of_attorney
+    equipment_inventory_status: complete
+    provider_approval_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - submit_digi_beneficiary_change_form_or_addendum
+    advice_tags:
+    - provider_specific_assignment
+    - digi_terms_current_2026
+    - digi_effective_next_month
+    channels:
+    - ch.digi_customer_relations
+    requirements:
+    - req.digi_standard_form_or_addendum
+- id: fx.cih.009
+  desc: DIGI, nimeni nu se prezintă și nu există procură.
+  facts:
+    provider: digi
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: none
+    equipment_inventory_status: complete
+    provider_approval_status: not_applicable
+  expect:
+    status: blocked
+    included_steps:
+    - classify_provider_service_and_change
+    advice_tags:
+    - provider_specific_assignment
+    - digi_terms_current_2026
+    channels:
+    - ch.digi_customer_relations
+    requirements:
+    - req.personal_presence_or_power_of_attorney
+    blocks:
+    - digi_valid_requester_missing
+- id: fx.cih.010
+  desc: DIGI, succesor legal după deces.
+  facts:
+    provider: digi
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: legal_successor
+    same_service_address: 'yes'
+    current_holder_participation: deceased
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - invoke_digi_legal_successor_route
+    - open_provider_deceased_holder_or_successor_route
+    advice_tags:
+    - provider_specific_assignment
+    - digi_terms_current_2026
+    channels:
+    - ch.digi_customer_relations
+    requirements:
+    - req.proof_of_legal_successor_status
+    needs_confirmation:
+    - digi_successor_operational_checklist
+    - deceased_holder_documents
+- id: fx.cih.011
+  desc: DIGI, cesiune voluntară fără participarea titularului actual.
+  facts:
+    provider: digi
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: unavailable
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: not_applicable
+  expect:
+    status: blocked
+    included_steps:
+    - classify_provider_service_and_change
+    - submit_digi_beneficiary_change_form_or_addendum
+    advice_tags:
+    - provider_specific_assignment
+    - digi_terms_current_2026
+    - digi_effective_next_month
+    channels:
+    - ch.digi_customer_relations
+    requirements:
+    - req.digi_standard_form_or_addendum
+    needs_confirmation:
+    - absent_current_holder_procedure
+    blocks:
+    - current_holder_consent_route_unresolved
+- id: fx.cih.012
+  desc: DIGI, doar corectarea datelor beneficiarului.
+  facts:
+    provider: digi
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: data_correction
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - submit_digi_beneficiary_change_form_or_addendum
+    - use_contract_data_modification_route
+    advice_tags:
+    - provider_specific_assignment
+    - digi_terms_current_2026
+    - digi_effective_next_month
+    warnings_present:
+    - data_correction_not_always_assignment
+    channels:
+    - ch.digi_customer_relations
+    requirements:
+    - req.digi_standard_form_or_addendum
+- id: fx.cih.013
+  desc: Vodafone, checklistul operatorului nu este ancorat în batch.
+  facts:
+    provider: vodafone
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: unknown
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - obtain_provider_live_assignment_checklist
+    advice_tags:
+    - provider_specific_assignment
+    needs_confirmation:
+    - provider_live_assignment_rules
+- id: fx.cih.014
+  desc: Alt furnizor local de internet.
+  facts:
+    provider: other
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: unknown
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - obtain_provider_live_assignment_checklist
+    advice_tags:
+    - provider_specific_assignment
+    needs_confirmation:
+    - provider_live_assignment_rules
+- id: fx.cih.015
+  desc: Furnizor necunoscut.
+  facts:
+    provider: unknown
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: unknown
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - identify_internet_provider
+    advice_tags:
+    - provider_specific_assignment
+    needs_confirmation:
+    - internet_provider
+- id: fx.cih.016
+  desc: Serviciu exclusiv mobil, nu internet fix.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: mobile_only
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - use_mobile_contract_assignment_route
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - obtain_or_wait_for_orange_written_approval
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    warnings_present:
+    - fixed_installation_rules_not_applicable
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    needs_confirmation:
+    - orange_written_approval
+- id: fx.cih.017
+  desc: Noul titular nu are act de identitate disponibil.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: unavailable
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: blocked
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - obtain_or_wait_for_orange_written_approval
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    - req.new_holder_identity
+    needs_confirmation:
+    - orange_written_approval
+    blocks:
+    - new_holder_identity_missing
+- id: fx.cih.018
+  desc: Inventarul echipamentelor în custodie este incomplet.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: incomplete
+    provider_approval_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - obtain_or_wait_for_orange_written_approval
+    - inventory_provider_equipment
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    warnings_present:
+    - equipment_obligations_unresolved
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    - req.provider_equipment_inventory
+    needs_confirmation:
+    - orange_written_approval
+- id: fx.cih.019
+  desc: Nu este clar dacă serviciul rămâne la aceeași adresă.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: unknown
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_provider_service_and_change
+    - request_orange_written_assignment_consent
+    - visit_orange_or_partner_shop_for_assignment
+    - obtain_or_wait_for_orange_written_approval
+    advice_tags:
+    - provider_specific_assignment
+    - orange_consent_before_effect
+    - orange_individual_shop_only
+    channels:
+    - ch.orange_assignment
+    - ch.orange_shop
+    requirements:
+    - req.orange_standard_assignment_contract
+    needs_confirmation:
+    - orange_written_approval
+    - service_address_change
+- id: fx.cih.020
+  desc: Lipsește faptul obligatoriu `provider`.
+  facts:
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - provider
+- id: fx.cih.021
+  desc: Lipsește faptul obligatoriu `customer_type`.
+  facts:
+    provider: orange
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - customer_type
+- id: fx.cih.022
+  desc: Lipsește faptul obligatoriu `service_scope`.
+  facts:
+    provider: orange
+    customer_type: individual
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - service_scope
+- id: fx.cih.023
+  desc: Lipsește faptul obligatoriu `change_reason`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_reason
+- id: fx.cih.024
+  desc: Lipsește faptul obligatoriu `same_service_address`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - same_service_address
+- id: fx.cih.025
+  desc: Lipsește faptul obligatoriu `current_holder_participation`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - current_holder_participation
+- id: fx.cih.026
+  desc: Lipsește faptul obligatoriu `new_holder_identity_status`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - new_holder_identity_status
+- id: fx.cih.027
+  desc: Lipsește faptul obligatoriu `representation_mode`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    equipment_inventory_status: complete
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - representation_mode
+- id: fx.cih.028
+  desc: Lipsește faptul obligatoriu `equipment_inventory_status`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    provider_approval_status: pending
+  expect:
+    status: needs_facts
+    missing_facts:
+    - equipment_inventory_status
+- id: fx.cih.029
+  desc: Lipsește faptul obligatoriu `provider_approval_status`.
+  facts:
+    provider: orange
+    customer_type: individual
+    service_scope: fixed_internet
+    change_reason: voluntary_transfer
+    same_service_address: 'yes'
+    current_holder_participation: available
+    new_holder_identity_status: available
+    representation_mode: personal
+    equipment_inventory_status: complete
+  expect:
+    status: needs_facts
+    missing_facts:
+    - provider_approval_status
+- id: fx.cih.030
+  desc: Niciun fapt furnizat; motorul cere toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - provider
+    - customer_type
+    - service_scope
+    - change_reason
+    - same_service_address
+    - current_holder_participation
+    - new_holder_identity_status
+    - representation_mode
+    - equipment_inventory_status
+    - provider_approval_status

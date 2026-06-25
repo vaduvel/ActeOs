@@ -1,0 +1,613 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B16_CHANGE_INTERNET_HOLDER
+event_type_id: ro.life.change_internet_holder
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- provider
+- customer_type
+- service_scope
+- change_reason
+- same_service_address
+- current_holder_participation
+- new_holder_identity_status
+- representation_mode
+- equipment_inventory_status
+- provider_approval_status
+rules:
+- id: rule.cih.classify
+  canonical_rule_id: change_internet_holder.classify
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_provider_service_and_change
+  - type: emit_advice
+    tag: provider_specific_assignment
+    message_ro: Schimbarea titularului este o operațiune contractuală specifică furnizorului, nu un formular universal.
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.provider_unknown
+  canonical_rule_id: change_internet_holder.provider_unknown
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: provider
+    value: unknown
+  effects:
+  - type: include_step
+    step_id: identify_internet_provider
+  - type: require_confirmation
+    tag: internet_provider
+    message_ro: Identifică furnizorul din contract sau factură înainte de a genera pașii.
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.unverified_provider
+  canonical_rule_id: change_internet_holder.unverified_provider
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: provider
+    values:
+    - vodafone
+    - other
+  effects:
+  - type: include_step
+    step_id: obtain_provider_live_assignment_checklist
+  - type: require_confirmation
+    tag: provider_live_assignment_rules
+    message_ro: Nu a fost ancorat în acest batch un checklist oficial curent pentru acest furnizor; confirmă documentele,
+      canalul, costurile și termenul.
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.scope_unknown
+  canonical_rule_id: change_internet_holder.scope_unknown
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_scope
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: internet_service_scope
+    message_ro: Confirmă dacă este internet fix, pachet fix sau numai serviciu mobil.
+  source_claim_ids:
+  - claim.cih.orange_fixed_prior_approval
+  status: in_review
+- id: rule.cih.mobile_scope
+  canonical_rule_id: change_internet_holder.mobile_scope
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_scope
+    value: mobile_only
+  effects:
+  - type: include_step
+    step_id: use_mobile_contract_assignment_route
+  - type: emit_warning
+    tag: fixed_installation_rules_not_applicable
+    message_ro: Regulile despre locație și instalarea internetului fix nu se aplică automat serviciului exclusiv mobil.
+  source_claim_ids:
+  - claim.cih.orange_fixed_prior_approval
+  status: in_review
+- id: rule.cih.orange_assignment
+  canonical_rule_id: change_internet_holder.orange_assignment
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: in
+      field: change_reason
+      values:
+      - voluntary_transfer
+      - property_transfer
+  effects:
+  - type: include_step
+    step_id: request_orange_written_assignment_consent
+  - type: include_requirement
+    requirement_id: req.orange_standard_assignment_contract
+  - type: emit_advice
+    tag: orange_consent_before_effect
+    message_ro: Cesiunea produce efecte față de Orange numai după acordul scris al operatorului.
+  - type: attach_channel
+    channel_id: ch.orange_assignment
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  status: in_review
+- id: rule.cih.orange_individual
+  canonical_rule_id: change_internet_holder.orange_individual
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: eq
+      field: customer_type
+      value: individual
+    - op: in
+      field: change_reason
+      values:
+      - voluntary_transfer
+      - property_transfer
+  effects:
+  - type: include_step
+    step_id: visit_orange_or_partner_shop_for_assignment
+  - type: attach_channel
+    channel_id: ch.orange_shop
+  - type: emit_advice
+    tag: orange_individual_shop_only
+    message_ro: Pentru persoana fizică, pagina oficială indică cesiunea în magazin Orange sau partener.
+  source_claim_ids:
+  - claim.cih.orange_individual_shop
+  status: in_review
+- id: rule.cih.orange_business
+  canonical_rule_id: change_internet_holder.orange_business
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: eq
+      field: customer_type
+      value: business
+  effects:
+  - type: include_step
+    step_id: confirm_orange_business_segment_and_channel
+  - type: attach_channel
+    channel_id: ch.orange_business
+  - type: require_confirmation
+    tag: orange_business_segment
+    message_ro: Canalul de cesiune diferă după segmentul juridic; confirmă segmentul contractual înaintea depunerii.
+  source_claim_ids:
+  - claim.cih.orange_modification
+  - claim.cih.orange_individual_shop
+  status: in_review
+- id: rule.cih.orange_relocation
+  canonical_rule_id: change_internet_holder.orange_relocation
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: in
+      field: service_scope
+      values:
+      - fixed_internet
+      - fixed_bundle
+    - op: eq
+      field: same_service_address
+      value: 'no'
+  effects:
+  - type: include_step
+    step_id: obtain_orange_prior_relocation_approval
+  - type: include_step
+    step_id: schedule_orange_technician_for_equipment
+  - type: emit_warning
+    tag: orange_transfer_costs_not_precalculated
+    message_ro: Pot exista costuri contractuale de transfer și punere în funcțiune; cuantumul se confirmă în oferta/operatorul
+      curent.
+  - type: include_requirement
+    requirement_id: req.orange_equipment_handover_or_move
+  source_claim_ids:
+  - claim.cih.orange_fixed_prior_approval
+  - claim.cih.orange_equipment_move
+  status: in_review
+- id: rule.cih.orange_pending
+  canonical_rule_id: change_internet_holder.orange_pending
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: in
+      field: provider_approval_status
+      values:
+      - not_requested
+      - pending
+      - unknown
+  effects:
+  - type: include_step
+    step_id: obtain_or_wait_for_orange_written_approval
+  - type: require_confirmation
+    tag: orange_written_approval
+    message_ro: Nu considera cesiunea finală înainte de acordul scris Orange.
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  status: in_review
+- id: rule.cih.orange_denied
+  canonical_rule_id: change_internet_holder.orange_denied
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: eq
+      field: provider_approval_status
+      value: denied
+  effects:
+  - type: block
+    tag: orange_assignment_not_approved
+    message_ro: Operatorul nu a aprobat transferul; contractul nu se mută automat.
+  - type: include_step
+    step_id: request_written_reason_or_alternative_contract_route
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  status: in_review
+- id: rule.cih.digi_route
+  canonical_rule_id: change_internet_holder.digi_route
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: provider
+    value: digi
+  effects:
+  - type: attach_channel
+    channel_id: ch.digi_customer_relations
+  - type: emit_advice
+    tag: digi_terms_current_2026
+    message_ro: Rulesetul folosește condițiile generale indicate oficial ca fiind în vigoare din 27.05.2026.
+  source_claim_ids:
+  - claim.cih.digi_current_contract
+  status: in_review
+- id: rule.cih.digi_change_personal
+  canonical_rule_id: change_internet_holder.digi_change_personal
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: digi
+    - op: in
+      field: change_reason
+      values:
+      - voluntary_transfer
+      - property_transfer
+      - data_correction
+    - op: in
+      field: representation_mode
+      values:
+      - personal
+      - power_of_attorney
+  effects:
+  - type: include_step
+    step_id: submit_digi_beneficiary_change_form_or_addendum
+  - type: include_requirement
+    requirement_id: req.digi_standard_form_or_addendum
+  - type: emit_advice
+    tag: digi_effective_next_month
+    message_ro: Condițiile generale indică intrarea în vigoare de la prima zi a lunii următoare.
+  source_claim_ids:
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.digi_no_representation
+  canonical_rule_id: change_internet_holder.digi_no_representation
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: digi
+    - op: eq
+      field: representation_mode
+      value: none
+    - op: in
+      field: change_reason
+      values:
+      - voluntary_transfer
+      - property_transfer
+      - data_correction
+  effects:
+  - type: block
+    tag: digi_valid_requester_missing
+    message_ro: Cererea trebuie făcută personal sau prin mandatar împuternicit prin procură.
+  - type: include_requirement
+    requirement_id: req.personal_presence_or_power_of_attorney
+  source_claim_ids:
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.digi_successor
+  canonical_rule_id: change_internet_holder.digi_successor
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: digi
+    - op: eq
+      field: change_reason
+      value: legal_successor
+  effects:
+  - type: include_step
+    step_id: invoke_digi_legal_successor_route
+  - type: include_requirement
+    requirement_id: req.proof_of_legal_successor_status
+  - type: require_confirmation
+    tag: digi_successor_operational_checklist
+    message_ro: Condițiile confirmă subrogarea, dar lista operațională de documente trebuie cerută DIGI.
+  source_claim_ids:
+  - claim.cih.digi_successors
+  status: in_review
+- id: rule.cih.unavailable_holder
+  canonical_rule_id: change_internet_holder.unavailable_holder
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: change_reason
+      values:
+      - voluntary_transfer
+      - property_transfer
+    - op: eq
+      field: current_holder_participation
+      value: unavailable
+  effects:
+  - type: block
+    tag: current_holder_consent_route_unresolved
+    message_ro: Nu presupune consimțământul titularului absent; cere ruta juridică specifică furnizorului.
+  - type: require_confirmation
+    tag: absent_current_holder_procedure
+    message_ro: Confirmă procura, reprezentarea sau alternativa contractuală acceptată de furnizor.
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.deceased_holder
+  canonical_rule_id: change_internet_holder.deceased_holder
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: current_holder_participation
+    value: deceased
+  effects:
+  - type: include_step
+    step_id: open_provider_deceased_holder_or_successor_route
+  - type: require_confirmation
+    tag: deceased_holder_documents
+    message_ro: Confirmă actele și efectul asupra contractului direct la furnizor; nu trata decesul ca cesiune voluntară.
+  source_claim_ids:
+  - claim.cih.digi_successors
+  - claim.cih.orange_assignment
+  status: in_review
+- id: rule.cih.new_identity_missing
+  canonical_rule_id: change_internet_holder.new_identity_missing
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: new_holder_identity_status
+    value: unavailable
+  effects:
+  - type: block
+    tag: new_holder_identity_missing
+    message_ro: Noul titular nu poate fi identificat contractual.
+  - type: include_requirement
+    requirement_id: req.new_holder_identity
+  source_claim_ids:
+  - claim.cih.orange_assignment
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.data_correction
+  canonical_rule_id: change_internet_holder.data_correction
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: change_reason
+    value: data_correction
+  effects:
+  - type: include_step
+    step_id: use_contract_data_modification_route
+  - type: emit_warning
+    tag: data_correction_not_always_assignment
+    message_ro: O corectare de date nu este automat o cesiune completă a contractului.
+  source_claim_ids:
+  - claim.cih.orange_modification
+  - claim.cih.digi_beneficiary_change
+  status: in_review
+- id: rule.cih.address_move
+  canonical_rule_id: change_internet_holder.address_move
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: change_reason
+    value: address_move
+  effects:
+  - type: include_step
+    step_id: open_service_relocation_route
+  - type: emit_warning
+    tag: address_move_separate_from_holder_change
+    message_ro: Mutarea serviciului la altă adresă cere verificare de acoperire/instalare, chiar dacă titularul rămâne sau
+      se schimbă.
+  source_claim_ids:
+  - claim.cih.orange_fixed_prior_approval
+  status: in_review
+- id: rule.cih.address_unknown
+  canonical_rule_id: change_internet_holder.address_unknown
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: same_service_address
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: service_address_change
+    message_ro: Confirmă dacă serviciul rămâne la aceeași adresă.
+  source_claim_ids:
+  - claim.cih.orange_fixed_prior_approval
+  status: in_review
+- id: rule.cih.equipment_incomplete
+  canonical_rule_id: change_internet_holder.equipment_incomplete
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider
+      value: orange
+    - op: eq
+      field: equipment_inventory_status
+      value: incomplete
+  effects:
+  - type: include_step
+    step_id: inventory_provider_equipment
+  - type: include_requirement
+    requirement_id: req.provider_equipment_inventory
+  - type: emit_warning
+    tag: equipment_obligations_unresolved
+    message_ro: Clarifică echipamentele în custodie, chirie sau de returnat înainte de transfer.
+  source_claim_ids:
+  - claim.cih.orange_equipment_move
+  status: in_review
+- id: rule.cih.customer_type_unknown
+  canonical_rule_id: change_internet_holder.customer_type_unknown
+  event_type_id: ro.life.change_internet_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: customer_type
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: customer_contract_type
+    message_ro: Confirmă dacă titularul este persoană fizică sau juridică.
+  source_claim_ids:
+  - claim.cih.orange_modification
+  status: in_review

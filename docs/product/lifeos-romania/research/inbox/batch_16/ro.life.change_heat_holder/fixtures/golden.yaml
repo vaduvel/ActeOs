@@ -1,0 +1,587 @@
+batch_id: B16_CHANGE_HEAT_HOLDER
+defaults:
+  event_type_id: ro.life.change_heat_holder
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.chh.001
+  desc: Casă din Timișoara, contract direct COLTERM, nou proprietar, checklistul 2026 neconfirmat.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - prepare_colterm_individual_contract_request
+    - submit_colterm_holder_change_request
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.identity_document
+    - req.property_title
+    needs_confirmation:
+    - colterm_live_checklist
+- id: fx.chh.002
+  desc: Casă din Timișoara, nou proprietar, operatorul a confirmat checklistul curent.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - prepare_colterm_individual_contract_request
+    - submit_colterm_holder_change_request
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.identity_document
+    - req.property_title
+- id: fx.chh.003
+  desc: Asociație de proprietari care schimbă administratorul.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: owners_association
+    change_reason: association_admin_change
+    new_holder_role: owners_association
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - notify_colterm_of_association_admin_change
+    advice_tags:
+    - holder_change_not_universal
+    - association_notifies_supplier
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.association_constitution_act
+    - req.association_representative_identity
+    - req.colterm_admin_change_notice
+    needs_confirmation:
+    - colterm_live_checklist
+- id: fx.chh.004
+  desc: Societate care actualizează titularul spațiului folosit ca punct de lucru.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: company
+    change_reason: data_correction
+    new_holder_role: company
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - prepare_colterm_company_contract_file
+    - submit_colterm_company_request
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.company_registration_certificate
+    - req.company_tax_registration
+    - req.point_of_work_evidence
+    - req.property_or_lease_evidence
+    needs_confirmation:
+    - colterm_live_checklist
+- id: fx.chh.005
+  desc: Chiriaș care vrea contract direct de termoficare pe numele său.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: tenant_change
+    new_holder_role: tenant_user
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - request_current_colterm_tenant_route
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    needs_confirmation:
+    - colterm_tenant_documents
+    - colterm_live_checklist
+- id: fx.chh.006
+  desc: Succesor legal după decesul titularului.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: legal_successor
+    new_holder_role: legal_successor
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - request_colterm_successor_assessment
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    needs_confirmation:
+    - colterm_successor_checklist
+    - colterm_live_checklist
+- id: fx.chh.007
+  desc: Schimbarea titularului este cerută împreună cu un branșament nou.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'yes'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - prepare_colterm_individual_contract_request
+    - submit_colterm_holder_change_request
+    - separate_holder_change_from_new_connection
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    - new_connection_requires_technical_route
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.identity_document
+    - req.property_title
+    needs_confirmation:
+    - colterm_live_checklist
+    child_events:
+    - ro.life.utility_new_connection
+- id: fx.chh.008
+  desc: Imobil încălzit individual cu gaze, nu prin termoficare.
+  facts:
+    heating_service_type: individual_gas
+    provider_scope: unknown
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: blocked
+    included_steps:
+    - classify_heating_service_and_contract
+    - route_to_energy_supplier_contract_change
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - not_district_heat_contract
+    blocks:
+    - district_heat_scope_mismatch
+- id: fx.chh.009
+  desc: Imobil încălzit electric, fără contract de termoficare.
+  facts:
+    heating_service_type: electric_heating
+    provider_scope: unknown
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: blocked
+    included_steps:
+    - classify_heating_service_and_contract
+    - route_to_energy_supplier_contract_change
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - not_district_heat_contract
+    blocks:
+    - district_heat_scope_mismatch
+- id: fx.chh.010
+  desc: Utilizatorul nu știe ce tip de serviciu de încălzire are.
+  facts:
+    heating_service_type: unknown
+    provider_scope: unknown
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - identify_heating_service
+    advice_tags:
+    - holder_change_not_universal
+    needs_confirmation:
+    - heating_service_identification
+- id: fx.chh.011
+  desc: Termoficare într-un alt UAT, cu alt operator local.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: other_local_operator
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - obtain_local_heat_operator_checklist
+    advice_tags:
+    - holder_change_not_universal
+    channels:
+    - ch.local_heat_operator
+    needs_confirmation:
+    - local_heat_operator_checklist
+- id: fx.chh.012
+  desc: Noul proprietar nu are încă dovada dreptului de proprietate.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: unavailable
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: blocked
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.property_title
+    needs_confirmation:
+    - colterm_live_checklist
+    blocks:
+    - property_evidence_missing
+- id: fx.chh.013
+  desc: Solicitantul nu are act de identitate sau dovadă de reprezentare.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: unavailable
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: blocked
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.identity_or_representation
+    needs_confirmation:
+    - colterm_live_checklist
+    blocks:
+    - identity_or_representation_missing
+- id: fx.chh.014
+  desc: Apartament din condominiu vândut, dar contractul este al asociației.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: owners_association
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - confirm_if_association_contract_is_affected
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    - apartment_sale_not_automatically_association_holder_change
+    channels:
+    - ch.colterm_contracts
+    needs_confirmation:
+    - association_contract_effect
+    - colterm_live_checklist
+- id: fx.chh.015
+  desc: Corectare de date la contractul direct al proprietarului.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: data_correction
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: ok
+    included_steps:
+    - classify_heating_service_and_contract
+    - confirm_live_colterm_contract_route
+    - prepare_colterm_individual_contract_request
+    - submit_colterm_holder_change_request
+    advice_tags:
+    - holder_change_not_universal
+    warnings_present:
+    - colterm_checklist_stale
+    - no_verified_colterm_fee_or_deadline
+    channels:
+    - ch.colterm_contracts
+    requirements:
+    - req.identity_document
+    - req.property_title
+    needs_confirmation:
+    - colterm_live_checklist
+- id: fx.chh.016
+  desc: Lipsește faptul obligatoriu `heating_service_type`.
+  facts:
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - heating_service_type
+- id: fx.chh.017
+  desc: Lipsește faptul obligatoriu `provider_scope`.
+  facts:
+    heating_service_type: district_heating
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - provider_scope
+- id: fx.chh.018
+  desc: Lipsește faptul obligatoriu `contract_arrangement`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - contract_arrangement
+- id: fx.chh.019
+  desc: Lipsește faptul obligatoriu `change_reason`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_reason
+- id: fx.chh.020
+  desc: Lipsește faptul obligatoriu `new_holder_role`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - new_holder_role
+- id: fx.chh.021
+  desc: Lipsește faptul obligatoriu `new_connection_needed`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - new_connection_needed
+- id: fx.chh.022
+  desc: Lipsește faptul obligatoriu `ownership_or_use_evidence_status`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    identity_or_representation_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - ownership_or_use_evidence_status
+- id: fx.chh.023
+  desc: Lipsește faptul obligatoriu `identity_or_representation_status`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    provider_current_checklist_confirmed: not_confirmed
+  expect:
+    status: needs_facts
+    missing_facts:
+    - identity_or_representation_status
+- id: fx.chh.024
+  desc: Lipsește faptul obligatoriu `provider_current_checklist_confirmed`.
+  facts:
+    heating_service_type: district_heating
+    provider_scope: colterm_timisoara
+    contract_arrangement: direct_individual
+    change_reason: property_transfer
+    new_holder_role: owner
+    new_connection_needed: 'no'
+    ownership_or_use_evidence_status: available
+    identity_or_representation_status: available
+  expect:
+    status: needs_facts
+    missing_facts:
+    - provider_current_checklist_confirmed
+- id: fx.chh.025
+  desc: Niciun fapt furnizat; motorul cere toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - heating_service_type
+    - provider_scope
+    - contract_arrangement
+    - change_reason
+    - new_holder_role
+    - new_connection_needed
+    - ownership_or_use_evidence_status
+    - identity_or_representation_status
+    - provider_current_checklist_confirmed

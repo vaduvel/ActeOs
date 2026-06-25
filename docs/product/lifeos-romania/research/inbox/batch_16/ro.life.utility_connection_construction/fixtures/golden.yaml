@@ -1,0 +1,1057 @@
+batch_id: B16_UTILITY_CONNECTION_CONSTRUCTION
+defaults:
+  event_type_id: ro.life.utility_connection_construction
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.ucc.001
+  desc: Electricitate, toate precondițiile sunt îndeplinite și lucrările nu au început.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - execute_electricity_connection_by_distributor_or_anre_attested_firm
+    advice_tags:
+    - construction_after_approval
+    - electric_operator_managed_90_calendar_days
+    warnings_present:
+    - executor_obtains_work_approvals
+- id: fx.ucc.002
+  desc: Electricitate, lucrările sunt în curs.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: in_progress
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - track_electricity_work_against_atr_contract_and_approvals
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - do_not_change_technical_solution_unilaterally
+- id: fx.ucc.003
+  desc: Electricitate, lucrări finalizate, recepție în așteptare.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - request_electricity_connection_reception_and_commissioning
+    advice_tags:
+    - construction_after_approval
+    - electric_reception_5_working_days_estimated
+- id: fx.ucc.004
+  desc: Electricitate, recepție acceptată, dosarul instalației este incomplet.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: accepted
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.complete_user_installation_file
+    blocks:
+    - user_installation_file_incomplete
+- id: fx.ucc.005
+  desc: Electricitate, recepție acceptată, dosar complet, contract de furnizare nesemnat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: accepted
+    user_installation_file_status: complete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - obtain_electricity_connection_certificate
+    - sign_electricity_supply_contract
+    advice_tags:
+    - construction_after_approval
+    - electric_certificate_3_working_days
+- id: fx.ucc.006
+  desc: Electricitate, recepție acceptată, dosar complet și contract de furnizare semnat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: accepted
+    user_installation_file_status: complete
+    supply_contract_status: signed
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - request_meter_and_energization
+    advice_tags:
+    - construction_after_approval
+    - electric_meter_energization_5_working_days
+- id: fx.ucc.007
+  desc: Electricitate, recepția a fost respinsă.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: rejected
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - remedy_and_repeat_electricity_reception
+    advice_tags:
+    - construction_after_approval
+    blocks:
+    - electric_reception_rejected
+- id: fx.ucc.008
+  desc: Electricitate, ATR/avizul tehnic lipsește.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: missing
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.valid_technical_approval
+    blocks:
+    - technical_approval_missing
+- id: fx.ucc.009
+  desc: Electricitate, contractul de racordare nu este semnat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: unsigned
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.signed_connection_contract
+    blocks:
+    - connection_contract_not_signed
+- id: fx.ucc.010
+  desc: Electricitate, proiectul tehnic lipsește.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: missing
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.approved_technical_design
+    blocks:
+    - approved_design_missing
+- id: fx.ucc.011
+  desc: Electricitate, autorizația este încă în lucru.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: pending
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.required_work_permits_and_agreements
+    blocks:
+    - work_authorization_missing
+- id: fx.ucc.012
+  desc: Electricitate, firma nu are atestarea verificată.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: unverified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.executor_authorization_verification
+    blocks:
+    - executor_authorization_not_verified
+- id: fx.ucc.013
+  desc: Electricitate, soluția include extindere de rețea.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - execute_electricity_connection_by_distributor_or_anre_attested_firm
+    - follow_electric_network_extension_scope_from_atr_and_contract
+    advice_tags:
+    - construction_after_approval
+    - electric_operator_managed_90_calendar_days
+    warnings_present:
+    - executor_obtains_work_approvals
+    needs_confirmation:
+    - electric_extension_permits_and_ownership
+- id: fx.ucc.014
+  desc: Apă/canal Aquatim, aviz, contract pregătit, proiect, autorizație și firmă verificate.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    operator_code: aquatim
+    technical_approval_status: issued
+    connection_contract_status: prepared
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - execute_water_sewer_connection_with_authorized_firm
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - aquatim_is_not_designer_or_executor
+- id: fx.ucc.015
+  desc: Apă/canal, lucrările s-au terminat și se cere recepția Aquatim.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    operator_code: aquatim
+    technical_approval_status: issued
+    connection_contract_status: prepared
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - request_aquatim_reception_and_meter_sealing
+    advice_tags:
+    - construction_after_approval
+    channels:
+    - ch.aquatim_reception
+- id: fx.ucc.016
+  desc: Apă/canal, recepția Aquatim este acceptată.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    operator_code: aquatim
+    technical_approval_status: issued
+    connection_contract_status: prepared
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: accepted
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - activate_aquatim_service_contract_after_reception
+    advice_tags:
+    - construction_after_approval
+    - aquatim_contract_effect_after_reception
+- id: fx.ucc.017
+  desc: Apă/canal, recepția este respinsă.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    operator_code: aquatim
+    technical_approval_status: issued
+    connection_contract_status: prepared
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: rejected
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - remedy_and_repeat_aquatim_reception
+    advice_tags:
+    - construction_after_approval
+    blocks:
+    - water_reception_rejected
+- id: fx.ucc.018
+  desc: Apă/canal, lucrarea este extindere de rețea.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    operator_code: aquatim
+    technical_approval_status: issued
+    connection_contract_status: prepared
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - execute_water_sewer_connection_with_authorized_firm
+    - verify_aquatim_extension_design_and_urbanism_documents
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - aquatim_is_not_designer_or_executor
+    requirements:
+    - req.urbanism_certificate
+    - req.extension_land_registry_extract
+    - req.extension_technical_design
+    - req.extension_placement_approval
+    - req.urbanism_certificate_imposed_documents
+- id: fx.ucc.019
+  desc: Apă/canal în alt UAT și cu alt operator.
+  facts:
+    utility_type: water_sewer
+    pilot_area: other_uat
+    operator_code: other
+    technical_approval_status: issued
+    connection_contract_status: prepared
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - obtain_local_water_operator_construction_and_reception_route
+    advice_tags:
+    - construction_after_approval
+    needs_confirmation:
+    - local_water_construction_rules
+- id: fx.ucc.020
+  desc: Gaze, toate precondițiile sunt îndeplinite și execuția nu a început.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    operator_code: gas_operator_confirmed
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - verify_gas_authorization_type_and_service_contracts
+    - execute_gas_connection_and_installation
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - gas_authorization_scope_matters
+    requirements:
+    - req.correct_anre_authorization_for_gas_scope
+    - req.preexisting_gas_service_contracts
+- id: fx.ucc.021
+  desc: Gaze, lucrările sunt finalizate și recepția este în așteptare.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    operator_code: gas_operator_confirmed
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - request_gas_installation_reception
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - gas_reception_before_supply
+- id: fx.ucc.022
+  desc: Gaze, recepție acceptată, contract de furnizare nesemnat.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    operator_code: gas_operator_confirmed
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: accepted
+    user_installation_file_status: not_applicable
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - sign_gas_supply_contract
+    advice_tags:
+    - construction_after_approval
+- id: fx.ucc.023
+  desc: Gaze, recepția a fost respinsă.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    operator_code: gas_operator_confirmed
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: completed
+    reception_status: rejected
+    user_installation_file_status: not_applicable
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - remedy_and_repeat_gas_reception
+    advice_tags:
+    - construction_after_approval
+    blocks:
+    - gas_reception_rejected
+- id: fx.ucc.024
+  desc: Termoficare COLTERM, execuția așteaptă condițiile curente ale operatorului.
+  facts:
+    utility_type: district_heat
+    pilot_area: timisoara
+    operator_code: colterm
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - follow_case_specific_colterm_technical_conditions
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - colterm_construction_source_stale
+    channels:
+    - ch.colterm_connection
+    needs_confirmation:
+    - colterm_current_design_execution_reception_route
+- id: fx.ucc.025
+  desc: Internet fix DIGI, contract semnat și instalare de programat.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    operator_code: digi
+    technical_approval_status: not_applicable
+    connection_contract_status: signed
+    design_status: not_applicable
+    permit_status: obtained
+    executor_authorization_status: not_applicable
+    works_status: not_started
+    reception_status: not_applicable
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - schedule_digi_or_authorized_subcontractor_installation
+    advice_tags:
+    - construction_after_approval
+    - digi_installation_max_90_days_unless_other_term
+    warnings_present:
+    - digi_materials_charged_from_installation_record
+- id: fx.ucc.026
+  desc: Internet fix DIGI, autorizația necesară este încă în lucru.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    operator_code: digi
+    technical_approval_status: not_applicable
+    connection_contract_status: signed
+    design_status: not_applicable
+    permit_status: pending
+    executor_authorization_status: not_applicable
+    works_status: not_started
+    reception_status: not_applicable
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    advice_tags:
+    - construction_after_approval
+    requirements:
+    - req.required_work_permits_and_agreements
+    blocks:
+    - work_authorization_missing
+- id: fx.ucc.027
+  desc: Internet fix DIGI, instalarea este în curs.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    operator_code: digi
+    technical_approval_status: not_applicable
+    connection_contract_status: signed
+    design_status: not_applicable
+    permit_status: obtained
+    executor_authorization_status: not_applicable
+    works_status: in_progress
+    reception_status: not_applicable
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - provide_access_and_track_digi_installation
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - digi_delay_if_access_or_authorizations_missing
+- id: fx.ucc.028
+  desc: Internet fix DIGI, instalarea este finalizată.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    operator_code: digi
+    technical_approval_status: not_applicable
+    connection_contract_status: signed
+    design_status: not_applicable
+    permit_status: obtained
+    executor_authorization_status: not_applicable
+    works_status: completed
+    reception_status: not_applicable
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - verify_digi_service_activation_equipment_and_material_record
+    advice_tags:
+    - construction_after_approval
+- id: fx.ucc.029
+  desc: Internet fix Orange, condițiile de execuție trebuie cerute operatorului.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    operator_code: orange
+    technical_approval_status: not_applicable
+    connection_contract_status: signed
+    design_status: not_applicable
+    permit_status: obtained
+    executor_authorization_status: not_applicable
+    works_status: not_started
+    reception_status: not_applicable
+    user_installation_file_status: not_applicable
+    supply_contract_status: not_applicable
+    network_extension_needed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - obtain_provider_specific_installation_and_civil_work_route
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - digi_terms_not_portable
+    needs_confirmation:
+    - internet_provider_construction_terms
+- id: fx.ucc.030
+  desc: 'Operator greșit: Aquatim selectat pentru execuție la gaze.'
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    operator_code: aquatim
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: not_applicable
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: blocked
+    included_steps:
+    - classify_construction_stage_and_preconditions
+    - correct_utility_operator_pair
+    - verify_gas_authorization_type_and_service_contracts
+    - execute_gas_connection_and_installation
+    advice_tags:
+    - construction_after_approval
+    warnings_present:
+    - gas_authorization_scope_matters
+    requirements:
+    - req.correct_anre_authorization_for_gas_scope
+    - req.preexisting_gas_service_contracts
+    blocks:
+    - operator_utility_mismatch
+- id: fx.ucc.031
+  desc: Lipsește faptul obligatoriu `utility_type`.
+  facts:
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - utility_type
+- id: fx.ucc.032
+  desc: Lipsește faptul obligatoriu `pilot_area`.
+  facts:
+    utility_type: electricity
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - pilot_area
+- id: fx.ucc.033
+  desc: Lipsește faptul obligatoriu `operator_code`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - operator_code
+- id: fx.ucc.034
+  desc: Lipsește faptul obligatoriu `technical_approval_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - technical_approval_status
+- id: fx.ucc.035
+  desc: Lipsește faptul obligatoriu `connection_contract_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - connection_contract_status
+- id: fx.ucc.036
+  desc: Lipsește faptul obligatoriu `design_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - design_status
+- id: fx.ucc.037
+  desc: Lipsește faptul obligatoriu `permit_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - permit_status
+- id: fx.ucc.038
+  desc: Lipsește faptul obligatoriu `executor_authorization_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - executor_authorization_status
+- id: fx.ucc.039
+  desc: Lipsește faptul obligatoriu `works_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - works_status
+- id: fx.ucc.040
+  desc: Lipsește faptul obligatoriu `reception_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reception_status
+- id: fx.ucc.041
+  desc: Lipsește faptul obligatoriu `user_installation_file_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    supply_contract_status: unsigned
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - user_installation_file_status
+- id: fx.ucc.042
+  desc: Lipsește faptul obligatoriu `supply_contract_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - supply_contract_status
+- id: fx.ucc.043
+  desc: Lipsește faptul obligatoriu `network_extension_needed`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    connection_contract_status: signed
+    design_status: approved
+    permit_status: obtained
+    executor_authorization_status: verified
+    works_status: not_started
+    reception_status: pending
+    user_installation_file_status: incomplete
+    supply_contract_status: unsigned
+  expect:
+    status: needs_facts
+    missing_facts:
+    - network_extension_needed
+- id: fx.ucc.044
+  desc: Niciun fapt furnizat; motorul cere toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - utility_type
+    - pilot_area
+    - operator_code
+    - technical_approval_status
+    - connection_contract_status
+    - design_status
+    - permit_status
+    - executor_authorization_status
+    - works_status
+    - reception_status
+    - user_installation_file_status
+    - supply_contract_status
+    - network_extension_needed

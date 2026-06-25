@@ -1,0 +1,537 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B16_CHANGE_HEAT_HOLDER
+event_type_id: ro.life.change_heat_holder
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- heating_service_type
+- provider_scope
+- contract_arrangement
+- change_reason
+- new_holder_role
+- new_connection_needed
+- ownership_or_use_evidence_status
+- identity_or_representation_status
+- provider_current_checklist_confirmed
+rules:
+- id: rule.chh.classify
+  canonical_rule_id: change_heat_holder.classify
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_heating_service_and_contract
+  - type: emit_advice
+    tag: holder_change_not_universal
+    message_ro: Identifică serviciul, operatorul și forma contractului înainte de a genera dosarul.
+  source_claim_ids:
+  - claim.chh.colterm_page_age
+  status: in_review
+- id: rule.chh.wrong_service
+  canonical_rule_id: change_heat_holder.wrong_service
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: heating_service_type
+    values:
+    - individual_gas
+    - electric_heating
+  effects:
+  - type: include_step
+    step_id: route_to_energy_supplier_contract_change
+  - type: emit_warning
+    tag: not_district_heat_contract
+    message_ro: Acest eveniment nu aplică lista COLTERM unui contract individual de gaze sau electricitate.
+  - type: block
+    tag: district_heat_scope_mismatch
+    message_ro: Oprește checklistul de termoficare și deschide procedura furnizorului efectiv.
+  source_claim_ids:
+  - claim.chh.colterm_page_age
+  status: in_review
+- id: rule.chh.unknown_service
+  canonical_rule_id: change_heat_holder.unknown_service
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: heating_service_type
+    value: unknown
+  effects:
+  - type: include_step
+    step_id: identify_heating_service
+  - type: require_confirmation
+    tag: heating_service_identification
+    message_ro: Confirmă dacă este termoficare centralizată, gaze sau electricitate.
+  source_claim_ids:
+  - claim.chh.colterm_page_age
+  status: in_review
+- id: rule.chh.colterm_scope
+  canonical_rule_id: change_heat_holder.colterm_scope
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: heating_service_type
+      value: district_heating
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+  effects:
+  - type: include_step
+    step_id: confirm_live_colterm_contract_route
+  - type: attach_channel
+    channel_id: ch.colterm_contracts
+  - type: emit_warning
+    tag: colterm_checklist_stale
+    message_ro: Checklistul oficial identificat este datat 2016 și nu este promovat automat ca listă curentă.
+  - type: emit_warning
+    tag: no_verified_colterm_fee_or_deadline
+    message_ro: Nu există în sursele verificate o taxă sau un termen curent pentru schimbarea titularului.
+  source_claim_ids:
+  - claim.chh.colterm_page_age
+  status: in_review
+- id: rule.chh.other_operator
+  canonical_rule_id: change_heat_holder.other_operator
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: heating_service_type
+      value: district_heating
+    - op: eq
+      field: provider_scope
+      value: other_local_operator
+  effects:
+  - type: include_step
+    step_id: obtain_local_heat_operator_checklist
+  - type: attach_channel
+    channel_id: ch.local_heat_operator
+  - type: require_confirmation
+    tag: local_heat_operator_checklist
+    message_ro: Pentru alt UAT sau alt operator, confirmă lista, canalul, taxa și termenul direct la operator.
+  source_claim_ids:
+  - claim.chh.connection_case_specific
+  status: in_review
+- id: rule.chh.provider_unknown
+  canonical_rule_id: change_heat_holder.provider_unknown
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: heating_service_type
+      value: district_heating
+    - op: eq
+      field: provider_scope
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: identify_district_heat_operator
+  - type: require_confirmation
+    tag: district_heat_operator
+    message_ro: Operatorul local trebuie identificat înaintea dosarului.
+  source_claim_ids:
+  - claim.chh.connection_case_specific
+  status: in_review
+- id: rule.chh.association_admin
+  canonical_rule_id: change_heat_holder.association_admin
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: eq
+      field: contract_arrangement
+      value: owners_association
+    - op: eq
+      field: change_reason
+      value: association_admin_change
+  effects:
+  - type: include_step
+    step_id: notify_colterm_of_association_admin_change
+  - type: include_requirement
+    requirement_id: req.association_constitution_act
+  - type: include_requirement
+    requirement_id: req.association_representative_identity
+  - type: include_requirement
+    requirement_id: req.colterm_admin_change_notice
+  - type: emit_advice
+    tag: association_notifies_supplier
+    message_ro: Reprezentanții legali notifică furnizorul despre schimbarea administratorului.
+  source_claim_ids:
+  - claim.chh.association_docs
+  - claim.chh.association_admin_notice
+  status: in_review
+- id: rule.chh.association_property_sale
+  canonical_rule_id: change_heat_holder.association_property_sale
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: contract_arrangement
+      value: owners_association
+    - op: eq
+      field: change_reason
+      value: property_transfer
+  effects:
+  - type: include_step
+    step_id: confirm_if_association_contract_is_affected
+  - type: emit_warning
+    tag: apartment_sale_not_automatically_association_holder_change
+    message_ro: Vânzarea unui apartament nu dovedește singură că titularul contractului colectiv se schimbă.
+  - type: require_confirmation
+    tag: association_contract_effect
+    message_ro: Confirmă cu asociația și operatorul dacă este necesară vreo actualizare contractuală.
+  source_claim_ids:
+  - claim.chh.association_docs
+  status: in_review
+- id: rule.chh.individual_owner
+  canonical_rule_id: change_heat_holder.individual_owner
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: eq
+      field: contract_arrangement
+      value: direct_individual
+    - op: eq
+      field: new_holder_role
+      value: owner
+    - op: eq
+      field: ownership_or_use_evidence_status
+      value: available
+    - op: eq
+      field: identity_or_representation_status
+      value: available
+    - op: in
+      field: change_reason
+      values:
+      - property_transfer
+      - tenant_change
+      - data_correction
+  effects:
+  - type: include_step
+    step_id: prepare_colterm_individual_contract_request
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.property_title
+  - type: include_step
+    step_id: submit_colterm_holder_change_request
+  source_claim_ids:
+  - claim.chh.individual_docs
+  status: in_review
+- id: rule.chh.individual_title_missing
+  canonical_rule_id: change_heat_holder.individual_title_missing
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: eq
+      field: contract_arrangement
+      value: direct_individual
+    - op: eq
+      field: new_holder_role
+      value: owner
+    - op: eq
+      field: ownership_or_use_evidence_status
+      value: unavailable
+  effects:
+  - type: block
+    tag: property_evidence_missing
+    message_ro: Lista publicată pentru persoana fizică proprietar include actul de proprietate.
+  - type: include_requirement
+    requirement_id: req.property_title
+  source_claim_ids:
+  - claim.chh.individual_docs
+  status: in_review
+- id: rule.chh.tenant_route
+  canonical_rule_id: change_heat_holder.tenant_route
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: eq
+      field: new_holder_role
+      value: tenant_user
+  effects:
+  - type: include_step
+    step_id: request_current_colterm_tenant_route
+  - type: require_confirmation
+    tag: colterm_tenant_documents
+    message_ro: Pagina verificată nu publică o rută suficient de clară pentru titular persoană fizică chiriaș.
+  source_claim_ids:
+  - claim.chh.individual_docs
+  status: in_review
+- id: rule.chh.company
+  canonical_rule_id: change_heat_holder.company
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: eq
+      field: contract_arrangement
+      value: company
+    - op: eq
+      field: ownership_or_use_evidence_status
+      value: available
+    - op: eq
+      field: identity_or_representation_status
+      value: available
+  effects:
+  - type: include_step
+    step_id: prepare_colterm_company_contract_file
+  - type: include_requirement
+    requirement_id: req.company_registration_certificate
+  - type: include_requirement
+    requirement_id: req.company_tax_registration
+  - type: include_requirement
+    requirement_id: req.point_of_work_evidence
+  - type: include_requirement
+    requirement_id: req.property_or_lease_evidence
+  - type: include_step
+    step_id: submit_colterm_company_request
+  source_claim_ids:
+  - claim.chh.company_docs
+  status: in_review
+- id: rule.chh.company_use_missing
+  canonical_rule_id: change_heat_holder.company_use_missing
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: eq
+      field: contract_arrangement
+      value: company
+    - op: eq
+      field: ownership_or_use_evidence_status
+      value: unavailable
+  effects:
+  - type: block
+    tag: company_use_evidence_missing
+    message_ro: Dosarul publicat pentru societăți include actul de proprietate sau închiriere.
+  - type: include_requirement
+    requirement_id: req.property_or_lease_evidence
+  source_claim_ids:
+  - claim.chh.company_docs
+  status: in_review
+- id: rule.chh.successor
+  canonical_rule_id: change_heat_holder.successor
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: change_reason
+    value: legal_successor
+  effects:
+  - type: include_step
+    step_id: request_colterm_successor_assessment
+  - type: require_confirmation
+    tag: colterm_successor_checklist
+    message_ro: Nu a fost găsit un checklist oficial curent pentru succesiune sau decesul titularului.
+  source_claim_ids:
+  - claim.chh.colterm_page_age
+  status: in_review
+- id: rule.chh.identity_missing
+  canonical_rule_id: change_heat_holder.identity_missing
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: identity_or_representation_status
+    value: unavailable
+  effects:
+  - type: block
+    tag: identity_or_representation_missing
+    message_ro: Nu continua depunerea fără actul de identitate sau dovada reprezentării cerută pentru categoria solicitantului.
+  - type: include_requirement
+    requirement_id: req.identity_or_representation
+  source_claim_ids:
+  - claim.chh.association_docs
+  - claim.chh.individual_docs
+  - claim.chh.company_docs
+  status: in_review
+- id: rule.chh.new_connection
+  canonical_rule_id: change_heat_holder.new_connection
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: new_connection_needed
+    value: 'yes'
+  effects:
+  - type: include_step
+    step_id: separate_holder_change_from_new_connection
+  - type: trigger_child_event
+    event_type_id: ro.life.utility_new_connection
+  - type: emit_warning
+    tag: new_connection_requires_technical_route
+    message_ro: Schimbarea titularului nu înlocuiește avizul și pașii tehnici pentru un branșament nou.
+  source_claim_ids:
+  - claim.chh.connection_case_specific
+  - claim.chh.individual_docs
+  status: in_review
+- id: rule.chh.new_connection_unknown
+  canonical_rule_id: change_heat_holder.new_connection_unknown
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: new_connection_needed
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: existing_heat_connection_status
+    message_ro: Confirmă dacă imobilul are deja branșament activ/inactiv sau necesită unul nou.
+  source_claim_ids:
+  - claim.chh.connection_case_specific
+  status: in_review
+- id: rule.chh.checklist_unconfirmed
+  canonical_rule_id: change_heat_holder.checklist_unconfirmed
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_scope
+      value: colterm_timisoara
+    - op: in
+      field: provider_current_checklist_confirmed
+      values:
+      - not_confirmed
+      - unknown
+  effects:
+  - type: require_confirmation
+    tag: colterm_live_checklist
+    message_ro: Reconfirmă în canalul oficial lista de acte, formularul, locul depunerii, taxa și termenul valabile în 2026.
+  source_claim_ids:
+  - claim.chh.colterm_page_age
+  status: in_review
+- id: rule.chh.role_unknown
+  canonical_rule_id: change_heat_holder.role_unknown
+  event_type_id: ro.life.change_heat_holder
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: new_holder_role
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: new_holder_legal_role
+    message_ro: Stabilește dacă noul titular este proprietar, chiriaș, asociație, societate sau succesor.
+  source_claim_ids:
+  - claim.chh.individual_docs
+  - claim.chh.company_docs
+  status: in_review
