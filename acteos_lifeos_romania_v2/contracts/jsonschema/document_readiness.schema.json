@@ -1,0 +1,85 @@
+{
+  "$id": "https://acteos.example/schemas/document_readiness.schema.json",
+  "title": "Document Readiness Result",
+  "type": "object",
+  "required": [
+    "document_id",
+    "run_id",
+    "status",
+    "checks",
+    "engine_version",
+    "limitations"
+  ],
+  "properties": {
+    "document_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_analyzed",
+        "processing",
+        "ready",
+        "needs_review",
+        "rejected",
+        "error"
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "check_type",
+          "status"
+        ],
+        "properties": {
+          "check_type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "uncertain",
+              "not_run"
+            ]
+          },
+          "message_ro": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authenticity_verified": {
+      "type": "boolean",
+      "const": false
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

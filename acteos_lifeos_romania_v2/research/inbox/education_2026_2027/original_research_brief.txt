@@ -1,0 +1,102 @@
+# DEEP RESEARCH BRIEF — „Waze pentru birocrație", R1: Educație (RO + Timiș/Timișoara), an școlar 2026-2027
+
+## ROL
+Ești cercetător de politici publice + analist de date oficiale. Sarcina ta NU este să scrii cod și NU este să dai sfaturi. Sarcina ta este să-mi LIVREZI DATE OFICIALE VERIFICATE, atomice, citate și structurate, pe care un inginer le va transforma în reguli executabile deterministe. Calitatea se măsoară în trasabilitate, nu în fluență.
+
+## CONTEXT PRODUS (cât să înțelegi miza)
+Construim o aplicație care transformă o intenție administrativă într-un traseu personal, determinist, temporal și teritorial. Un LLM NU decide niciodată eligibilitate/termene/acte la runtime. Fiecare afirmație de producție trebuie să aibă o DOVADĂ dintr-o sursă oficială + un citat exact. Dacă o informație oficială lipsește sau e ambiguă, NU o inventezi — o marchezi explicit ca gap.
+
+## REGULI DE CITARE (NENEGOCIABILE)
+1. Pentru FIECARE afirmație livrezi: (a) URL canonic oficial, (b) emitentul/autoritatea, (c) data publicării sau a actului, (d) un CITAT EXACT (verbatim, în română) din sursă, (e) un locator (titlul secțiunii/articolului/numărul paginii/ancora), (f) data la care ai accesat sursa.
+2. Ierarhia surselor acceptate:
+   - Tier 1 (normativ): Monitorul Oficial / legislatie.just.ro, EUR-Lex, actul emitentului.
+   - Tier 2 (oficial operațional): edu.ro, ISJ Timiș, primării, unități de învățământ, portaluri oficiale.
+   - Tier 3 (confirmare instituțională documentată): răspuns oficial scris, dataset public oficial.
+   - Tier 4 (semnal, NU adevăr): presă, forumuri, social media — pot doar declanșa o verificare, NU pot fi citate ca obligație.
+3. Marchezi fiecare afirmație cu un nivel de încredere: `verified` | `verified_with_local_gap` | `needs_confirmation` | `conflicting` | `expired`.
+4. Dacă două surse oficiale se contrazic, NU alegi tu câștigătorul: livrezi ambele cu rangul juridic, emitentul, teritoriul și perioada, și marchezi `conflicting`.
+5. Fără estimări prezentate ca certitudini. O dată necunoscută încă = `pending_official_publication`, nu o ghicești.
+
+## DOMENIUL DE CERCETAT (R1) — 3 trasee
+- A. Înscriere/reînscriere ANTEPREȘCOLAR și PREȘCOLAR (grădiniță), bază națională 2026-2027 + local Timiș/Timișoara. `intent_id: ro.education.preschool.enrollment`
+- B. Înscriere în CLASA PREGĂTITOARE / învățământ primar 2026-2027 + circumscripții Timișoara. `intent_id: ro.education.primary.preparatory_enrollment`
+- C. (secundar, prioritate mai mică) ADMITERE LICEU 2026-2027: metodologie, calendar, coduri, broșura județeană Timiș. `intent_id: ro.education.highschool.admission`
+
+## SURSE DE PORNIRE (verifică-le și extinde)
+- Ordinul ME 3707/2026 (calendar înscriere preșcolar), publicat în M.Of. nr. 343/28.04.2026 — https://legislatie.just.ro/Public/DetaliiDocument/309970
+- FAQ preșcolar/antepreșcolar 2026-2027 — https://www.edu.ro/inscriere_invatamant_prescolar_anteprescolar_faq
+- FAQ învățământ primar 2026-2027 — https://www.edu.ro/intrebari_raspunsuri_inscriere_invatamant_primar
+- Admitere liceu — https://www.edu.ro/admitere-liceu-si-inv-profesional
+- Inspectoratul Școlar Județean Timiș (site oficial) + site-urile oficiale ale unităților din Timișoara
+- GĂSEȘTE și ordinul/metodologia oficială pentru înscrierea în învățământul primar 2026-2027 (numărul de ordin + M.Of.) și calendarul aferent.
+
+## CE DATE SĂ LIVREZI, MAPATE PE STRUCTURA EXACTĂ
+Pentru FIECARE traseu (A, B, C), completează următoarele secțiuni. Folosește id-uri stabile (`^[a-z0-9][a-z0-9_.-]+`), limba ro-RO, timezone Europe/Bucharest, date ISO 8601.
+
+### 1. JURISDICȚIE
+- Arborele: EU → RO → județ Timiș → UAT Timișoara → instituție.
+- Codurile SIRUTA VERIFICATE pentru județul Timiș și municipiul Timișoara (cu sursa). Dacă nu le confirmi, marchează gap.
+
+### 2. TEMPORAL / CALENDAR
+- `reference_year`: "2026-2027".
+- `effective_from` / `effective_to` ale metodologiei.
+- Calendarul oficial COMPLET, cu fiecare etapă și DATA exactă (start/end), cu citat din ordin: ex. perioada de reînscriere, perioada de înscriere etapa I, etapa a II-a, afișarea rezultatelor, depunerea contestațiilor etc.
+- Pentru fiecare dată: `kind` = fixed_window | fixed_instant | relative | institution_schedule | none.
+
+### 3. FAPTE (întrebări către utilizator) — `facts`
+Pentru fiecare fapt: `id`, `type` (boolean|string|enum|integer|decimal|date|datetime|jurisdiction_ref), `label` (întrebarea în română), `reason` (de ce o întrebăm), `sensitive` (true/false), `required_for_resolution`, și `options` pentru enum.
+Exemple de identificat (nu te limita la ele): data nașterii copilului, dacă împlinește vârsta-prag până la o anumită dată, domiciliul/strada (pentru circumscripție), reînscriere în aceeași unitate vs. unitate nouă, tip program (normal/prelungit/săptămânal), situație părinți (ambii lucrează etc.), CES/cerințe speciale, frați deja înscriși în unitate.
+
+### 4. GATES (eligibilitate/blocaje) — `gates`
+Fiecare gate: `id`, `priority`, `when` (condiția în limbaj natural pe care o voi traduce eu în predicat tipat), `effect` (allow|block|warn|needs_confirmation), `code`, `message` (text pt utilizator în română), `recovery_actions`, și `source_claim_ids`.
+CRITIC pentru educație: regulile EXACTE de vârstă-prag (ex. „copilul împlinește X ani până la data de ... inclusiv"), cu citatul exact din metodologie, inclusiv excepțiile (evaluare/aviz pentru intrare mai devreme/amânare).
+
+### 5. PAȘI — `steps`
+Fiecare pas: `id`, `title`, `instruction` (în română), `sequence_hint`, `applies_when`, `depends_on`, `deadline`, `completion_evidence` (cum știe userul că a terminat pasul), `recovery_actions` (ce face dacă eșuează), `official_channel_ids`, `source_claim_ids`.
+Pentru fiecare pas, răspunde la cele 5 întrebări: ce fac acum / până când / de ce am nevoie / cum știu că e gata / ce fac dacă eșuează.
+
+### 6. CERINȚE/ACTE — `requirements`
+Fiecare requirement: `id`, `title`, `description`, `obligation` (mandatory|conditional|optional), `timing` (now|later), `applies_when`, `accepted_forms` (original|copy|electronic|certified_copy|declaration), `validity` (max_age_days + must_be_valid_at: submission|validation|start_date|none), `readiness_checks` (exists|readable|correct_document_type|not_expired|field_present|names_consistent|address_consistent|page_count|has_signature|has_stamp|date_within_window|user_confirmed), `source_claim_ids`.
+Ex.: certificat de naștere copil, acte identitate părinți, dovadă domiciliu, adeverințe, cerere-tip — cu lista EXACTĂ și forma acceptată, citată.
+
+### 7. CANALE OFICIALE — `official_channels`
+Fiecare canal: `id`, `type` (web|physical|phone|email|deep_link), `label`, `url`, `integration_status` (SOURCE_ONLY|DEEP_LINK|NOT_CONFIGURED|SANDBOX|ACTIVE), `official_domain`, `source_claim_ids`.
+Include: portaluri oficiale de înscriere, adresa/ele fizice, program cu publicul, telefon, email, programări — pentru ISJ Timiș și pentru unitățile din Timișoara.
+
+### 8. SOURCE CLAIMS (dovezile) — `source_claims`
+Pentru fiecare afirmație critică de mai sus, un claim atomic cu: `id`, `source_id`, `url`, `publisher`, `authority_level` (eu|national_normative|national_operational|county|uat|institution), `evidence_summary` (rezumat scurt), `locator` (citatul exact + unde apare), `accessed_at`, `effective_from`, `effective_to`, `confidence`.
+Regula: o cerință critică (eligibilitate, deadline, taxă, act obligatoriu, criteriu de departajare) NU poate exista fără cel puțin un claim. Nu combina două obligații care se pot schimba independent în același claim.
+
+### 9. FRESHNESS
+Pentru fiecare bloc de informație: `class` (critical|operational|explanatory), `last_verified_at`, și recomandarea ta de `review_due_at` / `hard_expiry_at`, plus `on_expiry` (block|needs_confirmation|warn).
+
+## DATE LOCALE TIMIȘ/TIMIȘOARA (gap-uri marcate CRITICE — prioritate maximă)
+1. PREȘCOLAR: lista unităților (grădinițe) din Timișoara, numărul de locuri, programele oferite, criteriile specifice de departajare ale fiecărei unități, documentele doveditoare cerute local, contactele și modul de programare 2026. Sursă: ISJ Timiș + site-urile oficiale ale unităților.
+2. PRIMAR: circumscripțiile școlare 2026 pentru Timișoara — maparea EXACTĂ stradă/numere → unitatea arondată, plus criteriile specifice de departajare la depășirea locurilor. Sursă: ISJ Timiș + școli.
+3. CANALE LOCALE: adrese, program, telefon, email, link-uri oficiale curente pentru ISJ și unități.
+Pentru fiecare: dacă datele oficiale nu sunt publicate încă, marchează `pending_official_publication` și spune unde anume ar trebui publicate.
+
+## FORMAT DE LIVRARE
+Livrează în acest ordin:
+1. Un REZUMAT EXECUTIV (max 1 pagină): ce e confirmat, ce e încă neclar, ce conflicte ai găsit.
+2. Pentru fiecare traseu (A/B/C): secțiunile 1–9 de mai sus, în Markdown clar, cu sub-tabele unde ajută.
+3. Un REGISTRU DE SURSE (tabel): source_id | titlu | publisher | autoritate | URL | tip | data publicării | data accesării | tier.
+4. Un REGISTRU DE CLAIM-URI (tabel): claim_id | afirmație | source_id | locator/citat | confidence | effective_from/to.
+5. O MATRICE DE CONFLICTE: orice neconcordanță între surse, cu ambele poziții și rangul lor.
+6. UN REGISTRU DE GAP-URI RĂMASE: ce nu ai putut confirma oficial și de ce, cu locul unde ar trebui căutat.
+7. Opțional: dacă găsești datele structurabile, livrează și un bloc JSON per claim conform câmpurilor din secțiunea 8.
+
+## AUTO-VERIFICARE ÎNAINTE DE PREDARE
+- [ ] Fiecare afirmație critică are URL oficial + citat exact + dată.
+- [ ] Niciun deadline „inventat"; cele nepublicate sunt marcate `pending_official_publication`.
+- [ ] Regulile de vârstă-prag au citatul textual din ordin, cu excepțiile.
+- [ ] Datele locale Timișoara au sursă la nivel de unitate/ISJ, nu generalizări naționale.
+- [ ] Conflictele sunt listate, nu „rezolvate" arbitrar.
+- [ ] Nicio sursă Tier 4 prezentată ca obligație.
+
+## CE SĂ NU FACI
+- Nu inventa instituții, adrese, taxe, coduri, termene sau URL-uri.
+- Nu prezenta o practică verbală a unui funcționar ca regulă oficială.
+- Nu rezuma în loc de a cita pentru afirmațiile critice.
+- Nu amesteca anul școlar 2025-2026 cu 2026-2027 — confirmă mereu anul din sursă.
+- Nu da sfaturi juridice; livrezi date oficiale trasabile.
