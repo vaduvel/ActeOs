@@ -69,9 +69,115 @@ def _bundle():
     }
 
 
+def _advanced_bundle():
+    """Synthetic, non-official bundle exercising precedence, relative deadlines,
+    requirement filtering, dangling dependencies, freshness expiry, and ties.
+    NOT verified legal content.
+    """
+    fresh = {
+        "review_due_at": "2999-01-01T00:00:00+00:00",
+        "hard_expiry_at": "2999-01-01T00:00:00+00:00",
+        "on_expiry": "warn",
+    }
+    return {
+        "bundle_version": "adv-0.0.1",
+        "rules": [
+            {
+                "rule_id": "adv.rule.national",
+                "intent_id": "adv.enroll",
+                "jurisdiction": {"scope_codes": ["ro"], "authority_scope": "national"},
+                "temporal": {"effective_from": "2026-01-01"},
+                "source_claims": [{"id": "sc1", "confidence": "verified"}],
+                "freshness": fresh,
+                "steps": [
+                    {"id": "a.national", "sequence_hint": 1, "title": "Pas national",
+                     "instruction": "Pas la nivel national.", "deadline": {"kind": "none"}},
+                ],
+            },
+            {
+                "rule_id": "adv.rule.county",
+                "intent_id": "adv.enroll",
+                "jurisdiction": {"scope_codes": ["ro.timis"], "authority_scope": "county"},
+                "temporal": {"effective_from": "2026-01-01"},
+                "source_claims": [{"id": "sc1", "confidence": "verified"}],
+                "freshness": fresh,
+                "steps": [
+                    {
+                        "id": "b.prepare", "sequence_hint": 1, "depends_on": [],
+                        "title": "Pregateste", "instruction": "Pregateste actele.",
+                        "deadline": {"kind": "none"},
+                        "requirements": [
+                            {"id": "r.always", "title": "Act obligatoriu", "obligation": "required",
+                             "timing": "at_submission", "accepted_forms": ["copy"]},
+                            {"id": "r.cond", "title": "Act conditionat", "obligation": "required",
+                             "timing": "at_submission", "accepted_forms": ["copy"],
+                             "applies_when": {"operator": "is_true", "fact": "needs_extra"}},
+                        ],
+                    },
+                    {
+                        "id": "b.submit", "sequence_hint": 2, "depends_on": ["b.prepare"],
+                        "title": "Depune", "instruction": "Depune dosarul.",
+                        "deadline": {"kind": "relative", "relative_to_fact": "reference_anchor", "offset_days": 30},
+                    },
+                    {
+                        "id": "b.orphan", "sequence_hint": 3, "depends_on": ["b.missing"],
+                        "title": "Pas orfan", "instruction": "Depinde de un pas inexistent.",
+                        "deadline": {"kind": "none"},
+                    },
+                ],
+            },
+            {
+                "rule_id": "adv.rule.expired",
+                "intent_id": "adv.expired",
+                "jurisdiction": {"scope_codes": ["ro"], "authority_scope": "national"},
+                "temporal": {"effective_from": "2026-01-01"},
+                "source_claims": [{"id": "sc1", "confidence": "verified"}],
+                "freshness": {
+                    "review_due_at": "2020-01-01T00:00:00+00:00",
+                    "hard_expiry_at": "2020-01-01T00:00:00+00:00",
+                    "on_expiry": "block",
+                },
+                "steps": [
+                    {"id": "e.step", "sequence_hint": 1, "title": "Pas expirat",
+                     "instruction": "Sursa expirata.", "deadline": {"kind": "none"}},
+                ],
+            },
+            {
+                "rule_id": "adv.rule.tie_a",
+                "intent_id": "adv.tie",
+                "jurisdiction": {"scope_codes": ["ro"], "authority_scope": "national"},
+                "temporal": {"effective_from": "2026-01-01"},
+                "source_claims": [{"id": "sc1", "confidence": "verified"}],
+                "freshness": fresh,
+                "steps": [
+                    {"id": "t.a", "sequence_hint": 1, "title": "Pas A",
+                     "instruction": "Varianta A.", "deadline": {"kind": "none"}},
+                ],
+            },
+            {
+                "rule_id": "adv.rule.tie_b",
+                "intent_id": "adv.tie",
+                "jurisdiction": {"scope_codes": ["ro"], "authority_scope": "national"},
+                "temporal": {"effective_from": "2026-01-01"},
+                "source_claims": [{"id": "sc1", "confidence": "verified"}],
+                "freshness": fresh,
+                "steps": [
+                    {"id": "t.b", "sequence_hint": 1, "title": "Pas B",
+                     "instruction": "Varianta B.", "deadline": {"kind": "none"}},
+                ],
+            },
+        ],
+    }
+
+
 @pytest.fixture
 def bundle():
     return _bundle()
+
+
+@pytest.fixture
+def advanced_bundle():
+    return _advanced_bundle()
 
 
 @pytest.fixture

@@ -1,9 +1,10 @@
 """Deterministic route resolution.
 
 resolve(request, bundle, *, now) follows the algorithm in 05_RULE_ENGINE_SPEC.md:
-select an applicable rule, canonicalize facts, evaluate typed gates/steps with
-three-valued logic, resolve deadlines, order steps with a stable topological sort,
-and compute a reproducible route_hash that excludes route_id and evaluated_at.
+select an applicable rule (jurisdiction/temporal specificity, then lawful
+precedence), canonicalize facts, evaluate typed gates/steps with three-valued
+logic, resolve deadlines, order steps with a stable topological sort, and
+compute a reproducible route_hash that excludes route_id and evaluated_at.
 """
 from __future__ import annotations
 
@@ -14,10 +15,11 @@ from typing import Any, Mapping
 from .applicability import jurisdiction_matches, specificity, temporal_applies
 from .canonical import sha256_hex
 from .dates import parse_date
-from .errors import InvalidRequest, NoApplicableRule, RuleConflict
+from .errors import InvalidRequest, NoApplicableRule
 from .facts import resolve_derived_facts
 from .freshness import freshness_state, on_expiry_effect
 from .graph import stable_topo_sort
+from .precedence import resolve_precedence
 from .predicates import evaluate
 from .trivalent import Tri
 from .version import ENGINE_VERSION
@@ -58,12 +60,7 @@ def _select_rule(bundle, intent_id, jurisdiction_id, reference_date):
     applicable.sort(key=lambda t: t[0], reverse=True)
     top_spec = applicable[0][0]
     top = [r for (spec, r) in applicable if spec == top_spec]
-    if len(top) > 1:
-        ids = sorted(r["rule_id"] for r in top)
-        raise RuleConflict(
-            "multiple equally specific rules; needs lawful precedence: " + ", ".join(ids)
-        )
-    return applicable[0][1]
+    return resolve_precedence(top)
 
 
 def _resolve_deadline(deadline: Mapping[str, Any], facts: Mapping[str, Any]) -> dict:
@@ -96,7 +93,7 @@ def resolve(request: Mapping[str, Any], bundle: Mapping[str, Any], *, now: datet
         raise InvalidRequest("reference_date must be an ISO date")
     input_facts = dict(request["facts"])
 
-    rule = _select_rule(bundle, intent_id, jurisdiction_id, reference_date)
+    rule, selection_conflicts = _select_rule(bundle, intent_id, jurisdiction_id, reference_date)
     facts = resolve_derived_facts(
         rule.get("facts", []),
         input_facts,
@@ -105,9 +102,11 @@ def resolve(request: Mapping[str, Any], bundle: Mapping[str, Any], *, now: datet
     )
 
     warnings: list[dict] = []
-    conflicts: list[dict] = []
+    conflicts: list[dict] = list(selection_conflicts)
     unresolved: list[dict] = []
     confidence_inputs = [c.get("confidence", "verified") for c in rule.get("source_claims", [])]
+    if selection_conflicts:
+        confidence_inputs.append("conflicting")
 
     fr = rule.get("freshness", {})
     fr_state = freshness_state(fr, now)
