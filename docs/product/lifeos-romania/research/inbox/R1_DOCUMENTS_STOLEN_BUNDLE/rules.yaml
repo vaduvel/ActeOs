@@ -1,0 +1,81 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_DOCUMENTS_STOLEN_BUNDLE
+event_type_id: life.documents_stolen_bundle
+status: draft
+rules:
+  - id: rule.dsb.single_police_report
+    canonical_rule_id: documents_stolen_bundle.single_police_report
+    event_type_id: life.documents_stolen_bundle
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-04-19'
+    when:
+      op: or
+      clauses:
+        - { op: eq, field: lost_id_card, value: true }
+        - { op: eq, field: lost_passport, value: true }
+        - { op: eq, field: lost_driving_license, value: true }
+        - { op: eq, field: lost_vehicle_registration, value: true }
+    effects:
+      - { type: include_step, step_id: file_single_police_report }
+      - { type: emit_advice, message_ro: 'O singura sesizare la politie acopera tot pachetul furat; pastreaza dovada pentru toate inlocuirile.' }
+    source_claim_ids: [claim.dsb.single_police_report]
+    status: in_review
+  - id: rule.dsb.trigger_id_card
+    canonical_rule_id: documents_stolen_bundle.trigger_id_card
+    event_type_id: life.documents_stolen_bundle
+    jurisdiction_ids: [ro]
+    severity: critical
+    effective_from: '2021-04-19'
+    when:
+      op: eq
+      field: lost_id_card
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.id_card_lost_stolen }
+    source_claim_ids: []
+    status: draft
+  - id: rule.dsb.trigger_passport
+    canonical_rule_id: documents_stolen_bundle.trigger_passport
+    event_type_id: life.documents_stolen_bundle
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-04-19'
+    when:
+      op: eq
+      field: lost_passport
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.passport_first_or_renew }
+    source_claim_ids: []
+    status: draft
+  - id: rule.dsb.trigger_driving_license
+    canonical_rule_id: documents_stolen_bundle.trigger_driving_license
+    event_type_id: life.documents_stolen_bundle
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-04-19'
+    when:
+      op: eq
+      field: lost_driving_license
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.driving_license_duplicate }
+      - { type: emit_warning, message_ro: 'Inlocuirea permisului de conducere este un eveniment separat (R1B/ulterior).' }
+    source_claim_ids: []
+    status: draft
+  - id: rule.dsb.trigger_vehicle_registration
+    canonical_rule_id: documents_stolen_bundle.trigger_vehicle_registration
+    event_type_id: life.documents_stolen_bundle
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: lost_vehicle_registration
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.vehicle_registration_duplicate }
+      - { type: emit_warning, message_ro: 'Duplicat certificat de inmatriculare se elibereaza de SPCRPCIV (Ordinul 1501/2006).' }
+    source_claim_ids: []
+    status: draft
