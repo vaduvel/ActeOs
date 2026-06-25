@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EventPlan",
+  "type": "object",
+  "required": ["id", "session_id", "event_type_id", "event_plan_hash", "confidence", "nodes"],
+  "properties": {
+    "id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "event_type_id": { "type": "string" },
+    "jurisdiction_id": { "type": "string" },
+    "reference_date": { "type": "string", "format": "date" },
+    "facts_hash": { "type": "string" },
+    "event_plan_hash": { "type": "string" },
+    "confidence": { "enum": ["verified", "verified_with_local_gap", "needs_confirmation", "conflicting", "expired"] },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["obligation_id", "obligation", "state"],
+        "properties": {
+          "obligation_id": { "type": "string" },
+          "obligation": { "enum": ["mandatory", "conditional", "optional", "later"] },
+          "state": { "enum": ["actionable", "upcoming", "conditional", "needs_confirmation", "done"] },
+          "depends_on": { "type": "array", "items": { "type": "string" } },
+          "route_ref": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "edges": { "type": "array", "items": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 } },
+    "conflicts": { "type": "array", "items": { "type": "object" } },
+    "unresolved_questions": { "type": "array", "items": { "type": "string" } }
+  }
+}

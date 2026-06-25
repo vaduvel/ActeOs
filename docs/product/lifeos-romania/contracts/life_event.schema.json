@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LifeEventType",
+  "type": "object",
+  "required": ["id", "category_id", "label", "frequency_tier", "procedures"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^life\\.[a-z0-9_]+$" },
+    "category_id": { "type": "string" },
+    "label": { "type": "string" },
+    "frequency_tier": { "enum": ["high", "medium", "low"] },
+    "r1_scope": { "type": "boolean" },
+    "example_queries": { "type": "array", "items": { "type": "string" } },
+    "disambiguation_facts": { "type": "array", "items": { "type": "string" } },
+    "procedures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["obligation_id", "obligation"],
+        "properties": {
+          "obligation_id": { "type": "string", "pattern": "^[a-z0-9_]+\\.[a-z0-9_]+$" },
+          "obligation": { "enum": ["mandatory", "conditional", "optional", "later"] },
+          "applies_when": { "type": "object" },
+          "depends_on": { "type": "array", "items": { "type": "string" } },
+          "phase_order": { "type": "integer" },
+          "rationale_claim_ids": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
