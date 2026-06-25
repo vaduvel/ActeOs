@@ -1,0 +1,487 @@
+batch_id: B02_RESIDENCE_RIGHT_RO
+defaults:
+  event_type_id: ro.life.residence_right_ro
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.rrro.001
+  desc: Resortisant stat terț, prelungire pentru muncă, statut încă valabil.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - apply_work_extension_specific_requirements
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.legal_housing_and_actual_residence_evidence
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - work_checklist_current
+- id: fx.rrro.002
+  desc: Cetățean român introdus în fluxul străinilor.
+  facts:
+    citizen_group: romanian
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: blocked
+    advice_tags:
+    - timis_territorial_service
+    channels:
+    - ch.igi_timis
+- id: fx.rrro.003
+  desc: Cetățean UE introdus în fluxul OUG 194.
+  facts:
+    citizen_group: eu_see_ch
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - route_to_eu_residence_registration
+    advice_tags:
+    - timis_territorial_service
+    warnings_present:
+    - use_eu_regime
+    channels:
+    - ch.igi_timis
+- id: fx.rrro.004
+  desc: Prima intrare a unui resortisant stat terț.
+  facts:
+    citizen_group: third_country
+    request_stage: first_entry
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_visa_or_entry_route
+    advice_tags:
+    - timis_territorial_service
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - first_entry_specific_route
+- id: fx.rrro.005
+  desc: Prelungire pentru studii.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: studies
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - apply_study_extension_specific_requirements
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.legal_housing_and_actual_residence_evidence
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - study_checklist_current
+- id: fx.rrro.006
+  desc: Prelungire pentru familie.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: family
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_family_extension_specific_requirements
+    - apply_personally_for_temporary_extension
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.legal_housing_and_actual_residence_evidence
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - family_checklist_current
+- id: fx.rrro.007
+  desc: Prelungire pentru activități comerciale.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: commercial
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - confirm_purpose_specific_extension
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.legal_housing_and_actual_residence_evidence
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - purpose_specific_route
+- id: fx.rrro.008
+  desc: Prelungire pentru alt scop.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: other
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - confirm_purpose_specific_extension
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.legal_housing_and_actual_residence_evidence
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - purpose_specific_route
+- id: fx.rrro.009
+  desc: Lucrător transfrontalier.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: true
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - apply_work_extension_specific_requirements
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - cross_border_housing_exception
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - work_checklist_current
+- id: fx.rrro.010
+  desc: Statut expirat sau nevalabil la momentul cererii.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: false
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: blocked
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - apply_work_extension_specific_requirements
+    requirements:
+    - req.legal_housing_and_actual_residence_evidence
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - urgent_igi_legal_assessment
+    - work_checklist_current
+- id: fx.rrro.011
+  desc: Cerere de drept de ședere pe termen lung.
+  facts:
+    citizen_group: third_country
+    request_stage: long_term
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - open_stage_specific_residence_route
+    advice_tags:
+    - timis_territorial_service
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - stage_specific_rules
+- id: fx.rrro.012
+  desc: Cerere de carte de rezidență familială.
+  facts:
+    citizen_group: third_country
+    request_stage: family_card
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - open_stage_specific_residence_route
+    advice_tags:
+    - timis_territorial_service
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - stage_specific_rules
+- id: fx.rrro.013
+  desc: Regim de protecție sau alt regim special.
+  facts:
+    citizen_group: third_country
+    request_stage: protection_or_special
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - open_stage_specific_residence_route
+    advice_tags:
+    - timis_territorial_service
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - stage_specific_rules
+- id: fx.rrro.014
+  desc: Reședință în alt județ; canalul Timiș nu apare.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: false
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - apply_work_extension_specific_requirements
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.legal_housing_and_actual_residence_evidence
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    warnings_present:
+    - supplement_deadline_max_30
+    needs_confirmation:
+    - work_checklist_current
+    channels_absent:
+    - ch.igi_timis
+- id: fx.rrro.015
+  desc: Prelungire pentru muncă, lucrător transfrontalier, fără condiția locativă modelată.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: true
+    timis_residence: true
+  expect:
+    status: ok
+    included_steps:
+    - apply_personally_for_temporary_extension
+    - apply_work_extension_specific_requirements
+    requirements:
+    - req.fee_payment_evidence
+    - req.health_insurance
+    - req.purpose_specific_documents
+    - req.valid_travel_document
+    advice_tags:
+    - cross_border_housing_exception
+    - decision_30_plus_checks
+    - file_30_days_before_expiry
+    - legal_status_maintained_until_decision
+    - same_purpose_or_legal_exception
+    - timis_territorial_service
+    warnings_present:
+    - supplement_deadline_max_30
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - work_checklist_current
+- id: fx.rrro.016
+  desc: Lipsește faptul obligatoriu `citizen_group`.
+  facts:
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizen_group
+- id: fx.rrro.017
+  desc: Lipsește faptul obligatoriu `request_stage`.
+  facts:
+    citizen_group: third_country
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_stage
+- id: fx.rrro.018
+  desc: Lipsește faptul obligatoriu `residence_purpose`.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    current_status_valid: true
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - residence_purpose
+- id: fx.rrro.019
+  desc: Lipsește faptul obligatoriu `current_status_valid`.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    cross_border_worker: false
+    timis_residence: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - current_status_valid
+- id: fx.rrro.020
+  desc: Lipsește faptul obligatoriu `cross_border_worker`.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    timis_residence: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - cross_border_worker
+- id: fx.rrro.021
+  desc: Lipsește faptul obligatoriu `timis_residence`.
+  facts:
+    citizen_group: third_country
+    request_stage: temporary_extension
+    residence_purpose: work
+    current_status_valid: true
+    cross_border_worker: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - timis_residence
+- id: fx.rrro.022
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizen_group
+    - request_stage
+    - residence_purpose
+    - current_status_valid
+    - cross_border_worker
+    - timis_residence

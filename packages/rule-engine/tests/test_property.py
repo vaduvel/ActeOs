@@ -7,7 +7,7 @@ from wb_rule_engine import resolve
 hypothesis = pytest.importorskip("hypothesis")
 from hypothesis import given, strategies as st  # noqa: E402
 
-from .conftest import _bundle  # noqa: E402
+from tests.conftest import _bundle  # noqa: E402
 
 NOW = datetime(2026, 6, 1, tzinfo=timezone.utc)
 

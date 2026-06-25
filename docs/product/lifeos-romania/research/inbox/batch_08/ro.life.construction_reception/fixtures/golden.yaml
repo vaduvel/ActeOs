@@ -1,0 +1,691 @@
+batch_id: batch08.construction_reception
+defaults:
+  event_type_id: ro.life.construction_reception
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.not_completed
+  desc: Lucrările nu sunt finalizate
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: false
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: blocked
+    advice_tags:
+    - complete_works_before_reception
+- id: fx.not_started.complete
+  desc: Recepția nu a început; documente complete
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+- id: fx.executor_notice_missing
+  desc: Executantul nu a notificat investitorul
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: false
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - obtain_executor_completion_notice
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    requirements:
+    - written_executor_completion_notice
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+- id: fx.suspended
+  desc: Recepție suspendată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: suspended
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - remedy_reception_defects_and_missing_documents
+    advice_tags:
+    - suspension_communication_max_3_working_days
+    - remediation_max_90_days
+    - possible_external_factor_extension_max_90_days
+    warnings:
+    - reception_suspended
+    - do_not_use_before_admission
+- id: fx.rejected
+  desc: Recepție respinsă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: rejected
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - remedy_rejection_causes
+    - restart_reception_after_remediation
+    warnings:
+    - reception_rejected
+- id: fx.admitted.timisoara
+  desc: Recepție admisă în Timișoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: admitted
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_approves_and_signs_minutes_within_3_days
+    - communicate_reception_minutes_within_5_days
+    - take_over_construction
+    - obtain_use_authorisations_if_required
+    - submit_timisoara_work_finalization_file
+    requirements:
+    - building_permit_copy
+    - reception_minutes
+    channels:
+    - pmt_construction_finalization_online
+    advice_tags:
+    - use_only_after_admitted_reception
+- id: fx.admitted.docs_missing
+  desc: Recepție admisă, documente tehnice incomplete
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: admitted
+    technical_book_complete: false
+    permit_and_project_docs_complete: false
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_approves_and_signs_minutes_within_3_days
+    - communicate_reception_minutes_within_5_days
+    - take_over_construction
+    - obtain_use_authorisations_if_required
+    - submit_timisoara_work_finalization_file
+    requirements:
+    - permit_project_execution_and_as_built_documents
+    - complete_technical_book
+    - building_permit_copy
+    - reception_minutes
+    channels:
+    - pmt_construction_finalization_online
+    advice_tags:
+    - use_only_after_admitted_reception
+- id: fx.admitted.tax_missing
+  desc: Recepție admisă, regularizare necesară fără dovadă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: admitted
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: false
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_approves_and_signs_minutes_within_3_days
+    - communicate_reception_minutes_within_5_days
+    - take_over_construction
+    - obtain_use_authorisations_if_required
+    - submit_timisoara_work_finalization_file
+    requirements:
+    - authorisation_fee_regularization_proof
+    - building_permit_copy
+    - reception_minutes
+    channels:
+    - pmt_construction_finalization_online
+    advice_tags:
+    - use_only_after_admitted_reception
+- id: fx.final_reception_due
+  desc: Garanția a expirat după recepția admisă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: admitted
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: true
+  expect:
+    status: resolved
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_approves_and_signs_minutes_within_3_days
+    - communicate_reception_minutes_within_5_days
+    - take_over_construction
+    - obtain_use_authorisations_if_required
+    - organise_final_reception_within_10_days_after_warranty
+    - submit_timisoara_work_finalization_file
+    requirements:
+    - building_permit_copy
+    - reception_minutes
+    channels:
+    - pmt_construction_finalization_online
+    advice_tags:
+    - use_only_after_admitted_reception
+    - final_reception_after_warranty
+- id: fx.admitted.other_uat
+  desc: Recepție admisă în alt UAT
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: admitted
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_approves_and_signs_minutes_within_3_days
+    - communicate_reception_minutes_within_5_days
+    - take_over_construction
+    - obtain_use_authorisations_if_required
+    - identify_local_post_reception_procedure
+    advice_tags:
+    - use_only_after_admitted_reception
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_post_reception_finalization
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.works_completed
+  desc: Lipsește faptul obligatoriu works_completed
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - works_completed
+- id: fx.missing.executor_notified_investor
+  desc: Lipsește faptul obligatoriu executor_notified_investor
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - executor_notified_investor
+- id: fx.missing.reception_decision
+  desc: Lipsește faptul obligatoriu reception_decision
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    missing_facts:
+    - reception_decision
+- id: fx.missing.technical_book_complete
+  desc: Lipsește faptul obligatoriu technical_book_complete
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - technical_book_complete
+- id: fx.missing.permit_and_project_docs_complete
+  desc: Lipsește faptul obligatoriu permit_and_project_docs_complete
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - permit_and_project_docs_complete
+- id: fx.missing.isc_payment_confirmation_available
+  desc: Lipsește faptul obligatoriu isc_payment_confirmation_available
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - isc_payment_confirmation_available
+- id: fx.missing.energy_certificate_applicable
+  desc: Lipsește faptul obligatoriu energy_certificate_applicable
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - energy_certificate_applicable
+- id: fx.missing.energy_certificate_available
+  desc: Lipsește faptul obligatoriu energy_certificate_available
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - energy_certificate_available
+- id: fx.missing.tax_regularization_applicable
+  desc: Lipsește faptul obligatoriu tax_regularization_applicable
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - tax_regularization_applicable
+- id: fx.missing.tax_regularization_proof_available
+  desc: Lipsește faptul obligatoriu tax_regularization_proof_available
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    designer_and_site_manager_reports_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - tax_regularization_proof_available
+- id: fx.missing.designer_and_site_manager_reports_available
+  desc: Lipsește faptul obligatoriu designer_and_site_manager_reports_available
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    warranty_expired: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - designer_and_site_manager_reports_available
+- id: fx.missing.warranty_expired
+  desc: Lipsește faptul obligatoriu warranty_expired
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    works_completed: true
+    executor_notified_investor: true
+    reception_decision: not_started
+    technical_book_complete: true
+    permit_and_project_docs_complete: true
+    isc_payment_confirmation_available: true
+    energy_certificate_applicable: true
+    energy_certificate_available: true
+    tax_regularization_applicable: true
+    tax_regularization_proof_available: true
+    designer_and_site_manager_reports_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - executor_notifies_completion_in_writing
+    - organise_reception_at_completion
+    - investor_requests_representatives_within_5_days
+    - set_reception_date_and_place
+    - collect_participant_responses
+    - appoint_reception_commission
+    advice_tags:
+    - participant_response_10_days
+    - commission_appointment_max_3_days
+    missing_facts:
+    - warranty_expired
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+    - works_completed
+    - executor_notified_investor
+    - reception_decision
+    - technical_book_complete
+    - permit_and_project_docs_complete
+    - isc_payment_confirmation_available
+    - energy_certificate_applicable
+    - energy_certificate_available
+    - tax_regularization_applicable
+    - tax_regularization_proof_available
+    - designer_and_site_manager_reports_available
+    - warranty_expired

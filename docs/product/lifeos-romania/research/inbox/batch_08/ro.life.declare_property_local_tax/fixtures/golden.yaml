@@ -1,0 +1,405 @@
+batch_id: batch08.declare_property_local_tax
+defaults:
+  event_type_id: ro.life.declare_property_local_tax
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.case.01
+  desc: person, land, acquired, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    property_kind: land
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - prepare_property_tax_file
+    - submit_property_tax_declaration
+    channels:
+    - pmt_atlas_tax
+    advice_tags:
+    - atlas_case_controls_documents
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.02
+  desc: person, land, split, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    property_kind: land
+    property_event: split
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - prepare_property_tax_file
+    - submit_property_tax_declaration
+    channels:
+    - pmt_atlas_tax
+    advice_tags:
+    - atlas_case_controls_documents
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.03
+  desc: person, building, acquired, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    property_kind: building
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.04
+  desc: person, building_and_land, acquired, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    property_kind: building_and_land
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.05
+  desc: legal_entity, land, acquired, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: land
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - submit_property_tax_declaration
+    requirements:
+    - copies_certified_conform_to_original
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.06
+  desc: legal_entity, land, split, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: land
+    property_event: split
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.07
+  desc: legal_entity, building, acquired, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: building
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - submit_property_tax_declaration
+    requirements:
+    - destination_supporting_documents_if_applicable
+    - copies_certified_conform_to_original
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.08
+  desc: legal_entity, building, revalued, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: building
+    property_event: revalued
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_revaluation_case
+    - submit_property_tax_declaration
+    requirements:
+    - revaluation_supporting_document
+    - copies_certified_conform_to_original
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.09
+  desc: legal_entity, building, built, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: building
+    property_event: built
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.10
+  desc: legal_entity, building, modernized, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: building
+    property_event: modernized
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.11
+  desc: legal_entity, building_and_land, acquired, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: building_and_land
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.12
+  desc: person, land, acquired, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: person
+    property_kind: land
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_property_tax_procedure
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.13
+  desc: legal_entity, building, revalued, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: legal_entity
+    property_kind: building
+    property_event: revalued
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_property_tax_procedure
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.14
+  desc: person, building, acquired, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: person
+    property_kind: building
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_property_tax_procedure
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.15
+  desc: legal_entity, building_and_land, acquired, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: legal_entity
+    property_kind: building_and_land
+    property_event: acquired
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_property_tax_procedure
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.16
+  desc: person, land, split, ro.tm.lugoj
+  facts:
+    jurisdiction_id: ro.tm.lugoj
+    owner_type: person
+    property_kind: land
+    property_event: split
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_property_tax_procedure
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.17
+  desc: legal_entity, building, built, ro.tm.lugoj
+  facts:
+    jurisdiction_id: ro.tm.lugoj
+    owner_type: legal_entity
+    property_kind: building
+    property_event: built
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_property_tax_procedure
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.18
+  desc: person, building, built, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    property_kind: building
+    property_event: built
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.19
+  desc: person, building, modernized, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    property_kind: building
+    property_event: modernized
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.case.20
+  desc: legal_entity, land, revalued, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: land
+    property_event: revalued
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_property_case
+    - confirm_current_property_tax_declaration_deadline
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    owner_type: legal_entity
+    property_kind: building
+    property_event: acquired
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.owner_type
+  desc: Lipsește faptul obligatoriu owner_type
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    property_kind: building
+    property_event: acquired
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+    missing_facts:
+    - owner_type
+- id: fx.missing.property_kind
+  desc: Lipsește faptul obligatoriu property_kind
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_event: acquired
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+    missing_facts:
+    - property_kind
+- id: fx.missing.property_event
+  desc: Lipsește faptul obligatoriu property_event
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    property_kind: building
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+    missing_facts:
+    - property_event
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_property_tax_declaration_deadline
+    missing_facts:
+    - jurisdiction_id
+    - owner_type
+    - property_kind
+    - property_event

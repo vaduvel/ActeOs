@@ -1,0 +1,679 @@
+batch_id: B02_RENOUNCE_CITIZENSHIP
+defaults:
+  event_type_id: ro.life.renounce_citizenship
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.ren.001
+  desc: Adult, altă cetățenie dobândită, fără impedimente, domiciliu în străinătate.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    - prepare_renunciation_application
+    requirements:
+    - req.identity_and_citizenship_documents
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    - req.supporting_documents_art27
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.002
+  desc: Solicitant cu domiciliul în România; depunere la ANC.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: romania
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_anc
+    - prepare_renunciation_application
+    requirements:
+    - req.identity_and_citizenship_documents
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    - req.supporting_documents_art27
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.anc
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.003
+  desc: Solicitant minor.
+  facts:
+    age: 17
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: blocked
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.004
+  desc: Solicitant suspect sau inculpat.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: suspect_or_accused
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: blocked
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.005
+  desc: Solicitant cu pedeapsă penală de executat.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: sentence_to_execute
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: blocked
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.006
+  desc: Situație penală necunoscută.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: unknown
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - criminal_status_confirm
+    - renunciation_fee_current
+- id: fx.ren.007
+  desc: Datorii achitate.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: paid
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    - prepare_renunciation_application
+    requirements:
+    - req.identity_and_citizenship_documents
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    - req.supporting_documents_art27
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.008
+  desc: Datorii garantate corespunzător.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: secured
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    - prepare_renunciation_application
+    requirements:
+    - req.identity_and_citizenship_documents
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    - req.supporting_documents_art27
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.009
+  desc: Datorii neachitate și negarantate.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: unresolved
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: blocked
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_criminal_condition
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.010
+  desc: Situația datoriilor este necunoscută.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: unknown
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_criminal_condition
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - debts_status_confirm
+    - renunciation_fee_current
+- id: fx.ren.011
+  desc: Altă cetățenie doar solicitată, cu asigurare oficială.
+  facts:
+    age: 35
+    other_citizenship_status: applied_with_assurance
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    - prepare_renunciation_application
+    requirements:
+    - req.identity_and_citizenship_documents
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    - req.supporting_documents_art27
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.012
+  desc: Nu există altă cetățenie și nici asigurarea dobândirii.
+  facts:
+    age: 35
+    other_citizenship_status: none
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: blocked
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.013
+  desc: Situația celeilalte cetățenii este necunoscută.
+  facts:
+    age: 35
+    other_citizenship_status: unknown
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.statement_and_proof_serious_reasons
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - other_citizenship_confirm
+    - renunciation_fee_current
+- id: fx.ren.014
+  desc: Motivele temeinice lipsesc.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: missing
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: blocked
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+- id: fx.ren.015
+  desc: Motivele temeinice sunt încă neclarificate.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: unknown
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: ok
+    included_steps:
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    requirements:
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - renunciation_fee_current
+    - serious_reasons_confirm
+- id: fx.ren.016
+  desc: Există copii minori posibil afectați.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: true
+  expect:
+    status: ok
+    included_steps:
+    - assess_minor_citizenship_effects
+    - evaluate_renunciation_conditions
+    - file_at_romanian_mission_or_consulate
+    - prepare_renunciation_application
+    requirements:
+    - req.identity_and_citizenship_documents
+    - req.proof_criminal_condition
+    - req.proof_debts_cleared_or_secured
+    - req.proof_other_citizenship_or_assurance
+    - req.statement_and_proof_serious_reasons
+    - req.supporting_documents_art27
+    advice_tags:
+    - appeal_rejection_15d
+    - criminal_condition_clear
+    - debts_condition_possible
+    - serious_reasons_to_be_assessed
+    - statelessness_guard_met
+    warnings_present:
+    - approval_not_automatic
+    - citizenship_lost_only_at_certificate
+    - collect_certificate_6m
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - minor_effects_case_specific
+    - renunciation_fee_current
+- id: fx.ren.017
+  desc: Lipsește faptul obligatoriu `age`.
+  facts:
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - age
+- id: fx.ren.018
+  desc: Lipsește faptul obligatoriu `other_citizenship_status`.
+  facts:
+    age: 35
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - other_citizenship_status
+- id: fx.ren.019
+  desc: Lipsește faptul obligatoriu `criminal_status`.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - criminal_status
+- id: fx.ren.020
+  desc: Lipsește faptul obligatoriu `debts_status`.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    serious_reason_status: declared
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - debts_status
+- id: fx.ren.021
+  desc: Lipsește faptul obligatoriu `serious_reason_status`.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    residence_location: abroad
+    minors_affected: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - serious_reason_status
+- id: fx.ren.022
+  desc: Lipsește faptul obligatoriu `residence_location`.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    minors_affected: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - residence_location
+- id: fx.ren.023
+  desc: Lipsește faptul obligatoriu `minors_affected`.
+  facts:
+    age: 35
+    other_citizenship_status: acquired
+    criminal_status: clear
+    debts_status: none
+    serious_reason_status: declared
+    residence_location: abroad
+  expect:
+    status: needs_facts
+    missing_facts:
+    - minors_affected
+- id: fx.ren.024
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - age
+    - other_citizenship_status
+    - criminal_status
+    - debts_status
+    - serious_reason_status
+    - residence_location
+    - minors_affected

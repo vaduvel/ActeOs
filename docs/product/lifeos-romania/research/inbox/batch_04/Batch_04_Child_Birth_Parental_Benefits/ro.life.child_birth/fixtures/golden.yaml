@@ -1,0 +1,333 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.child_birth
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: copil născut viu în România, încă neînregistrat
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: false
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    emitted_tags:
+    - birth_registration_30d
+  id: ro.life.child_birth.F01
+- title: copil viu, certificat emis — se deschide alocația
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.child_allowance
+  id: ro.life.child_birth.F02
+- title: tată salariat — se deschide concediul paternal
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: true
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.child_allowance
+    - life.paternity_leave
+  id: ro.life.child_birth.F03
+- title: mamă asigurată — se deschide concediul de maternitate
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: false
+    mother_insured_for_maternity: true
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.child_allowance
+    - life.maternity_leave
+  id: ro.life.child_birth.F04
+- title: familie care solicită CCC
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: false
+    mother_insured_for_maternity: true
+    wants_parental_leave: true
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.child_allowance
+    - life.maternity_leave
+    - life.parental_leave_benefit
+  id: ro.life.child_birth.F05
+- title: toate ramurile uzuale active
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: true
+    mother_insured_for_maternity: true
+    wants_parental_leave: true
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.child_allowance
+    - life.paternity_leave
+    - life.maternity_leave
+    - life.parental_leave_benefit
+  id: ro.life.child_birth.F06
+- title: copil născut mort
+  facts:
+    birth_country: ro
+    birth_outcome: stillborn
+    birth_date: '2026-06-24'
+    birth_registered: false
+    father_is_worker: true
+    mother_insured_for_maternity: true
+    wants_parental_leave: true
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.maternity_leave
+    excluded_steps:
+    - assess_child_allowance
+    - assess_parental_leave
+    emitted_tags:
+    - stillborn_registration_3d
+  id: ro.life.child_birth.F07
+- title: copil născut viu, decedat în primele 30 de zile
+  facts:
+    birth_country: ro
+    birth_outcome: live_died_within_30d
+    birth_date: '2026-06-10'
+    death_date: '2026-06-25'
+    birth_registered: false
+    father_is_worker: false
+    mother_insured_for_maternity: true
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.family_death
+    - life.maternity_leave
+    emitted_tags:
+    - liveborn_death_24h
+  id: ro.life.child_birth.F08
+- title: naștere în Italia — hand-off către transcriere
+  facts:
+    birth_country: it
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: false
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: needs_confirmation
+    included_child_events:
+    - life.transcribe_foreign_birth
+    emitted_tags:
+    - foreign_birth_route
+  id: ro.life.child_birth.F09
+- title: naștere multiplă — orchestrarea de bază rămâne una per dosar
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    children_count: 2
+    father_is_worker: true
+    mother_insured_for_maternity: true
+    wants_parental_leave: true
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.child_allowance
+    - life.paternity_leave
+    - life.maternity_leave
+    - life.parental_leave_benefit
+  id: ro.life.child_birth.F10
+- title: certificatul nu este încă emis — alocația nu se deschide încă
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: false
+    father_is_worker: true
+    mother_insured_for_maternity: true
+    wants_parental_leave: true
+  expected:
+    status: resolved
+    included_child_events:
+    - life.birth_registration
+    - life.paternity_leave
+    - life.maternity_leave
+    - life.parental_leave_benefit
+    excluded_child_events:
+    - life.child_allowance
+  id: ro.life.child_birth.F11
+- title: rezultatul nașterii necunoscut
+  facts:
+    birth_country: ro
+    birth_date: '2026-06-20'
+    birth_registered: false
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - birth_outcome
+  id: ro.life.child_birth.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - birth_country
+    - birth_outcome
+    - birth_date
+  id: ro.life.child_birth.F13
+- title: lipsește faptul obligatoriu birth_country
+  facts:
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - birth_country
+  id: ro.life.child_birth.F14
+- title: valoare invalidă pentru birth_country
+  facts:
+    birth_country: __invalid__
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - birth_country
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.child_birth.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-06-20'
+    birth_registered: true
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    channels_absent:
+    - ch.birth_registration.timisoara
+  id: ro.life.child_birth.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.child_birth.F17
+  reference_date: '1990-01-01'
+- title: exact la limita termenului principal
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-05-26'
+    birth_registered: false
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - birth_registration_30d
+  id: ro.life.child_birth.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    birth_country: ro
+    birth_outcome: live_alive
+    birth_date: '2026-05-25'
+    birth_registered: false
+    father_is_worker: false
+    mother_insured_for_maternity: false
+    wants_parental_leave: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - birth_registration_overdue
+  id: ro.life.child_birth.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.child_birth.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.child_birth.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: resolved
+  id: ro.life.child_birth.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

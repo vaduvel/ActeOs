@@ -1,0 +1,401 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_CIVIL_STATUS_DUPLICATE
+event_type_id: life.civil_status_duplicate
+status: draft
+rules:
+- id: rule.civil.base
+  canonical_rule_id: civil_status_duplicate.base_route
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-31'
+  when:
+    op: in
+    field: certificate_type
+    values:
+    - birth
+    - marriage
+    - death
+  effects:
+  - type: include_step
+    step_id: request_civil_status_certificate
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.civil.request_place_law
+  status: draft
+  required_facts:
+  - certificate_type
+  - requester_role
+  - request_channel
+  - in_romania
+  - valid_identity
+- id: rule.civil.birth_marriage_roles
+  canonical_rule_id: civil_status_duplicate.birth_marriage_roles
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-11-07'
+  when:
+    op: all
+    args:
+    - op: in
+      field: certificate_type
+      values:
+      - birth
+      - marriage
+    - op: not_in
+      field: requester_role
+      values:
+      - holder
+      - legal_representative
+      - proxy
+      - lawyer
+  effects:
+  - type: block
+    tag: requester_not_entitled
+    message_ro: Pentru naștere/căsătorie, solicitantul trebuie să fie titular, reprezentant legal ori împuternicit admis de
+      lege.
+  source_claim_ids:
+  - claim.civil.eligible_birth_marriage
+  - claim.civil.proxy_lawyer
+  status: draft
+- id: rule.civil.death_roles
+  canonical_rule_id: civil_status_duplicate.death_roles
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-11-07'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_type
+      value: death
+    - op: not_in
+      field: requester_role
+      values:
+      - family
+      - entitled
+      - other
+      - proxy
+      - lawyer
+  effects:
+  - type: block
+    tag: requester_not_entitled
+    message_ro: Calitatea solicitantului pentru certificatul de deces nu este admisă de regulile verificate.
+  source_claim_ids:
+  - claim.civil.eligible_death
+  - claim.civil.proxy_lawyer
+  status: draft
+- id: rule.civil.death_other
+  canonical_rule_id: civil_status_duplicate.death_other_interest
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-11-07'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_type
+      value: death
+    - op: eq
+      field: requester_role
+      value: other
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_legitimate_interest
+  - type: include_requirement
+    requirement_id: req.mayor_approval
+  source_claim_ids:
+  - claim.civil.death_other_interest
+  status: draft
+  required_facts:
+  - legitimate_interest
+  - mayor_approval
+- id: rule.civil.death_other_block
+  canonical_rule_id: civil_status_duplicate.death_other_block
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-11-07'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_type
+      value: death
+    - op: eq
+      field: requester_role
+      value: other
+    - op: any
+      args:
+      - op: eq
+        field: legitimate_interest
+        value: false
+      - op: eq
+        field: mayor_approval
+        value: false
+  effects:
+  - type: block
+    tag: death_interest_or_approval_missing
+    message_ro: Sunt necesare interesul legitim și aprobarea primarului competent.
+  source_claim_ids:
+  - claim.civil.death_other_interest
+  status: draft
+- id: rule.civil.proxy
+  canonical_rule_id: civil_status_duplicate.proxy
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-11-07'
+  when:
+    op: eq
+    field: requester_role
+    value: proxy
+  effects:
+  - type: include_requirement
+    requirement_id: req.special_power_of_attorney
+  - type: include_requirement
+    requirement_id: req.proxy_identity_document
+  source_claim_ids:
+  - claim.civil.proxy_lawyer
+  status: draft
+- id: rule.civil.lawyer
+  canonical_rule_id: civil_status_duplicate.lawyer
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-11-07'
+  when:
+    op: eq
+    field: requester_role
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_authorization
+  source_claim_ids:
+  - claim.civil.proxy_lawyer
+  status: draft
+- id: rule.civil.in_romania
+  canonical_rule_id: civil_status_duplicate.in_romania
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-31'
+  when:
+    op: eq
+    field: in_romania
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.any_spclep_or_primaria
+  source_claim_ids:
+  - claim.civil.any_office_hub
+  status: draft
+- id: rule.civil.abroad
+  canonical_rule_id: civil_status_duplicate.abroad
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-31'
+  when:
+    op: eq
+    field: in_romania
+    value: false
+  effects:
+  - type: attach_channel
+    channel_id: ch.romanian_mission_or_consulate
+  source_claim_ids:
+  - claim.civil.abroad_consulate
+  status: draft
+- id: rule.civil.electronic_conflict
+  canonical_rule_id: civil_status_duplicate.electronic_conflict
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-31'
+  when:
+    op: eq
+    field: request_channel
+    value: electronic
+  effects:
+  - type: require_confirmation
+    tag: electronic_channel_conflict
+    message_ro: Legea permite emiterea/transmiterea electronică, dar pagina operațională HUB spune că acest serviciu nu gestionează
+      documente electronice.
+  - type: set_freshness_state
+    value: conflicting
+  source_claim_ids:
+  - claim.civil.electronic_allowed_law
+  - claim.civil.hub_no_electronic
+  status: in_review
+- id: rule.civil.tm_email_post
+  canonical_rule_id: civil_status_duplicate.tm_email_post
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2025-03-31'
+  when:
+    op: in
+    field: request_channel
+    values:
+    - email
+    - post
+  effects:
+  - type: require_confirmation
+    tag: tm_remote_channel_archived
+    message_ro: Pagina locală disponibilă este arhivată și spune că e-mailul/poșta nu sunt acceptate; verifică procedura curentă
+      înainte de depunere.
+  source_claim_ids:
+  - claim.civil.tm_presence_no_email_archived
+  status: in_review
+- id: rule.civil.tm_docs
+  canonical_rule_id: civil_status_duplicate.tm_documents
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2025-03-31'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  - type: require_confirmation
+    tag: tm_local_dossier_archived
+    message_ro: Lista locală provine dintr-o pagină arhivată și trebuie reconfirmată.
+  source_claim_ids:
+  - claim.civil.tm_docs_archived
+  status: in_review
+- id: rule.civil.tm_old_cert
+  canonical_rule_id: civil_status_duplicate.tm_old_certificate_exchange
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2025-03-31'
+  when:
+    op: eq
+    field: old_certificate_exchange
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.old_civil_status_certificate
+  source_claim_ids:
+  - claim.civil.tm_docs_archived
+  status: in_review
+- id: rule.civil.tm_status_change
+  canonical_rule_id: civil_status_duplicate.tm_status_change_act
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2025-03-31'
+  when:
+    op: eq
+    field: status_changed
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.final_status_change_act
+  source_claim_ids:
+  - claim.civil.tm_docs_archived
+  status: in_review
+- id: rule.civil.tm_death_kinship
+  canonical_rule_id: civil_status_duplicate.tm_death_kinship
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2025-03-31'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_type
+      value: death
+    - op: eq
+      field: requester_role
+      value: family
+  effects:
+  - type: include_requirement
+    requirement_id: req.kinship_civil_status_documents
+  source_claim_ids:
+  - claim.civil.tm_docs_archived
+  status: in_review
+- id: rule.civil.fee_conflict
+  canonical_rule_id: civil_status_duplicate.fee_conflict
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2025-03-31'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: local_fee_conflict
+    message_ro: HUB indică taxe stabilite local, iar pagina arhivată Timișoara indică gratuitate; cuantumul curent trebuie
+      verificat.
+  - type: set_freshness_state
+    value: conflicting
+  source_claim_ids:
+  - claim.civil.fee_ambiguity_hub
+  - claim.civil.tm_no_fee_archived
+  status: in_review
+- id: rule.civil.tm_channel
+  canonical_rule_id: civil_status_duplicate.tm_channel
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2025-03-31'
+  when:
+    op: eq
+    field: request_channel
+    value: counter
+  effects:
+  - type: attach_channel
+    channel_id: ch.timisoara_civil_status
+  - type: require_confirmation
+    tag: tm_appointment_archived
+    message_ro: Pagina arhivată cere programare online; reconfirmă înainte de deplasare.
+  source_claim_ids:
+  - claim.civil.tm_appointment_archived
+  status: in_review
+- id: rule.civil.tm_timing
+  canonical_rule_id: civil_status_duplicate.tm_timing
+  event_type_id: life.civil_status_duplicate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: explanatory
+  effective_from: '2025-03-31'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: hub_delivery_3_30
+    message_ro: HUB publică 3 zile lucrătoare mediu și 30 zile calendaristice maxim.
+  - type: require_confirmation
+    tag: tm_local_timing_archived
+    message_ro: Termenul local 5/30 zile provine din pagina arhivată.
+  source_claim_ids:
+  - claim.civil.delivery_hub
+  - claim.civil.tm_timing_archived
+  status: in_review

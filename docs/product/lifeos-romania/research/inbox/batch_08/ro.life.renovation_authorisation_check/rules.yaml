@@ -1,0 +1,296 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.renovation_authorisation_check
+event_type_id: ro.life.renovation_authorisation_check
+required_facts:
+- jurisdiction_id
+- work_kind
+- changes_structure
+- changes_architectural_appearance
+- protected_status
+- preserves_specific_conditions
+- local_urbanism_compliant
+- wants_official_position
+status: draft
+rules:
+- id: rule.renovation.no_permit.general.v1
+  canonical_rule_id: rule.renovation.no_permit.general
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: work_kind
+      values: &id001
+      - interior_finishes
+      - fence_repair
+      - roof_repair
+      - exterior_finishes
+      - internal_installations
+      - external_joinery
+      - light_partition
+      - energy_rehabilitation_small_house
+    - op: eq
+      field: changes_structure
+      value: false
+    - op: eq
+      field: changes_architectural_appearance
+      value: false
+    - op: eq
+      field: protected_status
+      value: none
+    - op: eq
+      field: preserves_specific_conditions
+      value: true
+  effects:
+  - type: include_step
+    step_id: document_art11_assessment
+  - type: emit_advice
+    tag: permit_not_required_under_art11
+    message_ro: Lucrarea se încadrează în excepția art. 11 pe baza faptelor declarate.
+  source_claim_ids:
+  - clm.renovation_check.law50.general_exemption
+  - clm.renovation_check.law50.listed_works
+  - clm.renovation_check.law50.energy_change_use
+  status: active
+  reviewer_id: null
+- id: rule.renovation.no_permit.change_use.v1
+  canonical_rule_id: rule.renovation.no_permit.change_use
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: work_kind
+      value: change_of_use_without_permit_work
+    - op: eq
+      field: changes_structure
+      value: false
+    - op: eq
+      field: changes_architectural_appearance
+      value: false
+    - op: eq
+      field: protected_status
+      value: none
+    - op: eq
+      field: preserves_specific_conditions
+      value: true
+    - op: eq
+      field: local_urbanism_compliant
+      value: true
+  effects:
+  - type: include_step
+    step_id: document_change_of_use_assessment
+  - type: emit_advice
+    tag: change_of_use_no_permit_if_no_authorised_works
+    message_ro: Nu este necesară autorizația numai dacă nu se execută lucrări autorizabile și urbanismul este respectat.
+  source_claim_ids:
+  - clm.renovation_check.law50.energy_change_use
+  status: active
+  reviewer_id: null
+- id: rule.renovation.protected_zone_strict_exemption.v1
+  canonical_rule_id: rule.renovation.protected_zone_strict_exemption
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_status
+      value: protected_zone_non_monument
+    - op: in
+      field: work_kind
+      values: *id001
+    - op: eq
+      field: changes_structure
+      value: false
+    - op: eq
+      field: changes_architectural_appearance
+      value: false
+    - op: eq
+      field: preserves_specific_conditions
+      value: true
+  effects:
+  - type: include_step
+    step_id: document_protected_zone_art11_assessment
+  - type: emit_advice
+    tag: protected_zone_exemption_strict_conditions
+    message_ro: Excepția este posibilă numai în limitele speciale aplicabile zonei protejate.
+  - type: require_confirmation
+    tag: confirm_protected_zone_art11_exemption
+    message_ro: Categoria exactă de lucrare admisă fără autorizație în zona protejată trebuie confirmată înainte de executare.
+  source_claim_ids:
+  - clm.renovation_check.law50.protected_nonmonument
+  status: in_review
+  reviewer_id: null
+- id: rule.renovation.monument_notice.v1
+  canonical_rule_id: rule.renovation.monument_notice
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: protected_status
+    value: monument_or_architectural_value
+  effects:
+  - type: include_step
+    step_id: notify_local_authority_before_works
+  - type: include_step
+    step_id: notify_deconcentrated_culture_service
+  - type: include_requirement
+    requirement_id: written_heritage_agreement
+  - type: emit_advice
+    tag: heritage_agreement_max_30_days
+    message_ro: Acordul scris se soluționează în cel mult 30 de zile în condițiile legii.
+  - type: emit_warning
+    tag: do_not_treat_as_ordinary_art11_exemption
+    message_ro: Imobilul protejat nu se tratează ca o renovare obișnuită fără verificarea patrimoniului.
+  source_claim_ids:
+  - clm.renovation_check.law50.monument_notice
+  status: active
+  reviewer_id: null
+- id: rule.renovation.permit_required.v1
+  canonical_rule_id: rule.renovation.permit_required
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: any
+    args:
+    - op: eq
+      field: changes_structure
+      value: true
+    - op: eq
+      field: changes_architectural_appearance
+      value: true
+    - op: eq
+      field: work_kind
+      value: other
+    - op: eq
+      field: preserves_specific_conditions
+      value: false
+    - op: all
+      args:
+      - op: eq
+        field: work_kind
+        value: change_of_use_without_permit_work
+      - op: eq
+        field: local_urbanism_compliant
+        value: false
+  effects:
+  - type: include_step
+    step_id: start_building_permit_route
+  - type: trigger_child_event
+    event_type_id: ro.life.building_permit
+  - type: emit_warning
+    tag: permit_likely_required
+    message_ro: Faptele declarate depășesc condițiile excepției și trimit la autorizare.
+  source_claim_ids:
+  - clm.renovation_check.law50.general_exemption
+  - clm.renovation_check.law50.energy_change_use
+  status: active
+  reviewer_id: null
+- id: rule.renovation.timisoara_official_position.v1
+  canonical_rule_id: rule.renovation.timisoara_official_position
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: wants_official_position
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_art11_local_request
+  - type: include_requirement
+    requirement_id: art11_standard_request
+  - type: include_requirement
+    requirement_id: title_document
+  - type: include_requirement
+    requirement_id: land_book_extract_max_30_days
+  - type: include_requirement
+    requirement_id: site_plan_photos_and_intervention_proposal
+  - type: attach_channel
+    channel_id: pmt_art11_online_service
+  source_claim_ids:
+  - clm.renovation_check.pmt.art11_service
+  status: active
+  reviewer_id: null
+- id: rule.renovation.other_uat_official_position.v1
+  canonical_rule_id: rule.renovation.other_uat_official_position
+  event_type_id: ro.life.renovation_authorisation_check
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: wants_official_position
+      value: true
+  effects:
+  - type: include_step
+    step_id: identify_local_art11_contact
+  - type: require_confirmation
+    tag: confirm_local_art11_position_procedure
+    message_ro: Procedura locală pentru obținerea unei poziții oficiale trebuie confirmată la UAT.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Serviciul operațional verificat este cel al Timișoarei.
+  source_claim_ids:
+  - clm.renovation_check.pmt.art11_service
+  status: in_review
+  reviewer_id: null

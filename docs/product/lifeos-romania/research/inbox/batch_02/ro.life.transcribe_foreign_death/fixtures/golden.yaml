@@ -1,0 +1,788 @@
+batch_id: B02_TRANSCRIBE_FOREIGN_DEATH
+defaults:
+  event_type_id: ro.life.transcribe_foreign_death
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.tfd.001
+  desc: Cetățean român decedat, deces înregistrat în UE, ultim domiciliu Timișoara.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.002
+  desc: Persoana decedată nu era cetățean român.
+  facts:
+    deceased_romanian_status: not_romanian
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: blocked
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.003
+  desc: Cetățenia română la deces este incertă.
+  facts:
+    deceased_romanian_status: uncertain
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: blocked
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - prove_deceased_romanian_status
+    - timisoara_local_recheck
+- id: fx.tfd.004
+  desc: Decesul nu a fost înregistrat în străinătate.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: false
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: blocked
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - open_foreign_death_first_registration
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - art39_2_documents
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.005
+  desc: Depunere consulară pentru caz obișnuit.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: abroad
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_death_transcription
+    - file_at_romanian_mission_or_consulate
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.romanian_mission
+- id: fx.tfd.006
+  desc: Persoană fără domiciliu anterior în România, rută obișnuită.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: false
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_death_transcription
+    - file_sector1_bucharest
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    - sector1_60d
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+- id: fx.tfd.007
+  desc: Beneficiar art. 10/11 fără domiciliu, depunere în România.
+  facts:
+    deceased_romanian_status: acquired_or_reacquired
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: false
+    citizenship_basis: art10_11
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_death_transcription
+    - file_bucharest_sector_or_county_seat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - art10_11_ro_60d
+    - eu_no_apostille_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+- id: fx.tfd.008
+  desc: Beneficiar art. 10/11 fără domiciliu, depunere în străinătate.
+  facts:
+    deceased_romanian_status: acquired_or_reacquired
+    foreign_event_registered: true
+    applicant_location: abroad
+    ever_domiciled_ro: false
+    citizenship_basis: art10_11
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_death_transcription
+    - file_personally_at_competent_mission
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - art10_11_consular_90d
+    - eu_no_apostille_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.romanian_mission
+- id: fx.tfd.009
+  desc: Actul românesc de naștere al decedatului nu este transcris.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'no'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    - transcribe_birth_ex_officio_before_death
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - birth_before_death
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.010
+  desc: Nu se știe dacă nașterea decedatului a fost transcrisă.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: unknown
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - birth_transcription_status_check
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.011
+  desc: Document standard din stat Haga non-UE.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: hague_non_eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.apostille
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.012
+  desc: Document standard din stat non-Haga.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: non_hague
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    - req.supralegalisation
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.013
+  desc: Statul emitent este necunoscut.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: unknown
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - document_formality_country_check
+    - timisoara_local_recheck
+- id: fx.tfd.014
+  desc: Extras multilingv eligibil Convenția de la Viena.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: multilingual_vienna
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    - vienna_no_apostille_translation
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.015
+  desc: Certificat electronic.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: electronic
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - electronic_document_acceptance
+    - timisoara_local_recheck
+- id: fx.tfd.016
+  desc: Certificat cu rubrici lipsă.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: incomplete
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.additional_authentic_evidence_for_missing_fields
+    - req.applicant_identity
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - missing_fields_evidence
+    - timisoara_local_recheck
+- id: fx.tfd.017
+  desc: Solicitantul are domiciliul în Timișoara.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: applicant_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_authenticated_appointment
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.deceased_civil_status_documents
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_death_transcription
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_local_recheck
+- id: fx.tfd.018
+  desc: Alt UAT; canalul Timișoara nu apare.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    birth_act_transcribed: 'yes'
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_death_transcription
+    - file_at_applicant_or_deceased_competent_uat
+    - prepare_foreign_death_transcription
+    requirements:
+    - req.applicant_identity
+    - req.authenticated_romanian_translation
+    - req.foreign_death_certificate_or_extract_original
+    - req.proof_deceased_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_requires_foreign_registration
+    channels:
+    - ch.local_civil_status
+    channels_absent:
+    - ch.timisoara_death_transcription
+- id: fx.tfd.019
+  desc: Lipsește faptul obligatoriu `deceased_romanian_status`.
+  facts:
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - deceased_romanian_status
+- id: fx.tfd.020
+  desc: Lipsește faptul obligatoriu `foreign_event_registered`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - foreign_event_registered
+- id: fx.tfd.021
+  desc: Lipsește faptul obligatoriu `applicant_location`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_location
+- id: fx.tfd.022
+  desc: Lipsește faptul obligatoriu `ever_domiciled_ro`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - ever_domiciled_ro
+- id: fx.tfd.023
+  desc: Lipsește faptul obligatoriu `citizenship_basis`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizenship_basis
+- id: fx.tfd.024
+  desc: Lipsește faptul obligatoriu `document_format`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_format
+- id: fx.tfd.025
+  desc: Lipsește faptul obligatoriu `issuing_country_group`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    timisoara_connection: deceased_last_domicile
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issuing_country_group
+- id: fx.tfd.026
+  desc: Lipsește faptul obligatoriu `timisoara_connection`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    birth_act_transcribed: 'yes'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - timisoara_connection
+- id: fx.tfd.027
+  desc: Lipsește faptul obligatoriu `birth_act_transcribed`.
+  facts:
+    deceased_romanian_status: romanian_at_death
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: other
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: deceased_last_domicile
+  expect:
+    status: needs_facts
+    missing_facts:
+    - birth_act_transcribed
+- id: fx.tfd.028
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - deceased_romanian_status
+    - foreign_event_registered
+    - applicant_location
+    - ever_domiciled_ro
+    - citizenship_basis
+    - document_format
+    - issuing_country_group
+    - timisoara_connection
+    - birth_act_transcribed

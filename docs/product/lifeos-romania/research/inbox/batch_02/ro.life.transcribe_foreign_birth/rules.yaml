@@ -1,0 +1,593 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_TRANSCRIBE_FOREIGN_BIRTH
+event_type_id: ro.life.transcribe_foreign_birth
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- subject_romanian_status
+- foreign_event_registered
+- applicant_location
+- ever_domiciled_ro
+- citizenship_basis
+- document_format
+- issuing_country_group
+- timisoara_connection
+- subject_age
+rules:
+- id: rule.tfb.start
+  canonical_rule_id: transcribe_foreign_birth.start
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_foreign_birth_transcription
+  - type: emit_warning
+    tag: transcription_not_recognition
+    message_ro: Transcrierea creează actul românesc de stare civilă; nu confunda procedura cu apostila sau cu recunoașterea
+      unei calificări.
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.not_romanian
+  canonical_rule_id: transcribe_foreign_birth.not_romanian
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: subject_romanian_status
+    value: not_romanian
+  effects:
+  - type: block
+    tag: subject_not_romanian
+    message_ro: Procedura art. 41 privește actele de stare civilă ale cetățenilor români.
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.romanian_uncertain
+  canonical_rule_id: transcribe_foreign_birth.romanian_uncertain
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: subject_romanian_status
+    value: uncertain
+  effects:
+  - type: block
+    tag: romanian_status_uncertain
+    message_ro: Nu se poate stabili competența fără dovada sau clarificarea cetățeniei române.
+  - type: require_confirmation
+    tag: prove_romanian_status
+    message_ro: Clarifică cetățenia la data nașterii ori data dobândirii/redobândirii.
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.event_not_registered
+  canonical_rule_id: transcribe_foreign_birth.event_not_registered
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - &id001
+      op: in
+      field: subject_romanian_status
+      values:
+      - romanian_at_birth
+      - acquired_or_reacquired
+    - op: eq
+      field: foreign_event_registered
+      value: false
+  effects:
+  - type: block
+    tag: foreign_birth_not_registered
+    message_ro: Transcrierea presupune un act de naștere deja întocmit de autoritatea străină; pentru lipsa înregistrării
+      este necesară o procedură distinctă.
+  - type: trigger_child_event
+    event_type_id: ro.life.birth_registration
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.eligible
+  canonical_rule_id: transcribe_foreign_birth.eligible
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_foreign_birth_transcription
+  - type: include_requirement
+    requirement_id: req.foreign_birth_certificate_or_extract_original
+  - type: include_requirement
+    requirement_id: req.proof_romanian_citizenship
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.deadline
+  canonical_rule_id: transcribe_foreign_birth.deadline
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+  effects:
+  - type: emit_warning
+    tag: request_within_6m_normative
+    message_ro: Legea națională cere solicitarea în 6 luni de la înregistrarea străină sau de la dobândirea/redobândirea cetățeniei.
+  source_claim_ids:
+  - claim.tfb.deadline_normative
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.route_ro_domicile
+  canonical_rule_id: transcribe_foreign_birth.route_ro_domicile
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: eq
+      field: ever_domiciled_ro
+      value: true
+  effects:
+  - type: include_step
+    step_id: file_at_domicile_or_last_domicile_uat
+  - type: attach_channel
+    channel_id: ch.local_civil_status
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.route_consular
+  canonical_rule_id: transcribe_foreign_birth.route_consular
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: applicant_location
+      value: abroad
+    - op: neq
+      field: citizenship_basis
+      value: art10_11
+  effects:
+  - type: include_step
+    step_id: file_at_romanian_mission_or_consulate
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  source_claim_ids:
+  - claim.tfb.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.no_domicile_ordinary
+  canonical_rule_id: transcribe_foreign_birth.no_domicile_ordinary
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: eq
+      field: ever_domiciled_ro
+      value: false
+    - op: neq
+      field: citizenship_basis
+      value: art10_11
+  effects:
+  - type: include_step
+    step_id: file_sector1_bucharest
+  - type: emit_advice
+    tag: sector1_60d
+    message_ro: Pentru persoana fără domiciliu anterior în România, alta decât ruta art. 10/11, legea indică Sectorul 1 și
+      termen de 60 de zile.
+  source_claim_ids:
+  - claim.tfb.no_domicile_routes
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.art10_11_ro
+  canonical_rule_id: transcribe_foreign_birth.art10_11_ro
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: subject_romanian_status
+      value: acquired_or_reacquired
+    - op: eq
+      field: citizenship_basis
+      value: art10_11
+    - op: eq
+      field: ever_domiciled_ro
+      value: false
+    - op: eq
+      field: applicant_location
+      value: romania
+  effects:
+  - type: include_step
+    step_id: file_bucharest_sector_or_county_seat
+  - type: emit_advice
+    tag: art10_11_ro_60d
+    message_ro: Ruta art. 10/11 fără domiciliu anterior se soluționează în țară prin sectoarele București ori municipii reședință
+      de județ, în 60 de zile.
+  source_claim_ids:
+  - claim.tfb.no_domicile_routes
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.art10_11_abroad
+  canonical_rule_id: transcribe_foreign_birth.art10_11_abroad
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: subject_romanian_status
+      value: acquired_or_reacquired
+    - op: eq
+      field: citizenship_basis
+      value: art10_11
+    - op: eq
+      field: ever_domiciled_ro
+      value: false
+    - op: eq
+      field: applicant_location
+      value: abroad
+  effects:
+  - type: include_step
+    step_id: file_personally_at_competent_mission
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  - type: emit_advice
+    tag: art10_11_consular_90d
+    message_ro: Cererea consulară se depune personal, în 6 luni de la jurământ, iar termenul legal de soluționare este 90
+      de zile.
+  source_claim_ids:
+  - claim.tfb.art10_11_consular
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.standard_eu
+  canonical_rule_id: transcribe_foreign_birth.standard_eu
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: eu
+  effects:
+  - type: emit_advice
+    tag: eu_no_apostille_local
+    message_ro: În checklistul Timișoara, actul UE este scutit de apostilă.
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  source_claim_ids:
+  - claim.tfb.local_eu_vienna
+  status: in_review
+- id: rule.tfb.standard_hague
+  canonical_rule_id: transcribe_foreign_birth.standard_hague
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: hague_non_eu
+  effects:
+  - type: include_requirement
+    requirement_id: req.apostille
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  source_claim_ids:
+  - claim.tfb.local_docs
+  status: in_review
+- id: rule.tfb.standard_non_hague
+  canonical_rule_id: transcribe_foreign_birth.standard_non_hague
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: non_hague
+  effects:
+  - type: include_requirement
+    requirement_id: req.supralegalisation
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  source_claim_ids:
+  - claim.tfb.local_docs
+  status: in_review
+- id: rule.tfb.standard_unknown
+  canonical_rule_id: transcribe_foreign_birth.standard_unknown
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: document_formality_country_check
+    message_ro: Confirmă regimul UE, Convenția Apostilei și eventualul lanț de supralegalizare pentru statul emitent.
+  source_claim_ids:
+  - claim.tfb.local_docs
+  status: in_review
+- id: rule.tfb.vienna
+  canonical_rule_id: transcribe_foreign_birth.vienna
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_format
+    value: multilingual_vienna
+  effects:
+  - type: emit_advice
+    tag: vienna_no_apostille_translation
+    message_ro: Extrasul multilingv eligibil este acceptat de pagina Timișoara fără apostilă și fără traducere.
+  source_claim_ids:
+  - claim.tfb.local_eu_vienna
+  status: in_review
+- id: rule.tfb.electronic
+  canonical_rule_id: transcribe_foreign_birth.electronic
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_format
+    value: electronic
+  effects:
+  - type: require_confirmation
+    tag: electronic_document_acceptance
+    message_ro: Confirmă statul emitent, semnătura/sigiliul electronic, vechimea și forma în care autoritatea română acceptă
+      documentul electronic.
+  source_claim_ids:
+  - claim.tfb.local_docs
+  status: in_review
+- id: rule.tfb.incomplete
+  canonical_rule_id: transcribe_foreign_birth.incomplete
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_format
+    value: incomplete
+  effects:
+  - type: include_requirement
+    requirement_id: req.additional_authentic_evidence_for_missing_fields
+  - type: require_confirmation
+    tag: missing_fields_evidence
+    message_ro: Identifică rubricile lipsă și înscrisurile autentice care le probează.
+  source_claim_ids:
+  - claim.tfb.incomplete_fields
+  status: in_review
+  legal_rank: lege
+- id: rule.tfb.under14
+  canonical_rule_id: transcribe_foreign_birth.under14
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: lt
+    field: subject_age
+    value: 14
+  effects:
+  - type: include_requirement
+    requirement_id: req.parent_or_legal_representative_application
+  source_claim_ids:
+  - claim.tfb.local_minor
+  status: in_review
+- id: rule.tfb.age14_plus
+  canonical_rule_id: transcribe_foreign_birth.age14_plus
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: gte
+    field: subject_age
+    value: 14
+  effects:
+  - type: include_requirement
+    requirement_id: req.subject_application_assisted_as_applicable
+  - type: emit_advice
+    tag: minor_14_plus_local
+    message_ro: Pagina locală indică depunerea în nume propriu pentru minorul de peste 14 ani, asistat conform situației.
+  source_claim_ids:
+  - claim.tfb.local_minor
+  status: in_review
+- id: rule.tfb.timisoara
+  canonical_rule_id: transcribe_foreign_birth.timisoara
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: in
+      field: timisoara_connection
+      values:
+      - domicile
+      - last_domicile
+  effects:
+  - type: attach_channel
+    channel_id: ch.timisoara_civil_status
+  - type: include_step
+    step_id: book_timisoara_online_appointment
+  - type: emit_advice
+    tag: timisoara_30d_no_fee
+    message_ro: Pagina locală indică termen de 30 de zile și fără taxe; fiind o pagină arhivată, reconfirmă la programare.
+  - type: require_confirmation
+    tag: timisoara_archived_page_recheck
+    message_ro: Reconfirmă checklistul și programarea în portalul curent înainte de depunere.
+  source_claim_ids:
+  - claim.tfb.local_channel_timing_fee
+  - claim.tfb.current_portal
+  status: in_review
+- id: rule.tfb.deadline_conflict
+  canonical_rule_id: transcribe_foreign_birth.deadline_conflict
+  event_type_id: ro.life.transcribe_foreign_birth
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: in
+      field: timisoara_connection
+      values:
+      - domicile
+      - last_domicile
+  effects:
+  - type: emit_warning
+    tag: deadline_anchor_conflict
+    message_ro: Legea actuală calculează cele 6 luni de la înregistrarea străină ori dobândirea cetățeniei; pagina locală
+      le leagă de întoarcere/primirea certificatului.
+  - type: require_confirmation
+    tag: deadline_anchor_authority_confirmation
+    message_ro: Aplică termenul legal conservator și solicită Primăriei confirmarea instrucțiunii locale nealiniate.
+  source_claim_ids:
+  - claim.tfb.deadline_normative
+  - claim.tfb.deadline_local
+  status: in_review
+  legal_rank: lege

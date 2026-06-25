@@ -1,0 +1,271 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_DIVORCE_ADMIN
+event_type_id: ro.life.divorce_admin
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- workflow_stage
+- spouses_agree
+- has_minor_children
+- parallel_divorce_request
+- name_changed_after_divorce
+- territory_id
+rules:
+- id: rule.b03.divorce.admin_eligible
+  canonical_rule_id: divorce.admin.eligible
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: seeking_divorce
+    - op: eq
+      field: spouses_agree
+      value: true
+    - op: eq
+      field: has_minor_children
+      value: false
+    - op: eq
+      field: parallel_divorce_request
+      value: false
+  effects:
+  - type: include_step
+    step_id: file_administrative_divorce_request
+  - type: include_requirement
+    requirement_id: req.spouses_identity_documents
+  - type: include_requirement
+    requirement_id: req.spouses_birth_certificates_original
+  - type: include_requirement
+    requirement_id: req.marriage_certificate_original
+  - type: emit_advice
+    tag: administrative_divorce_reflection_30d
+    message_ro: Ambii soți revin după termenul de 30 de zile.
+  - type: emit_advice
+    tag: divorce_certificate_max_5_workdays
+    message_ro: Pagina locală publică emiterea certificatului în maximum 5 zile lucrătoare după termen.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  - claim.b03.divorce.documents_30d
+  - claim.b03.divorce.certificate_5d
+  status: draft
+  authority_level: institution
+- id: rule.b03.divorce.disagreement
+  canonical_rule_id: divorce.admin.disagreement
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: seeking_divorce
+    - op: eq
+      field: spouses_agree
+      value: false
+  effects:
+  - type: emit_warning
+    tag: administrative_divorce_unavailable_no_agreement
+    message_ro: Ruta administrativă nu este disponibilă fără acordul ambilor soți.
+  - type: emit_advice
+    tag: review_notarial_or_court_divorce
+    message_ro: Verifică ruta notarială ori judiciară aplicabilă situației.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  status: draft
+- id: rule.b03.divorce.minor_children
+  canonical_rule_id: divorce.admin.minor_children
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: seeking_divorce
+    - op: eq
+      field: has_minor_children
+      value: true
+  effects:
+  - type: emit_warning
+    tag: administrative_divorce_unavailable_minor_children
+    message_ro: Ruta administrativă locală cercetată nu se aplică dacă există copii minori.
+  - type: emit_advice
+    tag: review_notarial_or_court_divorce
+    message_ro: Verifică ruta notarială ori judiciară aplicabilă situației.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  status: draft
+- id: rule.b03.divorce.parallel
+  canonical_rule_id: divorce.admin.parallel_request
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: seeking_divorce
+    - op: eq
+      field: parallel_divorce_request
+      value: true
+  effects:
+  - type: emit_warning
+    tag: parallel_divorce_request_detected
+    message_ro: Nu continua o cerere administrativă paralelă fără clarificarea dosarului deja deschis.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  status: draft
+- id: rule.b03.divorce.timisoara_channel
+  canonical_rule_id: divorce.admin.channel_timisoara
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: seeking_divorce
+    - op: eq
+      field: spouses_agree
+      value: true
+    - op: eq
+      field: has_minor_children
+      value: false
+    - op: eq
+      field: parallel_divorce_request
+      value: false
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: file_administrative_divorce_request
+    channel_id: ch.timisoara.divorce_admin
+  - type: require_confirmation
+    tag: confirm_current_divorce_fee
+    message_ro: Confirmă taxa locală valabilă în 2026 înainte de plată; cuantumul din arhivă nu este promovat.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  - claim.b03.divorce.fee_archive
+  status: in_review
+  authority_level: institution
+- id: rule.b03.divorce.other_uat
+  canonical_rule_id: divorce.admin.other_uat
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: seeking_divorce
+    - op: neq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_divorce_route
+    message_ro: Confirmă competența, documentele, programarea și taxa la UAT-ul competent.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  status: in_review
+- id: rule.b03.divorce.final_name_changed
+  canonical_rule_id: divorce.final.replace_identity
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: divorce_final
+    - op: eq
+      field: name_changed_after_divorce
+      value: true
+  effects:
+  - type: include_step
+    step_id: replace_identity_document_after_divorce
+  - type: include_requirement
+    requirement_id: req.final_divorce_certificate_or_judgment
+  - type: include_requirement
+    requirement_id: req.current_identity_document
+  - type: set_deadline
+    step_id: replace_identity_document_after_divorce
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: divorce_final_date
+  - type: emit_warning
+    tag: identity_after_divorce_deadline_15d
+    message_ro: Solicită noul act de identitate în 15 zile de la schimbarea numelui.
+  source_claim_ids:
+  - claim.b03.divorce.name_change_15d
+  status: draft
+  authority_level: national_normative
+  legal_rank: oug
+- id: rule.b03.divorce.final_name_same
+  canonical_rule_id: divorce.final.name_unchanged
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: divorce_final
+    - op: eq
+      field: name_changed_after_divorce
+      value: false
+  effects:
+  - type: emit_advice
+    tag: no_identity_name_change_after_divorce
+    message_ro: Dacă numele a rămas neschimbat, acest eveniment nu declanșează înlocuirea actului pentru motivul numelui.
+  source_claim_ids:
+  - claim.b03.divorce.name_change_15d
+  status: draft
+- id: rule.b03.divorce.unknown_stage
+  canonical_rule_id: divorce.stage.unknown
+  event_type_id: ro.life.divorce_admin
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: not_in
+    field: workflow_stage
+    values:
+    - seeking_divorce
+    - divorce_final
+  effects:
+  - type: require_confirmation
+    tag: confirm_divorce_stage
+    message_ro: Clarifică dacă vrei să începi divorțul sau divorțul este deja definitiv.
+  source_claim_ids:
+  - claim.b03.divorce.admin_eligibility
+  status: in_review

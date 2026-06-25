@@ -109,6 +109,7 @@ def _missing_facts(rule: Mapping[str, Any], facts: Mapping[str, Any]) -> list[di
     missing_ids: set[str] = set()
 
     def scan(pred: Mapping[str, Any]) -> None:
+        nonlocal missing_ids
         if evaluate(pred, facts) is Tri.UNKNOWN:
             for ref in collect_fact_refs(pred):
                 if facts.get(ref) is None:

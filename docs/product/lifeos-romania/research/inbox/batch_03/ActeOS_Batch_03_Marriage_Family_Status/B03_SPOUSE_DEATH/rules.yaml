@@ -1,0 +1,382 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_SPOUSE_DEATH
+event_type_id: ro.life.spouse_death
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- death_registered
+- days_since_death
+- death_cause
+- deceased_pension_condition
+- paid_funeral_expenses
+- survivor_profile
+- estate_may_exist
+- territory_id
+rules:
+- id: rule.b03.spouse_death.register
+  canonical_rule_id: death.registration.base
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: death_registered
+    value: false
+  effects:
+  - type: include_step
+    step_id: register_spouse_death
+  - type: include_requirement
+    requirement_id: req.medical_death_certificate
+  - type: include_requirement
+    requirement_id: req.deceased_identity_document
+  - type: include_requirement
+    requirement_id: req.declarant_identity_document
+  source_claim_ids:
+  - claim.b03.spouse_death.registration
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.spouse_death.late
+  canonical_rule_id: death.registration.late
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: death_registered
+      value: false
+    - op: gt
+      field: days_since_death
+      value: 3
+  effects:
+  - type: include_requirement
+    requirement_id: req.prosecutor_late_registration_approval
+  - type: emit_warning
+    tag: death_registration_after_3d
+    message_ro: Înregistrarea după termenul general de 3 zile cere aprobarea parchetului.
+  source_claim_ids:
+  - claim.b03.spouse_death.violent_late
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.spouse_death.violent
+  canonical_rule_id: death.registration.violent
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: death_registered
+      value: false
+    - op: in
+      field: death_cause
+      values:
+      - violent
+      - accident
+      - suicide
+      - body_found
+  effects:
+  - type: include_requirement
+    requirement_id: req.police_or_prosecutor_proof
+  - type: emit_warning
+    tag: special_death_registration_proof
+    message_ro: Este necesară dovada emisă de poliție sau parchet pentru cauza specială a decesului.
+  source_claim_ids:
+  - claim.b03.spouse_death.violent_late
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.spouse_death.timisoara_death_channel
+  canonical_rule_id: death.registration.channel_timisoara
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: death_registered
+      value: false
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: register_spouse_death
+    channel_id: ch.timisoara.death_registration
+  - type: emit_advice
+    tag: timisoara_death_registration_no_fee
+    message_ro: Pagina oficială locală indică faptul că înregistrarea decesului nu este taxată.
+  source_claim_ids:
+  - claim.b03.spouse_death.timisoara_channel
+  status: draft
+  authority_level: institution
+- id: rule.b03.spouse_death.death_benefit
+  canonical_rule_id: death.benefit.claim
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_pension_condition
+      value: eligible
+    - op: eq
+      field: paid_funeral_expenses
+      value: true
+  effects:
+  - type: include_step
+    step_id: claim_death_benefit
+  - type: include_requirement
+    requirement_id: req.death_certificate
+  - type: include_requirement
+    requirement_id: req.applicant_identity_document
+  - type: include_requirement
+    requirement_id: req.proof_funeral_expenses
+  - type: include_requirement
+    requirement_id: req.civil_status_or_kinship_proof
+  - type: attach_channel
+    step_id: claim_death_benefit
+    channel_id: ch.cnpp.death_benefit
+  - type: emit_advice
+    tag: death_benefit_payment_3_workdays
+    message_ro: CNPP publică plata în 3 zile lucrătoare după soluționarea cererii complete.
+  - type: emit_advice
+    tag: death_benefit_claim_limit_3y
+    message_ro: CNPP publică un termen de solicitare de 3 ani de la certificatul de deces.
+  source_claim_ids:
+  - claim.b03.spouse_death.death_benefit
+  - claim.b03.spouse_death.death_benefit_timing
+  status: draft
+  authority_level: national_operational
+- id: rule.b03.spouse_death.no_expense_proof
+  canonical_rule_id: death.benefit.no_expense_proof
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_pension_condition
+      value: eligible
+    - op: eq
+      field: paid_funeral_expenses
+      value: false
+  effects:
+  - type: emit_advice
+    tag: death_benefit_requires_expense_proof
+    message_ro: Solicitantul trebuie să poată dovedi că a suportat cheltuielile ocazionate de deces.
+  source_claim_ids:
+  - claim.b03.spouse_death.death_benefit
+  status: draft
+- id: rule.b03.spouse_death.condition_unknown
+  canonical_rule_id: death.benefit.condition_unknown
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deceased_pension_condition
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_deceased_pension_condition
+    message_ro: Confirmă la CNPP dacă persoana decedată era pensionar/asigurat ori îndeplinea condițiile relevante.
+  source_claim_ids:
+  - claim.b03.spouse_death.death_benefit
+  status: in_review
+- id: rule.b03.spouse_death.survivor_base
+  canonical_rule_id: survivor_pension.base
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_pension_condition
+      value: eligible
+    - op: in
+      field: survivor_profile
+      values:
+      - standard_age
+      - invalidity
+      - temporary_6m
+      - child_under7
+  effects:
+  - type: include_step
+    step_id: assess_and_claim_survivor_pension
+  - type: include_requirement
+    requirement_id: req.death_certificate
+  - type: include_requirement
+    requirement_id: req.civil_status_documents
+  - type: attach_channel
+    step_id: assess_and_claim_survivor_pension
+    channel_id: ch.cnpp.survivor_pension
+  - type: emit_warning
+    tag: survivor_pension_filing_30d
+    message_ro: Depunerea în 30 de zile poate influența data de la care se acordă dreptul.
+  - type: require_confirmation
+    tag: confirm_survivor_income_marriage_conditions
+    message_ro: Confirmă durata căsătoriei, veniturile și celelalte condiții aplicabile profilului.
+  source_claim_ids:
+  - claim.b03.spouse_death.survivor_pension
+  - claim.b03.spouse_death.survivor_filing
+  status: in_review
+  authority_level: national_operational
+- id: rule.b03.spouse_death.survivor_standard
+  canonical_rule_id: survivor_pension.standard_age
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: survivor_profile
+    value: standard_age
+  effects:
+  - type: emit_advice
+    tag: survivor_route_standard_age
+    message_ro: Verifică ruta pentru soțul supraviețuitor la vârsta standard și durata căsătoriei.
+  source_claim_ids:
+  - claim.b03.spouse_death.survivor_pension
+  status: draft
+- id: rule.b03.spouse_death.survivor_invalidity
+  canonical_rule_id: survivor_pension.invalidity
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: survivor_profile
+    value: invalidity
+  effects:
+  - type: emit_advice
+    tag: survivor_route_invalidity
+    message_ro: Verifică ruta bazată pe invaliditate și documentele medicale cerute de CNPP.
+  source_claim_ids:
+  - claim.b03.spouse_death.survivor_pension
+  status: draft
+- id: rule.b03.spouse_death.survivor_temporary
+  canonical_rule_id: survivor_pension.temporary_6m
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: survivor_profile
+    value: temporary_6m
+  effects:
+  - type: emit_advice
+    tag: survivor_route_temporary_6m
+    message_ro: Verifică ruta temporară de 6 luni și condiția de venit publicată de CNPP.
+  source_claim_ids:
+  - claim.b03.spouse_death.survivor_pension
+  status: draft
+- id: rule.b03.spouse_death.survivor_child
+  canonical_rule_id: survivor_pension.child_under7
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: survivor_profile
+    value: child_under7
+  effects:
+  - type: emit_advice
+    tag: survivor_route_child_under7
+    message_ro: Verifică ruta pentru îngrijirea copilului sub 7 ani și condiția de venit.
+  source_claim_ids:
+  - claim.b03.spouse_death.survivor_pension
+  status: draft
+- id: rule.b03.spouse_death.survivor_unknown
+  canonical_rule_id: survivor_pension.unknown
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: survivor_profile
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: identify_survivor_pension_route
+    message_ro: Profilul de eligibilitate pentru pensia de urmaș nu este încă determinat.
+  source_claim_ids:
+  - claim.b03.spouse_death.survivor_pension
+  status: in_review
+- id: rule.b03.spouse_death.estate
+  canonical_rule_id: death.trigger_succession
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: estate_may_exist
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.inheritance_succession
+  - type: emit_advice
+    tag: start_succession_assessment
+    message_ro: Verifică bunurile, datoriile și deschiderea procedurii succesorale.
+  source_claim_ids:
+  - claim.b03.spouse_death.succession_notification
+  status: draft
+- id: rule.b03.spouse_death.timisoara_succession_notice
+  canonical_rule_id: death.succession_notice.timisoara
+  event_type_id: ro.life.spouse_death
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: estate_may_exist
+      value: true
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: emit_advice
+    tag: timisoara_ex_officio_succession_notice
+    message_ro: Pentru ultimul domiciliu în Timișoara există și fluxul local de sesizare succesorală din oficiu.
+  source_claim_ids:
+  - claim.b03.spouse_death.succession_notification
+  status: draft
+  authority_level: institution

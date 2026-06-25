@@ -1,0 +1,380 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_PASSPORT_LOST_STOLEN
+event_type_id: life.passport_lost_stolen
+status: draft
+rules:
+- id: rule.passport.loss
+  canonical_rule_id: passport_lost_stolen.loss_declaration
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-07-02'
+  when:
+    op: in
+    field: incident_type
+    values:
+    - lost
+    - destroyed
+  effects:
+  - type: include_step
+    step_id: declare_passport_event
+  - type: include_requirement
+    requirement_id: req.loss_or_destruction_declaration
+  source_claim_ids:
+  - claim.passport.loss_declaration
+  - claim.passport.new_after_declaration
+  status: draft
+  required_facts:
+  - incident_type
+  - incident_country
+  - event_declared
+- id: rule.passport.theft
+  canonical_rule_id: passport_lost_stolen.theft_police
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-07-02'
+  when:
+    op: eq
+    field: incident_type
+    value: stolen
+  effects:
+  - type: include_step
+    step_id: report_passport_theft_to_police
+  - type: include_requirement
+    requirement_id: req.police_theft_certificate
+  source_claim_ids:
+  - claim.passport.theft_police
+  status: draft
+  required_facts:
+  - has_police_certificate
+- id: rule.passport.theft_missing_cert
+  canonical_rule_id: passport_lost_stolen.theft_missing_certificate
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-07-02'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: incident_type
+      value: stolen
+    - op: eq
+      field: has_police_certificate
+      value: false
+  effects:
+  - type: block
+    tag: police_certificate_missing
+    message_ro: Pentru furt, obține adeverința de la poliția competentă.
+  source_claim_ids:
+  - claim.passport.theft_police
+  status: draft
+- id: rule.passport.no_reuse
+  canonical_rule_id: passport_lost_stolen.no_reuse
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-07-02'
+  when:
+    op: eq
+    field: passport_found_after_declaration
+    value: true
+  effects:
+  - type: block
+    tag: declared_passport_cannot_be_used
+    message_ro: Pașaportul declarat este nul și nu mai poate fi utilizat.
+  - type: include_step
+    step_id: surrender_found_invalid_passport
+  source_claim_ids:
+  - claim.passport.invalid_after_declaration
+  - claim.passport.found_surrender
+  status: draft
+- id: rule.passport.replacement_gate
+  canonical_rule_id: passport_lost_stolen.replacement_after_declaration
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-07-02'
+  when:
+    op: eq
+    field: event_declared
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_replacement_passport
+  source_claim_ids:
+  - claim.passport.new_after_declaration
+  status: draft
+- id: rule.passport.replacement_block
+  canonical_rule_id: passport_lost_stolen.replacement_before_declaration
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-07-02'
+  when:
+    op: eq
+    field: event_declared
+    value: false
+  effects:
+  - type: block
+    tag: event_not_declared
+    message_ro: Declară mai întâi pierderea, distrugerea sau furtul în canalul competent.
+  source_claim_ids:
+  - claim.passport.new_after_declaration
+  status: draft
+- id: rule.passport.route_country
+  canonical_rule_id: passport_lost_stolen.route_country
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-03'
+  when:
+    op: eq
+    field: request_location
+    value: country
+  effects:
+  - type: attach_channel
+    channel_id: ch.any_passport_service_ro
+  source_claim_ids:
+  - claim.passport.any_service
+  status: draft
+- id: rule.passport.route_abroad
+  canonical_rule_id: passport_lost_stolen.route_abroad
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-03'
+  when:
+    op: eq
+    field: request_location
+    value: abroad
+  effects:
+  - type: attach_channel
+    channel_id: ch.romanian_mission_or_consulate
+  source_claim_ids:
+  - claim.passport.any_service
+  - claim.passport.loss_declaration
+  status: draft
+- id: rule.passport.no_electronic
+  canonical_rule_id: passport_lost_stolen.no_electronic_application
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-03'
+  when:
+    op: eq
+    field: request_channel
+    value: electronic
+  effects:
+  - type: block
+    tag: electronic_documents_not_accepted
+    message_ro: Documentele cererii nu se transmit electronic în serviciul publicat.
+  source_claim_ids:
+  - claim.passport.no_electronic_docs
+  status: draft
+- id: rule.passport.fee
+  canonical_rule_id: passport_lost_stolen.fee_265
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-08-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.passport_payment_265_ron
+  - type: emit_advice
+    tag: passport_fee_265
+    message_ro: Contravaloarea publicată este 265 lei.
+  source_claim_ids:
+  - claim.passport.fee_265
+  status: draft
+- id: rule.passport.adult_docs
+  canonical_rule_id: passport_lost_stolen.adult_docs
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-07-31'
+  when:
+    op: gte
+    field: age_years
+    value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  - type: include_requirement
+    requirement_id: req.payment_proof
+  - type: include_requirement
+    requirement_id: req.previous_passport_if_available
+  source_claim_ids:
+  - claim.passport.docs_adult
+  status: draft
+- id: rule.passport.under14_docs
+  canonical_rule_id: passport_lost_stolen.under14_docs
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-07-31'
+  when:
+    op: lt
+    field: age_years
+    value: 14
+  effects:
+  - type: include_requirement
+    requirement_id: req.minor_birth_certificate
+  - type: include_requirement
+    requirement_id: req.parent_or_representative_identity
+  - type: include_requirement
+    requirement_id: req.parental_consent_or_legal_basis
+  - type: include_requirement
+    requirement_id: req.minor_presence
+  source_claim_ids:
+  - claim.passport.docs_under14
+  - claim.passport.minor_presence
+  status: draft
+- id: rule.passport.14_17_docs
+  canonical_rule_id: passport_lost_stolen.14_17_docs
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-07-31'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age_years
+      value: 14
+    - op: lt
+      field: age_years
+      value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.minor_valid_identity
+  - type: include_requirement
+    requirement_id: req.minor_birth_certificate
+  - type: include_requirement
+    requirement_id: req.parental_consent_or_legal_basis
+  - type: include_requirement
+    requirement_id: req.minor_presence
+  source_claim_ids:
+  - claim.passport.docs_14_17
+  - claim.passport.minor_presence
+  status: draft
+- id: rule.passport.temporary
+  canonical_rule_id: passport_lost_stolen.temporary_urgent
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-03'
+  when:
+    op: eq
+    field: passport_type
+    value: temporary
+  effects:
+  - type: include_requirement
+    requirement_id: req.objective_urgent_evidence
+  - type: emit_advice
+    tag: temporary_1_3_workdays
+    message_ro: Pașaportul temporar este rezervat situațiilor obiective și urgente probate.
+  source_claim_ids:
+  - claim.passport.temporary_urgent
+  status: draft
+- id: rule.passport.temporary_tourism
+  canonical_rule_id: passport_lost_stolen.temporary_tourism_block
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: passport_type
+      value: temporary
+    - op: eq
+      field: urgency_reason
+      value: tourism
+  effects:
+  - type: block
+    tag: tourism_not_temporary_urgency
+    message_ro: Turismul exclusiv nu justifică ruta de pașaport temporar urgent.
+  source_claim_ids:
+  - claim.passport.temporary_no_tourism
+  status: draft
+- id: rule.passport.electronic_timing
+  canonical_rule_id: passport_lost_stolen.electronic_timing
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2026-04-03'
+  when:
+    op: eq
+    field: passport_type
+    value: electronic
+  effects:
+  - type: emit_advice
+    tag: electronic_passport_5_current_15_legal
+    message_ro: HUB indică în prezent cel mult 5 zile în țară, în limita legală de 15 zile lucrătoare.
+  source_claim_ids:
+  - claim.passport.electronic_timing
+  status: draft
+- id: rule.passport.pickup
+  canonical_rule_id: passport_lost_stolen.pickup_options
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-04-03'
+  when:
+    op: in
+    field: pickup_method
+    values:
+    - personal
+    - proxy
+    - courier
+  effects:
+  - type: emit_advice
+    tag: pickup_method_supported
+    message_ro: Metoda de ridicare selectată este prevăzută de pagina HUB, cu condițiile aferente.
+  source_claim_ids:
+  - claim.passport.pickup_options
+  status: draft
+- id: rule.passport.tm_channel
+  canonical_rule_id: passport_lost_stolen.tm_channel
+  event_type_id: life.passport_lost_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-01-08'
+  when:
+    op: eq
+    field: request_location
+    value: country
+  effects:
+  - type: attach_channel
+    channel_id: ch.passports_timisoara_demetriade_1
+  - type: emit_advice
+    tag: tm_outstations_suspended
+    message_ro: Punctele teritoriale publicate sunt suspendate temporar; folosește serviciul Timișoara sau verifică actualizarea.
+  source_claim_ids:
+  - claim.passport.tm_program
+  - claim.passport.tm_outstations_suspended
+  status: draft

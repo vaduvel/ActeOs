@@ -1,0 +1,412 @@
+batch_id: B07_SOLD_HOME
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.sold_home
+  event_alias: ro.life.sold_home
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: apartament fără datorii
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_association_sale_certificate
+    - provide_energy_certificate_copy_before_sale
+    - hand_over_energy_certificate_original
+    - deposit_energy_certificate_copy_at_tax_body
+    - remove_home_from_local_tax_record
+    advice:
+    - membership_ends
+- id: F02
+  desc: datorii, cumpărător acceptă
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    debts_exist: true
+    buyer_accepts_debts: true
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.express_debt_assumption_in_deed
+- id: F03
+  desc: datorii, cumpărător nu acceptă
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    debts_exist: true
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - debts_not_resolved
+- id: F04
+  desc: nu există asociație
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: false
+    association_has_president_admin: false
+    latest_bill_age_months: 1
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_no_association_declaration_and_bill
+- id: F05
+  desc: asociație fără președinte/administrator
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: false
+    latest_bill_age_months: 1
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_no_association_declaration_and_bill
+- id: F06
+  desc: factură alternativă veche 3 luni
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: false
+    association_has_president_admin: false
+    latest_bill_age_months: 3
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - bill_too_old
+- id: F07
+  desc: certificat energetic lipsă
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: false
+    association_exists: false
+    association_has_president_admin: false
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: false
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - energy_certificate_missing
+- id: F08
+  desc: casă individuală
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: false
+    association_exists: false
+    association_has_president_admin: false
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_included:
+    - request_association_sale_certificate
+    included_steps:
+    - remove_home_from_local_tax_record
+- id: F09
+  desc: adeverință solicitată azi
+  facts:
+    transfer_date: '2026-07-01'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-25'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    deadline_state: association_actor_future
+- id: F10
+  desc: adeverință emisă de 31 zile
+  facts:
+    transfer_date: '2026-06-25'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_issue_date: '2026-05-25'
+    association_certificate_request_date: '2026-05-22'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    warnings:
+    - association_certificate_expired
+- id: F11
+  desc: adeverință emisă de 30 zile
+  facts:
+    transfer_date: '2026-06-25'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_issue_date: '2026-05-26'
+    association_certificate_request_date: '2026-05-23'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    certificate_state: boundary_valid
+- id: F12
+  desc: imobil în alt UAT
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.dfmt.atlas.home_removal
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F13
+  desc: bun care nu este imobil
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: false
+    is_condominium: false
+    association_exists: false
+    association_has_president_admin: false
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: false
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_included:
+    - complete_authentic_notarial_transfer
+    - remove_home_from_local_tax_record
+- id: F14
+  desc: lipsește debt status
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - debts_exist
+- id: F15
+  desc: datorii true, acceptare lipsă
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    debts_exist: true
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - buyer_accepts_debts
+- id: F16
+  desc: lipsește status asociație
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - association_exists
+    - association_has_president_admin
+- id: F17
+  desc: fost membru false
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-10'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    advice_absent:
+    - membership_ends
+- id: F18
+  desc: transfer viitor
+  facts:
+    transfer_date: '2026-08-01'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-07-20'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    deadline_state: future_anchor
+- id: F19
+  desc: adeverință necerută încă
+  facts:
+    transfer_date: '2026-08-01'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - association_certificate_request_date
+- id: F20
+  desc: vânzare Timișoara cu certificat fiscal
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: false
+    association_exists: false
+    association_has_president_admin: false
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_local_fiscal_certificate_if_requested
+    - remove_home_from_local_tax_record
+- id: F21
+  desc: toate obligațiile apartament
+  facts:
+    transfer_date: '2026-07-01'
+    is_real_estate: true
+    is_condominium: true
+    association_exists: true
+    association_has_president_admin: true
+    association_certificate_request_date: '2026-06-20'
+    debts_exist: false
+    buyer_accepts_debts: false
+    energy_certificate_available: true
+    seller_was_association_member: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_authentic_notarial_transfer
+    - request_association_sale_certificate
+    - provide_energy_certificate_copy_before_sale
+    - hand_over_energy_certificate_original
+    - deposit_energy_certificate_copy_at_tax_body
+    - obtain_local_fiscal_certificate_if_requested
+    - remove_home_from_local_tax_record
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - transfer_date
+    - is_real_estate
+    - is_condominium
+    - energy_certificate_available
+    - jurisdiction_id

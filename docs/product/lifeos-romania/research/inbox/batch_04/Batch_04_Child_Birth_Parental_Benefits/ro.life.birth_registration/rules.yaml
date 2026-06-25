@@ -1,0 +1,294 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.birth_registration
+status: draft
+rules:
+- id: rule.birthreg.live_30d
+  canonical_rule_id: birth_registration.deadline.live
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: eq
+    field: registration_case
+    value: live_alive
+  effects:
+  - type: include_step
+    step_id: declare_birth
+  - type: set_deadline
+    step_id: declare_birth
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: birth_date
+  - type: emit_warning
+    tag: birth_registration_30d
+    message_ro: Declară nașterea în 30 de zile de la data nașterii.
+  source_claim_ids:
+  - claim.birthreg.deadline_live_30d
+  status: draft
+  required_facts:
+  - registration_case
+  - birth_date
+- id: rule.birthreg.stillborn_3d
+  canonical_rule_id: birth_registration.deadline.stillborn
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: eq
+    field: registration_case
+    value: stillborn
+  effects:
+  - type: include_step
+    step_id: declare_birth
+  - type: set_deadline
+    step_id: declare_birth
+    value:
+      kind: relative_calendar_days
+      days: 3
+      anchor: birth_date
+  - type: emit_warning
+    tag: stillborn_registration_3d
+    message_ro: Declară nașterea copilului născut mort în 3 zile.
+  source_claim_ids:
+  - claim.birthreg.deadline_stillborn_3d
+  status: draft
+- id: rule.birthreg.liveborn_death_24h
+  canonical_rule_id: birth_registration.deadline.liveborn_death
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: eq
+    field: registration_case
+    value: live_died_within_30d
+  effects:
+  - type: include_step
+    step_id: declare_birth
+  - type: set_deadline
+    step_id: declare_birth
+    value:
+      kind: relative_hours
+      hours: 24
+      anchor: death_date
+  - type: emit_warning
+    tag: liveborn_death_24h
+    message_ro: Declară nașterea în 24 de ore de la deces.
+  source_claim_ids:
+  - claim.birthreg.deadline_death_24h
+  status: draft
+  required_facts:
+  - death_date
+- id: rule.birthreg.found_abandoned_30d
+  canonical_rule_id: birth_registration.deadline.found_abandoned
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: in
+    field: registration_case
+    values:
+    - found_child
+    - abandoned_in_maternity
+  effects:
+  - type: include_step
+    step_id: special_registration
+  - type: set_deadline
+    step_id: special_registration
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: finding_or_abandonment_date
+  source_claim_ids:
+  - claim.birthreg.deadline_found_30d
+  status: draft
+  required_facts:
+  - finding_or_abandonment_date
+- id: rule.birthreg.core_docs
+  canonical_rule_id: birth_registration.requirements.core
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-03-29'
+  when:
+    op: in
+    field: registration_case
+    values:
+    - live_alive
+    - stillborn
+    - live_died_within_30d
+  effects:
+  - type: include_requirement
+    requirement_id: req.birth_medical_certificate
+  - type: include_requirement
+    requirement_id: req.mother_identity_document
+  - type: include_requirement
+    requirement_id: req.declarant_identity_document
+  source_claim_ids:
+  - claim.birthreg.documents_core
+  status: draft
+- id: rule.birthreg.married_docs
+  canonical_rule_id: birth_registration.requirements.married
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-03-29'
+  when:
+    op: eq
+    field: parents_marital_status
+    value: married
+  effects:
+  - type: include_requirement
+    requirement_id: req.parents_marriage_certificate
+  source_claim_ids:
+  - claim.birthreg.married_parents_docs
+  status: draft
+- id: rule.birthreg.different_surnames
+  canonical_rule_id: birth_registration.requirements.child_surname
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-03-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: parents_marital_status
+      value: married
+    - op: eq
+      field: parents_have_different_surnames
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.parents_child_surname_declaration
+  source_claim_ids:
+  - claim.birthreg.married_parents_docs
+  status: draft
+- id: rule.birthreg.unmarried_recognition
+  canonical_rule_id: birth_registration.requirements.paternity_recognition
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-03-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: parents_marital_status
+      value: unmarried
+    - op: eq
+      field: father_recognises_at_registration
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.paternity_recognition_declaration
+  - type: include_requirement
+    requirement_id: req.mother_surname_consent
+  source_claim_ids:
+  - claim.birthreg.unmarried_recognition
+  status: draft
+- id: rule.birthreg.late_under_year
+  canonical_rule_id: birth_registration.route.late_under_year
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: days_since_birth
+      value: 30
+    - op: lte
+      field: days_since_birth
+      value: 365
+  effects:
+  - type: include_step
+    step_id: request_late_registration_mayor_approval
+  - type: set_deadline
+    step_id: authority_resolution
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: request_date
+  - type: emit_warning
+    tag: late_registration_under_one_year
+    message_ro: Este necesară cerere scrisă și aprobarea primarului.
+  source_claim_ids:
+  - claim.birthreg.late_under_one_year
+  status: draft
+- id: rule.birthreg.late_over_year
+  canonical_rule_id: birth_registration.route.late_over_year
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: gt
+    field: days_since_birth
+    value: 365
+  effects:
+  - type: include_step
+    step_id: request_tardy_registration
+  - type: include_requirement
+    requirement_id: req.county_conforming_opinion
+  - type: set_deadline
+    step_id: authority_resolution
+    value:
+      kind: relative_calendar_days
+      days: 90
+      anchor: request_date
+  - type: emit_warning
+    tag: late_registration_over_one_year
+    message_ro: Este necesar aviz conform județean și aprobarea primarului.
+  source_claim_ids:
+  - claim.birthreg.late_over_one_year
+  status: draft
+- id: rule.birthreg.timisoara_channel
+  canonical_rule_id: birth_registration.channel.timisoara
+  event_type_id: life.birth_registration
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: operational
+  effective_from: '2024-03-29'
+  when:
+    op: jurisdiction_descends_from
+    field: jurisdiction
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    step_id: declare_birth
+    channel_id: ch.birth_registration.timisoara
+  - type: attach_channel
+    step_id: collect_certificate
+    channel_id: ch.birth_certificate_pickup.timisoara
+  source_claim_ids:
+  - claim.birthreg.timisoara_channel
+  - claim.birthreg.timisoara_certificate_release
+  status: draft

@@ -1,0 +1,355 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.highschool_admission
+status: draft
+rules:
+- id: rule.hs.required_facts
+  canonical_rule_id: hs.required_facts
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  required_facts:
+  - candidate.series
+  - candidate.previously_enrolled
+  - evaluation_national_taken
+  - admission_route
+  - reference_date
+  - target_county
+  - options_verified
+  - local_offer_verified
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.hs.select_route
+  source_claim_ids:
+  - claim.hs.scope.current_previous
+  status: draft
+- id: rule.hs.prior_enrolled_transfer
+  canonical_rule_id: hs.prior_enrolled_transfer
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: eq
+    field: candidate.previously_enrolled
+    value: true
+  effects:
+  - type: block
+    tag: use_transfer_not_admission
+    message_ro: Candidatul deja înmatriculat/retras/întrerupt/repetent nu reintră prin admiterea 2026; folosește transfer/reînmatriculare.
+  - type: trigger_child_event
+    event_type_id: life.school_transfer
+  source_claim_ids:
+  - claim.hs.scope.current_previous
+  status: draft
+- id: rule.hs.previous_eligible
+  canonical_rule_id: hs.previous_eligible
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: candidate.series
+      value: previous
+    - op: eq
+      field: candidate.previously_enrolled
+      value: false
+    - op: lt
+      field: candidate.age_on_school_start
+      value: 18
+  effects:
+  - type: include_step
+    step_id: step.hs.select_route
+  source_claim_ids:
+  - claim.hs.previous_under18
+  status: draft
+- id: rule.hs.no_en
+  canonical_rule_id: hs.no_en
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: eq
+    field: evaluation_national_taken
+    value: false
+  effects:
+  - type: exclude_step
+    step_id: step.hs.complete_options
+  - type: include_step
+    step_id: step.hs.second_stage
+  - type: emit_warning
+    tag: no_en_no_general_allocation
+    message_ro: Fără Evaluarea Națională nu se calculează media pentru repartizarea computerizată generală.
+  source_claim_ids:
+  - claim.hs.en_requirement
+  status: draft
+- id: rule.hs.general_options
+  canonical_rule_id: hs.general_options
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-13'
+  effective_to: '2026-07-20'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: admission_route
+      value: general
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-07-13'
+      - '2026-07-20'
+  effects:
+  - type: include_step
+    step_id: step.hs.complete_options
+  - type: set_deadline
+    step_id: step.hs.complete_options
+    value:
+      kind: window
+      from: '2026-07-13'
+      to: '2026-07-20'
+  source_claim_ids:
+  - claim.hs.general_calendar
+  status: draft
+- id: rule.hs.general_allocation
+  canonical_rule_id: hs.general_allocation
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-22'
+  effective_to: '2026-07-22'
+  when:
+    op: eq
+    field: reference_date
+    value: '2026-07-22'
+  effects:
+  - type: include_step
+    step_id: step.hs.check_allocation
+  source_claim_ids:
+  - claim.hs.general_calendar
+  status: draft
+- id: rule.hs.dossier_window
+  canonical_rule_id: hs.dossier_window
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-23'
+  effective_to: '2026-07-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: allocated
+      value: true
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-07-23'
+      - '2026-07-28'
+  effects:
+  - type: include_step
+    step_id: step.hs.prepare_dossier
+  - type: include_step
+    step_id: step.hs.submit_dossier
+  - type: set_deadline
+    step_id: step.hs.submit_dossier
+    value:
+      kind: window
+      from: '2026-07-23'
+      to: '2026-07-28'
+  - type: include_requirement
+    requirement_id: req.hs.application
+  - type: include_requirement
+    requirement_id: req.hs.birth_certificate
+  - type: include_requirement
+    requirement_id: req.hs.medical_sheet
+  source_claim_ids:
+  - claim.hs.general_calendar
+  - claim.hs.dossier
+  status: draft
+- id: rule.hs.dossier_missed
+  canonical_rule_id: hs.dossier_missed
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-29'
+  effective_to: '2026-08-09'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: allocated
+      value: true
+    - op: date_after
+      field: reference_date
+      value: '2026-07-28'
+    - op: date_before
+      field: reference_date
+      value: '2026-08-10'
+  effects:
+  - type: emit_warning
+    tag: dossier_deadline_missed
+    message_ro: Fereastra primei etape pentru depunerea dosarului s-a închis; verifică a doua etapă.
+  - type: include_step
+    step_id: step.hs.second_stage
+  source_claim_ids:
+  - claim.hs.general_calendar
+  - claim.hs.second_stage
+  status: draft
+- id: rule.hs.second_stage
+  canonical_rule_id: hs.second_stage
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-08-10'
+  effective_to: '2026-08-18'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-08-10'
+    - '2026-08-18'
+  effects:
+  - type: include_step
+    step_id: step.hs.second_stage
+  - type: attach_channel
+    channel_id: ch.hs.isjtm
+  source_claim_ids:
+  - claim.hs.second_stage
+  status: draft
+- id: rule.hs.reduced_frequency_age
+  canonical_rule_id: hs.reduced_frequency_age
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: admission_route
+      value: reduced_frequency
+    - op: lt
+      field: candidate.age_on_2026_08_31
+      value: 20
+  effects:
+  - type: block
+    tag: reduced_frequency_age
+    message_ro: Ruta cu frecvență redusă cere împlinirea vârstei de 20 de ani până la 31 august 2026 inclusiv.
+  source_claim_ids:
+  - claim.hs.reduced_frequency_age
+  status: draft
+- id: rule.hs.special_route
+  canonical_rule_id: hs.special_route
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: in
+    field: admission_route
+    values:
+    - roma
+    - ces
+    - special_education
+  effects:
+  - type: include_requirement
+    requirement_id: req.hs.special_evidence
+  - type: emit_warning
+    tag: special_calendar
+    message_ro: Folosește calendarul și procedura dedicată rutei speciale înaintea repartizării generale.
+  source_claim_ids:
+  - claim.hs.special_routes
+  status: draft
+- id: rule.hs.options_unverified
+  canonical_rule_id: hs.options_unverified
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-13'
+  when:
+    op: eq
+    field: options_verified
+    value: false
+  effects:
+  - type: block
+    tag: options_unverified
+    message_ro: Nu transmite fișa până când toate codurile și ordinea opțiunilor nu sunt verificate pe broșura oficială.
+  source_claim_ids:
+  - claim.hs.general_calendar
+  status: draft
+- id: rule.hs.local_offer_gap
+  canonical_rule_id: hs.local_offer_gap
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  effective_from: '2026-05-04'
+  when:
+    op: eq
+    field: local_offer_verified
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.hs.verify_local_offer
+  - type: require_confirmation
+    tag: local_offer_unverified
+    message_ro: Broșura și codurile Timiș nu sunt validate; nu genera opțiuni sau predicții ferme.
+  source_claim_ids:
+  - claim.hs.timis.local_offer
+  status: in_review
+- id: rule.hs.single_county
+  canonical_rule_id: hs.single_county
+  event_type_id: life.highschool_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-13'
+  effective_to: '2026-07-20'
+  when:
+    op: eq
+    field: multiple_counties_requested
+    value: true
+  effects:
+  - type: block
+    tag: single_county_required
+    message_ro: Candidații pot participa la repartizarea computerizată într-un singur județ.
+  source_claim_ids:
+  - claim.hs.single_county
+  status: draft

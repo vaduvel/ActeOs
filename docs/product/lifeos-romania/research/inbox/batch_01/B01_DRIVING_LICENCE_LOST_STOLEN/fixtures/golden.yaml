@@ -1,0 +1,348 @@
+batch_id: B01_DRIVING_LICENCE_LOST_STOLEN
+defaults:
+  event_type_id: life.driving_licence_lost_stolen
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: L01
+  desc: permis pierdut, valabil, ghișeu
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_driving_licence_duplicate
+    advice:
+    - fee_89_ron
+    - same_validity_as_previous
+    confirmations:
+    - exact_dossier_pending
+- id: L02
+  desc: permis furat, valabil, ghișeu
+  facts:
+    incident_type: stolen
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_driving_licence_duplicate
+- id: L03
+  desc: permis deteriorat
+  facts:
+    incident_type: damaged
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+    has_damaged_licence: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_driving_licence_duplicate
+- id: L04
+  desc: permis pierdut și expirat
+  facts:
+    incident_type: lost
+    current_licence_expired: true
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    child_events:
+    - life.driving_licence_expired
+    warnings:
+    - duplicate_would_not_restore_validity
+- id: L05
+  desc: valabil dar cere valabilitate nouă
+  facts:
+    incident_type: stolen
+    current_licence_expired: false
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    child_events:
+    - life.driving_licence_expired
+- id: L06
+  desc: e-mail cu ridicare la ghișeu
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: email
+    pickup_in_person: true
+    selected_spcrpciv_email_known: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - send_duplicate_documents_to_selected_spcrpciv
+    - collect_duplicate_in_person
+- id: L07
+  desc: e-mail fără ridicare
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: email
+    pickup_in_person: false
+    selected_spcrpciv_email_known: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: blocked
+    blocks:
+    - email_route_requires_counter_pickup
+- id: L08
+  desc: e-mail fără adresa serviciului
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: email
+    pickup_in_person: true
+    selected_spcrpciv_email_known: false
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.selected_spcrpciv_email
+- id: L09
+  desc: orice SPCRPCIV, Cluj
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.any_spcrpciv
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: L10
+  desc: taxa neplătită
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: unpaid
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.payment_89_ron
+- id: L11
+  desc: titular CEI Timiș
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: true
+    address_certificate: false
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - obtain_address_certificate
+    advice:
+    - address_checked_at_counter
+- id: L12
+  desc: pilot Timișoara
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.spcrpciv_timisoara_demetriade_1
+    advice:
+    - delivery_fallback_9_10_days
+- id: L13
+  desc: fără fișă medicală, păstrează valabilitatea
+  facts:
+    incident_type: stolen
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    advice:
+    - same_validity_as_previous
+- id: L14
+  desc: cu fișă medicală dar nu cere valabilitate nouă
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: true
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - clarify_new_validity_intent
+- id: L15
+  desc: furt, fără proces-verbal de poliție
+  facts:
+    incident_type: stolen
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+    police_report_present: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - exact_dossier_pending
+    requirements_absent:
+    - req.police_report
+- id: L16
+  desc: deteriorat dar permisul fizic lipsește
+  facts:
+    incident_type: damaged
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+    has_damaged_licence: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - incident_may_be_loss
+- id: L17
+  desc: lipsește tipul incidentului
+  facts:
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - incident_type
+- id: L18
+  desc: lipsește starea de expirare
+  facts:
+    incident_type: lost
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - current_licence_expired
+- id: L19
+  desc: lipsește canalul
+  facts:
+    incident_type: lost
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_channel
+- id: L20
+  desc: incident invalid
+  facts:
+    incident_type: forgot_at_home
+    current_licence_expired: false
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    pickup_in_person: true
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: blocked
+    errors:
+    - invalid_incident_type
+- id: L21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - incident_type
+    - current_licence_expired
+    - wants_new_validity
+    - medical_document_present
+    - request_channel
+    - pickup_in_person
+    - payment_status
+    - applicant_has_cei

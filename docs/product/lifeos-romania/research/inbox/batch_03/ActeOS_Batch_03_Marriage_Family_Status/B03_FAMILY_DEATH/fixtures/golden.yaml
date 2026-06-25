@@ -1,0 +1,364 @@
+batch_id: B03_FAMILY_DEATH
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.family_death
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: Părinte decedat, eligibil direct, cheltuieli dovedite, succesiune posibilă
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - register_family_death
+    - claim_family_death_benefit
+    requirements:
+    - req.medical_death_certificate
+    - req.proof_funeral_expenses
+    channels:
+    - ch.timisoara.death_registration
+    - ch.cnpp.death_benefit
+    advice_tags:
+    - timisoara_family_death_no_fee
+    - family_death_benefit_payment_3_workdays
+    - family_death_benefit_claim_limit_3y
+    - family_death_start_succession_assessment
+    - timisoara_family_succession_notice
+- id: F02
+  desc: Deces deja înregistrat
+  facts:
+    death_registered: true
+    days_since_death: 8
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.death_registration
+    included_steps:
+    - claim_family_death_benefit
+- id: F03
+  desc: Înregistrare tardivă
+  facts:
+    death_registered: false
+    days_since_death: 4
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.prosecutor_late_registration_approval
+    warnings_present:
+    - family_death_registration_after_3d
+- id: F04
+  desc: Deces prin accident
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: accident
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.police_or_prosecutor_proof
+    warnings_present:
+    - family_death_special_cause_proof
+- id: F05
+  desc: Membru de familie neasigurat
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: noninsured_family_member
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.kinship_proof
+    - req.eligible_insured_or_pensioner_proof
+    needs_confirmation:
+    - confirm_noninsured_family_member_eligibility
+- id: F06
+  desc: Cheltuielile nu au fost suportate de solicitant
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: false
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - family_death_benefit_requires_expense_proof
+    channels_absent:
+    - ch.cnpp.death_benefit
+- id: F07
+  desc: Statutul pentru ajutor este necunoscut
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: unknown
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_family_death_benefit_status
+- id: F08
+  desc: Nu există eligibilitate cunoscută pentru ajutor
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: not_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.cnpp.death_benefit
+- id: F09
+  desc: Nu sunt cunoscute bunuri sau datorii
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: false
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_absent:
+    - family_death_start_succession_assessment
+    - timisoara_family_succession_notice
+- id: F10
+  desc: Persoana decedată este soțul/soția
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: spouse
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - use_spouse_death_extended_route
+- id: F11
+  desc: Persoana decedată este copilul
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: child
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_absent:
+    - use_spouse_death_extended_route
+- id: F12
+  desc: Alt UAT decât Timișoara
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.death_registration
+    channels:
+    - ch.cnpp.death_benefit
+    advice_absent:
+    - timisoara_family_succession_notice
+- id: F13
+  desc: Ziua 3 este încă în termenul general
+  facts:
+    death_registered: false
+    days_since_death: 3
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present: []
+- id: F14
+  desc: Lipsește faptul obligatoriu death_registered
+  facts:
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_registered
+- id: F15
+  desc: Lipsește faptul obligatoriu days_since_death
+  facts:
+    death_registered: false
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_since_death
+- id: F16
+  desc: Lipsește faptul obligatoriu death_cause
+  facts:
+    death_registered: false
+    days_since_death: 1
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_cause
+- id: F17
+  desc: Lipsește faptul obligatoriu deceased_benefit_status
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - deceased_benefit_status
+- id: F18
+  desc: Lipsește faptul obligatoriu paid_funeral_expenses
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    estate_may_exist: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - paid_funeral_expenses
+- id: F19
+  desc: Lipsește faptul obligatoriu estate_may_exist
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    relation_to_deceased: parent
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - estate_may_exist
+- id: F20
+  desc: Lipsește faptul obligatoriu relation_to_deceased
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - relation_to_deceased
+- id: F21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_benefit_status: direct_eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    relation_to_deceased: parent
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: F22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_registered
+    - days_since_death
+    - death_cause
+    - deceased_benefit_status
+    - paid_funeral_expenses
+    - estate_may_exist
+    - relation_to_deceased
+    - territory_id

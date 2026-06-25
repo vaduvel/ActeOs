@@ -1,0 +1,325 @@
+batch_id: B03_DIVORCE_ADMIN
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.divorce_admin
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: D01
+  desc: Divorț administrativ eligibil în Timișoara
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - file_administrative_divorce_request
+    requirements:
+    - req.spouses_identity_documents
+    - req.spouses_birth_certificates_original
+    - req.marriage_certificate_original
+    channels:
+    - ch.timisoara.divorce_admin
+    advice_tags:
+    - administrative_divorce_reflection_30d
+    - divorce_certificate_max_5_workdays
+    needs_confirmation:
+    - confirm_current_divorce_fee
+- id: D02
+  desc: Soții nu sunt de acord
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: false
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - administrative_divorce_unavailable_no_agreement
+    advice_tags:
+    - review_notarial_or_court_divorce
+- id: D03
+  desc: Există copii minori
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: true
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - administrative_divorce_unavailable_minor_children
+    advice_tags:
+    - review_notarial_or_court_divorce
+- id: D04
+  desc: Există o cerere paralelă
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: true
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - parallel_divorce_request_detected
+- id: D05
+  desc: Toate impedimentele administrative sunt prezente
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: false
+    has_minor_children: true
+    parallel_divorce_request: true
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - administrative_divorce_unavailable_no_agreement
+    - administrative_divorce_unavailable_minor_children
+    - parallel_divorce_request_detected
+- id: D06
+  desc: Divorț definitiv și nume schimbat
+  facts:
+    workflow_stage: divorce_final
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - replace_identity_document_after_divorce
+    requirements:
+    - req.final_divorce_certificate_or_judgment
+    warnings_present:
+    - identity_after_divorce_deadline_15d
+- id: D07
+  desc: Divorț definitiv și nume neschimbat
+  facts:
+    workflow_stage: divorce_final
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - no_identity_name_change_after_divorce
+- id: D08
+  desc: Cerere de divorț în alt UAT
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.divorce_admin
+    needs_confirmation:
+    - confirm_local_divorce_route
+- id: D09
+  desc: Divorț definitiv în alt UAT, nume schimbat
+  facts:
+    workflow_stage: divorce_final
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: true
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    included_steps:
+    - replace_identity_document_after_divorce
+    channels_absent:
+    - ch.timisoara.divorce_admin
+- id: D10
+  desc: Taxa locală nu este acceptată din arhivă ca fapt curent
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_current_divorce_fee
+- id: D11
+  desc: Etapă necunoscută
+  facts:
+    workflow_stage: unknown
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_divorce_stage
+- id: D12
+  desc: Eligibil, fără schimbare de nume încă
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - file_administrative_divorce_request
+    requirements_absent:
+    - req.final_divorce_certificate_or_judgment
+- id: D13
+  desc: Acord, dar există copii minori
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: true
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - administrative_divorce_unavailable_minor_children
+- id: D14
+  desc: Fără acord și fără copii minori
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: false
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - administrative_divorce_unavailable_no_agreement
+- id: D15
+  desc: După divorț, existența copiilor nu schimbă termenul actului de identitate
+  facts:
+    workflow_stage: divorce_final
+    spouses_agree: true
+    has_minor_children: true
+    parallel_divorce_request: false
+    name_changed_after_divorce: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - identity_after_divorce_deadline_15d
+- id: D16
+  desc: Lipsește faptul obligatoriu workflow_stage
+  facts:
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - workflow_stage
+- id: D17
+  desc: Lipsește faptul obligatoriu spouses_agree
+  facts:
+    workflow_stage: seeking_divorce
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - spouses_agree
+- id: D18
+  desc: Lipsește faptul obligatoriu has_minor_children
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_minor_children
+- id: D19
+  desc: Lipsește faptul obligatoriu parallel_divorce_request
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    name_changed_after_divorce: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - parallel_divorce_request
+- id: D20
+  desc: Lipsește faptul obligatoriu name_changed_after_divorce
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - name_changed_after_divorce
+- id: D21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    workflow_stage: seeking_divorce
+    spouses_agree: true
+    has_minor_children: false
+    parallel_divorce_request: false
+    name_changed_after_divorce: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: D22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - workflow_stage
+    - spouses_agree
+    - has_minor_children
+    - parallel_divorce_request
+    - name_changed_after_divorce
+    - territory_id

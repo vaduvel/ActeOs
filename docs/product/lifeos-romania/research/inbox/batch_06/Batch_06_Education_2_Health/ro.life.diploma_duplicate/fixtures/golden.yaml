@@ -1,0 +1,255 @@
+batch_id: B06_DIPLOMA_DUPLICATE
+defaults:
+  alias_event_type_id: ro.life.diploma_duplicate
+  event_type_id: life.diploma_duplicate
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: DIP01
+  description: Preuniversitar pierdut, dosar complet
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    archive_location: issuing_school
+    has_notarial_declaration: true
+    has_monitorul_proof: true
+    has_civil_status_copy: true
+    photo_count: 2
+    isj_approval: true
+  expect:
+    status: resolved
+    included_steps:
+    - identify_issuing_school_or_archive_holder
+    - submit_duplicate_request
+    requirements:
+    - req.notarial_or_consular_declaration
+    - req.monitorul_oficial_part_iii_proof
+    - req.two_color_photos_3x4
+- id: DIP02
+  description: Preuniversitar furat fără declarație notarială
+  facts:
+    education_level: preuniversity
+    duplicate_reason: stolen
+    archive_location: issuing_school
+    has_notarial_declaration: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.notarial_or_consular_declaration
+- id: DIP03
+  description: Preuniversitar distrus fără dovada Monitorului Oficial
+  facts:
+    education_level: preuniversity
+    duplicate_reason: destroyed
+    archive_location: issuing_school
+    has_monitorul_proof: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.monitorul_oficial_part_iii_proof
+- id: DIP04
+  description: Original completat greșit de școală
+  facts:
+    education_level: preuniversity
+    duplicate_reason: issuer_error
+    archive_location: issuing_school
+  expect:
+    status: resolved
+    requirements:
+    - req.written_request
+    included_steps:
+    - issuer_reconstructs_from_archive
+- id: DIP05
+  description: Original deteriorat
+  facts:
+    education_level: preuniversity
+    duplicate_reason: damaged
+    archive_location: issuing_school
+    original_available: true
+  expect:
+    status: resolved
+    requirements:
+    - req.written_request
+- id: DIP06
+  description: Arhiva este la Arhivele Naționale
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    archive_location: national_archives
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_archives_supporting_documents
+    - submit_to_school_inspectorate
+- id: DIP07
+  description: Școală desființată, deținătorul arhivei necunoscut
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    issuing_school_exists: false
+    archive_location: unknown
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - archive_holder
+- id: DIP08
+  description: Diplomă universitară pierdută, emitent cunoscut
+  facts:
+    education_level: higher_education
+    duplicate_reason: lost
+    issuing_institution_known: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_accredited_issuing_higher_education_institution
+    confirmations:
+    - institution_specific_procedure
+- id: DIP09
+  description: Universitatea cere taxă de emitere
+  facts:
+    education_level: higher_education
+    duplicate_reason: lost
+    institution_requests_issuance_fee: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - unverified_higher_fee
+    confirmations:
+    - fee_legal_basis
+- id: DIP10
+  description: Lipsește nivelul de învățământ
+  facts:
+    duplicate_reason: lost
+  expect:
+    status: needs_facts
+    missing_facts:
+    - education_level
+- id: DIP11
+  description: Lipsește motivul duplicatului
+  facts:
+    education_level: preuniversity
+  expect:
+    status: needs_facts
+    missing_facts:
+    - duplicate_reason
+- id: DIP12
+  description: Ridicare prin împuternicit
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    pickup_by: proxy
+  expect:
+    status: needs_confirmation
+    advice:
+    - proxy_allowed
+    confirmations:
+    - proxy_document_form
+- id: DIP13
+  description: Nume schimbat după emiterea originalului, fără hotărâre
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    name_changed_after_original: true
+    final_court_judgment: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - original_name_rule
+- id: DIP14
+  description: Nume schimbat prin hotărâre definitivă
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    name_changed_after_original: true
+    final_court_judgment: true
+  expect:
+    status: resolved
+    warnings:
+    - original_name_rule
+- id: DIP15
+  description: Cererea aprobată azi
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    approval_date: '2026-06-25'
+  expect:
+    status: resolved
+    deadlines:
+    - duplicate_issue_after_approval
+- id: DIP16
+  description: Cerere depusă, aprobarea încă nu este cunoscută
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    request_date: '2026-06-20'
+  expect:
+    status: resolved
+    deadlines_absent:
+    - duplicate_issue_after_approval
+- id: DIP17
+  description: Arhiva declarată pierdută sau distrusă
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    archive_location: destroyed_or_lost
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - school_record_reconstitution_procedure
+- id: DIP18
+  description: Duplicatul anterior a fost pierdut
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    lost_document_kind: duplicate
+  expect:
+    status: resolved
+    requirements:
+    - req.notarial_or_consular_declaration
+    - req.monitorul_oficial_part_iii_proof
+- id: DIP19
+  description: Solicitant din Timiș, canal local nepublicat complet
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    county: TM
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - isj_timisoara_submission_channel
+- id: DIP20
+  description: Solicitant din alt județ
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    county: CJ
+  expect:
+    status: resolved
+    confidence: verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: DIP21
+  description: Documentul nu este act de studii
+  facts:
+    education_level: preuniversity
+    duplicate_reason: lost
+    document_kind: student_card
+  expect:
+    status: blocked
+    reason: event_mismatch
+- id: DIP22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - education_level
+    - duplicate_reason

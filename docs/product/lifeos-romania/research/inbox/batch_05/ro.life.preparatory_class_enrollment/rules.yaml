@@ -1,0 +1,383 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.preparatory_class_enrollment
+status: draft
+rules:
+- id: rule.prep.required_facts
+  canonical_rule_id: prep.required_facts
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  required_facts:
+  - child.birth_date
+  - reference_date
+  - school_choice
+  - target_school_id
+  - local_catchment_verified
+  severity: critical
+  effective_from: '2026-02-27'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.prep.determine_age_route
+  source_claim_ids:
+  - claim.prep.age.august
+  status: draft
+- id: rule.prep.age_august
+  canonical_rule_id: prep.age_august
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: age_cohort
+    value: six_by_aug31
+  effects:
+  - type: include_step
+    step_id: step.prep.verify_catchment
+  - type: include_step
+    step_id: step.prep.prepare_dossier
+  source_claim_ids:
+  - claim.prep.age.august
+  status: draft
+- id: rule.prep.age_sep_dec_kindergarten
+  canonical_rule_id: prep.age_sep_dec_kindergarten
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-16'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: age_cohort
+      value: six_sep_dec
+    - op: eq
+      field: child_attended_kindergarten
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.prep.obtain_recommendation
+  - type: include_requirement
+    requirement_id: req.prep.recommendation
+  source_claim_ids:
+  - claim.prep.age.september_december
+  status: draft
+- id: rule.prep.age_sep_dec_cjrae
+  canonical_rule_id: prep.age_sep_dec_cjrae
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-16'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: age_cohort
+      value: six_sep_dec
+    - op: any
+      args:
+      - op: eq
+        field: child_attended_kindergarten
+        value: false
+      - op: eq
+        field: child_returned_from_abroad
+        value: true
+  effects:
+  - type: include_step
+    step_id: step.prep.cjrae_evaluation
+  - type: include_requirement
+    requirement_id: req.prep.cjrae_result
+  source_claim_ids:
+  - claim.prep.evaluation.cjrae
+  status: draft
+- id: rule.prep.recommendation_negative
+  canonical_rule_id: prep.recommendation_negative
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: recommendation_positive
+    value: false
+  effects:
+  - type: block
+    tag: recommendation_negative
+    message_ro: Recomandarea nu susține înscrierea în clasa pregătitoare; folosește ruta preșcolară/ajustări aplicabilă.
+  source_claim_ids:
+  - claim.prep.age.september_december
+  status: draft
+- id: rule.prep.cjrae_negative
+  canonical_rule_id: prep.cjrae_negative
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: cjrae_evaluation_positive
+    value: false
+  effects:
+  - type: block
+    tag: cjrae_negative
+    message_ro: Evaluarea CJRAE nu este favorabilă înscrierii în clasa pregătitoare.
+  source_claim_ids:
+  - claim.prep.evaluation.cjrae
+  status: draft
+- id: rule.prep.catchment
+  canonical_rule_id: prep.catchment
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: school_choice
+    value: catchment
+  effects:
+  - type: emit_advice
+    tag: catchment_after_validation
+    message_ro: La școala de circumscripție, înscrierea este asigurată după validarea cererii.
+  - type: include_step
+    step_id: step.prep.submit_validate
+  source_claim_ids:
+  - claim.prep.catchment
+  status: draft
+- id: rule.prep.other_school
+  canonical_rule_id: prep.other_school
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: school_choice
+    value: other
+  effects:
+  - type: include_requirement
+    requirement_id: req.prep.criteria_documents
+  - type: emit_warning
+    tag: other_school_capacity
+    message_ro: O altă școală poate admite numai în limita locurilor și după criteriile aplicabile.
+  source_claim_ids:
+  - claim.prep.catchment
+  status: draft
+- id: rule.prep.online_validation
+  canonical_rule_id: prep.online_validation
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: online_application
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.prep.submit_validate
+  - type: emit_warning
+    tag: online_requires_validation
+    message_ro: Completarea online nu finalizează dosarul; cererea trebuie validată.
+  source_claim_ids:
+  - claim.prep.dossier_validation
+  status: draft
+- id: rule.prep.stage1
+  canonical_rule_id: prep.stage1
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-03-31'
+  effective_to: '2026-05-06'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-03-31'
+    - '2026-05-06'
+  effects:
+  - type: include_step
+    step_id: step.prep.submit_validate
+  - type: set_deadline
+    step_id: step.prep.submit_validate
+    value:
+      kind: window
+      from: '2026-03-31'
+      to: '2026-05-06'
+  source_claim_ids:
+  - claim.prep.calendar.application
+  status: draft
+- id: rule.prep.stage2
+  canonical_rule_id: prep.stage2
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-05-25'
+  effective_to: '2026-05-29'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-05-25'
+    - '2026-05-29'
+  effects:
+  - type: include_step
+    step_id: step.prep.submit_validate
+  - type: set_deadline
+    step_id: step.prep.submit_validate
+    value:
+      kind: window
+      from: '2026-05-25'
+      to: '2026-05-29'
+  source_claim_ids:
+  - claim.prep.calendar.stage2
+  status: draft
+- id: rule.prep.after_standard
+  canonical_rule_id: prep.after_standard
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-17'
+  effective_to: '2026-08-31'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-06-17'
+    - '2026-08-31'
+  effects:
+  - type: require_confirmation
+    tag: wait_unresolved_window
+    message_ro: Etapele standard s-au încheiat; verifică procedura ISJ pentru situațiile rămase din septembrie.
+  source_claim_ids:
+  - claim.prep.calendar.unresolved
+  status: draft
+- id: rule.prep.unresolved
+  canonical_rule_id: prep.unresolved
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-09-01'
+  effective_to: '2026-09-04'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-09-01'
+    - '2026-09-04'
+  effects:
+  - type: include_step
+    step_id: step.prep.unresolved_route
+  - type: attach_channel
+    channel_id: ch.prep.isjtm
+  source_claim_ids:
+  - claim.prep.calendar.unresolved
+  status: draft
+- id: rule.prep.local_gap
+  canonical_rule_id: prep.local_gap
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: county
+  severity: critical
+  effective_from: '2026-03-12'
+  when:
+    op: eq
+    field: local_catchment_verified
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: catchment_unverified
+    message_ro: Nu calcula școala arondată fără maparea oficială stradă-număr pentru 2026.
+  source_claim_ids:
+  - claim.prep.timis.catchments
+  status: in_review
+- id: rule.prep.age_too_young
+  canonical_rule_id: prep.age_too_young
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-03-12'
+  when:
+    op: eq
+    field: age_cohort
+    value: under_six_by_dec31
+  effects:
+  - type: block
+    tag: age_not_eligible_standard
+    message_ro: Copilul nu intră în cohortele standard de vârstă pentru clasa pregătitoare 2026-2027.
+  source_claim_ids:
+  - claim.prep.age.august
+  - claim.prep.age.september_december
+  status: draft
+- id: rule.prep.defer_request
+  canonical_rule_id: prep.defer_request
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-03-12'
+  when:
+    op: eq
+    field: defer_requested
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.prep.defer_request
+  - type: require_confirmation
+    tag: defer_approval_required
+    message_ro: Amânarea nu se presupune automat; cererea și motivarea trebuie analizate conform procedurii oficiale.
+  source_claim_ids:
+  - claim.prep.defer
+  status: in_review
+- id: rule.prep.stage2_result
+  canonical_rule_id: prep.stage2_result
+  event_type_id: life.preparatory_class_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-16'
+  effective_to: '2026-06-16'
+  when:
+    op: eq
+    field: reference_date
+    value: '2026-06-16'
+  effects:
+  - type: include_step
+    step_id: step.prep.check_result
+  source_claim_ids:
+  - claim.prep.calendar.stage2_result
+  status: draft

@@ -1,0 +1,391 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.preparatory_class_enrollment
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: PRE01
+  desc: 6 ani până la 31 august, circumscripție
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    included_steps:
+    - step.prep.submit_validate
+- id: PRE02
+  desc: 6 ani în septembrie-decembrie, cu grădiniță
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-10-01'
+    age_cohort: six_sep_dec
+    child_attended_kindergarten: true
+    recommendation_positive: true
+  expect:
+    status: ready
+    requirements:
+    - req.prep.recommendation
+- id: PRE03
+  desc: cohortă septembrie-decembrie, fără recomandare
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-10-01'
+    age_cohort: six_sep_dec
+    child_attended_kindergarten: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - recommendation_positive
+- id: PRE04
+  desc: recomandare negativă
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-10-01'
+    age_cohort: six_sep_dec
+    child_attended_kindergarten: true
+    recommendation_positive: false
+  expect:
+    status: blocked
+    blocks:
+    - recommendation_negative
+- id: PRE05
+  desc: nu a frecventat grădinița
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-10-01'
+    age_cohort: six_sep_dec
+    child_attended_kindergarten: false
+    cjrae_evaluation_positive: true
+  expect:
+    status: ready
+    requirements:
+    - req.prep.cjrae_result
+- id: PRE06
+  desc: întors din străinătate
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-10-01'
+    age_cohort: six_sep_dec
+    child_attended_kindergarten: true
+    child_returned_from_abroad: true
+    cjrae_evaluation_positive: true
+  expect:
+    status: ready
+    included_steps:
+    - step.prep.cjrae_evaluation
+- id: PRE07
+  desc: evaluare CJRAE negativă
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-10-01'
+    age_cohort: six_sep_dec
+    child_attended_kindergarten: false
+    cjrae_evaluation_positive: false
+  expect:
+    status: blocked
+    blocks:
+    - cjrae_negative
+- id: PRE08
+  desc: școală de circumscripție
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    warnings:
+    - catchment_after_validation
+- id: PRE09
+  desc: altă școală
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: other
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    requirements:
+    - req.prep.criteria_documents
+    warnings:
+    - other_school_capacity
+- id: PRE10
+  desc: cerere online
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: true
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    warnings:
+    - online_requires_validation
+- id: PRE11
+  desc: prima zi depuneri
+  facts:
+    reference_date: '2026-03-31'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    deadlines:
+    - 2026-03-31/2026-05-06
+- id: PRE12
+  desc: ultima zi depuneri
+  facts:
+    reference_date: '2026-05-06'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    included_steps:
+    - step.prep.submit_validate
+- id: PRE13
+  desc: etapa II
+  facts:
+    reference_date: '2026-05-28'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    included_steps:
+    - step.prep.submit_validate
+    deadlines:
+    - 2026-05-25/2026-05-29
+- id: PRE14
+  desc: după etapele standard, iunie
+  facts:
+    reference_date: '2026-06-25'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - wait_unresolved_window
+- id: PRE15
+  desc: fereastra situații rămase
+  facts:
+    reference_date: '2026-09-02'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    channels:
+    - ch.prep.isjtm
+- id: PRE16
+  desc: circumscripție neverificată
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: false
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - catchment_unverified
+- id: PRE17
+  desc: alt UAT
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.b
+    - ro.b.bucuresti
+- id: PRE18
+  desc: lipsă data nașterii
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - child.birth_date
+- id: PRE19
+  desc: lipsă alegere școală
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: null
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - school_choice
+- id: PRE20
+  desc: lipsă școală țintă
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: null
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - target_school_id
+- id: PRE21
+  desc: lipsă dată referință
+  facts:
+    reference_date: null
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: PRE22
+  desc: copil prea mic pentru cohortele standard
+  facts:
+    reference_date: '2026-04-15'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2021-02-01'
+    age_cohort: under_six_by_dec31
+    child_attended_kindergarten: true
+  expect:
+    status: blocked
+    blocks:
+    - age_not_eligible_standard
+- id: PRE23
+  desc: cerere de amânare justificată
+  facts:
+    reference_date: '2026-03-20'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    defer_requested: true
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.prep.defer_request
+    note: motivul și aprobarea trebuie verificate
+    confirmations:
+    - defer_approval_required
+- id: PRE24
+  desc: după 4 septembrie, fără înscriere
+  facts:
+    reference_date: '2026-09-10'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+  expect:
+    status: needs_confirmation
+    note: soluționare directă prin ISJ/unitate
+- id: PRE25
+  desc: afișarea rezultatului etapei a II-a
+  facts:
+    reference_date: '2026-06-16'
+    school_choice: catchment
+    target_school_id: school.tm.001
+    local_catchment_verified: true
+    online_application: false
+    child.birth_date: '2020-06-01'
+    age_cohort: six_by_aug31
+    child_attended_kindergarten: true
+  expect:
+    status: ready
+    included_steps:
+    - step.prep.check_result

@@ -1,0 +1,342 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_HEALTH_CARD_LOST
+alias_event_type_id: ro.life.health_card_lost
+event_type_id: life.health_card_lost
+status: draft
+rules:
+- id: rule.health_card_lost.required_facts
+  canonical_rule_id: health_card_lost.required_facts
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_health_card_loss_facts
+    message_ro: Precizează motivul înlocuirii, CAS competentă și cine depune cererea.
+  source_claim_ids:
+  - claim.health_card_lost.duplicate_documents
+  status: draft
+  required_facts:
+  - replacement_reason
+  - insured_county
+  - requester_role
+- id: rule.health_card_lost.duplicate_standard
+  canonical_rule_id: health_card_lost.duplicate_standard
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: replacement_reason
+    values:
+    - lost
+    - stolen
+    - name_changed
+  effects:
+  - type: include_step
+    step_id: prepare_and_submit_health_card_duplicate_request
+  - type: include_requirement
+    requirement_id: req.health_card_duplicate_application
+  - type: include_requirement
+    requirement_id: req.identity_document_copy
+  - type: include_requirement
+    requirement_id: req.duplicate_card_payment_proof
+  - type: set_requirement_obligation
+    requirement_id: req.duplicate_card_payment_proof
+    obligation: mandatory
+  - type: emit_advice
+    tag: duplicate_fee_20_36
+    message_ro: Contravaloarea publicată de CNAS pentru duplicat este 20,36 lei.
+  source_claim_ids:
+  - claim.health_card_lost.duplicate_documents
+  - claim.health_card_lost.fee_20_36
+  status: draft
+- id: rule.health_card_lost.destroyed
+  canonical_rule_id: health_card_lost.destroyed
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: destroyed
+  effects:
+  - type: include_step
+    step_id: request_new_health_card_at_registered_cas
+  - type: include_requirement
+    requirement_id: req.health_card_duplicate_application
+  - type: include_requirement
+    requirement_id: req.identity_document_copy
+  - type: include_requirement
+    requirement_id: req.duplicate_card_payment_proof
+  - type: emit_advice
+    tag: duplicate_fee_20_36
+    message_ro: Pentru pierdere/distrugere, CNAS publică suma de 20,36 lei.
+  source_claim_ids:
+  - claim.health_card_lost.fee_20_36
+  status: draft
+- id: rule.health_card_lost.data_error
+  canonical_rule_id: health_card_lost.data_error
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: data_error
+  effects:
+  - type: include_step
+    step_id: request_free_replacement_for_erroneous_data
+  - type: include_requirement
+    requirement_id: req.health_card_replacement_application
+  - type: include_requirement
+    requirement_id: req.identity_document_copy
+  - type: set_requirement_obligation
+    requirement_id: req.duplicate_card_payment_proof
+    obligation: not_applicable
+  - type: emit_advice
+    tag: data_error_replacement_free
+    message_ro: Înlocuirea este gratuită când cardul conține date eronate.
+  source_claim_ids:
+  - claim.health_card_lost.data_error_free
+  status: draft
+- id: rule.health_card_lost.name_change_return_old
+  canonical_rule_id: health_card_lost.name_change_return_old
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: name_changed
+  effects:
+  - type: include_requirement
+    requirement_id: req.return_initial_health_card
+  - type: require_confirmation
+    tag: current_name_change_supporting_documents
+    message_ro: Confirmă documentul de stare civilă și cerințele CAS pentru schimbarea numelui.
+  source_claim_ids:
+  - claim.health_card_lost.duplicate_documents
+  status: draft
+- id: rule.health_card_lost.representative
+  canonical_rule_id: health_card_lost.representative
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: requester_role
+    values:
+    - legal_representative
+    - authorized_person
+  effects:
+  - type: include_requirement
+    requirement_id: req.representative_identity_copy
+  - type: include_requirement
+    requirement_id: req.proof_of_representation_or_authorization
+  source_claim_ids:
+  - claim.health_card_lost.signed_by_holder_or_rep
+  status: draft
+- id: rule.health_card_lost.email
+  canonical_rule_id: health_card_lost.email
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: submission_channel
+    value: email
+  effects:
+  - type: attach_channel
+    channel_id: ch.registered_cas_email
+  - type: emit_advice
+    tag: email_submission_permitted
+    message_ro: CNAS permite transmiterea documentelor prin poștă electronică la CAS competentă.
+  - type: require_confirmation
+    tag: current_local_email_and_file_format
+    message_ro: Confirmă adresa locală și formatele/limitele de fișier înainte de trimitere.
+  source_claim_ids:
+  - claim.health_card_lost.email_submission
+  status: draft
+- id: rule.health_card_lost.replacement_certificate
+  canonical_rule_id: health_card_lost.replacement_certificate
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: new_card_requested
+    value: true
+  effects:
+  - type: include_step
+    step_id: obtain_replacement_certificate
+  - type: set_deadline
+    code: replacement_certificate_validity
+    value:
+      kind: relative_calendar_months
+      anchor: certificate_issue_date
+      months: 3
+    message_ro: Adeverința este valabilă trei luni de la eliberare.
+  source_claim_ids:
+  - claim.health_card_lost.replacement_certificate
+  - claim.health_card_lost.replacement_certificate_3m
+  status: draft
+- id: rule.health_card_lost.tm_channel
+  canonical_rule_id: health_card_lost.tm_channel
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: insured_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.cas_tm
+  - type: emit_advice
+    tag: cas_tm_contact
+    message_ro: 'CAS Timiș: Timișoara, str. Corbului nr. 4, tel. 0736-110007.'
+  source_claim_ids:
+  - claim.health_card_lost.cas_tm_contact
+  status: draft
+- id: rule.health_card_lost.other_county
+  canonical_rule_id: health_card_lost.other_county
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: insured_county
+    - op: neq
+      field: insured_county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: territorial_cas_contact_and_payment
+    message_ro: Confirmă CAS teritorială, adresa de e-mail și contul/casieria pentru plată.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.health_card_lost.duplicate_documents
+  status: draft
+- id: rule.health_card_lost.validity_conflict
+  canonical_rule_id: health_card_lost.validity_conflict
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: asks_card_validity
+    value: true
+  effects:
+  - type: flag_conflict
+    tag: health_card_validity_5_vs_7
+    blocked_effect: card_validity_display
+    message_ro: Două pagini CNAS active indică 5 ani, respectiv 7 ani; nu afișa o durată unică până la clarificare.
+  - type: require_confirmation
+    tag: current_card_validity
+    message_ro: Confirmă valabilitatea din actul normativ/conținutul actual al cardului.
+  source_claim_ids:
+  - claim.health_card_lost.validity_5y
+  - claim.health_card_lost.validity_7y
+  status: in_review
+- id: rule.health_card_lost.certificate_expired
+  canonical_rule_id: health_card_lost.certificate_expired
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_certificate_validity_state
+    value: expired
+  effects:
+  - type: emit_warning
+    tag: replacement_certificate_expired
+    message_ro: Adeverința de înlocuire a depășit termenul verificat de 3 luni; confirmă documentul valabil pentru servicii.
+  source_claim_ids:
+  - claim.health_card_lost.replacement_certificate_3m
+  status: draft
+- id: rule.health_card_lost.unofficial_fee_or_channel
+  canonical_rule_id: health_card_lost.unofficial_fee_or_channel
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: replacement_reason
+      values:
+      - lost
+      - stolen
+      - destroyed
+      - name_changed
+    - op: any
+      args:
+      - op: eq
+        field: payment_instruction_source
+        value: sms
+      - op: neq
+        field: claimed_fee
+        value: 20.36
+  effects:
+  - type: emit_warning
+    tag: fee_or_payment_channel_not_official
+    message_ro: Cuantumul sau canalul primit nu corespunde dovezii oficiale; nu plăti până la confirmarea CAS.
+  source_claim_ids:
+  - claim.health_card_lost.fee_20_36
+  status: draft
+- id: rule.health_card_lost.data_error_fee_claim
+  canonical_rule_id: health_card_lost.data_error_fee_claim
+  event_type_id: life.health_card_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: replacement_reason
+      value: data_error
+    - op: gt
+      field: claimed_fee
+      value: 0
+  effects:
+  - type: emit_warning
+    tag: fee_conflicts_with_free_data_error_replacement
+    message_ro: CNAS publică înlocuirea gratuită pentru date personale eronate; cere temeiul scris al taxei.
+  source_claim_ids:
+  - claim.health_card_lost.data_error_free
+  status: draft

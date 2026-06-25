@@ -1,0 +1,347 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.reinsertion_incentive
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: revenire la 4 luni, copil fără dizabilitate
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps:
+    - apply_insertion_incentive
+    - suspend_ccc_indemnity
+    emitted_tags:
+    - insertion_1500
+    - insertion_no_cumulation
+    - insertion_apply_30_workdays
+  id: ro.life.reinsertion_incentive.F01
+- title: venit început exact la 6 luni, copil fără dizabilitate
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2025-12-01'
+    child_age_months_at_income_start: 6
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_650
+    - insertion_no_cumulation
+  id: ro.life.reinsertion_incentive.F02
+- title: venit început la 8 luni
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2025-10-01'
+    child_age_months_at_income_start: 8
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_650
+  id: ro.life.reinsertion_incentive.F03
+- title: copil cu dizabilitate, revenire la 10 luni
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2025-08-01'
+    child_age_months_at_income_start: 10
+    child_has_disability: true
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_1500
+  id: ro.life.reinsertion_incentive.F04
+- title: copil cu dizabilitate, revenire exact la 12 luni
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2025-06-01'
+    child_age_months_at_income_start: 12
+    child_has_disability: true
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_650
+  id: ro.life.reinsertion_incentive.F05
+- title: după împlinirea a 2 ani, continuare până la 3
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2024-06-01'
+    child_age_months_at_income_start: 24
+    child_has_disability: false
+    ccc_natural_end_reached: true
+    ccc_indemnity_currently_paid: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_650
+    - insertion_after_ccc_650
+  id: ro.life.reinsertion_incentive.F06
+- title: copil cu dizabilitate după 3 ani, continuare până la 4
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2023-06-01'
+    child_age_months_at_income_start: 36
+    child_has_disability: true
+    ccc_natural_end_reached: true
+    ccc_indemnity_currently_paid: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_650
+    - insertion_after_ccc_650
+  id: ro.life.reinsertion_incentive.F07
+- title: nu este îndreptățit la CCC
+  facts:
+    ccc_entitled: false
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - apply_insertion_incentive
+  id: ro.life.reinsertion_incentive.F08
+- title: veniturile nu au început
+  facts:
+    ccc_entitled: true
+    taxable_income_started: false
+    income_start_date: null
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: null
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - apply_insertion_incentive
+  id: ro.life.reinsertion_incentive.F09
+- title: cerere în 30-a zi lucrătoare
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-05-14'
+    application_business_days_after_income_start: 30
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 3
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_apply_30_workdays
+    - insertion_1500
+  id: ro.life.reinsertion_incentive.F10
+- title: cerere în 31-a zi lucrătoare
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-05-13'
+    application_business_days_after_income_start: 31
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 3
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_late_application_from_filing
+  id: ro.life.reinsertion_incentive.F11
+- title: schimbare care afectează plata
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: false
+    relevant_change_occurred: true
+    change_date: '2026-06-20'
+  expected:
+    status: resolved
+    included_steps:
+    - report_incentive_change
+  id: ro.life.reinsertion_incentive.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - ccc_entitled
+    - taxable_income_started
+    - income_start_date
+    - child_birth_date
+    - child_has_disability
+  id: ro.life.reinsertion_incentive.F13
+- title: lipsește faptul obligatoriu ccc_entitled
+  facts:
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - ccc_entitled
+  id: ro.life.reinsertion_incentive.F14
+- title: valoare invalidă pentru ccc_entitled
+  facts:
+    ccc_entitled: __invalid__
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - ccc_entitled
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.reinsertion_incentive.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    channels_absent:
+    - ch.insertion_incentive.timisoara
+  id: ro.life.reinsertion_incentive.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.reinsertion_incentive.F17
+  reference_date: '2010-12-31'
+- title: exact la limita termenului principal
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+    application_business_days_after_income_start: 30
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_apply_30_workdays
+  id: ro.life.reinsertion_incentive.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    ccc_entitled: true
+    taxable_income_started: true
+    income_start_date: '2026-06-01'
+    child_birth_date: '2026-02-01'
+    child_age_months_at_income_start: 4
+    child_has_disability: false
+    ccc_natural_end_reached: false
+    ccc_indemnity_currently_paid: true
+    relevant_change_occurred: false
+    application_business_days_after_income_start: 31
+  expected:
+    status: resolved
+    emitted_tags:
+    - insertion_late_application_from_filing
+  id: ro.life.reinsertion_incentive.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.reinsertion_incentive.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.reinsertion_incentive.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: needs_confirmation
+  id: ro.life.reinsertion_incentive.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

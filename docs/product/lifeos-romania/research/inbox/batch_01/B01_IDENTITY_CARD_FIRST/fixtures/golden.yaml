@@ -1,0 +1,314 @@
+batch_id: B01_IDENTITY_CARD_FIRST
+defaults:
+  event_type_id: life.identity_card_first
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: minor de 14 ani, CEI, cerere în ziua a 10-a
+  facts:
+    age_years: 14
+    turned_14_at: '2026-06-15'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+    parent_situation: one_parent_present
+    has_birth_certificate: true
+  expect:
+    status: resolved
+    included_steps:
+    - request_first_identity_card
+    deadline_days: 15
+    requirements:
+    - req.parent_or_legal_representative_present
+    - req.birth_certificate_original
+    advice:
+    - fee_zero
+- id: F02
+  desc: minor de 14 ani exact în ziua a 15-a
+  facts:
+    age_years: 14
+    turned_14_at: '2026-06-10'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F03
+  desc: minor de 14 ani după 16 zile
+  facts:
+    age_years: 14
+    turned_14_at: '2026-06-09'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: resolved
+    overdue: true
+    included_steps:
+    - request_first_identity_card
+- id: F04
+  desc: minor 17 ani fără părinte/reprezentant
+  facts:
+    age_years: 17
+    turned_14_at: '2023-01-01'
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+    parent_present: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.parent_or_legal_representative_present
+    warnings:
+    - minor_accompaniment_missing
+- id: F05
+  desc: primul act solicitat după 18 ani
+  facts:
+    age_years: 20
+    turned_14_at: '2020-05-01'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: resolved
+    requirements:
+    - req.birth_certificate_original
+    - req.identity_confirmation_declaration
+    - req.proof_of_domicile
+    advice:
+    - fee_zero
+- id: F06
+  desc: copil 8 ani solicită CEI opțional
+  facts:
+    age_years: 8
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    parent_situation: both_parents
+  expect:
+    status: resolved
+    included_steps:
+    - request_optional_cei_for_child
+    advice:
+    - fee_70_ron
+- id: F07
+  desc: copil 8 ani solicită CIS
+  facts:
+    age_years: 8
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+  expect:
+    status: blocked
+    blocks:
+    - cis_not_available_under_14
+- id: F08
+  desc: copil sub 14 ani cu un singur părinte și acord autentificat
+  facts:
+    age_years: 12
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    parent_situation: one_with_authenticated_consent
+  expect:
+    status: resolved
+    requirements:
+    - req.authorized_parent_or_representative
+    advice:
+    - fee_70_ron
+- id: F09
+  desc: copil sub 14 ani cu un părinte fără acord/hotărâre
+  facts:
+    age_years: 12
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    parent_situation: one_without_consent
+  expect:
+    status: needs_confirmation
+    missing_facts:
+    - parental_consent_or_final_judgment
+- id: F10
+  desc: minor 15 ani, părinți divorțați
+  facts:
+    age_years: 15
+    turned_14_at: '2025-06-20'
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+    parents_status: divorced
+  expect:
+    status: resolved
+    requirements:
+    - req.parental_status_documents_if_applicable
+    advice:
+    - fee_40_ron
+- id: F11
+  desc: părinte cetățean străin
+  facts:
+    age_years: 14
+    turned_14_at: '2026-06-20'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+    parent_citizenship: foreign
+  expect:
+    status: resolved
+    requirements:
+    - req.parent_identity_and_address_proof
+    warnings:
+    - foreign_parent_residence_document
+- id: F12
+  desc: CEI solicitată în alt județ decât domiciliul
+  facts:
+    age_years: 16
+    turned_14_at: '2024-02-01'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: resolved
+    channels:
+    - ch.hub_cei_any_spcep
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F13
+  desc: CIS solicitată în alt județ
+  facts:
+    age_years: 16
+    turned_14_at: '2024-02-01'
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+    service_matches_domicile: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - cis_local_only
+    channels:
+    - ch.spcep_domicile
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F14
+  desc: titularul nu este prezent și există procură
+  facts:
+    age_years: 19
+    turned_14_at: '2021-01-01'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: false
+    proxy_present: true
+  expect:
+    status: blocked
+    blocks:
+    - no_filing_by_proxy
+- id: F15
+  desc: prima CEI pe 30 iunie 2026
+  facts:
+    age_years: 18
+    turned_14_at: '2022-01-01'
+    request_date: '2026-06-30'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: resolved
+    advice:
+    - fee_zero
+- id: F16
+  desc: prima CEI pe 1 iulie 2026
+  facts:
+    age_years: 18
+    turned_14_at: '2022-01-01'
+    request_date: '2026-07-01'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: needs_confirmation
+    advice_absent:
+    - fee_zero
+    missing_facts:
+    - post_pnrr_fee_rule
+- id: F17
+  desc: CIS la 18 ani
+  facts:
+    age_years: 18
+    turned_14_at: '2022-01-01'
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+  expect:
+    status: resolved
+    advice:
+    - fee_40_ron
+    channels:
+    - ch.spcep_domicile
+- id: F18
+  desc: lipsește vârsta
+  facts:
+    turned_14_at: '2026-06-20'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - age_years
+- id: F19
+  desc: lipsește tipul actului
+  facts:
+    age_years: 14
+    turned_14_at: '2026-06-20'
+    request_date: '2026-06-25'
+    applicant_present: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requested_document
+- id: F20
+  desc: pilot Timișoara atașează canal local
+  facts:
+    age_years: 14
+    turned_14_at: '2026-06-20'
+    request_date: '2026-06-25'
+    requested_document: cei
+    is_first_cei: true
+    applicant_present: true
+  expect:
+    status: resolved
+    channels:
+    - ch.hub_cei_any_spcep
+    - ch.dep_timisoara_mihai_eminescu_15
+- id: F21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - age_years
+    - requested_document
+    - request_date
+    - applicant_present

@@ -1,0 +1,260 @@
+batch_id: B06_VACCINATION_RECORD
+defaults:
+  alias_event_type_id: ro.life.vaccination_record
+  event_type_id: life.vaccination_record
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VAC01
+  description: Adult cere copie de la medicul care deține evidența
+  facts:
+    purpose: personal_copy
+    record_holder_known: true
+    subject_is_minor: false
+  expect:
+    status: resolved
+    included_steps:
+    - request_access_or_copy_from_medical_provider
+    requirements:
+    - req.identity_or_representation_proof
+- id: VAC02
+  description: Părinte cere copia pentru minor
+  facts:
+    purpose: personal_copy
+    record_holder_known: true
+    subject_is_minor: true
+  expect:
+    status: resolved
+    requirements:
+    - req.identity_or_representation_proof
+    - req.parent_or_legal_representative_identity_and_authority
+- id: VAC03
+  description: Educație timpurie 2025–2026, document în fereastra de 5 zile
+  facts:
+    purpose: early_education_entry
+    school_year: 2025-2026
+    attendance_start_date: '2025-09-08'
+    document_issue_date: '2025-09-04'
+    record_holder_known: true
+    subject_is_minor: true
+    document_within_verified_5_day_window: true
+  expect:
+    status: resolved
+    deadlines:
+    - early_education_vaccination_document_freshness
+- id: VAC04
+  description: Educație timpurie 2025–2026, document mai vechi
+  facts:
+    purpose: early_education_entry
+    school_year: 2025-2026
+    attendance_start_date: '2025-09-08'
+    document_issue_date: '2025-09-01'
+    record_holder_known: true
+    subject_is_minor: true
+    document_within_verified_5_day_window: false
+  expect:
+    status: resolved
+    warnings:
+    - document_outside_verified_5_day_window
+- id: VAC05
+  description: Educație timpurie 2026–2027
+  facts:
+    purpose: early_education_entry
+    school_year: 2026-2027
+    record_holder_known: true
+    subject_is_minor: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - current_school_year_vaccination_document
+- id: VAC06
+  description: Școală primară, cerință exactă necunoscută
+  facts:
+    purpose: school_entry
+    education_level: primary
+    school_year: 2026-2027
+    record_holder_known: true
+    subject_is_minor: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - school_specific_accepted_document
+- id: VAC07
+  description: Furnizorul evidenței nu este cunoscut
+  facts:
+    purpose: personal_copy
+    record_holder_known: false
+    subject_is_minor: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_current_family_doctor_for_record_trace
+    confirmations:
+    - record_source_or_reconstruction
+- id: VAC08
+  description: Carnetul fizic a fost pierdut
+  facts:
+    purpose: replace_physical_record
+    record_holder_known: true
+    subject_is_minor: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - provider_duplicate_format
+- id: VAC09
+  description: Există neconcordanță în date
+  facts:
+    purpose: personal_copy
+    record_holder_known: true
+    record_discrepancy: true
+    subject_is_minor: false
+  expect:
+    status: resolved
+    included_steps:
+    - request_provider_correction_or_clarification
+    warnings:
+    - do_not_self_edit_medical_record
+- id: VAC10
+  description: Solicitare în Timiș cu nevoie de îndrumare DSP
+  facts:
+    purpose: personal_copy
+    record_holder_known: false
+    subject_is_minor: false
+    county: TM
+    needs_public_health_guidance: true
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.dsp_tm
+    advice:
+    - dsp_tm_guidance_only
+- id: VAC11
+  description: Alt județ, nevoie DSP
+  facts:
+    purpose: personal_copy
+    record_holder_known: false
+    subject_is_minor: false
+    county: CJ
+    needs_public_health_guidance: true
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - county_dsp_channel
+- id: VAC12
+  description: Lipsește scopul
+  facts:
+    record_holder_known: true
+    subject_is_minor: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - purpose
+- id: VAC13
+  description: Nu se știe dacă titularul este minor
+  facts:
+    purpose: personal_copy
+    record_holder_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - subject_is_minor
+- id: VAC14
+  description: Nu se știe cine deține evidența
+  facts:
+    purpose: personal_copy
+    subject_is_minor: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - record_holder_known
+- id: VAC15
+  description: Cerere pentru călătorie internațională
+  facts:
+    purpose: international_travel
+    record_holder_known: true
+    subject_is_minor: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - destination_specific_vaccination_document
+- id: VAC16
+  description: Cerere pentru angajator
+  facts:
+    purpose: employment
+    record_holder_known: true
+    subject_is_minor: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - occupational_requirement_and_issuer
+- id: VAC17
+  description: Solicitare presupusă din RENV direct de cetățean
+  facts:
+    purpose: personal_copy
+    record_holder_known: false
+    subject_is_minor: false
+    requested_channel: self_service_renv
+  expect:
+    status: needs_confirmation
+    warnings:
+    - no_verified_public_self_service_route
+- id: VAC18
+  description: Reprezentant fără dovada calității
+  facts:
+    purpose: personal_copy
+    record_holder_known: true
+    subject_is_minor: true
+    representative_proof: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.parent_or_legal_representative_identity_and_authority
+- id: VAC19
+  description: Adult desemnează altă persoană
+  facts:
+    purpose: personal_copy
+    record_holder_known: true
+    subject_is_minor: false
+    requester: designated_person
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - provider_authorization_form
+- id: VAC20
+  description: Dosar școlar cere simplă copie a carnetului
+  facts:
+    purpose: school_entry
+    school_year: 2026-2027
+    institution_request_text_available: true
+    record_holder_known: true
+    subject_is_minor: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - school_specific_accepted_document
+- id: VAC21
+  description: Date medicale indisponibile după schimbarea medicului
+  facts:
+    purpose: personal_copy
+    record_holder_known: false
+    changed_family_doctor: true
+    subject_is_minor: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - record_source_or_reconstruction
+- id: VAC22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - purpose
+    - record_holder_known
+    - subject_is_minor

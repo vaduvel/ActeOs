@@ -1,0 +1,431 @@
+batch_id: batch08.declare_home_local_tax
+defaults:
+  event_type_id: ro.life.declare_home_local_tax
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.case.01
+  desc: person, new_residential_building, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    home_case: new_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - prepare_home_tax_file
+    - submit_home_tax_declaration
+    channels:
+    - pmt_atlas_tax
+    advice_tags:
+    - atlas_case_controls_documents
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.02
+  desc: person, apartment, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    home_case: apartment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - prepare_home_tax_file
+    - submit_home_tax_declaration
+    channels:
+    - pmt_atlas_tax
+    advice_tags:
+    - atlas_case_controls_documents
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.03
+  desc: person, acquired_residential_building, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    home_case: acquired_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_home_case
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.04
+  desc: person, built_residential_building, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+    home_case: built_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_home_case
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.05
+  desc: legal_entity, new_residential_building, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    home_case: new_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_home_case
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.06
+  desc: legal_entity, apartment, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    home_case: apartment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_atlas_home_case
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.07
+  desc: legal_entity, acquired_residential_building, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    home_case: acquired_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - prepare_home_tax_file
+    - submit_home_tax_declaration
+    requirements:
+    - destination_supporting_documents_if_applicable
+    - utility_expense_supporting_documents_if_applicable
+    - copies_certified_conform_to_original
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.08
+  desc: legal_entity, built_residential_building, ro.tm.timisoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: legal_entity
+    home_case: built_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_atlas_tax_case
+    - prepare_home_tax_file
+    - submit_home_tax_declaration
+    requirements:
+    - destination_supporting_documents_if_applicable
+    - utility_expense_supporting_documents_if_applicable
+    - copies_certified_conform_to_original
+    channels:
+    - pmt_atlas_tax
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.09
+  desc: person, new_residential_building, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: person
+    home_case: new_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.10
+  desc: person, apartment, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: person
+    home_case: apartment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.11
+  desc: person, acquired_residential_building, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: person
+    home_case: acquired_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.12
+  desc: person, built_residential_building, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: person
+    home_case: built_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.13
+  desc: legal_entity, new_residential_building, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: legal_entity
+    home_case: new_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.14
+  desc: legal_entity, apartment, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: legal_entity
+    home_case: apartment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.15
+  desc: legal_entity, acquired_residential_building, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: legal_entity
+    home_case: acquired_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.16
+  desc: legal_entity, built_residential_building, ro.bucuresti.sector1
+  facts:
+    jurisdiction_id: ro.bucuresti.sector1
+    owner_type: legal_entity
+    home_case: built_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.17
+  desc: person, new_residential_building, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: person
+    home_case: new_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.18
+  desc: person, apartment, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: person
+    home_case: apartment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.19
+  desc: person, acquired_residential_building, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: person
+    home_case: acquired_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.20
+  desc: person, built_residential_building, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: person
+    home_case: built_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.21
+  desc: legal_entity, new_residential_building, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: legal_entity
+    home_case: new_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.22
+  desc: legal_entity, apartment, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: legal_entity
+    home_case: apartment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.23
+  desc: legal_entity, acquired_residential_building, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: legal_entity
+    home_case: acquired_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.case.24
+  desc: legal_entity, built_residential_building, ro.cj.cluj_napoca
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    owner_type: legal_entity
+    home_case: built_residential_building
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_competent_local_tax_authority
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_home_tax_procedure
+    - confirm_current_home_tax_declaration_deadline
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    owner_type: person
+    home_case: new_residential_building
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.owner_type
+  desc: Lipsește faptul obligatoriu owner_type
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    home_case: new_residential_building
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+    missing_facts:
+    - owner_type
+- id: fx.missing.home_case
+  desc: Lipsește faptul obligatoriu home_case
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    owner_type: person
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+    missing_facts:
+    - home_case
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_home_tax_declaration_deadline
+    missing_facts:
+    - jurisdiction_id
+    - owner_type
+    - home_case

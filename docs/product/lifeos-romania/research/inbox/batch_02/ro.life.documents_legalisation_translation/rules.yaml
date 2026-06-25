@@ -1,0 +1,370 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_DOCUMENTS_LEGALISATION_TRANSLATION
+event_type_id: ro.life.documents_legalisation_translation
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- document_direction
+- issuing_country_group
+- receiving_country_group
+- document_subject
+- hague_pair_status
+- receiving_language_status
+- multilingual_form_status
+- destination_requirements_confirmed
+- romanian_document_authority_class
+- preverification_completed
+rules:
+- id: rule.dlt.start_classification
+  canonical_rule_id: documents_legalisation_translation.start_classification
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_document_and_destination
+  - type: emit_advice
+    tag: classification_required
+    message_ro: Stabilește emitentul, statul emitent, statul primitor, natura actului și scopul folosirii înainte de a alege
+      apostila, supralegalizarea sau traducerea.
+  source_claim_ids:
+  - claim.dlt.hcch_pair_check
+  status: in_review
+- id: rule.dlt.eu_covered_no_apostille
+  canonical_rule_id: documents_legalisation_translation.eu_covered_no_apostille
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_direction
+      value: foreign_to_ro
+    - op: eq
+      field: issuing_country_group
+      value: eu
+    - op: eq
+      field: receiving_country_group
+      value: eu
+    - op: eq
+      field: document_subject
+      value: covered_public_matter
+  effects:
+  - type: include_step
+    step_id: use_eu_public_document_simplification
+  - type: emit_advice
+    tag: eu_no_apostille
+    message_ro: Pentru autenticitate, nu cere apostilă în această ramură UE.
+  - type: emit_warning
+    tag: authenticity_not_recognition
+    message_ro: Lipsa apostilei nu înseamnă automat recunoașterea efectelor juridice ale documentului.
+  source_claim_ids:
+  - claim.dlt.eu_no_apostille
+  - claim.dlt.eu_scope
+  - claim.dlt.auth_not_effect
+  status: in_review
+- id: rule.dlt.eu_covered_ro_to_eu
+  canonical_rule_id: documents_legalisation_translation.eu_covered_ro_to_eu
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_direction
+      value: ro_to_foreign
+    - op: eq
+      field: issuing_country_group
+      value: eu
+    - op: eq
+      field: receiving_country_group
+      value: eu
+    - op: eq
+      field: document_subject
+      value: covered_public_matter
+  effects:
+  - type: include_step
+    step_id: use_eu_public_document_simplification
+  - type: emit_advice
+    tag: eu_no_apostille
+    message_ro: Pentru autenticitate, documentul românesc acoperit circulă în UE fără apostilă.
+  - type: emit_warning
+    tag: authenticity_not_recognition
+    message_ro: Autoritatea străină decide separat efectele juridice recunoscute.
+  source_claim_ids:
+  - claim.dlt.eu_no_apostille
+  - claim.dlt.eu_scope
+  - claim.dlt.auth_not_effect
+  status: in_review
+- id: rule.dlt.hague_apostille
+  canonical_rule_id: documents_legalisation_translation.hague_apostille
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: hague_pair_status
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: issuing_country_group
+        value: hague_non_eu
+      - op: eq
+        field: receiving_country_group
+        value: hague_non_eu
+  effects:
+  - type: include_step
+    step_id: obtain_apostille_from_competent_authority
+  - type: emit_advice
+    tag: apostille_pair_verified
+    message_ro: Folosește apostila numai după verificarea perechii de state și a autorității competente pentru tipul actului.
+  source_claim_ids:
+  - claim.dlt.hcch_pair_check
+  status: in_review
+- id: rule.dlt.romanian_admin_timis
+  canonical_rule_id: documents_legalisation_translation.romanian_admin_timis
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_direction
+      value: ro_to_foreign
+    - op: eq
+      field: romanian_document_authority_class
+      value: administrative
+    - op: eq
+      field: destination_requirements_confirmed
+      value: true
+  effects:
+  - type: include_step
+    step_id: submit_to_timis_prefecture_for_apostille
+  - type: attach_channel
+    channel_id: ch.prefectura_timis_apostila
+  - type: emit_advice
+    tag: apostille_free_timis
+    message_ro: Aplicarea apostilei la Prefectura Timiș este gratuită.
+  source_claim_ids:
+  - claim.dlt.timis_admin_apostille
+  - claim.dlt.timis_free
+  status: in_review
+- id: rule.dlt.timis_precheck_fast
+  canonical_rule_id: documents_legalisation_translation.timis_precheck_fast
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_direction
+      value: ro_to_foreign
+    - op: eq
+      field: romanian_document_authority_class
+      value: administrative
+    - op: eq
+      field: preverification_completed
+      value: true
+  effects:
+  - type: emit_advice
+    tag: timis_prechecked_2h
+    message_ro: Procedura locală publicată indică eliberarea în două ore pentru actele verificate anterior.
+  - type: require_confirmation
+    tag: timis_fast_local_recheck
+    message_ro: Reconfirmă programul și disponibilitatea procedurii rapide la data depunerii.
+  source_claim_ids:
+  - claim.dlt.timis_fast_precheck
+  status: in_review
+- id: rule.dlt.non_hague_or_unknown
+  canonical_rule_id: documents_legalisation_translation.non_hague_or_unknown
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: issuing_country_group
+      value: non_hague
+    - op: eq
+      field: receiving_country_group
+      value: non_hague
+    - op: eq
+      field: hague_pair_status
+      value: unknown
+    - op: eq
+      field: issuing_country_group
+      value: unknown
+    - op: eq
+      field: receiving_country_group
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: confirm_supralegalisation_chain
+  - type: emit_warning
+    tag: supralegalisation_not_inferred
+    message_ro: Nu presupune lanțul de supralegalizare; acesta depinde de stat, emitent și destinație.
+  - type: require_confirmation
+    tag: destination_chain_required
+    message_ro: Confirmă formalitățile la autoritatea primitoare și la autoritatea consulară competentă.
+  source_claim_ids:
+  - claim.dlt.hcch_pair_check
+  status: in_review
+- id: rule.dlt.language_accepted
+  canonical_rule_id: documents_legalisation_translation.language_accepted
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: receiving_language_status
+    value: accepted
+  effects:
+  - type: emit_advice
+    tag: translation_not_required_language_accepted
+    message_ro: Nu include automat o traducere oficială dacă autoritatea acceptă limba documentului.
+  source_claim_ids:
+  - claim.dlt.translation
+  status: in_review
+- id: rule.dlt.multilingual_form
+  canonical_rule_id: documents_legalisation_translation.multilingual_form
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: receiving_language_status
+      value: not_accepted
+    - op: eq
+      field: multilingual_form_status
+      value: available
+    - op: eq
+      field: document_subject
+      value: covered_public_matter
+  effects:
+  - type: include_step
+    step_id: request_multilingual_standard_form
+  - type: emit_advice
+    tag: multilingual_form_may_replace_translation
+    message_ro: Solicită formularul standard multilingv înainte de a comanda o traducere autorizată.
+  source_claim_ids:
+  - claim.dlt.translation
+  status: in_review
+- id: rule.dlt.translation_needed_or_unknown
+  canonical_rule_id: documents_legalisation_translation.translation_needed_or_unknown
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: any
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: receiving_language_status
+        value: not_accepted
+      - op: eq
+        field: multilingual_form_status
+        value: unavailable
+    - op: eq
+      field: receiving_language_status
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: confirm_translation_requirement
+  - type: require_confirmation
+    tag: translation_authority_confirm
+    message_ro: Confirmă dacă este cerută traducere autorizată și cine o poate efectua pentru autoritatea primitoare.
+  source_claim_ids:
+  - claim.dlt.translation
+  status: in_review
+- id: rule.dlt.private_document
+  canonical_rule_id: documents_legalisation_translation.private_document
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_subject
+    value: private_document
+  effects:
+  - type: emit_warning
+    tag: private_document_outside_public_regime
+    message_ro: Regimurile pentru documente publice nu se aplică automat înscrisurilor private.
+  - type: require_confirmation
+    tag: private_document_formality
+    message_ro: Confirmă dacă este necesară autentificare notarială, legalizarea semnăturii sau altă formalitate înaintea
+      circuitului extern.
+  source_claim_ids:
+  - claim.dlt.eu_scope
+  status: in_review
+- id: rule.dlt.destination_unconfirmed
+  canonical_rule_id: documents_legalisation_translation.destination_unconfirmed
+  event_type_id: ro.life.documents_legalisation_translation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: destination_requirements_confirmed
+    value: false
+  effects:
+  - type: block
+    tag: destination_not_confirmed
+    message_ro: Motorul nu poate prescrie definitiv apostilă, supralegalizare sau traducere până când cerința autorității
+      primitoare nu este confirmată.
+  - type: require_confirmation
+    tag: receiving_authority_check
+    message_ro: Verifică direct cerința autorității care va primi documentul.
+  source_claim_ids:
+  - claim.dlt.auth_not_effect
+  - claim.dlt.hcch_pair_check
+  status: in_review

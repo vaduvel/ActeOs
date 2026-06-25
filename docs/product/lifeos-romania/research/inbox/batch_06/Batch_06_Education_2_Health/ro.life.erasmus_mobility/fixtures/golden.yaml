@@ -1,0 +1,255 @@
+batch_id: B06_ERASMUS_MOBILITY
+defaults:
+  alias_event_type_id: ro.life.erasmus_mobility
+  event_type_id: life.erasmus_mobility
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: ERA01
+  description: UPT, explorare mobilitate de studii
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: exploring
+  expect:
+    status: resolved
+    channels:
+    - ch.upt.erasmus_outgoing
+    advice:
+    - student_status_preserved
+    - study_semester_or_year
+- id: ERA02
+  description: UPT, candidatură la studii
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: applying
+    call_year: 2026-2027
+    call_matches_target_year: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - check_upt_partner_and_current_call
+    - read_current_official_call
+    confirmations:
+    - call_specific_deadline_docs_grant
+- id: ERA03
+  description: UPT, mobilitate de practică în timpul studiilor
+  facts:
+    home_institution: UPT
+    mobility_type: traineeship
+    application_stage: exploring
+    student_status: enrolled
+  expect:
+    status: resolved
+    advice:
+    - traineeship_after_graduation_possible
+- id: ERA04
+  description: UPT, practică imediat după absolvire
+  facts:
+    home_institution: UPT
+    mobility_type: traineeship
+    application_stage: applying
+    graduation_status: recent_graduate
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - call_specific_deadline_docs_grant
+- id: ERA05
+  description: UPT, mobilitate mixtă scurtă
+  facts:
+    home_institution: UPT
+    mobility_type: blended_short
+    application_stage: exploring
+  expect:
+    status: resolved
+    included_steps:
+    - check_upt_mobility_type_page
+- id: ERA06
+  description: UPT, doctorand
+  facts:
+    home_institution: UPT
+    mobility_type: doctoral
+    application_stage: exploring
+  expect:
+    status: resolved
+    included_steps:
+    - check_upt_mobility_type_page
+- id: ERA07
+  description: UPT, free mover
+  facts:
+    home_institution: UPT
+    mobility_type: free_mover
+    application_stage: exploring
+  expect:
+    status: resolved
+    included_steps:
+    - check_upt_mobility_type_page
+- id: ERA08
+  description: UPT, student selectat
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: selected
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_home_and_host_institution_documents
+    confirmations:
+    - selected_student_document_pack
+- id: ERA09
+  description: UPT, student aflat în mobilitate
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: on_mobility
+  expect:
+    status: resolved
+    advice:
+    - student_status_preserved
+- id: ERA10
+  description: UPT, revenit cu documentele gazdei
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: returned
+    host_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - submit_host_evidence_for_credit_recognition
+    requirements:
+    - req.host_institution_relevant_documents
+- id: ERA11
+  description: Revenit fără documentele gazdei
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: returned
+    host_documents_available: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.host_institution_relevant_documents
+- id: ERA12
+  description: Altă universitate din România
+  facts:
+    home_institution: UVT
+    mobility_type: study
+    application_stage: applying
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - home_institution_call
+    - call_specific_deadline_docs_grant
+- id: ERA13
+  description: Instituție de origine necunoscută
+  facts:
+    mobility_type: study
+    application_stage: exploring
+  expect:
+    status: needs_facts
+    missing_facts:
+    - home_institution
+- id: ERA14
+  description: Tip de mobilitate necunoscut
+  facts:
+    home_institution: UPT
+    application_stage: exploring
+  expect:
+    status: needs_facts
+    missing_facts:
+    - mobility_type
+- id: ERA15
+  description: Stadiu necunoscut
+  facts:
+    home_institution: UPT
+    mobility_type: study
+  expect:
+    status: needs_facts
+    missing_facts:
+    - application_stage
+- id: ERA16
+  description: Utilizatorul are o sumă de grant din social media
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: applying
+    claimed_grant_amount: 900
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - grant_amount_current_call
+    - call_specific_deadline_docs_grant
+- id: ERA17
+  description: Apel vechi 2025-2026 folosit pentru 2026-2027
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: applying
+    call_year: 2025-2026
+    target_academic_year: 2026-2027
+    call_matches_target_year: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - stale_call
+    confirmations:
+    - call_specific_deadline_docs_grant
+- id: ERA18
+  description: Acceptare gazdă, dar fără confirmarea instituției de origine
+  facts:
+    home_institution: UPT
+    mobility_type: study
+    application_stage: selected
+    host_acceptance: true
+    home_approval: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - selected_student_document_pack
+- id: ERA19
+  description: Mobilitate incoming către UPT
+  facts:
+    home_institution: foreign_he
+    mobility_type: study
+    application_stage: applying
+    direction: incoming_to_upt
+  expect:
+    status: blocked
+    reason: event_scope_outgoing_route_mismatch
+- id: ERA20
+  description: Mobilitate CEEPUS, nu Erasmus
+  facts:
+    home_institution: UPT
+    mobility_type: ceepus
+    application_stage: exploring
+  expect:
+    status: blocked
+    reason: event_mismatch
+- id: ERA21
+  description: Student doctorand, altă instituție
+  facts:
+    home_institution: UB
+    mobility_type: doctoral
+    application_stage: exploring
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - home_institution_call
+- id: ERA22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - home_institution
+    - mobility_type
+    - application_stage

@@ -1,0 +1,141 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_MOVE_ABROAD
+event_alias: ro.life.move_abroad
+event_type_id: life.move_abroad
+status: research_inbox
+rules:
+- id: rule.move_abroad.z017
+  canonical_rule_id: move_abroad.tax.z017
+  event_type_id: life.move_abroad
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-25'
+  when:
+    op: all
+    args:
+    - op: any
+      args:
+      - op: eq
+        field: fiscal_status_before_departure
+        value: resident
+      - op: eq
+        field: had_z015_obligation
+        value: true
+    - op: gte
+      field: expected_days_abroad_rolling_12m
+      value: 184
+    - op: eq
+      field: romanian_state_employee_abroad
+      value: false
+  effects:
+  - type: include_step
+    step_id: submit_z017
+  - type: set_deadline
+    step_id: submit_z017
+    value:
+      kind: relative_calendar_days_before
+      days: 30
+      anchor: departure_date
+  - type: include_requirement
+    requirement_id: req.residency_supporting_documents
+  - type: include_requirement
+    requirement_id: req.foreign_tax_residence_certificate_if_available
+  - type: attach_channel
+    step_id: submit_z017
+    channel_id: ch.anaf.spv_z017
+  - type: emit_warning
+    tag: z017_30_before
+    message_ro: Înregistrează Z017 cu 30 de zile înaintea plecării.
+  source_claim_ids:
+  - claim.tax_departure.threshold
+  - claim.tax_departure.deadline_30_before
+  - claim.tax_departure.form_z017_spv
+  - claim.tax_departure.documents
+  status: draft
+  required_facts:
+  - fiscal_status_before_departure
+  - had_z015_obligation
+  - expected_days_abroad_rolling_12m
+  - romanian_state_employee_abroad
+  - departure_date
+- id: rule.move_abroad.z017_exception
+  canonical_rule_id: move_abroad.tax.z017_exception
+  event_type_id: life.move_abroad
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-25'
+  when:
+    op: eq
+    field: romanian_state_employee_abroad
+    value: true
+  effects:
+  - type: exclude_step
+    step_id: submit_z017
+  - type: emit_advice
+    tag: z017_state_employee_exception
+    message_ro: Lucrătorul în străinătate ca funcționar/angajat al statului român este exceptat de la Z017; păstrează dovada statutului.
+  source_claim_ids:
+  - claim.tax_departure.state_employee_exception
+  status: draft
+- id: rule.move_abroad.tax_multifactor
+  canonical_rule_id: move_abroad.tax.multifactor
+  event_type_id: life.move_abroad
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2025-03-25'
+  when:
+    op: gte
+    field: expected_days_abroad_rolling_12m
+    value: 184
+  effects:
+  - type: emit_advice
+    tag: tax_residence_not_automatic
+    message_ro: Z017 pornește analiza; menținerea locuinței și a centrului intereselor vitale poate influența rezidența fiscală.
+  source_claim_ids:
+  - claim.tax_departure.multifactor
+  status: draft
+- id: rule.move_abroad.crds_passport
+  canonical_rule_id: move_abroad.passport.crds
+  event_type_id: life.move_abroad
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: changes_domicile_status_to_crds
+    value: true
+  effects:
+  - type: include_step
+    step_id: replace_passport_for_crds_status
+  - type: emit_warning
+    tag: passport_status_change
+    message_ro: Schimbarea statutului de domiciliu România → străinătate cere anularea pașaportului actual și emiterea unuia corespunzător noului
+      statut.
+  source_claim_ids:
+  - claim.passport.status_change
+  status: draft
+  required_facts:
+  - changes_domicile_status_to_crds
+- id: rule.move_abroad.destination_requirements
+  canonical_rule_id: move_abroad.destination.requirements
+  event_type_id: life.move_abroad
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: verify_destination_entry_and_residence_rules
+  - type: require_confirmation
+    tag: destination_country_rules
+    message_ro: Verifică regulile statului de destinație prin MAE sau misiunea diplomatică; acestea nu pot fi deduse din dreptul român.
+  source_claim_ids:
+  - claim.passport.destination_rules
+  status: in_review

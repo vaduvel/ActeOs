@@ -1,0 +1,443 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.demolition_permit
+event_type_id: ro.life.demolition_permit
+required_facts:
+- jurisdiction_id
+- demolition_scope
+- replacement_building_planned
+- has_real_right
+- has_urbanism_certificate
+- cadastral_evidence_requirement_satisfied
+- has_dt
+- approvals_requirement_satisfied
+- environmental_requirement_satisfied
+- has_fee_proof
+- protected_area
+- application_complete
+status: draft
+rules:
+- id: rule.demolition_permit.route.v1
+  canonical_rule_id: rule.demolition_permit.route
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: in
+    field: demolition_scope
+    values:
+    - partial
+    - total
+    - decommission
+    - disassembly
+  effects:
+  - type: include_step
+    step_id: obtain_urbanism_certificate
+  - type: include_step
+    step_id: complete_environmental_procedure
+  - type: include_step
+    step_id: obtain_required_approvals
+  - type: include_step
+    step_id: prepare_demolition_technical_documentation
+  - type: include_step
+    step_id: pay_authorisation_fee
+  - type: include_step
+    step_id: submit_demolition_permit_file
+  - type: include_step
+    step_id: receive_demolition_permit
+  - type: emit_warning
+    tag: do_not_demolish_before_permit
+    message_ro: Desființarea nu începe înaintea autorizației.
+  source_claim_ids:
+  - clm.demolition_permit.law50.demolition_required
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.combined.v1
+  canonical_rule_id: rule.demolition_permit.combined
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: replacement_building_planned
+    value: true
+  effects:
+  - type: emit_advice
+    tag: single_combined_authorisation
+    message_ro: Demolarea și construcția nouă pot fi aprobate printr-o singură autorizație.
+  - type: emit_advice
+    tag: only_building_fee_for_combined_case
+    message_ro: Pentru autorizația combinată se percepe numai taxa pentru construire.
+  - type: trigger_child_event
+    event_type_id: ro.life.building_permit
+  source_claim_ids:
+  - clm.demolition_permit.law50.combined_authorisation
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_real_right.v1
+  canonical_rule_id: rule.demolition_permit.missing_real_right
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_real_right
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: proof_of_title_or_real_right
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_cu.v1
+  canonical_rule_id: rule.demolition_permit.missing_cu
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_urbanism_certificate
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: urbanism_certificate
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_cadastral.v1
+  canonical_rule_id: rule.demolition_permit.missing_cadastral
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: cadastral_evidence_requirement_satisfied
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: current_cadastral_plan_and_land_book_extract_if_applicable
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_dt.v1
+  canonical_rule_id: rule.demolition_permit.missing_dt
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_dt
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: technical_documentation_for_demolition
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_approvals.v1
+  canonical_rule_id: rule.demolition_permit.missing_approvals
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: approvals_requirement_satisfied
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: approvals_and_agreements_from_urbanism_certificate
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_environment.v1
+  canonical_rule_id: rule.demolition_permit.missing_environment
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: environmental_requirement_satisfied
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: environmental_authority_act_if_applicable
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.missing_fee.v1
+  canonical_rule_id: rule.demolition_permit.missing_fee
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_fee_proof
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: authorisation_fee_payment_proof
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.inconsistent_complete_file.v1
+  canonical_rule_id: rule.demolition_permit.inconsistent_complete_file
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: application_complete
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: has_real_right
+        value: false
+      - op: eq
+        field: has_urbanism_certificate
+        value: false
+      - op: eq
+        field: cadastral_evidence_requirement_satisfied
+        value: false
+      - op: eq
+        field: has_dt
+        value: false
+      - op: eq
+        field: approvals_requirement_satisfied
+        value: false
+      - op: eq
+        field: environmental_requirement_satisfied
+        value: false
+      - op: eq
+        field: has_fee_proof
+        value: false
+  effects:
+  - type: override_rule
+    rule_id: rule.demolition_permit.complete_file.v1
+  - type: block
+    code: inconsistent_complete_file
+    message_ro: Dosarul de desființare nu poate fi tratat ca complet cât timp o cerință este nesatisfăcută.
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.complete_file.v1
+  canonical_rule_id: rule.demolition_permit.complete_file
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: application_complete
+    value: true
+  effects:
+  - type: emit_advice
+    tag: demolition_decision_max_30_calendar_days
+    message_ro: Termenul legal este de cel mult 30 de zile pentru documentația completă.
+  source_claim_ids:
+  - clm.demolition_permit.law50.docs_term
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.incomplete_file.v1
+  canonical_rule_id: rule.demolition_permit.incomplete_file
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: application_complete
+    value: false
+  effects:
+  - type: emit_advice
+    tag: incomplete_notice_5_working_days
+    message_ro: Lipsurile se notifică în 5 zile lucrătoare.
+  - type: emit_advice
+    tag: supplement_window_max_3_months
+    message_ro: Completările se depun în maximum 3 luni.
+  source_claim_ids:
+  - clm.demolition_permit.law50.incomplete
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.protected.v1
+  canonical_rule_id: rule.demolition_permit.protected
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: protected_area
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: specific_heritage_and_protected_area_approvals
+  - type: emit_warning
+    tag: protected_demolition_special_route
+    message_ro: Desființarea în zona protejată urmează avizarea specifică.
+  source_claim_ids:
+  - clm.demolition_permit.law50.protected
+  status: active
+  reviewer_id: null
+- id: rule.demolition_permit.timisoara_channel_gap.v1
+  canonical_rule_id: rule.demolition_permit.timisoara_channel_gap
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială expirată
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: emit_advice
+    tag: timisoara_archived_permit_service
+    message_ro: Pagina serviciului indică încheierea disponibilității în 2024.
+  - type: require_confirmation
+    tag: confirm_current_timisoara_demolition_submission_channel
+    message_ro: Canalul actual de depunere trebuie confirmat la Primăria Timișoara.
+  source_claim_ids:
+  - clm.demolition_permit.pmt.permit_page_expired
+  status: in_review
+  reviewer_id: null
+- id: rule.demolition_permit.other_uat.v1
+  canonical_rule_id: rule.demolition_permit.other_uat
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: identify_authorising_local_authority
+  - type: require_confirmation
+    tag: confirm_local_demolition_submission_channel
+    message_ro: Canalul și procedura locală trebuie confirmate.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Pilotul local este Timișoara.
+  source_claim_ids:
+  - clm.demolition_permit.law50.demolition_required
+  status: in_review
+  reviewer_id: null
+- id: rule.demolition_permit.fee_amount_gap.v1
+  canonical_rule_id: rule.demolition_permit.fee_amount_gap
+  event_type_id: ro.life.demolition_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: taxă locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_local_demolition_fee_amount
+    message_ro: Cuantumul taxei trebuie confirmat pentru speța concretă; regula autorizației combinate se aplică separat.
+  source_claim_ids:
+  - clm.demolition_permit.law50.combined_authorisation
+  - clm.demolition_permit.law50.docs_term
+  status: in_review
+  reviewer_id: null

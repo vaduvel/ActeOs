@@ -1,0 +1,351 @@
+batch_id: B01_CIVIL_STATUS_DUPLICATE
+defaults:
+  event_type_id: life.civil_status_duplicate
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: C01
+  desc: certificat naștere, titular, ghișeu Timișoara
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_civil_status_certificate
+    channels:
+    - ch.any_spclep_or_primaria
+    - ch.timisoara_civil_status
+    confirmations:
+    - local_fee_conflict
+    - tm_local_dossier_archived
+- id: C02
+  desc: certificat căsătorie, titular
+  facts:
+    certificate_type: marriage
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_civil_status_certificate
+- id: C03
+  desc: certificat naștere prin reprezentant legal
+  facts:
+    certificate_type: birth
+    requester_role: legal_representative
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: other_ro
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_civil_status_certificate
+- id: C04
+  desc: certificat deces, membru familie
+  facts:
+    certificate_type: death
+    requester_role: family
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    kinship_proof: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.kinship_civil_status_documents
+- id: C05
+  desc: certificat deces, persoană îndreptățită
+  facts:
+    certificate_type: death
+    requester_role: entitled
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: other_ro
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_civil_status_certificate
+- id: C06
+  desc: certificat deces, altă persoană cu interes și aprobare
+  facts:
+    certificate_type: death
+    requester_role: other
+    legitimate_interest: true
+    mayor_approval: true
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: other_ro
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.proof_legitimate_interest
+    - req.mayor_approval
+- id: C07
+  desc: certificat deces, altă persoană fără aprobare
+  facts:
+    certificate_type: death
+    requester_role: other
+    legitimate_interest: true
+    mayor_approval: false
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: other_ro
+  expect:
+    status: blocked
+    blocks:
+    - death_interest_or_approval_missing
+- id: C08
+  desc: cerere prin mandatar cu procură
+  facts:
+    certificate_type: birth
+    requester_role: proxy
+    special_power_present: true
+    proxy_identity_present: true
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.special_power_of_attorney
+    - req.proxy_identity_document
+- id: C09
+  desc: mandatar fără procură specială
+  facts:
+    certificate_type: birth
+    requester_role: proxy
+    special_power_present: false
+    proxy_identity_present: true
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_facts
+    requirements:
+    - req.special_power_of_attorney
+- id: C10
+  desc: cerere prin avocat
+  facts:
+    certificate_type: marriage
+    requester_role: lawyer
+    lawyer_authorization_present: true
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: other_ro
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.lawyer_authorization
+- id: C11
+  desc: persoană în România la SPCLEP Cluj
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: ok
+    channels:
+    - ch.any_spclep_or_primaria
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: C12
+  desc: persoană în străinătate la consulat
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: consulate
+    in_romania: false
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: ok
+    channels:
+    - ch.romanian_mission_or_consulate
+- id: C13
+  desc: solicitare electronică
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: electronic
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: conflicting
+    confirmations:
+    - electronic_channel_conflict
+- id: C14
+  desc: solicitare prin e-mail Timișoara
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: email
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tm_remote_channel_archived
+- id: C15
+  desc: solicitare prin poștă Timișoara
+  facts:
+    certificate_type: marriage
+    requester_role: holder
+    request_channel: post
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tm_remote_channel_archived
+- id: C16
+  desc: preschimbare cu certificat vechi
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: true
+    old_certificate_present: true
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.old_civil_status_certificate
+- id: C17
+  desc: certificat după modificarea statutului civil
+  facts:
+    certificate_type: marriage
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: true
+    final_status_change_act_present: true
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.final_status_change_act
+- id: C18
+  desc: act înregistrat în Timișoara
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tm_local_timing_archived
+    advice:
+    - hub_delivery_3_30
+- id: C19
+  desc: act înregistrat în altă localitate
+  facts:
+    certificate_type: birth
+    requester_role: holder
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: other_ro
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tm_local_timing_archived
+- id: C20
+  desc: taxa locală necunoscută
+  facts:
+    certificate_type: death
+    requester_role: family
+    request_channel: counter
+    in_romania: true
+    valid_identity: true
+    kinship_proof: true
+    old_certificate_exchange: false
+    status_changed: false
+    record_location: timisoara
+    fee_confirmed: false
+  expect:
+    status: conflicting
+    confirmations:
+    - local_fee_conflict
+- id: C21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - certificate_type
+    - requester_role
+    - request_channel
+    - in_romania
+    - valid_identity

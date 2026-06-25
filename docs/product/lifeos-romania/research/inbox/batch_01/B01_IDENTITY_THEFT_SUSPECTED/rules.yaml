@@ -1,0 +1,255 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_IDENTITY_THEFT_SUSPECTED
+event_type_id: life.identity_theft_suspected
+status: draft
+rules:
+- id: rule.idtheft.route
+  canonical_rule_id: identity_theft_suspected.route
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2014-02-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: preserve_identity_theft_evidence
+  - type: include_step
+    step_id: choose_competent_reporting_route
+  source_claim_ids:
+  - claim.idtheft.complaint_definition
+  status: draft
+- id: rule.idtheft.emergency
+  canonical_rule_id: identity_theft_suspected.emergency_112
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2020-01-01'
+  when:
+    op: eq
+    field: urgent_danger
+    value: true
+  effects:
+  - type: emit_warning
+    tag: call_112
+    message_ro: Pentru pericol imediat sau faptă în desfășurare, apelează 112; nu folosi formularul de petiții.
+  - type: attach_channel
+    channel_id: ch.emergency_112
+  source_claim_ids:
+  - claim.idtheft.petitions_not_emergency
+  status: draft
+- id: rule.idtheft.id_missing_child
+  canonical_rule_id: identity_theft_suspected.missing_identity_card_child
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: physical_id_missing
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.identity_card_lost_stolen
+  source_claim_ids:
+  - claim.idtheft.missing_id_route
+  status: draft
+- id: rule.idtheft.passport_missing_child
+  canonical_rule_id: identity_theft_suspected.missing_passport_child
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: passport_missing
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.passport_lost_stolen
+  source_claim_ids:
+  - claim.idtheft.complaint_definition
+  status: draft
+- id: rule.idtheft.criminal_complaint
+  canonical_rule_id: identity_theft_suspected.criminal_complaint
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2014-02-01'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: unauthorized_transaction
+      value: true
+    - op: eq
+      field: account_created_in_name
+      value: true
+    - op: eq
+      field: document_used_by_other
+      value: true
+  effects:
+  - type: include_step
+    step_id: file_criminal_complaint
+  - type: include_requirement
+    requirement_id: req.complainant_identity
+  - type: include_requirement
+    requirement_id: req.fact_description
+  - type: include_requirement
+    requirement_id: req.available_evidence
+  source_claim_ids:
+  - claim.idtheft.complaint_definition
+  - claim.idtheft.complaint_content
+  status: draft
+- id: rule.idtheft.electronic_no_qes
+  canonical_rule_id: identity_theft_suspected.electronic_complaint_signature
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2014-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: complaint_channel
+      value: electronic
+    - op: eq
+      field: has_qualified_esignature
+      value: false
+  effects:
+  - type: block
+    tag: electronic_complaint_not_form_valid
+    message_ro: Pentru această cale, documentul electronic trebuie semnat electronic potrivit cerinței legale; folosește depunerea
+      scrisă semnată sau orală.
+  source_claim_ids:
+  - claim.idtheft.complaint_channels
+  status: draft
+- id: rule.idtheft.oral
+  canonical_rule_id: identity_theft_suspected.oral_complaint
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2014-02-01'
+  when:
+    op: eq
+    field: complaint_channel
+    value: oral
+  effects:
+  - type: emit_advice
+    tag: oral_complaint_recorded
+    message_ro: Plângerea orală se consemnează de organul care o primește într-un proces-verbal.
+  source_claim_ids:
+  - claim.idtheft.complaint_channels
+  status: draft
+- id: rule.idtheft.controller_first
+  canonical_rule_id: identity_theft_suspected.contact_controller_first
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-05-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: known_controller
+      value: true
+    - op: eq
+      field: controller_contacted
+      value: false
+  effects:
+  - type: include_step
+    step_id: contact_personal_data_controller
+  - type: include_requirement
+    requirement_id: req.copy_of_controller_request
+  source_claim_ids:
+  - claim.idtheft.anspdcp_prior_contact
+  status: draft
+- id: rule.idtheft.anspdcp_after_no_answer
+  canonical_rule_id: identity_theft_suspected.anspdcp_after_one_month
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-05-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: known_controller
+      value: true
+    - op: eq
+      field: controller_contacted
+      value: true
+    - op: in
+      field: controller_response
+      values:
+      - none_after_one_month
+      - unsatisfactory
+  effects:
+  - type: include_step
+    step_id: file_anspdcp_complaint
+  - type: include_requirement
+    requirement_id: req.controller_correspondence_and_evidence
+  - type: attach_channel
+    channel_id: ch.anspdcp_complaint
+  source_claim_ids:
+  - claim.idtheft.anspdcp_prior_contact
+  - claim.idtheft.anspdcp_admissibility
+  status: draft
+- id: rule.idtheft.copy_only
+  canonical_rule_id: identity_theft_suspected.copy_leaked_only
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2018-05-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: only_id_copy_leaked
+      value: true
+    - op: eq
+      field: unauthorized_transaction
+      value: false
+    - op: eq
+      field: account_created_in_name
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: impact_not_yet_confirmed
+    message_ro: Scurgerea copiei este un incident, dar nu dovedește singură folosirea frauduloasă; verifică ce operator a
+      prelucrat datele și păstrează dovezile.
+  - type: emit_warning
+    tag: no_automatic_cnp_change
+    message_ro: Nu presupune că CNP-ul se schimbă automat; sursele verificate nu publică o asemenea procedură generală.
+  source_claim_ids:
+  - claim.idtheft.cnp_unique
+  - claim.idtheft.anspdcp_prior_contact
+  status: draft
+- id: rule.idtheft.evidence
+  canonical_rule_id: identity_theft_suspected.preserve_evidence
+  event_type_id: life.identity_theft_suspected
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2014-02-01'
+  when:
+    op: eq
+    field: evidence_available
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.original_messages_statements_contracts_logs
+  source_claim_ids:
+  - claim.idtheft.complaint_content
+  status: draft

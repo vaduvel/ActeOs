@@ -1,0 +1,323 @@
+batch_id: B03_GUARDIANSHIP
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.guardianship
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: G01
+  desc: Minor de 10 ani, hotărâre definitivă, depunere online
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: ok
+    included_steps:
+    - register_minor_guardianship_with_tutelary_authority
+    requirements:
+    - req.final_guardianship_judgment
+    - req.minor_birth_certificate
+    - req.minor_medical_and_school_documents
+    - req.guardian_identity_and_civil_status_documents
+    channels:
+    - ch.timisoara.guardianship_online
+- id: G02
+  desc: Minor de 14 ani
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 14
+    online_submission: true
+  expect:
+    status: ok
+    requirements:
+    - req.minor_identity_document
+- id: G03
+  desc: Tutore căsătorit
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: true
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: ok
+    requirements:
+    - req.guardian_spouse_consent
+- id: G04
+  desc: Adult ocrotit, hotărâre definitivă
+  facts:
+    protected_person_type: adult
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 44
+    online_submission: true
+  expect:
+    status: ok
+    included_steps:
+    - register_legally_protected_adult
+    requirements:
+    - req.final_protection_judgment
+    - req.protected_adult_identity_and_birth_documents
+    - req.protected_adult_medical_income_property_documents
+    channels:
+    - ch.timisoara.protected_adult_online
+- id: G05
+  desc: Minor fără hotărâre definitivă
+  facts:
+    protected_person_type: minor
+    court_judgment_final: false
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: ok
+    included_steps:
+    - obtain_guardianship_or_protection_judgment
+    needs_confirmation:
+    - confirm_guardianship_court_route
+- id: G06
+  desc: Adult fără hotărâre definitivă
+  facts:
+    protected_person_type: adult
+    court_judgment_final: false
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 50
+    online_submission: true
+  expect:
+    status: ok
+    included_steps:
+    - obtain_guardianship_or_protection_judgment
+    needs_confirmation:
+    - confirm_guardianship_court_route
+- id: G07
+  desc: Minor, depunere la ghișeu
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: false
+  expect:
+    status: ok
+    channels:
+    - ch.timisoara.guardianship_counter
+    channels_absent:
+    - ch.timisoara.guardianship_online
+- id: G08
+  desc: Alt UAT
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-CJ-CLUJ-NAPOCA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.guardianship_online
+    needs_confirmation:
+    - confirm_local_tutelary_authority
+- id: G09
+  desc: Tip de persoană ocrotită necunoscut
+  facts:
+    protected_person_type: unknown
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_protected_person_type
+- id: G10
+  desc: Adult ocrotit, ocrotitor căsătorit
+  facts:
+    protected_person_type: adult
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: true
+    protected_person_age: 60
+    online_submission: true
+  expect:
+    status: ok
+    requirements:
+    - req.guardian_spouse_consent
+- id: G11
+  desc: Minor de 13 ani, fără act de identitate cerut de această regulă
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 13
+    online_submission: true
+  expect:
+    status: ok
+    requirements_absent:
+    - req.minor_identity_document
+- id: G12
+  desc: Limita de 14 ani activează actul de identitate
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 14
+    online_submission: true
+  expect:
+    status: ok
+    requirements:
+    - req.minor_identity_document
+- id: G13
+  desc: Adult, depunere la ghișeu
+  facts:
+    protected_person_type: adult
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 35
+    online_submission: false
+  expect:
+    status: ok
+    channels:
+    - ch.timisoara.protected_adult_counter
+- id: G14
+  desc: Fără hotărâre definitivă și alt UAT
+  facts:
+    protected_person_type: minor
+    court_judgment_final: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_guardianship_court_route
+    - confirm_local_tutelary_authority
+- id: G15
+  desc: Minor 16 ani, tutore căsătorit, ghișeu
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: true
+    protected_person_age: 16
+    online_submission: false
+  expect:
+    status: ok
+    requirements:
+    - req.minor_identity_document
+    - req.guardian_spouse_consent
+    channels:
+    - ch.timisoara.guardianship_counter
+- id: G16
+  desc: Lipsește faptul obligatoriu protected_person_type
+  facts:
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - protected_person_type
+- id: G17
+  desc: Lipsește faptul obligatoriu court_judgment_final
+  facts:
+    protected_person_type: minor
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - court_judgment_final
+- id: G18
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    guardian_married: false
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: G19
+  desc: Lipsește faptul obligatoriu guardian_married
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    protected_person_age: 10
+    online_submission: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - guardian_married
+- id: G20
+  desc: Lipsește faptul obligatoriu protected_person_age
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    online_submission: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - protected_person_age
+- id: G21
+  desc: Lipsește faptul obligatoriu online_submission
+  facts:
+    protected_person_type: minor
+    court_judgment_final: true
+    territory_id: RO-TM-TIMISOARA
+    guardian_married: false
+    protected_person_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - online_submission
+- id: G22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - protected_person_type
+    - court_judgment_final
+    - territory_id
+    - guardian_married
+    - protected_person_age
+    - online_submission

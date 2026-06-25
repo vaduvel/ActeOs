@@ -1,0 +1,338 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_TRANSCRIBE_FOREIGN_MARRIAGE
+event_type_id: ro.life.transcribe_foreign_marriage
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- romanian_citizen_involved
+- domicile_case
+- certificate_origin
+- surname_recorded
+- months_since_foreign_registration
+- prior_marriage_exists
+- same_sex_marriage
+rules:
+- id: rule.b03.transcription.not_romanian
+  canonical_rule_id: transcription.not_target
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: romanian_citizen_involved
+    value: false
+  effects:
+  - type: emit_advice
+    tag: foreign_marriage_transcription_not_targeted
+    message_ro: Acest traseu este pentru transcrierea în registrele române când este implicat un cetățean român; verifică
+      altă procedură de recunoaștere dacă este cazul.
+  source_claim_ids:
+  - claim.b03.transcription.effect_and_deadline_national
+  status: draft
+- id: rule.b03.transcription.base
+  canonical_rule_id: transcription.marriage.base
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: romanian_citizen_involved
+    value: true
+  effects:
+  - type: include_step
+    step_id: transcribe_foreign_marriage_certificate
+  - type: include_requirement
+    requirement_id: req.foreign_marriage_certificate_original
+  - type: include_requirement
+    requirement_id: req.spouses_birth_certificates
+  - type: include_requirement
+    requirement_id: req.spouses_identity_documents
+  - type: include_requirement
+    requirement_id: req.romanian_identity_or_citizenship_proof
+  - type: emit_warning
+    tag: official_deadline_anchor_conflict
+    message_ro: Sursele oficiale consultate formulează diferit reperul termenului de 6 luni; conflictul trebuie rezolvat înainte
+      de calcul.
+  - type: require_confirmation
+    tag: confirm_transcription_deadline_anchor
+    message_ro: Aplică textul național consolidat și confirmă data de pornire pentru cazul concret.
+  source_claim_ids:
+  - claim.b03.transcription.effect_and_deadline_national
+  - claim.b03.transcription.deadline_local_archive
+  - claim.b03.transcription.documents_local
+  status: in_review
+- id: rule.b03.transcription.eu_origin
+  canonical_rule_id: transcription.document.eu
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: certificate_origin
+      value: eu
+  effects:
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  - type: emit_advice
+    tag: eu_document_no_apostille
+    message_ro: Pagina locală publică scutirea de apostilă pentru documentul emis într-un stat UE; verifică traducerea aplicabilă.
+  source_claim_ids:
+  - claim.b03.transcription.origin_exemptions
+  status: draft
+- id: rule.b03.transcription.vienna_origin
+  canonical_rule_id: transcription.document.vienna
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: certificate_origin
+      value: vienna_multilingual
+  effects:
+  - type: emit_advice
+    tag: vienna_extract_no_apostille_or_translation
+    message_ro: Extrasul multilingv eligibil este publicat local ca scutit de apostilă și traducere.
+  source_claim_ids:
+  - claim.b03.transcription.origin_exemptions
+  status: draft
+- id: rule.b03.transcription.other_origin
+  canonical_rule_id: transcription.document.other
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: certificate_origin
+      value: other
+  effects:
+  - type: include_requirement
+    requirement_id: req.apostille_or_supralegalization_as_applicable
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  - type: require_confirmation
+    tag: confirm_foreign_document_authentication
+    message_ro: Confirmă apostila, supralegalizarea ori scutirea aplicabilă statului emitent.
+  source_claim_ids:
+  - claim.b03.transcription.documents_local
+  - claim.b03.transcription.origin_exemptions
+  status: in_review
+- id: rule.b03.transcription.surname_missing
+  canonical_rule_id: transcription.surname_declaration
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: surname_recorded
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarized_joint_surname_declaration
+  source_claim_ids:
+  - claim.b03.transcription.surname_and_prior
+  status: draft
+- id: rule.b03.transcription.prior_marriage
+  canonical_rule_id: transcription.prior_marriage
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: prior_marriage_exists
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_prior_marriage_ended
+  source_claim_ids:
+  - claim.b03.transcription.surname_and_prior
+  status: draft
+- id: rule.b03.transcription.late
+  canonical_rule_id: transcription.deadline.over_six_months
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: gt
+      field: months_since_foreign_registration
+      value: 6
+  effects:
+  - type: emit_warning
+    tag: foreign_marriage_transcription_over_6m
+    message_ro: Au trecut peste 6 luni de la înregistrarea străină introdusă în facts; verifică imediat consecințele și data
+      juridică exactă.
+  - type: require_confirmation
+    tag: confirm_late_transcription_consequence
+    message_ro: Nu inventa sancțiunea sau procedura tardivă; confirmă-le din sursa oficială aplicabilă.
+  source_claim_ids:
+  - claim.b03.transcription.effect_and_deadline_national
+  - claim.b03.transcription.deadline_local_archive
+  status: in_review
+- id: rule.b03.transcription.timisoara_channel
+  canonical_rule_id: transcription.channel.timisoara
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: in
+      field: domicile_case
+      values:
+      - common_timisoara
+      - different_one_timisoara
+  effects:
+  - type: attach_channel
+    step_id: transcribe_foreign_marriage_certificate
+    channel_id: ch.timisoara.marriage_transcription
+  - type: require_confirmation
+    tag: confirm_local_processing_time_and_fee
+    message_ro: Confirmă termenul de soluționare și taxa curentă; valorile din pagina arhivată nu sunt promovate automat.
+  source_claim_ids:
+  - claim.b03.transcription.competence_national
+  - claim.b03.transcription.processing_fee_archive
+  status: in_review
+- id: rule.b03.transcription.other_ro
+  canonical_rule_id: transcription.channel.other_ro
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: domicile_case
+      value: other_ro
+  effects:
+  - type: require_confirmation
+    tag: confirm_competent_local_transcription_office
+    message_ro: Confirmă UAT-ul competent după domiciliul soților și programarea locală.
+  source_claim_ids:
+  - claim.b03.transcription.competence_national
+  status: in_review
+- id: rule.b03.transcription.never_domiciled
+  canonical_rule_id: transcription.channel.never_domiciled
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: domicile_case
+      value: never_domiciled
+  effects:
+  - type: require_confirmation
+    tag: confirm_special_never_domiciled_competence
+    message_ro: Confirmă serviciul special competent pentru cetățeanul care nu a avut niciodată domiciliu în România.
+  source_claim_ids:
+  - claim.b03.transcription.competence_national
+  status: in_review
+- id: rule.b03.transcription.consular
+  canonical_rule_id: transcription.channel.consular
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: domicile_case
+      value: consular
+  effects:
+  - type: require_confirmation
+    tag: confirm_consular_transcription_route
+    message_ro: Confirmă misiunea diplomatică/oficiul consular competent și termenul operațional aplicabil.
+  source_claim_ids:
+  - claim.b03.transcription.competence_national
+  status: in_review
+- id: rule.b03.transcription.same_sex
+  canonical_rule_id: transcription.same_sex_prohibition
+  event_type_id: ro.life.transcribe_foreign_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: romanian_citizen_involved
+      value: true
+    - op: eq
+      field: same_sex_marriage
+      value: true
+  effects:
+  - type: block
+    code: FOREIGN_SAME_SEX_MARRIAGE_TRANSCRIPTION_PROHIBITED
+    message_ro: Forma consolidată accesată a Legii nr. 119/1996 interzice această transcriere în registrele române.
+  source_claim_ids:
+  - claim.b03.transcription.same_sex_prohibition
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege

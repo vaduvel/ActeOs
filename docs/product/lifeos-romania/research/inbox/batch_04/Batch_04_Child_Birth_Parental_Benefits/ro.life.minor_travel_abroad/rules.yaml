@@ -1,0 +1,311 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.minor_travel_abroad
+status: draft
+rules:
+- id: rule.travel.valid_document
+  canonical_rule_id: minor_travel.requirement.travel_document
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.minor_valid_travel_document
+  - type: emit_warning
+    tag: birth_certificate_not_travel_document
+    message_ro: Certificatul de naștere nu este document de călătorie.
+  source_claim_ids:
+  - claim.travel.valid_document
+  status: draft
+- id: rule.travel.both_parents
+  canonical_rule_id: minor_travel.route.both_parents
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: travel_companion
+    value: both_parents
+  effects:
+  - type: include_step
+    step_id: verify_minor_travel_document
+  - type: set_requirement_obligation
+    requirement_id: req.parental_consent_declaration
+    value: not_applicable
+  source_claim_ids:
+  - claim.travel.with_both_parents
+  status: draft
+- id: rule.travel.one_parent_consent
+  canonical_rule_id: minor_travel.route.one_parent
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: travel_companion
+      value: one_parent
+    - op: eq
+      field: sole_parental_authority_or_exception
+      value: false
+    - op: eq
+      field: destination_residence_proved
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.other_parent_authenticated_consent
+  - type: emit_warning
+    tag: consent_max_3_years
+    message_ro: Declarația autentificată poate acoperi o perioadă de cel mult 3 ani.
+  source_claim_ids:
+  - claim.travel.with_one_parent
+  status: draft
+- id: rule.travel.one_parent_exception
+  canonical_rule_id: minor_travel.route.one_parent_exception
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: travel_companion
+      value: one_parent
+    - op: eq
+      field: sole_parental_authority_or_exception
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.exception_proof_sole_authority_death_or_judgment
+  source_claim_ids:
+  - claim.travel.with_one_parent
+  status: draft
+- id: rule.travel.third_person
+  canonical_rule_id: minor_travel.route.third_person
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: travel_companion
+    value: third_person
+  effects:
+  - type: include_requirement
+    requirement_id: req.authenticated_parental_consent_for_third_person
+  - type: include_requirement
+    requirement_id: req.companion_identity_document
+  source_claim_ids:
+  - claim.travel.third_person
+  status: draft
+- id: rule.travel.destination_residence
+  canonical_rule_id: minor_travel.exception.destination_residence
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: destination_residence_proved
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.destination_domicile_or_residence_proof
+  - type: set_requirement_obligation
+    requirement_id: req.parental_consent_declaration
+    value: not_applicable
+  source_claim_ids:
+  - claim.travel.destination_residence_exception
+  status: draft
+- id: rule.travel.medical
+  canonical_rule_id: minor_travel.exception.medical
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: travel_purpose
+    value: urgent_medical_treatment
+  effects:
+  - type: include_requirement
+    requirement_id: req.official_romanian_medical_documents
+  - type: require_confirmation
+    tag: medical_exception_border_review
+    message_ro: Excepția medicală este strictă; documentele trebuie să indice destinația/perioada și caracterul necesar al tratamentului.
+  source_claim_ids:
+  - claim.travel.medical_exception
+  status: draft
+- id: rule.travel.study_competition
+  canonical_rule_id: minor_travel.exception.study_competition
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: in
+    field: travel_purpose
+    values:
+    - study
+    - official_competition
+  effects:
+  - type: include_requirement
+    requirement_id: req.organizer_documents
+  - type: include_requirement
+    requirement_id: req.one_parent_authenticated_consent
+  source_claim_ids:
+  - claim.travel.study_competition
+  status: draft
+- id: rule.travel.age16_with_consent
+  canonical_rule_id: minor_travel.unaccompanied.age16_consent
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-22'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: minor_age_years
+      value: 16
+    - op: eq
+      field: travel_companion
+      value: unaccompanied
+    - op: eq
+      field: destination_residence_proved
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.parents_or_legal_representative_consent
+  - type: require_confirmation
+    tag: pfr_age16_operational_conflict
+    message_ro: Legea permite această ramură, dar pagina operațională generală nu reflectă complet excepția; verifică înainte de plecare.
+  source_claim_ids:
+  - claim.travel.age16_unaccompanied
+  - claim.travel.pfr_general_accompanied_conflict
+  status: in_review
+- id: rule.travel.age16_destination
+  canonical_rule_id: minor_travel.unaccompanied.age16_destination
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-22'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: minor_age_years
+      value: 16
+    - op: eq
+      field: travel_companion
+      value: unaccompanied
+    - op: eq
+      field: destination_residence_proved
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.destination_domicile_or_residence_proof
+  - type: set_requirement_obligation
+    requirement_id: req.parental_consent_declaration
+    value: not_applicable
+  - type: require_confirmation
+    tag: pfr_age16_operational_conflict
+    message_ro: Confirmă documentele de destinație înainte de plecare din cauza nealinierii paginii operaționale generale.
+  source_claim_ids:
+  - claim.travel.age16_unaccompanied
+  - claim.travel.destination_residence_exception
+  - claim.travel.pfr_general_accompanied_conflict
+  status: in_review
+- id: rule.travel.under16_unaccompanied
+  canonical_rule_id: minor_travel.block.under16_unaccompanied
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-22'
+  when:
+    op: all
+    args:
+    - op: lt
+      field: minor_age_years
+      value: 16
+    - op: eq
+      field: travel_companion
+      value: unaccompanied
+  effects:
+  - type: block
+    tag: under16_unaccompanied_not_allowed
+    message_ro: Minorul sub 16 ani nu intră în excepția legală pentru călătorie neînsoțită.
+  source_claim_ids:
+  - claim.travel.minor_general_consent
+  - claim.travel.age16_unaccompanied
+  status: draft
+- id: rule.travel.foreign_declaration
+  canonical_rule_id: minor_travel.declaration.foreign
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: consent_signed_abroad
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.consular_authentication_or_apostille_legalisation
+  source_claim_ids:
+  - claim.travel.foreign_authentication
+  status: draft
+- id: rule.travel.cazier_electronic
+  canonical_rule_id: minor_travel.companion.criminal_record
+  event_type_id: life.minor_travel_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: travel_companion
+    value: third_person
+  effects:
+  - type: set_requirement_obligation
+    requirement_id: req.physical_criminal_record_certificate
+    value: not_applicable
+  - type: emit_advice
+    tag: criminal_record_checked_electronically
+    message_ro: Certificatul de cazier nu se mai prezintă fizic; Poliția de Frontieră verifică electronic.
+  source_claim_ids:
+  - claim.travel.cazier_electronic
+  status: draft

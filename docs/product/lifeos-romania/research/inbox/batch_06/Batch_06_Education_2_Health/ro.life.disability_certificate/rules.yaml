@@ -1,0 +1,453 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_DISABILITY_CERTIFICATE
+alias_event_type_id: ro.life.disability_certificate
+event_type_id: life.disability_certificate
+status: draft
+rules:
+- id: rule.disability_certificate.required_facts
+  canonical_rule_id: disability_certificate.required_facts
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_disability_certificate_facts
+    message_ro: Precizează dacă solicitantul este copil sau adult, tipul cererii și județul competent.
+  source_claim_ids:
+  - claim.disability.adult_commission_competence
+  - claim.disability.child_commission_and_validity
+  status: draft
+  required_facts:
+  - person_type
+  - request_type
+  - county
+- id: rule.disability_certificate.adult_initial
+  canonical_rule_id: disability_certificate.adult_initial
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: request_type
+      value: initial
+  effects:
+  - type: include_step
+    step_id: prepare_adult_complex_evaluation_file
+  - type: include_step
+    step_id: submit_adult_disability_evaluation_request_to_dgaspc
+  - type: require_confirmation
+    tag: adult_dossier_current_local
+    message_ro: Confirmă lista completă de acte la DGASPC competentă; lista operațională poate diferi pe județ.
+  source_claim_ids:
+  - claim.disability.adult_commission_competence
+  status: draft
+- id: rule.disability_certificate.adult_tm_file
+  canonical_rule_id: disability_certificate.adult_tm_file
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: request_type
+      value: initial
+    - op: eq
+      field: county
+      value: TM
+  effects:
+  - type: include_requirement
+    requirement_id: req.adult_evaluation_application
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  - type: include_requirement
+    requirement_id: req.current_medical_documents
+  - type: include_requirement
+    requirement_id: req.social_inquiry_if_required_by_local_file
+  - type: attach_channel
+    channel_id: ch.dgaspc_tm_adult_disability
+  - type: emit_advice
+    tag: tm_adult_submission_address_hours
+    message_ro: Depune la DGASPC Timiș, Piața Regina Maria nr. 3, în programul publicat; reverifică programul înainte de deplasare.
+  source_claim_ids:
+  - claim.disability.tm_adult_submission
+  - claim.disability.tm_adult_address_hours
+  status: draft
+- id: rule.disability_certificate.adult_home_eval
+  canonical_rule_id: disability_certificate.adult_home_eval
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: previous_degree
+      value: severe
+    - op: eq
+      field: home_evaluation_requested
+      value: true
+    - op: eq
+      field: certificate_validity
+      value: fixed
+  effects:
+  - type: include_step
+    step_id: request_adult_evaluation_at_home
+  - type: include_requirement
+    requirement_id: req.home_evaluation_request
+  - type: emit_advice
+    tag: home_evaluation_requires_scheduling
+    message_ro: Serviciul programează și informează persoana înaintea evaluării la domiciliu.
+  source_claim_ids:
+  - claim.disability.adult_home_evaluation_severe
+  status: draft
+- id: rule.disability_certificate.adult_home_eval_not_verified
+  canonical_rule_id: disability_certificate.adult_home_eval_not_verified
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: neq
+      field: previous_degree
+      value: severe
+    - op: eq
+      field: home_evaluation_requested
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: home_evaluation_eligibility
+    message_ro: Regula legală verificată vizează persoana încadrată anterior în grad grav; confirmă existența altei baze aplicabile.
+  source_claim_ids:
+  - claim.disability.adult_home_evaluation_severe
+  status: draft
+- id: rule.disability_certificate.adult_issued_piris
+  canonical_rule_id: disability_certificate.adult_issued_piris
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: certificate_issued
+      value: true
+  effects:
+  - type: include_step
+    step_id: receive_certificate_and_piris
+  - type: include_requirement
+    requirement_id: req.disability_certificate
+  - type: include_requirement
+    requirement_id: req.piris
+  - type: emit_advice
+    tag: piris_issued_with_certificate
+    message_ro: Verifică primirea certificatului și a programului individual de reabilitare și integrare socială.
+  source_claim_ids:
+  - claim.disability.adult_piris_with_certificate
+  status: draft
+- id: rule.disability_certificate.adult_no_stamp_duty
+  canonical_rule_id: disability_certificate.adult_no_stamp_duty
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: person_type
+    value: adult
+  effects:
+  - type: emit_advice
+    tag: certificate_stamp_duty_exempt
+    message_ro: Eliberarea certificatului este scutită de taxa de timbru; alte costuri medicale sau de copiere nu sunt declarate
+      automat zero.
+  source_claim_ids:
+  - claim.disability.adult_certificate_no_stamp_duty
+  status: draft
+- id: rule.disability_certificate.adult_appeal
+  canonical_rule_id: disability_certificate.adult_appeal
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: request_type
+      value: appeal
+  effects:
+  - type: include_step
+    step_id: prepare_and_submit_adult_certificate_contestation
+  - type: include_requirement
+    requirement_id: req.contested_certificate_copy
+  - type: include_requirement
+    requirement_id: req.contestation_reason_and_supporting_evidence
+  - type: set_deadline
+    code: adult_certificate_appeal_30_calendar_days
+    value:
+      kind: relative_calendar_days
+      anchor: certificate_communication_date
+      days: 30
+    message_ro: Contestația se depune în 30 de zile calendaristice de la comunicare.
+  - type: attach_channel
+    channel_id: ch.superior_adult_disability_commission
+  source_claim_ids:
+  - claim.disability.adult_appeal_30_days
+  status: draft
+- id: rule.disability_certificate.adult_permanent
+  canonical_rule_id: disability_certificate.adult_permanent
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: condition_irreversible_no_recovery
+      value: true
+  effects:
+  - type: emit_advice
+    tag: permanent_validity_decided_by_commission
+    message_ro: Criteriul legal poate impune termen permanent, dar utilizatorul nu își autoatribuie valabilitatea; comisia
+      decide pe baza evaluării.
+  source_claim_ids:
+  - claim.disability.adult_permanent_irreversible
+  status: draft
+- id: rule.disability_certificate.child_initial
+  canonical_rule_id: disability_certificate.child_initial
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: request_type
+      value: initial
+  effects:
+  - type: include_step
+    step_id: prepare_child_complex_evaluation_file
+  - type: include_step
+    step_id: submit_child_disability_evaluation_request_to_dgaspc
+  - type: include_requirement
+    requirement_id: req.child_disability_application
+  - type: include_requirement
+    requirement_id: req.child_birth_certificate_or_identity_copy
+  - type: include_requirement
+    requirement_id: req.parents_or_legal_representative_identity_copies
+  - type: include_requirement
+    requirement_id: req.proof_of_legal_representation_if_applicable
+  - type: include_requirement
+    requirement_id: req.social_inquiry
+  - type: include_requirement
+    requirement_id: req.synthetic_medical_sheet
+  - type: include_requirement
+    requirement_id: req.medical_certificate_a5
+  - type: include_requirement
+    requirement_id: req.additional_medical_documents
+  - type: include_requirement
+    requirement_id: req.psychological_evaluation_if_applicable
+  - type: include_requirement
+    requirement_id: req.psychopedagogical_sheet
+  source_claim_ids:
+  - claim.disability.child_minimum_documents
+  status: draft
+- id: rule.disability_certificate.child_validity
+  canonical_rule_id: disability_certificate.child_validity
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: certificate_issued
+      value: true
+  effects:
+  - type: emit_advice
+    tag: child_validity_case_specific_6m_2y
+    message_ro: Valabilitatea obișnuită este stabilită de comisie între 6 luni și 2 ani, în funcție de situația copilului.
+  source_claim_ids:
+  - claim.disability.child_commission_and_validity
+  status: draft
+- id: rule.disability_certificate.child_two_severe
+  canonical_rule_id: disability_certificate.child_two_severe
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: two_consecutive_severe_two_year_certificates
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: child_until_18_specific_criteria
+    message_ro: Poate exista certificat până la 18 ani, dar trebuie confirmată îndeplinirea criteriilor biopsihosociale specifice
+      de către comisie.
+  source_claim_ids:
+  - claim.disability.child_two_severe_exception
+  status: draft
+- id: rule.disability_certificate.child_palliative
+  canonical_rule_id: disability_certificate.child_palliative
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: specialist_certified_palliative_care
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.specialist_palliative_care_certificate
+  - type: emit_advice
+    tag: child_palliative_validity_until_18
+    message_ro: Comisia poate stabili valabilitatea până la 18 ani pentru îngrijiri paliative certificate de medicul specialist.
+  source_claim_ids:
+  - claim.disability.child_palliative_exception
+  status: draft
+- id: rule.disability_certificate.child_tm_channel
+  canonical_rule_id: disability_certificate.child_tm_channel
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: county
+      value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgaspc_tm_child_complex_evaluation
+  - type: emit_advice
+    tag: tm_child_complex_evaluation_contact
+    message_ro: Pentru programare, DGASPC Timiș publică telefonul 0256/494497 și intervalele dedicate.
+  source_claim_ids:
+  - claim.disability.tm_child_forms_contact
+  status: draft
+- id: rule.disability_certificate.other_county
+  canonical_rule_id: disability_certificate.other_county
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: local_dgaspc_channel_and_dossier
+    message_ro: Confirmă DGASPC competentă, programarea, formularele și lista locală de documente.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.disability.adult_commission_competence
+  - claim.disability.child_minimum_documents
+  status: draft
+- id: rule.disability_certificate.child_requested_validity_outside_standard
+  canonical_rule_id: disability_certificate.child_requested_validity_outside_standard
+  event_type_id: life.disability_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: gt
+      field: requested_validity_months
+      value: 24
+    - op: eq
+      field: two_consecutive_severe_two_year_certificates
+      value: false
+    - op: eq
+      field: specialist_certified_palliative_care
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: validity_decided_by_child_protection_commission
+    message_ro: Valabilitatea este stabilită de comisie; peste 2 ani necesită o excepție legală aplicabilă.
+  source_claim_ids:
+  - claim.disability.child_commission_and_validity
+  status: draft

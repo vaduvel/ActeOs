@@ -1,0 +1,391 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.pregnancy_admin
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: gravidă, nu a notificat încă angajatorul
+  facts:
+    written_notice_sent: false
+    medical_document_attached: false
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - notify_employer_pregnancy
+    requirements:
+    - req.written_pregnancy_notice
+    - req.pregnancy_medical_document
+    emitted_tags:
+    - pregnancy_protection_requires_notice
+  id: ro.life.pregnancy_admin.F01
+- title: notificare trimisă cu document medical
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - employer_notify_itm_10d
+    - pregnancy_confidentiality
+  id: ro.life.pregnancy_admin.F02
+- title: notificare scrisă fără document medical
+  facts:
+    written_notice_sent: true
+    medical_document_attached: false
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - medical_document_attached
+  id: ro.life.pregnancy_admin.F03
+- title: risc la locul de muncă, adaptare posibilă
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: true
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_risk_assessment_and_adaptation
+    emitted_tags:
+    - risk_control_hierarchy
+  id: ro.life.pregnancy_admin.F04
+- title: risc, adaptarea și transferul nu sunt posibile
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: true
+    adaptation_or_transfer_possible: false
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_maternity_risk_leave
+    durations:
+      max_risk_leave_days: 120
+    emitted_tags:
+    - risk_leave_75_percent
+  id: ro.life.pregnancy_admin.F05
+- title: medicul recomandă reducerea programului
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: true
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_quarter_schedule_reduction
+    requirements:
+    - req.family_doctor_recommendation
+    emitted_tags:
+    - quarter_reduction_full_pay
+  id: ro.life.pregnancy_admin.F06
+- title: consultații prenatale doar în timpul programului
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: true
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_prenatal_consultation_leave
+    limits:
+      hours_per_month: 16
+  id: ro.life.pregnancy_admin.F07
+- title: alăptează, copil de 6 luni
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: true
+    child_age_months: 6
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_breastfeeding_breaks_or_reduction
+    emitted_tags:
+    - breastfeeding_breaks
+  id: ro.life.pregnancy_admin.F08
+- title: alăptează, copil de 12 luni
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: true
+    child_age_months: 12
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - request_breastfeeding_breaks_or_reduction
+  id: ro.life.pregnancy_admin.F09
+- title: lucrează în schimb de noapte
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: true
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_day_work_transfer
+    emitted_tags:
+    - no_forced_night_work
+  id: ro.life.pregnancy_admin.F10
+- title: muncă insalubră/greu de suportat
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: true
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: true
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_safe_work_transfer
+    emitted_tags:
+    - no_insalubrious_work
+  id: ro.life.pregnancy_admin.F11
+- title: amenințare cu concedierea după notificare
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: true
+  expected:
+    status: resolved
+    included_steps:
+    - document_and_challenge_retaliation
+    emitted_tags:
+    - pregnancy_dismissal_protection
+  id: ro.life.pregnancy_admin.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - written_notice_sent
+    - medical_document_attached
+  id: ro.life.pregnancy_admin.F13
+- title: lipsește faptul obligatoriu written_notice_sent
+  facts:
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - written_notice_sent
+  id: ro.life.pregnancy_admin.F14
+- title: valoare invalidă pentru written_notice_sent
+  facts:
+    written_notice_sent: __invalid__
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - written_notice_sent
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.pregnancy_admin.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+  expected:
+    status: resolved
+    channels_absent: []
+  id: ro.life.pregnancy_admin.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.pregnancy_admin.F17
+  reference_date: '2003-10-13'
+- title: exact la limita termenului principal
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+    employer_notification_business_days_after_notice: 10
+  expected:
+    status: resolved
+    emitted_tags:
+    - employer_notify_itm_10d
+  id: ro.life.pregnancy_admin.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    written_notice_sent: true
+    medical_document_attached: true
+    workplace_risk_identified: false
+    adaptation_or_transfer_possible: true
+    doctor_recommends_reduced_schedule: false
+    prenatal_consultations_only_during_work: false
+    is_breastfeeding: false
+    child_age_months: 0
+    works_night_shift: false
+    insalubrious_or_hard_work: false
+    dismissal_or_retaliation_threat: false
+    employer_notification_business_days_after_notice: 11
+  expected:
+    status: resolved
+    emitted_tags:
+    - employer_itm_notification_overdue
+  id: ro.life.pregnancy_admin.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.pregnancy_admin.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.pregnancy_admin.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: resolved
+  id: ro.life.pregnancy_admin.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

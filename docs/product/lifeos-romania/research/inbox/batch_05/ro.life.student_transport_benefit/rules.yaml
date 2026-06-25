@@ -1,0 +1,461 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.student_transport_benefit
+status: draft
+rules:
+- id: rule.transport.required_facts
+  canonical_rule_id: transport.required_facts
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  required_facts:
+  - beneficiary_type
+  - institution_authorized_or_accredited
+  - study_mode
+  - beneficiary_age
+  - transport_mode
+  - reference_date
+  - route_relation
+  - proof_of_status_available
+  - local_process_verified
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.transport.select_regime
+  source_claim_ids:
+  - claim.transport.pupil.free
+  - claim.transport.student.permanent
+  status: draft
+- id: rule.transport.unaccredited
+  canonical_rule_id: transport.unaccredited
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: eq
+    field: institution_authorized_or_accredited
+    value: false
+  effects:
+  - type: block
+    tag: institution_not_eligible
+    message_ro: Instituția nu este confirmată ca autorizată/acreditată pentru facilitatea analizată.
+  source_claim_ids:
+  - claim.transport.pupil.free
+  - claim.transport.student.permanent
+  status: draft
+- id: rule.transport.pupil_base
+  canonical_rule_id: transport.pupil_base
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: pupil
+    - op: eq
+      field: institution_authorized_or_accredited
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.transport.verify_route
+  - type: include_step
+    step_id: step.transport.prepare_proof
+  - type: include_requirement
+    requirement_id: req.transport.status_proof
+  source_claim_ids:
+  - claim.transport.pupil.free
+  - claim.transport.pupil.proof
+  status: draft
+- id: rule.transport.pupil_boarding
+  canonical_rule_id: transport.pupil_boarding
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: pupil
+    - op: eq
+      field: boarding_or_hosted
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.transport.boarding_trips
+  - type: include_requirement
+    requirement_id: req.transport.boarding_proof
+  - type: emit_advice
+    tag: four_round_trips
+    message_ro: Ruta pentru elevul cazat include patru călătorii dus-întors lunar și călătoriile de sărbători prevăzute de
+      lege.
+  source_claim_ids:
+  - claim.transport.pupil.boarding
+  status: draft
+- id: rule.transport.pupil_lump_sum
+  canonical_rule_id: transport.pupil_lump_sum
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: pupil
+    - op: eq
+      field: public_transport_service_available
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.transport.lump_sum
+  - type: include_requirement
+    requirement_id: req.transport.lump_sum_file
+  - type: require_confirmation
+    tag: county_lump_sum_amount
+    message_ro: Cuantumul și dosarul sumei forfetare se confirmă anual la nivel județean.
+  source_claim_ids:
+  - claim.transport.pupil.lump_sum
+  status: draft
+- id: rule.transport.student_base
+  canonical_rule_id: transport.student_base
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: eq
+      field: study_mode
+      value: full_time
+    - op: lt
+      field: beneficiary_age
+      value: 30
+    - op: eq
+      field: institution_authorized_or_accredited
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.transport.verify_route
+  - type: include_step
+    step_id: step.transport.obtain_benefit
+  - type: include_requirement
+    requirement_id: req.transport.status_proof
+  source_claim_ids:
+  - claim.transport.student.permanent
+  status: draft
+- id: rule.transport.student_mode
+  canonical_rule_id: transport.student_mode
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: neq
+      field: study_mode
+      value: full_time
+  effects:
+  - type: block
+    tag: student_not_fulltime
+    message_ro: Facilitatea studențească analizată se acordă studenților la forma cu frecvență.
+  source_claim_ids:
+  - claim.transport.student.permanent
+  status: draft
+- id: rule.transport.student_age
+  canonical_rule_id: transport.student_age
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: gte
+      field: beneficiary_age
+      value: 30
+  effects:
+  - type: block
+    tag: student_age_30
+    message_ro: Reducerea analizată se acordă studenților cu vârsta până în 30 de ani; la 30+ ani nu o aplica automat.
+  source_claim_ids:
+  - claim.transport.student.permanent
+  status: draft
+- id: rule.transport.student_permanent_scope
+  canonical_rule_id: transport.student_permanent_scope
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: any
+      args:
+      - op: date_before
+        field: reference_date
+        value: '2026-01-01'
+      - op: date_after
+        field: reference_date
+        value: '2026-12-31'
+  effects:
+  - type: emit_advice
+    tag: permanent_student_scope
+    message_ro: În afara derogării temporare 2026 se aplică numai domeniul rezultat din forma consolidată curentă a legii
+      și metodologiei.
+  source_claim_ids:
+  - claim.transport.student.permanent
+  status: in_review
+- id: rule.transport.student_2026_roadrail_ok
+  canonical_rule_id: transport.student_2026_roadrail_ok
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: '2026-12-31'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-01-01'
+      - '2026-12-31'
+    - op: in
+      field: transport_mode
+      values:
+      - road
+      - rail
+    - op: eq
+      field: route_relation
+      value: domicile_to_institution
+  effects:
+  - type: override_rule
+    rule_id: rule.transport.student_permanent_scope
+  - type: include_requirement
+    requirement_id: req.transport.route_proof
+  source_claim_ids:
+  - claim.transport.student.2026_road_rail
+  override_rule_ids:
+  - rule.transport.student_permanent_scope
+  status: draft
+- id: rule.transport.student_2026_roadrail_block
+  canonical_rule_id: transport.student_2026_roadrail_block
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: '2026-12-31'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-01-01'
+      - '2026-12-31'
+    - op: in
+      field: transport_mode
+      values:
+      - road
+      - rail
+    - op: neq
+      field: route_relation
+      value: domicile_to_institution
+  effects:
+  - type: block
+    tag: 2026_roadrail_route_not_eligible
+    message_ro: În 2026, ruta rutieră/feroviară eligibilă este numai domiciliu ↔ localitatea instituției.
+  source_claim_ids:
+  - claim.transport.student.2026_road_rail
+  status: draft
+- id: rule.transport.student_2026_local_ok
+  canonical_rule_id: transport.student_2026_local_ok
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: '2026-12-31'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-01-01'
+      - '2026-12-31'
+    - op: in
+      field: transport_mode
+      values:
+      - local
+      - metro
+    - op: eq
+      field: route_relation
+      value: institution_city_local
+  effects:
+  - type: override_rule
+    rule_id: rule.transport.student_permanent_scope
+  source_claim_ids:
+  - claim.transport.student.2026_local
+  override_rule_ids:
+  - rule.transport.student_permanent_scope
+  status: draft
+- id: rule.transport.student_2026_local_block
+  canonical_rule_id: transport.student_2026_local_block
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: '2026-12-31'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: university_student
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-01-01'
+      - '2026-12-31'
+    - op: in
+      field: transport_mode
+      values:
+      - local
+      - metro
+    - op: neq
+      field: route_relation
+      value: institution_city_local
+  effects:
+  - type: block
+    tag: 2026_local_route_not_eligible
+    message_ro: În 2026, transportul local/metrou este eligibil în localitatea instituției de învățământ.
+  source_claim_ids:
+  - claim.transport.student.2026_local
+  status: draft
+- id: rule.transport.after_2026_refresh
+  canonical_rule_id: transport.after_2026_refresh
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2027-01-01'
+  when:
+    op: date_after
+    field: reference_date
+    value: '2026-12-31'
+  effects:
+  - type: set_freshness_state
+    tag: legal_refresh_required
+    value: hard_expired
+  - type: require_confirmation
+    tag: post_2026_rule_unverified
+    message_ro: Regula temporală 2026 a expirat; verifică textul consolidat înainte de a aplica domeniul permanent.
+  source_claim_ids:
+  - claim.transport.student.2026_road_rail
+  - claim.transport.student.2026_local
+  status: in_review
+- id: rule.transport.proof_missing
+  canonical_rule_id: transport.proof_missing
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-03'
+  when:
+    op: eq
+    field: proof_of_status_available
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.transport.status_proof
+  - type: block
+    tag: status_proof_missing
+    message_ro: Lipsește documentul oficial care dovedește statutul de elev/student.
+  source_claim_ids:
+  - claim.transport.pupil.proof
+  - claim.transport.student.methodology_2026
+  status: draft
+- id: rule.transport.local_gap
+  canonical_rule_id: transport.local_gap
+  event_type_id: life.student_transport_benefit
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: local_process_verified
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.transport.operator_documents
+  - type: require_confirmation
+    tag: local_process_unverified
+    message_ro: Confirmă operatorul, documentele, canalul și termenul local; nu afișa un proces generic ca fiind valabil în
+      Timișoara.
+  source_claim_ids:
+  - claim.transport.local_process
+  status: in_review

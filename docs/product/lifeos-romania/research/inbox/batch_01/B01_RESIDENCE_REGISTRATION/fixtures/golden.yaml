@@ -1,0 +1,352 @@
+batch_id: B01_RESIDENCE_REGISTRATION
+defaults:
+  event_type_id: life.residence_registration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: R01
+  desc: 20 zile/lună, CEI, proprietar
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 365
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_residence
+    - receive_residence_certificate
+    requirements:
+    - req.proof_of_residence_address
+    advice:
+    - fee_zero_hub
+    confirmations:
+    - payment_norm_conflict
+- id: R02
+  desc: exact 15 zile/lună
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 15
+    requested_period_days: 365
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: resolved
+    excluded_steps:
+    - register_residence
+    advice:
+    - threshold_not_met
+- id: R03
+  desc: 16 zile/lună
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 16
+    requested_period_days: 365
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_residence
+- id: R04
+  desc: perioadă exact un an
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 365
+    current_document_type: cis
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - receive_residence_certificate
+    blocks_absent:
+    - period_exceeds_one_year
+- id: R05
+  desc: perioadă 366 zile
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 366
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: blocked
+    blocks:
+    - period_exceeds_one_year
+- id: R06
+  desc: minor 13 ani
+  facts:
+    age_years: 13
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: hosted
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: blocked
+    blocks:
+    - minimum_age_14
+- id: R07
+  desc: minor 14 ani
+  facts:
+    age_years: 14
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: hosted
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+    host_declaration_location: romania
+    host_declaration_age_days: 10
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_residence
+    requirements:
+    - req.host_consent_and_title
+- id: R08
+  desc: găzduit, declarație internă veche 90 zile
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: hosted
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+    host_declaration_location: romania
+    host_declaration_age_days: 90
+  expect:
+    status: needs_confirmation
+    blocks_absent:
+    - host_declaration_too_old
+- id: R09
+  desc: găzduit, declarație internă 91 zile
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: hosted
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+    host_declaration_location: romania
+    host_declaration_age_days: 91
+  expect:
+    status: blocked
+    blocks:
+    - host_declaration_too_old
+- id: R10
+  desc: declarație la consulat 183 zile
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: hosted
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+    host_declaration_location: romanian_authority_abroad
+    host_declaration_age_days: 183
+  expect:
+    status: needs_confirmation
+    blocks_absent:
+    - host_declaration_too_old
+- id: R11
+  desc: declarație la consulat 184 zile
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: hosted
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+    host_declaration_location: romanian_authority_abroad
+    host_declaration_age_days: 184
+  expect:
+    status: blocked
+    blocks:
+    - host_declaration_too_old
+- id: R12
+  desc: serviciu greșit
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: false
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - wrong_residence_service
+    channels:
+    - ch.spcep_residence_address
+- id: R13
+  desc: CEI produce dovadă de reședință
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - receive_residence_certificate
+- id: R14
+  desc: CIS produce dovadă de reședință
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cis
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - receive_residence_certificate
+- id: R15
+  desc: CI model 1997 primește autocolant
+  facts:
+    age_years: 60
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: ci1997
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - apply_residence_sticker
+    advice:
+    - identity_card_return_later
+- id: R16
+  desc: transmitere pe e-mail
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: email
+  expect:
+    status: blocked
+    blocks:
+    - email_documents_not_published
+- id: R17
+  desc: fără dovada adresei
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: false
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_facts
+    requirements:
+    - req.proof_of_residence_address
+- id: R18
+  desc: pilot Timișoara
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.dep_timisoara_residence
+    advice:
+    - timisoara_address_proof
+- id: R19
+  desc: lipsește numărul de zile
+  facts:
+    age_years: 30
+    requested_period_days: 180
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_per_month_at_secondary
+- id: R20
+  desc: lipsește perioada solicitată
+  facts:
+    age_years: 30
+    days_per_month_at_secondary: 20
+    current_document_type: cei
+    host_status: owner
+    has_residence_proof: true
+    service_matches_residence: true
+    request_channel: counter
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requested_period_days
+- id: R21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - age_years
+    - days_per_month_at_secondary
+    - requested_period_days
+    - current_document_type
+    - host_status
+    - has_residence_proof
+    - service_matches_residence
+    - request_channel

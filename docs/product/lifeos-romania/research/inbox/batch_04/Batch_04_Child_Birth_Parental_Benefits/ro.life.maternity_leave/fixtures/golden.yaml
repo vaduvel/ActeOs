@@ -1,0 +1,365 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.maternity_leave
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: salariată cu 12 luni asigurate
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    included_steps:
+    - obtain_maternity_medical_certificates
+    - submit_certificates_for_payment
+    emitted_tags:
+    - maternity_126_days
+    - postnatal_minimum_42
+    - maternity_amount_85
+    - medical_certificate_by_fifth
+  id: ro.life.maternity_leave.F01
+- title: exact 6 luni de stagiu
+  facts:
+    insured_months_last_12: 6
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    included_steps:
+    - obtain_maternity_medical_certificates
+  id: ro.life.maternity_leave.F02
+- title: 5 luni de stagiu declarat
+  facts:
+    insured_months_last_12: 5
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: false
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: blocked
+    emitted_tags:
+    - maternity_stage_under_6_months
+  id: ro.life.maternity_leave.F03
+- title: plan 63 prenatal / 63 postnatal
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    planned_prenatal_days: 63
+    planned_postnatal_days: 63
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    durations:
+      total_calendar_days: 126
+      minimum_postnatal_days: 42
+  id: ro.life.maternity_leave.F04
+- title: compensare cu 84 zile prenatal și 42 postnatal
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    planned_prenatal_days: 84
+    planned_postnatal_days: 42
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    durations:
+      total_calendar_days: 126
+      minimum_postnatal_days: 42
+  id: ro.life.maternity_leave.F05
+- title: plan cu doar 41 zile postnatal
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    planned_prenatal_days: 85
+    planned_postnatal_days: 41
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    emitted_tags:
+    - postnatal_minimum_42
+    readiness: invalid_plan
+  id: ro.life.maternity_leave.F06
+- title: copil născut mort
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: stillborn
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    emitted_tags:
+    - maternity_full_duration_after_loss
+  id: ro.life.maternity_leave.F07
+- title: copil decedat în lăuzie
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-08
+    birth_outcome: child_died_during_puerperium
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    emitted_tags:
+    - maternity_full_duration_after_loss
+  id: ro.life.maternity_leave.F08
+- title: asigurată cu handicap în luna 6
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-10-01'
+    actual_birth_date: null
+    medical_certificate_issued: true
+    certificate_month: 2026-06
+    birth_outcome: pending
+    mother_has_disability: true
+    pregnancy_month: 6
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    emitted_tags:
+    - disabled_maternity_from_month6
+  id: ro.life.maternity_leave.F09
+- title: pierdere neimputabilă a calității de asigurat cu 8 luni înainte de naștere
+  facts:
+    insured_months_last_12: 6
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-08
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 9
+    lost_insured_status_non_attributable: true
+    months_between_loss_and_birth: 8
+  expected:
+    status: resolved
+    included_steps:
+    - prove_non_attributable_loss_of_insurance
+    requirements:
+    - req.official_loss_of_insurance_documents
+  id: ro.life.maternity_leave.F10
+- title: pierdere neimputabilă cu 10 luni înainte
+  facts:
+    insured_months_last_12: 6
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-08
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 9
+    lost_insured_status_non_attributable: true
+    months_between_loss_and_birth: 10
+  expected:
+    status: resolved
+    included_steps_absent:
+    - prove_non_attributable_loss_of_insurance
+  id: ro.life.maternity_leave.F11
+- title: certificat medical încă neemis
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: null
+    medical_certificate_issued: false
+    certificate_month: 2026-07
+    birth_outcome: pending
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    requirements_absent:
+    - req.maternity_medical_certificate
+  id: ro.life.maternity_leave.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - insured_months_last_12
+    - birth_or_due_date
+  id: ro.life.maternity_leave.F13
+- title: lipsește faptul obligatoriu insured_months_last_12
+  facts:
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: needs_facts
+    missing_facts:
+    - insured_months_last_12
+  id: ro.life.maternity_leave.F14
+- title: valoare invalidă pentru insured_months_last_12
+  facts:
+    insured_months_last_12: __invalid__
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: needs_facts
+    missing_facts:
+    - insured_months_last_12
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.maternity_leave.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+  expected:
+    status: resolved
+    channels_absent: []
+  id: ro.life.maternity_leave.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.maternity_leave.F17
+  reference_date: '2005-12-31'
+- title: exact la limita termenului principal
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+    certificate_submission_day_next_month: 5
+  expected:
+    status: resolved
+    emitted_tags:
+    - medical_certificate_by_fifth
+  id: ro.life.maternity_leave.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    insured_months_last_12: 12
+    birth_or_due_date: '2026-08-01'
+    actual_birth_date: '2026-08-01'
+    medical_certificate_issued: true
+    certificate_month: 2026-07
+    birth_outcome: live_alive
+    mother_has_disability: false
+    pregnancy_month: 8
+    lost_insured_status_non_attributable: false
+    months_between_loss_and_birth: 0
+    certificate_submission_day_next_month: 6
+  expected:
+    status: resolved
+    emitted_tags:
+    - medical_certificate_submission_late
+  id: ro.life.maternity_leave.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.maternity_leave.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.maternity_leave.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: resolved
+  id: ro.life.maternity_leave.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

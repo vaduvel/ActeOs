@@ -1,0 +1,332 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_HEALTH_CARD_BLOCKED
+alias_event_type_id: ro.life.health_card_blocked
+event_type_id: life.health_card_blocked
+status: draft
+rules:
+- id: rule.health_card_blocked.required_facts
+  canonical_rule_id: health_card_blocked.required_facts
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_blocked_card_facts
+    message_ro: Precizează tipul problemei, numărul de încercări PIN și dacă este o urgență medicală.
+  source_claim_ids:
+  - claim.health_card_blocked.five_wrong_pin
+  status: draft
+  required_facts:
+  - issue_type
+  - failed_pin_attempts
+  - emergency_service
+- id: rule.health_card_blocked.confirmed_after_five
+  canonical_rule_id: health_card_blocked.confirmed_after_five
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: issue_type
+      value: pin_blocked
+    - op: gte
+      field: failed_pin_attempts
+      value: 5
+  effects:
+  - type: include_step
+    step_id: ask_contract_provider_to_open_helpdesk_ticket
+  - type: attach_channel
+    channel_id: ch.cnas_card_helpdesk_0212026995
+  - type: emit_advice
+    tag: provider_initiates_unblock
+    message_ro: La furnizor, medicul contactează helpdesk-ul CNAS și primește un număr de tichet.
+  source_claim_ids:
+  - claim.health_card_blocked.five_wrong_pin
+  - claim.health_card_blocked.provider_helpdesk
+  status: draft
+- id: rule.health_card_blocked.fewer_than_five
+  canonical_rule_id: health_card_blocked.fewer_than_five
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: issue_type
+      value: pin_blocked
+    - op: lt
+      field: failed_pin_attempts
+      value: 5
+  effects:
+  - type: emit_warning
+    tag: not_verified_as_blocked_yet
+    message_ro: Sursa CNAS definește blocarea după cinci încercări greșite consecutive.
+  - type: require_confirmation
+    tag: forgotten_pin_or_reader_diagnosis
+    message_ro: Nu mai încerca PIN-uri la întâmplare; cere furnizorului să identifice problema.
+  source_claim_ids:
+  - claim.health_card_blocked.five_wrong_pin
+  status: draft
+- id: rule.health_card_blocked.emergency
+  canonical_rule_id: health_card_blocked.emergency
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: emergency_service
+    value: true
+  effects:
+  - type: emit_advice
+    tag: emergency_without_card
+    message_ro: Pentru serviciile medicale de urgență nu este necesară utilizarea cardului.
+  - type: exclude_step
+    step_id: delay_emergency_for_card_resolution
+  source_claim_ids:
+  - claim.health_card_blocked.emergency_no_card
+  status: draft
+- id: rule.health_card_blocked.forgotten_pin
+  canonical_rule_id: health_card_blocked.forgotten_pin
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issue_type
+    value: forgotten_pin
+  effects:
+  - type: include_step
+    step_id: ask_provider_or_cas_for_pin_procedure
+  - type: require_confirmation
+    tag: forgotten_pin_current_procedure
+    message_ro: CNAS nu publică pe pagina verificată o procedură self-service pentru PIN uitat; confirmă la furnizor/CAS.
+  - type: emit_warning
+    tag: do_not_guess_pin
+    message_ro: 'Nu continua încercările la întâmplare: a cincea încercare greșită consecutivă blochează cardul.'
+  source_claim_ids:
+  - claim.health_card_blocked.five_wrong_pin
+  - claim.health_card_blocked.normal_use
+  status: draft
+- id: rule.health_card_blocked.reader_error
+  canonical_rule_id: health_card_blocked.reader_error
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issue_type
+    value: reader_error
+  effects:
+  - type: include_step
+    step_id: provider_diagnoses_reader_or_pias_error
+  - type: require_confirmation
+    tag: reader_or_system_error_route
+    message_ro: Nu declara cardul blocat doar pentru că un cititor nu îl acceptă; furnizorul trebuie să identifice cauza.
+  source_claim_ids:
+  - claim.health_card_blocked.normal_use
+  status: draft
+- id: rule.health_card_blocked.physical_damage
+  canonical_rule_id: health_card_blocked.physical_damage
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issue_type
+    value: physically_damaged
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.health_card_lost
+    message_ro: Folosește fluxul de înlocuire pentru card distrus/deteriorat.
+  - type: emit_advice
+    tag: damaged_card_duplicate_fee
+    message_ro: Pentru distrugere, CNAS publică suma de 20,36 lei pentru noul card.
+  source_claim_ids:
+  - claim.health_card_blocked.replacement_damaged
+  status: draft
+- id: rule.health_card_blocked.provider_absent
+  canonical_rule_id: health_card_blocked.provider_absent
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: issue_type
+      value: pin_blocked
+    - op: gte
+      field: failed_pin_attempts
+      value: 5
+    - op: eq
+      field: provider_present
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: provider_contact_needed
+    message_ro: Procedura publicată pornește prin medic/furnizor; contactează un furnizor aflat în contract sau CAS.
+  source_claim_ids:
+  - claim.health_card_blocked.provider_helpdesk
+  status: draft
+- id: rule.health_card_blocked.tm_cas
+  canonical_rule_id: health_card_blocked.tm_cas
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_cas_guidance
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.cas_tm
+  - type: emit_advice
+    tag: cas_tm_contact
+    message_ro: 'CAS Timiș: Timișoara, str. Corbului nr. 4, tel. 0736-110007.'
+  source_claim_ids:
+  - claim.health_card_blocked.cas_tm_contact
+  status: draft
+- id: rule.health_card_blocked.other_county
+  canonical_rule_id: health_card_blocked.other_county
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_cas_guidance
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: territorial_cas_contact
+    message_ro: Confirmă datele casei teritoriale competente.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.health_card_blocked.provider_helpdesk
+  status: draft
+- id: rule.health_card_blocked.provider_initiated_warning
+  canonical_rule_id: health_card_blocked.provider_initiated_warning
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: issue_type
+      value: pin_blocked
+    - op: eq
+      field: provider_present
+      value: false
+    - op: eq
+      field: caller
+      value: insured
+  effects:
+  - type: emit_warning
+    tag: published_route_is_provider_initiated
+    message_ro: Procedura publicată este inițiată de furnizorul medical; nu presupune deblocarea directă de către asigurat.
+  source_claim_ids:
+  - claim.health_card_blocked.provider_helpdesk
+  status: draft
+- id: rule.health_card_blocked.pin_requested_unverified
+  canonical_rule_id: health_card_blocked.pin_requested_unverified
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: request_for_pin_channel
+    values:
+    - sms
+    - email
+    - social_message
+  effects:
+  - type: emit_warning
+    tag: never_disclose_pin_to_unverified_channel
+    message_ro: Nu comunica PIN-ul cardului printr-un canal neverificat.
+  source_claim_ids:
+  - claim.health_card_blocked.normal_use
+  status: draft
+- id: rule.health_card_blocked.not_activated
+  canonical_rule_id: health_card_blocked.not_activated
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issue_type
+    value: not_activated
+  effects:
+  - type: require_confirmation
+    tag: activation_at_provider_not_unblock_route
+    message_ro: Confirmă procedura de activare la furnizor; nu aplica automat ruta pentru card blocat.
+  source_claim_ids:
+  - claim.health_card_blocked.normal_use
+  status: draft
+- id: rule.health_card_blocked.reader_works_elsewhere
+  canonical_rule_id: health_card_blocked.reader_works_elsewhere
+  event_type_id: life.health_card_blocked
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: issue_type
+      value: reader_error
+    - op: eq
+      field: works_on_other_reader
+      value: true
+  effects:
+  - type: emit_warning
+    tag: likely_reader_or_system_issue_not_confirmed
+    message_ro: Funcționarea pe alt cititor sugerează o problemă locală, dar diagnosticul trebuie confirmat de furnizor.
+  source_claim_ids:
+  - claim.health_card_blocked.normal_use
+  status: draft

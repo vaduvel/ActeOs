@@ -1,0 +1,184 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_RENTED_HOME
+event_alias: ro.life.rented_home
+event_type_id: life.rented_home
+status: research_inbox
+rules:
+- id: rule.rented.energy_copy
+  canonical_rule_id: rented.energy.copy
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2010-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_residential_building
+      value: true
+    - op: eq
+      field: energy_certificate_copy_received_before_contract
+      value: false
+  effects:
+  - type: include_step
+    step_id: request_energy_certificate_copy
+  - type: emit_warning
+    tag: energy_copy_missing
+    message_ro: Solicită copia certificatului de performanță energetică; proprietarul trebuie să o pună la dispoziție înainte de contract.
+  source_claim_ids:
+  - claim.energy.required_sale_rent
+  - claim.energy.copy_before_contract
+  status: draft
+- id: rule.rented.domicile
+  canonical_rule_id: rented.identity.domicile
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: changes_domicile
+    value: true
+  effects:
+  - type: include_step
+    step_id: update_identity_for_new_domicile
+  - type: set_deadline
+    step_id: update_identity_for_new_domicile
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: emit_warning
+    tag: identity_deadline_15d
+    message_ro: Schimbarea domiciliului se declară în 15 zile de la mutare.
+  source_claim_ids:
+  - claim.identity.domicile_new_id_15d
+  - claim.identity.address_proof
+  status: draft
+- id: rule.rented.residence
+  canonical_rule_id: rented.identity.residence
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2023-06-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: changes_domicile
+      value: false
+    - op: gt
+      field: days_per_month_at_secondary_address
+      value: 15
+  effects:
+  - type: include_step
+    step_id: register_residence
+  - type: set_deadline
+    step_id: register_residence
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: include_requirement
+    requirement_id: req.residence_declaration
+  source_claim_ids:
+  - claim.identity.residence_over_15d
+  - claim.identity.residence_docs
+  - claim.identity.move_other_address_15d
+  status: draft
+- id: rule.rented.house_register
+  canonical_rule_id: rented.identity.house_register
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2023-06-10'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: changes_domicile
+      value: true
+    - op: gt
+      field: days_per_month_at_secondary_address
+      value: 15
+  effects:
+  - type: include_step
+    step_id: request_house_register_entry
+  - type: emit_advice
+    tag: house_register
+    message_ro: Solicită și înscrierea în cartea de imobil, împreună cu regularizarea domiciliului sau reședinței.
+  source_claim_ids:
+  - claim.identity.move_other_address_15d
+  status: draft
+- id: rule.rented.no_c168_tenant
+  canonical_rule_id: rented.tax.no_c168_tenant
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-02-06'
+  when:
+    op: eq
+    field: tenant_is_legal_holder_locator
+    value: false
+  effects:
+  - type: exclude_step
+    step_id: submit_c168
+  - type: emit_advice
+    tag: c168_landlord_obligation
+    message_ro: Înregistrarea fiscală C168 aparține locatorului/contribuabilului care obține venitul, nu chiriașului obișnuit.
+  source_claim_ids:
+  - claim.rented.c168_income_earner
+  status: draft
+- id: rule.rented.tenant_is_locator
+  canonical_rule_id: rented.tax.tenant_is_locator
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-02-06'
+  when:
+    op: eq
+    field: tenant_is_legal_holder_locator
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: dual_role_locator
+    message_ro: Ai indicat că ești și deținător legal/locator; deschide traseul `life.rent_out_home` și confirmă rolul juridic.
+  - type: trigger_child_event
+    event_type_id: life.rent_out_home
+  source_claim_ids:
+  - claim.rented.c168_income_earner
+  status: in_review
+- id: rule.rented.association_owner
+  canonical_rule_id: rented.association.owner_obligation
+  event_type_id: life.rented_home
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2018-09-28'
+  when:
+    op: eq
+    field: is_condominium
+    value: true
+  effects:
+  - type: emit_advice
+    tag: association_owner_obligation
+    message_ro: Proprietarul notifică asociația și rămâne obligat față de aceasta; contractul poate regla recuperarea cheltuielilor de la chiriaș.
+  source_claim_ids:
+  - claim.association.occupants_10d
+  - claim.association.owner_remains_obligor
+  - claim.association.maintenance_owner
+  status: draft

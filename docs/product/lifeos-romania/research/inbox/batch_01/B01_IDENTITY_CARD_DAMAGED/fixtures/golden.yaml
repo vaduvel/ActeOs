@@ -1,0 +1,316 @@
+batch_id: B01_IDENTITY_CARD_DAMAGED
+defaults:
+  event_type_id: life.identity_card_damaged
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: D01
+  desc: CEI deteriorată, cerere în 5 zile
+  facts:
+    incident_date: '2026-06-20'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+    has_alt_photo_id: false
+    civil_status_changed: false
+    domicile_changed: false
+  expect:
+    status: resolved
+    included_steps:
+    - replace_damaged_identity_card
+    deadline_days: 15
+    requirements:
+    - req.damaged_identity_card
+    advice:
+    - fee_70_ron
+- id: D02
+  desc: cerere exact în ziua 15
+  facts:
+    incident_date: '2026-06-10'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: resolved
+    overdue: false
+    deadline_days: 15
+- id: D03
+  desc: cerere după 16 zile
+  facts:
+    incident_date: '2026-06-09'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: resolved
+    overdue: true
+    included_steps:
+    - replace_damaged_identity_card
+- id: D04
+  desc: CIS deteriorată
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: resolved
+    advice:
+    - fee_40_ron
+    channels:
+    - ch.spcep_domicile
+- id: D05
+  desc: actul deteriorat nu este prezent
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: false
+    rnep_has_face_image: true
+  expect:
+    status: needs_facts
+    requirements:
+    - req.damaged_identity_card
+    warnings:
+    - incident_may_be_loss_not_damage
+- id: D06
+  desc: imagine în RNEP
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+    has_alt_photo_id: false
+  expect:
+    status: resolved
+    requirements_absent:
+    - req.recent_official_photo_document
+- id: D07
+  desc: fără imagine RNEP, are pașaport
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: false
+    has_alt_photo_id: true
+  expect:
+    status: resolved
+    requirements:
+    - req.recent_official_photo_document
+- id: D08
+  desc: fără imagine RNEP și fără act foto alternativ
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: false
+    has_alt_photo_id: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - police_identity_verification
+    confirmations:
+    - identity_verification_required
+- id: D09
+  desc: titular absent, procură
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: false
+    proxy_present: true
+    has_damaged_id: true
+  expect:
+    status: blocked
+    blocks:
+    - applicant_presence_required
+- id: D10
+  desc: schimbare stare civilă simultană
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+    civil_status_changed: true
+    domicile_changed: false
+  expect:
+    status: resolved
+    child_events:
+    - life.identity_card_change_name
+- id: D11
+  desc: schimbare domiciliu simultană
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+    civil_status_changed: false
+    domicile_changed: true
+  expect:
+    status: resolved
+    child_events:
+    - life.id_card_change_address
+- id: D12
+  desc: ambele schimbări simultane
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+    civil_status_changed: true
+    domicile_changed: true
+  expect:
+    status: resolved
+    child_events:
+    - life.identity_card_change_name
+    - life.id_card_change_address
+- id: D13
+  desc: CEI solicitată în alt județ
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: resolved
+    channels:
+    - ch.hub_cei_any_spcep
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: D14
+  desc: CIS la serviciu necompetent
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cis
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+    service_matches_domicile: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - cis_local_only
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: D15
+  desc: pilot Timișoara
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: resolved
+    channels:
+    - ch.hub_cei_any_spcep
+    - ch.dep_timisoara_mihai_eminescu_15
+- id: D16
+  desc: lipsește data incidentului
+  facts:
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - incident_date
+- id: D17
+  desc: lipsește data cererii
+  facts:
+    incident_date: '2026-06-22'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_date
+- id: D18
+  desc: lipsește tipul actului solicitat
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requested_document
+- id: D19
+  desc: lipsește informația despre prezență
+  facts:
+    incident_date: '2026-06-22'
+    request_date: '2026-06-25'
+    requested_document: cei
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_present
+- id: D20
+  desc: data incidentului în viitor
+  facts:
+    incident_date: '2026-07-01'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+    has_damaged_id: true
+    rnep_has_face_image: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - future_incident_date
+- id: D21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - incident_date
+    - request_date
+    - requested_document
+    - applicant_present
+    - has_damaged_id
+    - rnep_has_face_image

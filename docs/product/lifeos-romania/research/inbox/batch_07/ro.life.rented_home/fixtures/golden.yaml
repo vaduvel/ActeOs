@@ -1,0 +1,353 @@
+batch_id: B07_RENTED_HOME
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.rented_home
+  event_alias: ro.life.rented_home
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: chirie locuință, certificat primit
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 10
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    not_included:
+    - request_energy_certificate_copy
+    - register_residence
+    - submit_c168
+- id: F02
+  desc: certificat energetic lipsă
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: false
+    changes_domicile: false
+    days_per_month_at_secondary_address: 10
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    included_steps:
+    - request_energy_certificate_copy
+    warnings:
+    - energy_copy_missing
+- id: F03
+  desc: schimbă domiciliul
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: true
+    days_per_month_at_secondary_address: 30
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    included_steps:
+    - update_identity_for_new_domicile
+    - request_house_register_entry
+    deadlines:
+      update_identity_for_new_domicile: '2026-06-25'
+- id: F04
+  desc: reședință 16 zile/lună
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 16
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    included_steps:
+    - register_residence
+    - request_house_register_entry
+- id: F05
+  desc: reședință exact 15 zile/lună
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 15
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    not_included:
+    - register_residence
+- id: F06
+  desc: condominiu
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 10
+    is_condominium: true
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    advice:
+    - association_owner_obligation
+- id: F07
+  desc: chiriașul crede că trebuie C168
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 10
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    excluded_steps:
+    - submit_c168
+    advice:
+    - c168_landlord_obligation
+- id: F08
+  desc: chiriaș în rol dual de locator
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 10
+    is_condominium: false
+    tenant_is_legal_holder_locator: true
+  expect:
+    status: needs_confirmation
+    triggered_events:
+    - life.rent_out_home
+- id: F09
+  desc: spațiu care nu este clădire rezidențială
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: false
+    energy_certificate_copy_received_before_contract: false
+    changes_domicile: false
+    days_per_month_at_secondary_address: 0
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    not_included:
+    - request_energy_certificate_copy
+- id: F10
+  desc: mutare cu domiciliu, dovadă adresă lipsă
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: true
+    days_per_month_at_secondary_address: 30
+    has_address_proof: false
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    requirements:
+    - req.address_proof
+- id: F11
+  desc: ziua 16 după mutare pentru domiciliu
+  facts:
+    contract_date: '2026-05-01'
+    move_date: '2026-06-09'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: true
+    days_per_month_at_secondary_address: 30
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    warnings:
+    - identity_overdue
+- id: F12
+  desc: ziua 16 după mutare pentru reședință
+  facts:
+    contract_date: '2026-05-01'
+    move_date: '2026-06-09'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 20
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    warnings:
+    - residence_overdue
+- id: F13
+  desc: lipsește changes_domicile
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    days_per_month_at_secondary_address: 20
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - changes_domicile
+- id: F14
+  desc: lipsește move_date pentru domiciliu
+  facts:
+    contract_date: '2026-06-01'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: true
+    days_per_month_at_secondary_address: 20
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - move_date
+- id: F15
+  desc: zile/lună invalid 35
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 35
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_per_month_at_secondary_address
+- id: F16
+  desc: certificat energetic necunoscut
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 10
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - energy_certificate_copy_received_before_contract
+- id: F17
+  desc: chirie în Timișoara
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 20
+    is_condominium: true
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    included_steps:
+    - register_residence
+    local_state: verified_with_local_gap
+- id: F18
+  desc: chirie în Cluj
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: false
+    days_per_month_at_secondary_address: 20
+    is_condominium: true
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.tm.local
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F19
+  desc: contract semnat dar mutarea încă nu s-a produs
+  facts:
+    contract_date: '2026-06-20'
+    move_date: '2026-07-01'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: true
+    changes_domicile: true
+    days_per_month_at_secondary_address: 30
+    is_condominium: false
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    deadline_state: future_anchor
+- id: F20
+  desc: contract verbal declarat
+  facts:
+    contract_date: null
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: false
+    changes_domicile: false
+    days_per_month_at_secondary_address: 20
+    is_condominium: true
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: needs_confirmation
+    note: validitatea și dovada contractului nu sunt modelate în acest batch
+- id: F21
+  desc: domiciliu și condominiu
+  facts:
+    contract_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_residential_building: true
+    energy_certificate_copy_received_before_contract: false
+    changes_domicile: true
+    days_per_month_at_secondary_address: 30
+    is_condominium: true
+    tenant_is_legal_holder_locator: false
+  expect:
+    status: resolved
+    included_steps:
+    - request_energy_certificate_copy
+    - update_identity_for_new_domicile
+    - request_house_register_entry
+    advice:
+    - association_owner_obligation
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_residential_building
+    - changes_domicile
+    - tenant_is_legal_holder_locator

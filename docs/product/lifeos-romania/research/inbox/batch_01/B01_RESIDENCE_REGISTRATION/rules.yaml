@@ -1,0 +1,293 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_RESIDENCE_REGISTRATION
+event_type_id: life.residence_registration
+status: draft
+rules:
+- id: rule.residence.threshold
+  canonical_rule_id: residence_registration.more_than_15_days
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: gt
+    field: days_per_month_at_secondary
+    value: 15
+  effects:
+  - type: include_step
+    step_id: register_residence
+  source_claim_ids:
+  - claim.residence.threshold_duration
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - days_per_month_at_secondary
+- id: rule.residence.not_needed
+  canonical_rule_id: residence_registration.no_route_at_15_or_less
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2005-07-20'
+  when:
+    op: lte
+    field: days_per_month_at_secondary
+    value: 15
+  effects:
+  - type: exclude_step
+    step_id: register_residence
+  - type: emit_advice
+    tag: threshold_not_met
+    message_ro: Regula publicată vizează locuirea mai mult de 15 zile pe lună la locuința secundară.
+  source_claim_ids:
+  - claim.residence.threshold_duration
+  status: draft
+- id: rule.residence.min_age
+  canonical_rule_id: residence_registration.minimum_age_14
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-22'
+  when:
+    op: lt
+    field: age_years
+    value: 14
+  effects:
+  - type: block
+    tag: minimum_age_14
+    message_ro: Serviciul HUB publică vârsta minimă de 14 ani pentru acest traseu.
+  source_claim_ids:
+  - claim.residence.min_age
+  status: draft
+  authority_level: national_operational
+- id: rule.residence.period
+  canonical_rule_id: residence_registration.max_one_year
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: gt
+    field: requested_period_days
+    value: 365
+  effects:
+  - type: block
+    tag: period_exceeds_one_year
+    message_ro: Perioada solicitată nu poate depăși un an.
+  source_claim_ids:
+  - claim.residence.threshold_duration
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - requested_period_days
+- id: rule.residence.docs
+  canonical_rule_id: residence_registration.documents
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: gt
+    field: days_per_month_at_secondary
+    value: 15
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_card
+  - type: include_requirement
+    requirement_id: req.proof_of_residence_address
+  - type: include_requirement
+    requirement_id: req.applicant_physical_presence
+  source_claim_ids:
+  - claim.residence.docs_host
+  status: draft
+  authority_level: national_normative
+- id: rule.residence.host
+  canonical_rule_id: residence_registration.host_consent
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: eq
+    field: host_status
+    value: hosted
+  effects:
+  - type: include_requirement
+    requirement_id: req.host_consent_and_title
+  source_claim_ids:
+  - claim.residence.docs_host
+  status: draft
+- id: rule.residence.host_old_domestic
+  canonical_rule_id: residence_registration.host_declaration_90d
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: host_status
+      value: hosted
+    - op: eq
+      field: host_declaration_location
+      value: romania
+    - op: gt
+      field: host_declaration_age_days
+      value: 90
+  effects:
+  - type: block
+    tag: host_declaration_too_old
+    message_ro: Declarația separată a găzduitorului depășește fereastra publicată de 90 de zile.
+  source_claim_ids:
+  - claim.residence.host_declaration_window
+  status: draft
+- id: rule.residence.host_old_abroad
+  canonical_rule_id: residence_registration.host_declaration_6_months
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: host_status
+      value: hosted
+    - op: eq
+      field: host_declaration_location
+      value: romanian_authority_abroad
+    - op: gt
+      field: host_declaration_age_days
+      value: 183
+  effects:
+  - type: block
+    tag: host_declaration_too_old
+    message_ro: Declarația dată în străinătate depășește fereastra publicată de 6 luni.
+  source_claim_ids:
+  - claim.residence.host_declaration_window
+  status: draft
+- id: rule.residence.local_service
+  canonical_rule_id: residence_registration.service_at_residence
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-22'
+  when:
+    op: eq
+    field: service_matches_residence
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: wrong_residence_service
+    message_ro: Selectează serviciul competent pentru adresa de reședință.
+  - type: attach_channel
+    channel_id: ch.spcep_residence_address
+  source_claim_ids:
+  - claim.residence.local_competence
+  status: draft
+- id: rule.residence.free
+  canonical_rule_id: residence_registration.free
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-04-22'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: fee_zero_hub
+    message_ro: HUB publică serviciul ca gratuit.
+  - type: require_confirmation
+    tag: payment_norm_conflict
+    message_ro: Normele mai vechi enumeră dovada plății; nu plăti fără confirmarea canalului oficial curent.
+  source_claim_ids:
+  - claim.residence.free
+  - claim.residence.payment_norm_conflict
+  status: in_review
+- id: rule.residence.cei_cis_output
+  canonical_rule_id: residence_registration.cei_cis_certificate
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-04-22'
+  when:
+    op: in
+    field: current_document_type
+    values:
+    - cei
+    - cis
+  effects:
+  - type: include_step
+    step_id: receive_residence_certificate
+  source_claim_ids:
+  - claim.residence.output_by_card
+  status: draft
+- id: rule.residence.ci1997_output
+  canonical_rule_id: residence_registration.ci1997_sticker
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-04-22'
+  when:
+    op: eq
+    field: current_document_type
+    value: ci1997
+  effects:
+  - type: include_step
+    step_id: apply_residence_sticker
+  - type: emit_advice
+    tag: identity_card_return_later
+    message_ro: HUB indică restituirea ulterioară a actului cu autocolantul de reședință.
+  source_claim_ids:
+  - claim.residence.output_by_card
+  status: draft
+- id: rule.residence.no_email
+  canonical_rule_id: residence_registration.no_electronic_document_route
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-04-22'
+  when:
+    op: eq
+    field: request_channel
+    value: email
+  effects:
+  - type: block
+    tag: email_documents_not_published
+    message_ro: HUB nu publică transmiterea documentelor prin e-mail pentru acest serviciu.
+  source_claim_ids:
+  - claim.residence.no_electronic_docs
+  status: draft
+- id: rule.residence.timisoara
+  canonical_rule_id: residence_registration.timisoara_proof
+  event_type_id: life.residence_registration
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: explanatory
+  effective_from: '2026-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dep_timisoara_residence
+  - type: emit_advice
+    tag: timisoara_address_proof
+    message_ro: Verifică lista locală de documente pentru dovada adresei.
+  source_claim_ids:
+  - claim.residence.timisoara_address_proof
+  status: draft

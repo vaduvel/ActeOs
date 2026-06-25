@@ -1,0 +1,409 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.highschool_admission
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: HSA01
+  desc: seria curentă, opțiuni generale
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    included_steps:
+    - step.hs.complete_options
+- id: HSA02
+  desc: deja înmatriculat anterior
+  facts:
+    candidate.series: previous
+    candidate.previously_enrolled: true
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - use_transfer_not_admission
+    child_events:
+    - life.school_transfer
+- id: HSA03
+  desc: serie anterioară, niciodată înmatriculat, sub 18
+  facts:
+    candidate.series: previous
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 17
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+- id: HSA04
+  desc: fără Evaluarea Națională
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: false
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - no_en_no_general_allocation
+    included_steps:
+    - step.hs.second_stage
+- id: HSA05
+  desc: prima zi opțiuni
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-13'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    deadlines:
+    - 2026-07-13/2026-07-20
+- id: HSA06
+  desc: ultima zi opțiuni
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-20'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    included_steps:
+    - step.hs.complete_options
+- id: HSA07
+  desc: ziua repartizării
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-22'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    included_steps:
+    - step.hs.check_allocation
+- id: HSA08
+  desc: depunere dosar după repartizare
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-24'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+    allocated: true
+  expect:
+    status: ready
+    requirements:
+    - req.hs.application
+    - req.hs.birth_certificate
+    - req.hs.medical_sheet
+- id: HSA09
+  desc: ultima zi dosar
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-28'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+    allocated: true
+  expect:
+    status: ready
+    deadlines:
+    - 2026-07-23/2026-07-28
+- id: HSA10
+  desc: dosar nedepus la timp
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-30'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+    allocated: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - dossier_deadline_missed
+- id: HSA11
+  desc: a doua etapă
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: second_stage
+    reference_date: '2026-08-11'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    channels:
+    - ch.hs.isjtm
+- id: HSA12
+  desc: rută romi
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: roma
+    reference_date: '2026-07-13'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    requirements:
+    - req.hs.special_evidence
+    warnings:
+    - special_calendar
+- id: HSA13
+  desc: rută CES
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: ces
+    reference_date: '2026-07-13'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    requirements:
+    - req.hs.special_evidence
+- id: HSA14
+  desc: învățământ special
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: special_education
+    reference_date: '2026-07-13'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - special_calendar
+- id: HSA15
+  desc: frecvență redusă, 19 ani
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: reduced_frequency
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+    candidate.age_on_2026_08_31: 19
+  expect:
+    status: blocked
+    blocks:
+    - reduced_frequency_age
+- id: HSA16
+  desc: frecvență redusă, exact 20 ani
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: reduced_frequency
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+    candidate.age_on_2026_08_31: 20
+  expect:
+    status: ready
+- id: HSA17
+  desc: coduri neverificate
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: false
+    local_offer_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - options_unverified
+- id: HSA18
+  desc: broșură locală neverificată
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: false
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - local_offer_unverified
+- id: HSA19
+  desc: alt județ
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: CJ
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.cj
+- id: HSA20
+  desc: lipsă ruta
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: null
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - admission_route
+- id: HSA21
+  desc: lipsă Evaluarea Națională ca fapt
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - evaluation_national_taken
+- id: HSA22
+  desc: lipsă data
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: null
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: HSA23
+  desc: două județe cerute simultan
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-07-15'
+    target_county:
+    - TM
+    - AR
+    options_verified: true
+    local_offer_verified: true
+    multiple_counties_requested: true
+  expect:
+    status: blocked
+    blocks:
+    - single_county_required
+- id: HSA24
+  desc: înainte de fereastra opțiunilor
+  facts:
+    candidate.series: current
+    candidate.previously_enrolled: false
+    candidate.age_on_school_start: 15
+    evaluation_national_taken: true
+    admission_route: general
+    reference_date: '2026-06-25'
+    target_county: TM
+    options_verified: true
+    local_offer_verified: true
+  expect:
+    status: ready
+    included_steps:
+    - step.hs.verify_local_offer
+    note: pregătire, nu depunere

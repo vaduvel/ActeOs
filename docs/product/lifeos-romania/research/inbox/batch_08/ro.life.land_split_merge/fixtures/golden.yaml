@@ -1,0 +1,660 @@
+batch_id: batch08.land_split_merge
+defaults:
+  event_type_id: ro.life.land_split_merge
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.case.01
+  desc: split, ro.tm, documente True/True/True/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.02
+  desc: merge, ro.tm, documente True/True/True/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: merge
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.03
+  desc: split, ro.tm, documente False/True/True/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: false
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - standard_ocpi_application
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.04
+  desc: split, ro.tm, documente True/False/True/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_cadastral_documentation: false
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - cadastral_split_or_merge_documentation
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.05
+  desc: split, ro.tm, documente True/True/False/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: false
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - authentic_notarial_act_after_reception
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.06
+  desc: split, ro.tm, documente True/True/True/False
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - full_cadastral_tariff_payment_proof
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.07
+  desc: merge, ro.tm, documente False/True/True/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: merge
+    has_application: false
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - standard_ocpi_application
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.08
+  desc: merge, ro.tm, documente True/False/True/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: merge
+    has_application: true
+    has_cadastral_documentation: false
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - cadastral_split_or_merge_documentation
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.09
+  desc: merge, ro.tm, documente True/True/False/True
+  facts:
+    jurisdiction_id: ro.tm
+    operation: merge
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: false
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - authentic_notarial_act_after_reception
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.10
+  desc: merge, ro.tm, documente True/True/True/False
+  facts:
+    jurisdiction_id: ro.tm
+    operation: merge
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - full_cadastral_tariff_payment_proof
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.11
+  desc: split, other_county, documente True/True/True/True
+  facts:
+    jurisdiction_id: other_county
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    - identify_competent_ocpi
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    - confirm_local_ocpi_channel
+- id: fx.case.12
+  desc: merge, other_county, documente True/True/True/True
+  facts:
+    jurisdiction_id: other_county
+    operation: merge
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    - identify_competent_ocpi
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    - confirm_local_ocpi_channel
+- id: fx.case.13
+  desc: split, other_county, documente True/False/False/True
+  facts:
+    jurisdiction_id: other_county
+    operation: split
+    has_application: true
+    has_cadastral_documentation: false
+    has_authentic_act: false
+    has_fee_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    - identify_competent_ocpi
+    requirements:
+    - cadastral_split_or_merge_documentation
+    - authentic_notarial_act_after_reception
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    - confirm_local_ocpi_channel
+- id: fx.case.14
+  desc: merge, other_county, documente False/True/True/False
+  facts:
+    jurisdiction_id: other_county
+    operation: merge
+    has_application: false
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    - identify_competent_ocpi
+    requirements:
+    - standard_ocpi_application
+    - full_cadastral_tariff_payment_proof
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    - confirm_local_ocpi_channel
+- id: fx.case.15
+  desc: split, ro.tm, documente False/False/False/False
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: false
+    has_cadastral_documentation: false
+    has_authentic_act: false
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - standard_ocpi_application
+    - cadastral_split_or_merge_documentation
+    - authentic_notarial_act_after_reception
+    - full_cadastral_tariff_payment_proof
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.16
+  desc: merge, ro.tm, documente False/False/False/False
+  facts:
+    jurisdiction_id: ro.tm
+    operation: merge
+    has_application: false
+    has_cadastral_documentation: false
+    has_authentic_act: false
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    requirements:
+    - standard_ocpi_application
+    - cadastral_split_or_merge_documentation
+    - authentic_notarial_act_after_reception
+    - full_cadastral_tariff_payment_proof
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+- id: fx.case.17
+  desc: split, other_county, documente False/False/False/False
+  facts:
+    jurisdiction_id: other_county
+    operation: split
+    has_application: false
+    has_cadastral_documentation: false
+    has_authentic_act: false
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    - identify_competent_ocpi
+    requirements:
+    - standard_ocpi_application
+    - cadastral_split_or_merge_documentation
+    - authentic_notarial_act_after_reception
+    - full_cadastral_tariff_payment_proof
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    - confirm_local_ocpi_channel
+- id: fx.case.18
+  desc: merge, other_county, documente False/False/False/False
+  facts:
+    jurisdiction_id: other_county
+    operation: merge
+    has_application: false
+    has_cadastral_documentation: false
+    has_authentic_act: false
+    has_fee_proof: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    - identify_competent_ocpi
+    requirements:
+    - standard_ocpi_application
+    - cadastral_split_or_merge_documentation
+    - authentic_notarial_act_after_reception
+    - full_cadastral_tariff_payment_proof
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_merge
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    - confirm_local_ocpi_channel
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.operation
+  desc: Lipsește faptul obligatoriu operation
+  facts:
+    jurisdiction_id: ro.tm
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - operation
+- id: fx.missing.has_application
+  desc: Lipsește faptul obligatoriu has_application
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_cadastral_documentation: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - has_application
+- id: fx.missing.has_cadastral_documentation
+  desc: Lipsește faptul obligatoriu has_cadastral_documentation
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_authentic_act: true
+    has_fee_proof: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - has_cadastral_documentation
+- id: fx.missing.has_authentic_act
+  desc: Lipsește faptul obligatoriu has_authentic_act
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_fee_proof: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - has_authentic_act
+- id: fx.missing.has_fee_proof
+  desc: Lipsește faptul obligatoriu has_fee_proof
+  facts:
+    jurisdiction_id: ro.tm
+    operation: split
+    has_application: true
+    has_cadastral_documentation: true
+    has_authentic_act: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - interrupted_cadastral_flow
+    - operation_split
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - has_fee_proof
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - submit_cadastral_reception
+    - obtain_reception_report_notation
+    - execute_authentic_notarial_act
+    - request_land_book_registration
+    advice_tags:
+    - interrupted_cadastral_flow
+    confirmations:
+    - confirm_current_split_merge_tariff
+    - confirm_current_split_merge_term
+    missing_facts:
+    - jurisdiction_id
+    - operation
+    - has_application
+    - has_cadastral_documentation
+    - has_authentic_act
+    - has_fee_proof

@@ -1,0 +1,430 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_RESIDENCE_REGISTRATION_EU
+event_type_id: ro.life.residence_registration_eu
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- citizen_group
+- stay_over_3_months
+- residence_basis
+- family_member_citizenship
+- timis_residence
+- continuous_legal_residence_years
+rules:
+- id: rule.rreu.romanian_not_applicable
+  canonical_rule_id: residence_registration_eu.romanian_not_applicable
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: citizen_group
+    value: romanian
+  effects:
+  - type: block
+    tag: romanian_not_eu_registration
+    message_ro: Cetățeanul român nu solicită certificat de înregistrare ca cetățean UE în România.
+  - type: emit_warning
+    tag: choose_identity_or_domicile_route
+    message_ro: Alege evenimentul românesc de domiciliu/reședință aplicabil.
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  status: in_review
+- id: rule.rreu.short_stay
+  canonical_rule_id: residence_registration_eu.short_stay
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: false
+  effects:
+  - type: emit_advice
+    tag: eu_residence_up_to_3_months
+    message_ro: Pentru șederea de până la trei luni se aplică dreptul de rezidență fără formalitatea certificatului de înregistrare,
+      sub rezerva documentului valabil și a regulilor de intrare.
+  source_claim_ids:
+  - claim.rreu.up_to_3_months
+  status: in_review
+- id: rule.rreu.registration_base
+  canonical_rule_id: residence_registration_eu.registration_base
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+  effects:
+  - type: include_step
+    step_id: apply_for_eu_registration_certificate
+  - type: include_requirement
+    requirement_id: req.valid_national_id_or_passport
+  - type: emit_advice
+    tag: apply_within_3_months_of_entry
+    message_ro: Depune la IGI în termen de trei luni de la intrare.
+  source_claim_ids:
+  - claim.rreu.registration_3_months
+  status: in_review
+- id: rule.rreu.employment
+  canonical_rule_id: residence_registration_eu.employment
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: employment
+  effects:
+  - type: include_requirement
+    requirement_id: req.employment_or_worker_evidence
+  - type: emit_advice
+    tag: worker_branch
+    message_ro: Prezintă dovada statutului de lucrător publicată pentru situația concretă.
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  - claim.rreu.igi_employment_docs
+  status: in_review
+- id: rule.rreu.self_employed
+  canonical_rule_id: residence_registration_eu.self_employed
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: self_employed
+  effects:
+  - type: include_requirement
+    requirement_id: req.self_employment_activity_evidence
+  - type: require_confirmation
+    tag: self_employed_exact_documents
+    message_ro: 'Selectează subtipul exact: comercial, economic, profesional sau altă activitate independentă.'
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  - claim.rreu.igi_employment_docs
+  status: in_review
+- id: rule.rreu.means
+  canonical_rule_id: residence_registration_eu.means
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: means
+  effects:
+  - type: include_requirement
+    requirement_id: req.means_of_support
+  - type: include_requirement
+    requirement_id: req.health_insurance
+  - type: emit_advice
+    tag: means_and_insurance
+    message_ro: Dovedește mijloacele de întreținere și asigurarea de sănătate.
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  - claim.rreu.igi_means_study_family
+  status: in_review
+- id: rule.rreu.studies
+  canonical_rule_id: residence_registration_eu.studies
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: studies
+  effects:
+  - type: include_requirement
+    requirement_id: req.accredited_study_enrolment
+  - type: include_requirement
+    requirement_id: req.health_insurance
+  - type: include_requirement
+    requirement_id: req.means_declaration_or_evidence
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  - claim.rreu.igi_means_study_family
+  status: in_review
+- id: rule.rreu.eu_family
+  canonical_rule_id: residence_registration_eu.eu_family
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: eu_family
+  effects:
+  - type: include_requirement
+    requirement_id: req.family_relationship_document
+  - type: include_requirement
+    requirement_id: req.sponsor_eu_residence_basis_evidence
+  - type: require_confirmation
+    tag: family_member_exact_status
+    message_ro: Documentele diferă după cetățenia membrului de familie și relația invocată.
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  - claim.rreu.igi_means_study_family
+  status: in_review
+- id: rule.rreu.romanian_family
+  canonical_rule_id: residence_registration_eu.romanian_family
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: romanian_family
+  effects:
+  - type: include_requirement
+    requirement_id: req.family_relationship_document
+  - type: include_requirement
+    requirement_id: req.romanian_family_member_id
+  - type: include_requirement
+    requirement_id: req.health_insurance
+  source_claim_ids:
+  - claim.rreu.registration_3_months
+  - claim.rreu.igi_means_study_family
+  status: in_review
+- id: rule.rreu.volunteer_religious
+  canonical_rule_id: residence_registration_eu.volunteer_religious
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: in
+      field: residence_basis
+      values:
+      - volunteer
+      - religious
+  effects:
+  - type: include_requirement
+    requirement_id: req.activity_specific_evidence
+  - type: require_confirmation
+    tag: activity_specific_checklist
+    message_ro: Folosește lista IGI a activității concrete; voluntariatul și activitatea religioasă au documente distincte.
+  source_claim_ids:
+  - claim.rreu.igi_employment_docs
+  status: in_review
+- id: rule.rreu.other_basis
+  canonical_rule_id: residence_registration_eu.other_basis
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: eq
+      field: residence_basis
+      value: other
+  effects:
+  - type: block
+    tag: unsupported_residence_basis
+    message_ro: Baza de rezidență nu este suficient clasificată pentru un dosar determinist.
+  - type: require_confirmation
+    tag: classify_residence_basis
+    message_ro: Confirmă temeiul legal al șederii peste trei luni.
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  status: in_review
+- id: rule.rreu.non_eu_family
+  canonical_rule_id: residence_registration_eu.non_eu_family
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: citizen_group
+    value: non_eu_family_member
+  effects:
+  - type: include_step
+    step_id: apply_for_non_eu_family_residence_card
+  - type: include_requirement
+    requirement_id: req.valid_passport
+  - type: require_confirmation
+    tag: non_eu_family_card_checklist
+    message_ro: Membrul de familie care nu este cetățean UE urmează ruta cărții de rezidență, cu termene și documente proprii.
+  source_claim_ids:
+  - claim.rreu.over_3_bases
+  - claim.rreu.igi_means_study_family
+  status: in_review
+- id: rule.rreu.timis_channel
+  canonical_rule_id: residence_registration_eu.timis_channel
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: timis_residence
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.igi_timis
+  - type: emit_advice
+    tag: timis_igi_channel
+    message_ro: Folosește Serviciul pentru Imigrări Timiș și verifică programarea în Portal IGI.
+  source_claim_ids:
+  - claim.rreu.timis_channel
+  status: in_review
+- id: rule.rreu.certificate_issue
+  canonical_rule_id: residence_registration_eu.certificate_issue
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: eu_see_ch
+    - op: eq
+      field: stay_over_3_months
+      value: true
+    - op: neq
+      field: residence_basis
+      value: other
+  effects:
+  - type: emit_advice
+    tag: certificate_immediate_if_complete
+    message_ro: Legea prevede eliberarea de îndată pe baza documentelor depuse; completările pot fi cerute într-un termen
+      de cel mult 30 de zile.
+  source_claim_ids:
+  - claim.rreu.immediate_certificate
+  status: in_review
+- id: rule.rreu.permanent
+  canonical_rule_id: residence_registration_eu.permanent
+  event_type_id: ro.life.residence_registration_eu
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: gte
+    field: continuous_legal_residence_years
+    value: 5
+  effects:
+  - type: include_step
+    step_id: assess_permanent_eu_residence
+  - type: emit_advice
+    tag: permanent_after_5_years
+    message_ro: După cel puțin cinci ani de rezidență continuă și legală poate fi cerut dreptul de rezidență permanentă.
+  source_claim_ids:
+  - claim.rreu.permanent_5
+  status: in_review

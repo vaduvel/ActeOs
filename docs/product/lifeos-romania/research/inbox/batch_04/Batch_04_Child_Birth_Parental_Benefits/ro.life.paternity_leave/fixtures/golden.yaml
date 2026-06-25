@@ -1,0 +1,296 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.paternity_leave
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: tată salariat, cerere în ziua 5
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_paternity_leave
+    durations:
+      paternity_leave_business_days: 10
+    emitted_tags:
+    - paternity_10_workdays
+    - employer_must_approve
+    - paternity_return_rights
+  id: ro.life.paternity_leave.F01
+- title: tată salariat cu atestat de puericultură
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: true
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    durations:
+      paternity_leave_business_days: 15
+    requirements:
+    - req.puericulture_certificate
+  id: ro.life.paternity_leave.F02
+- title: atestat obținut înainte de naștere
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: true
+    puericulture_certificate_date: '2024-01-01'
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    durations:
+      paternity_leave_business_days: 15
+  id: ro.life.paternity_leave.F03
+- title: tată fără calitatea de lucrător
+  facts:
+    father_is_worker: false
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: true
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: blocked
+    emitted_tags:
+    - paternity_worker_status_missing
+  id: ro.life.paternity_leave.F04
+- title: cerere în ziua 56
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-04-30'
+    days_since_birth: 56
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_paternity_leave
+  id: ro.life.paternity_leave.F05
+- title: cerere în ziua 57
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-04-29'
+    days_since_birth: 57
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: blocked
+    emitted_tags:
+    - paternity_request_after_8_weeks
+  id: ro.life.paternity_leave.F06
+- title: tată cu altă învoire pentru naștere
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: true
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - paternity_cumulative
+  id: ro.life.paternity_leave.F07
+- title: angajatorul refuză verbal
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+    employer_refused: true
+  expected:
+    status: resolved
+    emitted_tags:
+    - employer_must_approve
+  id: ro.life.paternity_leave.F08
+- title: mama a decedat la naștere
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: true
+  expected:
+    status: needs_confirmation
+    included_steps:
+    - request_unused_maternity_remainder
+    requirements:
+    - req.mother_death_certificate
+    emitted_tags:
+    - calculate_unused_maternity_remainder
+  id: ro.life.paternity_leave.F09
+- title: polițist în activitate
+  facts:
+    father_is_worker: true
+    worker_category: police
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_paternity_leave
+  id: ro.life.paternity_leave.F10
+- title: director cu contract de mandat, categorie asimilată
+  facts:
+    father_is_worker: true
+    worker_category: director_mandate
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_paternity_leave
+  id: ro.life.paternity_leave.F11
+- title: lipsă certificat de naștere
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_birth_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    requirements:
+    - req.child_birth_certificate
+    readiness: missing_document
+  id: ro.life.paternity_leave.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - father_is_worker
+    - child_birth_date
+  id: ro.life.paternity_leave.F13
+- title: lipsește faptul obligatoriu father_is_worker
+  facts:
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - father_is_worker
+  id: ro.life.paternity_leave.F14
+- title: valoare invalidă pentru father_is_worker
+  facts:
+    father_is_worker: __invalid__
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - father_is_worker
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.paternity_leave.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    father_is_worker: true
+    child_birth_date: '2026-06-20'
+    days_since_birth: 5
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    channels_absent: []
+  id: ro.life.paternity_leave.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.paternity_leave.F17
+  reference_date: '1999-12-30'
+- title: exact la limita termenului principal
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-04-30'
+    days_since_birth: 56
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - paternity_10_workdays
+  id: ro.life.paternity_leave.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    father_is_worker: true
+    child_birth_date: '2026-04-29'
+    days_since_birth: 57
+    has_puericulture_certificate: false
+    has_other_birth_leave_right: false
+    mother_died_during_birth_or_puerperium: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - paternity_request_after_8_weeks
+  id: ro.life.paternity_leave.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.paternity_leave.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.paternity_leave.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: resolved
+  id: ro.life.paternity_leave.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

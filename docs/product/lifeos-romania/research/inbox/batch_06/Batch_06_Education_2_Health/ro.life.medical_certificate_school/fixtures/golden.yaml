@@ -1,0 +1,314 @@
+batch_id: B06_MEDICAL_CERTIFICATE_SCHOOL
+defaults:
+  alias_event_type_id: ro.life.medical_certificate_school
+  event_type_id: life.medical_certificate_school
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: MED01
+  description: Antepreșcolar, prima zi în 2025–2026
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: early_education
+    school_year: 2025-2026
+    first_attendance_day: '2025-09-08'
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_clinical_certificate_from_family_doctor
+    requirements:
+    - req.clinical_certificate_for_collectivity
+    - req.epidemiological_opinion_or_vaccination_proof
+    deadlines:
+    - clinical_certificate_first_day
+    - epi_vax_max_5_days
+    confirmations:
+    - family_doctor_certificate_fee
+- id: MED02
+  description: Aviz emis cu 4 zile înainte
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: early_education
+    school_year: 2025-2026
+    first_attendance_day: '2025-09-08'
+    epi_issue_date: '2025-09-04'
+    service_provider: family_doctor
+    epi_within_verified_5_day_window: true
+  expect:
+    status: needs_confirmation
+    deadlines_satisfied:
+    - epi_vax_max_5_days
+    confirmations:
+    - family_doctor_certificate_fee
+- id: MED03
+  description: Aviz emis cu 8 zile înainte
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: early_education
+    school_year: 2025-2026
+    first_attendance_day: '2025-09-08'
+    epi_issue_date: '2025-08-31'
+    service_provider: family_doctor
+    epi_within_verified_5_day_window: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - epi_document_outside_verified_window
+    confirmations:
+    - family_doctor_certificate_fee
+- id: MED04
+  description: Educație timpurie 2026–2027
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: early_education
+    school_year: 2026-2027
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - current_school_year_collectivity_documents
+    - family_doctor_certificate_fee
+- id: MED05
+  description: Dosar orientare specială cu furnizor A5 autorizat
+  facts:
+    certificate_purpose: special_education_file
+    education_level: primary
+    school_year: 2026-2027
+    a5_provider_dsp_authorized: true
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_special_education_medical_documents
+    requirements:
+    - req.medical_certificate_a5
+    - req.synthetic_medical_sheet
+    advice:
+    - synthetic_sheet_free
+    confirmations:
+    - family_doctor_certificate_fee
+- id: MED06
+  description: Dosar special, furnizor A5 neautorizat
+  facts:
+    certificate_purpose: special_education_file
+    education_level: primary
+    school_year: 2026-2027
+    a5_provider_dsp_authorized: false
+    service_provider: private_clinic
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.medical_certificate_a5
+    - req.synthetic_medical_sheet
+    confirmations:
+    - dsp_authorized_a5_provider
+- id: MED07
+  description: Revenire după boală
+  facts:
+    certificate_purpose: return_after_illness
+    education_level: primary
+    school_year: 2026-2027
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - purpose_specific_form_issuer_validity
+    - family_doctor_certificate_fee
+- id: MED08
+  description: Scutire la sport
+  facts:
+    certificate_purpose: sports_exemption
+    education_level: secondary
+    school_year: 2026-2027
+    service_provider: specialist_doctor
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - purpose_specific_form_issuer_validity
+- id: MED09
+  description: Transfer școlar
+  facts:
+    certificate_purpose: school_transfer
+    education_level: secondary
+    school_year: 2026-2027
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - purpose_specific_form_issuer_validity
+    - family_doctor_certificate_fee
+- id: MED10
+  description: Cerere generică a școlii
+  facts:
+    certificate_purpose: generic_school_request
+    education_level: primary
+    school_year: 2026-2027
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - purpose_specific_form_issuer_validity
+    - family_doctor_certificate_fee
+- id: MED11
+  description: Serviciu la cabinetul medical școlar
+  facts:
+    certificate_purpose: generic_school_request
+    education_level: secondary
+    school_year: 2026-2027
+    service_provider: school_medical_office
+  expect:
+    status: needs_confirmation
+    advice:
+    - school_medical_service_free
+    confirmations:
+    - purpose_specific_form_issuer_validity
+- id: MED12
+  description: Timiș, verificare furnizor A5
+  facts:
+    certificate_purpose: special_education_file
+    education_level: primary
+    school_year: 2026-2027
+    a5_provider_dsp_authorized: false
+    county: TM
+    needs_dsp_guidance: true
+    service_provider: private_clinic
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.dsp_tm
+    confirmations:
+    - dsp_authorized_a5_provider
+    advice:
+    - dsp_guidance_not_universal_issuer
+- id: MED13
+  description: Alt județ, verificare DSP
+  facts:
+    certificate_purpose: special_education_file
+    education_level: primary
+    school_year: 2026-2027
+    a5_provider_dsp_authorized: false
+    county: CJ
+    needs_dsp_guidance: true
+    service_provider: private_clinic
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - dsp_authorized_a5_provider
+    - county_dsp_channel
+- id: MED14
+  description: Lipsește scopul
+  facts:
+    education_level: primary
+    school_year: 2026-2027
+  expect:
+    status: needs_facts
+    missing_facts:
+    - certificate_purpose
+- id: MED15
+  description: Lipsește nivelul
+  facts:
+    certificate_purpose: entry_collectivity
+    school_year: 2026-2027
+  expect:
+    status: needs_facts
+    missing_facts:
+    - education_level
+- id: MED16
+  description: Lipsește anul școlar
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: early_education
+  expect:
+    status: needs_facts
+    missing_facts:
+    - school_year
+- id: MED17
+  description: Școală primară, înscriere generală
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: primary
+    school_year: 2026-2027
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - scope_outside_verified_early_education_guide
+    - family_doctor_certificate_fee
+- id: MED18
+  description: Instituția cere un formular fără link oficial
+  facts:
+    certificate_purpose: generic_school_request
+    education_level: secondary
+    school_year: 2026-2027
+    institution_form_url_verified: false
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    warnings:
+    - unverified_institution_form
+    confirmations:
+    - purpose_specific_form_issuer_validity
+    - family_doctor_certificate_fee
+- id: MED19
+  description: Document fotografiat, pretins autentic
+  facts:
+    certificate_purpose: entry_collectivity
+    education_level: early_education
+    school_year: 2025-2026
+    document_input: photo_only
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    warnings:
+    - authenticity_not_verifiable_from_photo
+    confirmations:
+    - family_doctor_certificate_fee
+- id: MED20
+  description: Solicitare de adeverință contra taxă la cabinetul școlar
+  facts:
+    certificate_purpose: generic_school_request
+    education_level: secondary
+    school_year: 2026-2027
+    service_provider: school_medical_office
+    claimed_fee: 50
+  expect:
+    status: needs_confirmation
+    advice:
+    - school_medical_service_free
+    warnings:
+    - claimed_fee_conflicts_with_free_school_cabinet_services
+    confirmations:
+    - purpose_specific_form_issuer_validity
+- id: MED21
+  description: Fișă sintetică pretins taxată
+  facts:
+    certificate_purpose: special_education_file
+    education_level: primary
+    school_year: 2026-2027
+    a5_provider_dsp_authorized: true
+    claimed_synthetic_sheet_fee: 100
+    service_provider: family_doctor
+  expect:
+    status: needs_confirmation
+    advice:
+    - synthetic_sheet_free
+    warnings:
+    - claimed_synthetic_sheet_fee_conflicts_with_source
+    confirmations:
+    - family_doctor_certificate_fee
+- id: MED22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - certificate_purpose
+    - education_level
+    - school_year

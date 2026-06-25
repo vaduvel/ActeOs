@@ -1,0 +1,368 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.nursery_enrollment
+status: draft
+rules:
+- id: rule.nursery.required_facts
+  canonical_rule_id: nursery.required_facts
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  required_facts:
+  - child.birth_date
+  - reference_date
+  - enrollment_mode
+  - target_unit_id
+  - local_dataset_verified
+  severity: critical
+  effective_from: '2026-04-28'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.nursery.identify_stage
+  source_claim_ids:
+  - claim.nursery.age_range
+  - claim.nursery.dossier
+  - claim.nursery.validation
+  status: draft
+- id: rule.nursery.age_eligible
+  canonical_rule_id: nursery.age_eligible
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: age_band
+    value: 3 luni–3 ani
+  effects:
+  - type: include_step
+    step_id: step.nursery.verify_unit
+  - type: include_step
+    step_id: step.nursery.prepare_dossier
+  source_claim_ids:
+  - claim.nursery.age_range
+  status: draft
+- id: rule.nursery.age_outside
+  canonical_rule_id: nursery.age_outside
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: age_eligible
+    value: false
+  effects:
+  - type: block
+    tag: age_not_eligible
+    message_ro: Vârsta nu intră în intervalul național 3 luni–3 ani; nu continua pe acest traseu fără o excepție oficială.
+  source_claim_ids:
+  - claim.nursery.age_range
+  status: draft
+- id: rule.nursery.reenrollment
+  canonical_rule_id: nursery.reenrollment
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: '2026-05-22'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: enrollment_mode
+      value: reenrollment
+    - op: eq
+      field: same_unit_continuity
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.nursery.submit
+  - type: set_deadline
+    step_id: step.nursery.submit
+    value:
+      kind: window
+      from: '2026-05-18'
+      to: '2026-05-22'
+  - type: emit_warning
+    tag: reenrollment_window
+    message_ro: Fereastra standard de reînscriere a fost 18-22 mai 2026.
+  source_claim_ids:
+  - claim.nursery.calendar.reenrollment
+  status: draft
+- id: rule.nursery.stage1
+  canonical_rule_id: nursery.stage1
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-05-25'
+  effective_to: '2026-05-29'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-05-25'
+    - '2026-05-29'
+  effects:
+  - type: include_step
+    step_id: step.nursery.submit
+  - type: include_step
+    step_id: step.nursery.validate
+  - type: include_requirement
+    requirement_id: req.nursery.originals
+  - type: set_deadline
+    step_id: step.nursery.submit
+    value:
+      kind: window
+      from: '2026-05-25'
+      to: '2026-05-29'
+  source_claim_ids:
+  - claim.nursery.calendar.stage1_collection
+  - claim.nursery.validation
+  status: draft
+- id: rule.nursery.stage2
+  canonical_rule_id: nursery.stage2
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-22'
+  effective_to: '2026-06-26'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-06-22'
+    - '2026-06-26'
+  effects:
+  - type: include_step
+    step_id: step.nursery.submit
+  - type: include_step
+    step_id: step.nursery.validate
+  - type: include_requirement
+    requirement_id: req.nursery.originals
+  - type: set_deadline
+    step_id: step.nursery.submit
+    value:
+      kind: window
+      from: '2026-06-22'
+      to: '2026-06-26'
+  - type: emit_advice
+    tag: stage2_new_options
+    message_ro: Etapa a II-a folosește o nouă cerere cu trei opțiuni, pe locurile rămase.
+  source_claim_ids:
+  - claim.nursery.calendar.stage2_collection
+  - claim.nursery.dossier
+  - claim.nursery.validation
+  status: draft
+- id: rule.nursery.adjustment
+  canonical_rule_id: nursery.adjustment
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-08-17'
+  effective_to: '2026-08-27'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-08-17'
+    - '2026-08-27'
+  effects:
+  - type: include_step
+    step_id: step.nursery.submit
+  - type: attach_channel
+    channel_id: ch.nursery.isjtm
+  - type: set_deadline
+    step_id: step.nursery.submit
+    value:
+      kind: window
+      from: '2026-08-17'
+      to: '2026-08-27'
+  source_claim_ids:
+  - claim.nursery.calendar.adjustment
+  status: draft
+- id: rule.nursery.remote
+  canonical_rule_id: nursery.remote_submission
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: in
+    field: submission_channel
+    values:
+    - email
+    - post
+  effects:
+  - type: include_requirement
+    requirement_id: req.nursery.remote_declaration
+  - type: include_step
+    step_id: step.nursery.validate
+  - type: include_requirement
+    requirement_id: req.nursery.originals
+  source_claim_ids:
+  - claim.nursery.dossier
+  - claim.nursery.validation
+  status: draft
+- id: rule.nursery.employment_docs
+  canonical_rule_id: nursery.employment_docs
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: program_type
+      value: extended
+    - op: const
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.nursery.employment
+  source_claim_ids:
+  - claim.nursery.dossier
+  status: draft
+- id: rule.nursery.criteria
+  canonical_rule_id: nursery.criteria_documents
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: criteria_invoked
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.nursery.criteria
+  - type: emit_warning
+    tag: not_first_come
+    message_ro: Numărul de înregistrare nu acordă prioritate; se aplică criteriile oficiale.
+  source_claim_ids:
+  - claim.nursery.selection.criteria
+  status: draft
+- id: rule.nursery.divorce
+  canonical_rule_id: nursery.parental_authority
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: parents_divorced
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.nursery.parental_authority
+  source_claim_ids:
+  - claim.nursery.dossier
+  status: draft
+- id: rule.nursery.medical
+  canonical_rule_id: nursery.medical_documents
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: application_accepted
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.nursery.medical
+  - type: include_requirement
+    requirement_id: req.nursery.medical
+  - type: emit_advice
+    tag: medical_timing
+    message_ro: Nu obține avizul epidemiologic mai devreme de fereastra de maximum 5 zile.
+  source_claim_ids:
+  - claim.nursery.medical
+  status: draft
+- id: rule.nursery.local_gap
+  canonical_rule_id: nursery.local_gap
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: county
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: local_dataset_verified
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: local_unit_data
+    message_ro: Confirmă pe sursa oficială a unității locurile, programul, criteriile și programarea curente; nu afișa o recomandare
+      fermă.
+  source_claim_ids:
+  - claim.nursery.local_publication_duty
+  - claim.nursery.timis.local_dataset
+  status: in_review
+- id: rule.nursery.stage1_result
+  canonical_rule_id: nursery.stage1_result
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-18'
+  effective_to: '2026-06-18'
+  when:
+    op: eq
+    field: reference_date
+    value: '2026-06-18'
+  effects:
+  - type: include_step
+    step_id: step.nursery.check_result
+  source_claim_ids:
+  - claim.nursery.calendar.stage1_result
+  status: draft
+- id: rule.nursery.stage2_result
+  canonical_rule_id: nursery.stage2_result
+  event_type_id: life.nursery_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-09'
+  effective_to: '2026-07-09'
+  when:
+    op: eq
+    field: reference_date
+    value: '2026-07-09'
+  effects:
+  - type: include_step
+    step_id: step.nursery.check_result
+  source_claim_ids:
+  - claim.nursery.calendar.stage2_result
+  status: draft

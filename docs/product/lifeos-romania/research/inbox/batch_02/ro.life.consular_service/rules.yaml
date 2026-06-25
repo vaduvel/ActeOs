@@ -1,0 +1,326 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_CONSULAR_SERVICE
+event_type_id: ro.life.consular_service
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- service_category
+- applicant_status
+- current_region
+- romanian_mission_available
+- legal_basis
+rules:
+- id: rule.cs.start
+  canonical_rule_id: consular_service.start
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_consular_request
+  - type: emit_warning
+    tag: consular_catalogue_not_assumed
+    message_ro: Serviciul, competența teritorială, programarea, taxa și checklistul trebuie determinate pentru misiunea concretă.
+  source_claim_ids:
+  - claim.cs.passport_mission
+  status: in_review
+- id: rule.cs.passport
+  canonical_rule_id: consular_service.passport
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: passport_travel
+  effects:
+  - type: include_step
+    step_id: open_passport_consular_route
+  - type: attach_channel
+    channel_id: ch.romanian_mission_passports
+  - type: trigger_child_event
+    event_type_id: ro.life.passport_first_or_renew
+  - type: emit_advice
+    tag: passport_at_mission
+    message_ro: Folosește ruta de pașaport a misiunii române competente.
+  source_claim_ids:
+  - claim.cs.passport_mission
+  status: in_review
+- id: rule.cs.civil_status
+  canonical_rule_id: consular_service.civil_status
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: civil_status
+  effects:
+  - type: include_step
+    step_id: open_civil_status_consular_route
+  - type: attach_channel
+    channel_id: ch.romanian_mission_civil_status
+  - type: require_confirmation
+    tag: civil_status_event_type
+    message_ro: 'Selectează evenimentul exact: naștere, deces, căsătorie, duplicat sau altă operațiune de stare civilă.'
+  source_claim_ids:
+  - claim.cs.civil_status_mission
+  status: in_review
+- id: rule.cs.citizenship_allowed_basis
+  canonical_rule_id: consular_service.citizenship_allowed_basis
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: service_category
+      value: citizenship
+    - op: in
+      field: legal_basis
+      values:
+      - art8_1
+      - art10
+      - art11
+  effects:
+  - type: include_step
+    step_id: submit_citizenship_application_at_mission
+  - type: attach_channel
+    channel_id: ch.romanian_mission_citizenship
+  - type: trigger_child_event
+    event_type_id: ro.life.romanian_citizenship
+  - type: emit_advice
+    tag: citizenship_mission_basis
+    message_ro: Legea permite depunerea consulară pentru această bază, în statul domiciliului sau reședinței legale.
+  source_claim_ids:
+  - claim.cs.citizenship_mission
+  status: in_review
+- id: rule.cs.citizenship_other_basis
+  canonical_rule_id: consular_service.citizenship_other_basis
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: service_category
+      value: citizenship
+    - op: in
+      field: legal_basis
+      values:
+      - other
+      - not_applicable
+      - unknown
+  effects:
+  - type: include_step
+    step_id: confirm_citizenship_submission_authority
+  - type: trigger_child_event
+    event_type_id: ro.life.romanian_citizenship
+  - type: require_confirmation
+    tag: citizenship_consular_eligibility
+    message_ro: Nu toate temeiurile de cetățenie au aceeași rută consulară; confirmă baza legală înaintea programării.
+  source_claim_ids:
+  - claim.cs.citizenship_mission
+  status: in_review
+- id: rule.cs.renunciation
+  canonical_rule_id: consular_service.renunciation
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: renunciation
+  effects:
+  - type: include_step
+    step_id: open_renunciation_consular_route
+  - type: attach_channel
+    channel_id: ch.romanian_mission_citizenship
+  - type: trigger_child_event
+    event_type_id: ro.life.renounce_citizenship
+  - type: emit_advice
+    tag: renunciation_at_mission
+    message_ro: Cererea poate fi depusă la misiunea din statul domiciliului ori reședinței.
+  source_claim_ids:
+  - claim.cs.renunciation_mission
+  status: in_review
+- id: rule.cs.emergency_lost
+  canonical_rule_id: consular_service.emergency_lost
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: emergency_lost_docs
+  effects:
+  - type: include_step
+    step_id: open_lost_documents_emergency_route
+  - type: attach_channel
+    channel_id: ch.romanian_mission_emergency
+  - type: trigger_child_event
+    event_type_id: ro.life.documents_lost_abroad
+  source_claim_ids:
+  - claim.cs.lost_docs_mission
+  status: in_review
+- id: rule.cs.outside_eu_unrepresented
+  canonical_rule_id: consular_service.outside_eu_unrepresented
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: service_category
+      value: emergency_lost_docs
+    - op: eq
+      field: current_region
+      value: outside_eu
+    - op: eq
+      field: romanian_mission_available
+      value: false
+    - op: in
+      field: applicant_status
+      values:
+      - romanian_citizen
+      - dual_or_uncertain
+  effects:
+  - type: include_step
+    step_id: request_other_eu_consular_protection
+  - type: attach_channel
+    channel_id: ch.other_eu_mission
+  - type: emit_advice
+    tag: eu_unrepresented_protection
+    message_ro: În lipsa reprezentării României, solicită protecție consulară de la alt stat UE.
+  source_claim_ids:
+  - claim.cs.other_eu_protection
+  status: in_review
+- id: rule.cs.notarial_legalisation
+  canonical_rule_id: consular_service.notarial_legalisation
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: notarial_legalisation
+  effects:
+  - type: include_step
+    step_id: confirm_specific_consular_notarial_service
+  - type: require_confirmation
+    tag: notarial_service_catalogue
+    message_ro: Confirmă exact operațiunea notarială/legalizarea, competența misiunii, actele, prezența personală și taxa
+      curentă.
+  source_claim_ids:
+  - claim.cs.civil_status_mission
+  status: in_review
+- id: rule.cs.visa
+  canonical_rule_id: consular_service.visa
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: visa
+  effects:
+  - type: include_step
+    step_id: open_visa_specific_route
+  - type: attach_channel
+    channel_id: ch.evisa_mae
+  - type: emit_advice
+    tag: official_evisa_portal
+    message_ro: Folosește portalul oficial eViza pentru verificarea necesității vizei și inițierea cererii.
+  - type: require_confirmation
+    tag: visa_portal_and_mission
+    message_ro: Checklistul final depinde de cetățenie, scop, durată și misiunea competentă; confirmă-l înainte de depunere.
+  source_claim_ids:
+  - claim.cs.visa_portal
+  status: in_review
+- id: rule.cs.other
+  canonical_rule_id: consular_service.other
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_category
+    value: other
+  effects:
+  - type: include_step
+    step_id: identify_exact_consular_service
+  - type: require_confirmation
+    tag: other_consular_service
+    message_ro: Identifică denumirea oficială a serviciului în catalogul misiunii înainte de a crea dosarul.
+  source_claim_ids:
+  - claim.cs.passport_mission
+  status: in_review
+- id: rule.cs.foreign_applicant_nonvisa
+  canonical_rule_id: consular_service.foreign_applicant_nonvisa
+  event_type_id: ro.life.consular_service
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_status
+      value: foreign_citizen
+    - op: not
+      arg:
+        op: eq
+        field: service_category
+        value: visa
+  effects:
+  - type: emit_warning
+    tag: eligibility_depends_on_service
+    message_ro: Cetățenia solicitantului poate limita serviciile consulare române disponibile.
+  - type: require_confirmation
+    tag: foreign_applicant_service_eligibility
+    message_ro: Confirmă eligibilitatea la misiunea competentă.
+  source_claim_ids:
+  - claim.cs.passport_mission
+  status: in_review

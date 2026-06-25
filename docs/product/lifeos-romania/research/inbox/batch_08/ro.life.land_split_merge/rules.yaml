@@ -1,0 +1,255 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.land_split_merge
+event_type_id: ro.life.land_split_merge
+required_facts:
+- jurisdiction_id
+- operation
+- has_application
+- has_cadastral_documentation
+- has_authentic_act
+- has_fee_proof
+status: draft
+rules:
+- id: rule.land_split_merge.flow.v1
+  canonical_rule_id: rule.land_split_merge.flow
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope:
+  - land_split_merge_flow
+  legal_rank: ordin ANCPI
+  severity: critical
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: submit_cadastral_reception
+  - type: include_step
+    step_id: obtain_reception_report_notation
+  - type: include_step
+    step_id: execute_authentic_notarial_act
+  - type: include_step
+    step_id: request_land_book_registration
+  - type: emit_advice
+    tag: interrupted_cadastral_flow
+    message_ro: Recepția precedă actul autentic, iar înscrierea urmează actului autentic.
+  source_claim_ids:
+  - clm.land_split_merge.ancpi_2026_flow
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.operation_split.v1
+  canonical_rule_id: rule.land_split_merge.operation_split
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: ordin ANCPI
+  severity: explanatory
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: eq
+    field: operation
+    value: split
+  effects:
+  - type: emit_advice
+    tag: operation_split
+    message_ro: Operațiunea selectată este dezlipirea/dezmembrarea terenului.
+  source_claim_ids:
+  - clm.land_split_merge.ancpi_2026_flow
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.operation_merge.v1
+  canonical_rule_id: rule.land_split_merge.operation_merge
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: ordin ANCPI
+  severity: explanatory
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: eq
+    field: operation
+    value: merge
+  effects:
+  - type: emit_advice
+    tag: operation_merge
+    message_ro: Operațiunea selectată este alipirea terenurilor.
+  source_claim_ids:
+  - clm.land_split_merge.ancpi_2026_flow
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.missing_application.v1
+  canonical_rule_id: rule.land_split_merge.missing_application
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: eq
+    field: has_application
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: standard_ocpi_application
+  source_claim_ids:
+  - clm.land_split_merge.ocpi_docs
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.missing_cadastral_docs.v1
+  canonical_rule_id: rule.land_split_merge.missing_cadastral_docs
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: eq
+    field: has_cadastral_documentation
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: cadastral_split_or_merge_documentation
+  source_claim_ids:
+  - clm.land_split_merge.ocpi_docs
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.missing_authentic_act.v1
+  canonical_rule_id: rule.land_split_merge.missing_authentic_act
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: ordin ANCPI
+  severity: critical
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: eq
+    field: has_authentic_act
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: authentic_notarial_act_after_reception
+  source_claim_ids:
+  - clm.land_split_merge.ancpi_2026_flow
+  - clm.land_split_merge.ocpi_docs
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.missing_fee.v1
+  canonical_rule_id: rule.land_split_merge.missing_fee
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: eq
+    field: has_fee_proof
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: full_cadastral_tariff_payment_proof
+  source_claim_ids:
+  - clm.land_split_merge.ocpi_docs
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.fee_term_confirmation.v1
+  canonical_rule_id: rule.land_split_merge.fee_term_confirmation
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: ordine ANCPI succesive
+  severity: critical
+  effective_from: '2026-03-06'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_split_merge_tariff
+    message_ro: Tariful cadastral curent trebuie confirmat în ordinul ANCPI aplicabil.
+  - type: require_confirmation
+    tag: confirm_current_split_merge_term
+    message_ro: Termenul normal/de urgență trebuie confirmat în ordinul ANCPI aplicabil.
+  source_claim_ids:
+  - clm.land_split_merge.ancpi_later_amendments
+  - clm.land_split_merge.ocpi_old_tariffs
+  - clm.land_split_merge.ocpi_old_terms
+  status: in_review
+  reviewer_id: null
+- id: rule.land_split_merge.timis_channel.v1
+  canonical_rule_id: rule.land_split_merge.timis_channel
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  competence_scope: []
+  legal_rank: pagină oficială OCPI
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm
+  effects:
+  - type: attach_channel
+    channel_id: ocpi_timis_documents_and_service_info
+  source_claim_ids:
+  - clm.land_split_merge.ocpi_docs
+  status: active
+  reviewer_id: null
+- id: rule.land_split_merge.other_county.v1
+  canonical_rule_id: rule.land_split_merge.other_county
+  event_type_id: ro.life.land_split_merge
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: procedură locală OCPI
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm
+  effects:
+  - type: include_step
+    step_id: identify_competent_ocpi
+  - type: require_confirmation
+    tag: confirm_local_ocpi_channel
+    message_ro: Canalul OCPI competent trebuie confirmat pentru județul bunului.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Documentele operaționale au fost verificate pentru OCPI Timiș.
+  source_claim_ids:
+  - clm.land_split_merge.ocpi_docs
+  status: in_review
+  reviewer_id: null

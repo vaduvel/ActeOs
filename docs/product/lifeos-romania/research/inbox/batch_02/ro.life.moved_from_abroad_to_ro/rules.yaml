@@ -1,0 +1,328 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_MOVED_FROM_ABROAD_TO_RO
+event_alias: ro.life.moved_from_abroad_to_ro
+event_type_id: life.moved_from_abroad_to_ro
+status: research_inbox
+rules:
+- id: rule.moved_from_abroad.identity_domicile
+  canonical_rule_id: moved_from_abroad.identity.domicile
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizenship_status
+      value: romanian
+    - op: eq
+      field: establishes_romanian_domicile
+      value: true
+  effects:
+  - type: include_step
+    step_id: establish_domicile_and_update_identity
+  - type: set_deadline
+    step_id: establish_domicile_and_update_identity
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: emit_warning
+    tag: identity_deadline_15d
+    message_ro: Solicită actul de identitate pentru noul domiciliu în 15 zile de la mutare.
+  source_claim_ids:
+  - claim.identity.domicile_new_id_15d
+  - claim.identity.address_proof
+  status: draft
+  authority_level: national_normative
+  legal_rank: OUG
+  required_facts:
+  - citizenship_status
+  - establishes_romanian_domicile
+  - move_date
+- id: rule.moved_from_abroad.residence
+  canonical_rule_id: moved_from_abroad.identity.residence
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2023-06-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: establishes_romanian_domicile
+      value: false
+    - op: gt
+      field: lives_at_secondary_address_days_per_month
+      value: 15
+  effects:
+  - type: include_step
+    step_id: register_residence
+  - type: set_deadline
+    step_id: register_residence
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: include_requirement
+    requirement_id: req.residence_declaration
+  - type: emit_warning
+    tag: residence_deadline_15d
+    message_ro: Când locuiești la adresa secundară mai mult de 15 zile, solicită înscrierea reședinței în 15 zile de la mutare.
+  source_claim_ids:
+  - claim.identity.residence_over_15d
+  - claim.identity.residence_docs
+  - claim.identity.move_other_address_15d
+  status: draft
+  authority_level: national_normative
+  legal_rank: OUG
+  required_facts:
+  - establishes_romanian_domicile
+  - lives_at_secondary_address_days_per_month
+  - move_date
+- id: rule.moved_from_abroad.z015
+  canonical_rule_id: moved_from_abroad.tax.z015
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fiscal_status_on_arrival
+      value: nonresident
+    - op: gte
+      field: days_present_in_rolling_12m
+      value: 184
+    - op: eq
+      field: arrival_tax_exception
+      value: none
+  effects:
+  - type: include_step
+    step_id: submit_z015
+  - type: set_deadline
+    step_id: submit_z015
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: day_183_date
+  - type: include_requirement
+    requirement_id: req.valid_passport_or_eu_id
+  - type: include_requirement
+    requirement_id: req.romanian_residence_document
+  - type: include_requirement
+    requirement_id: req.romania_housing_proof
+  - type: include_requirement
+    requirement_id: req.foreign_tax_residence_certificate_if_applicable
+  - type: attach_channel
+    step_id: submit_z015
+    channel_id: ch.anaf.spv_z015
+  - type: emit_warning
+    tag: z015_deadline
+    message_ro: Înregistrează Z015 în 30 de zile de la împlinirea pragului de 183 de zile.
+  source_claim_ids:
+  - claim.tax_arrival.threshold
+  - claim.tax_arrival.deadline_30d
+  - claim.tax_arrival.form_z015_spv
+  - claim.tax_arrival.documents
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - fiscal_status_on_arrival
+  - days_present_in_rolling_12m
+  - day_183_date
+  - arrival_tax_exception
+- id: rule.moved_from_abroad.z015_exception
+  canonical_rule_id: moved_from_abroad.tax.z015_exception
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-25'
+  when:
+    op: in
+    field: arrival_tax_exception
+    values:
+    - diplomatic_consular
+    - international_body_employee
+    - foreign_state_employee
+    - family_of_exception
+  effects:
+  - type: exclude_step
+    step_id: submit_z015
+  - type: emit_advice
+    tag: z015_exception
+    message_ro: Situația declarată se află între excepțiile oficiale de la Z015; păstrează documentul care dovedește statutul.
+  source_claim_ids:
+  - claim.tax_arrival.exceptions
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - arrival_tax_exception
+- id: rule.moved_from_abroad.tax_multifactor
+  canonical_rule_id: moved_from_abroad.tax.multifactor
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2025-03-25'
+  when:
+    op: gte
+    field: days_present_in_rolling_12m
+    value: 184
+  effects:
+  - type: emit_advice
+    tag: tax_residence_not_automatic
+    message_ro: Pragul de zile declanșează analiza și chestionarul; rezidența fiscală se stabilește de ANAF și poate depinde de convenție, locuință
+      și centrul intereselor vitale.
+  source_claim_ids:
+  - claim.tax_arrival.multifactor
+  - claim.tax_arrival.decision_30d
+  status: draft
+- id: rule.moved_from_abroad.eu_prepare
+  canonical_rule_id: moved_from_abroad.igi.eu_prepare
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: citizenship_status
+    value: eu_eea_swiss
+  effects:
+  - type: include_step
+    step_id: prepare_igi_registration
+  - type: set_freshness_state
+    step_id: prepare_igi_registration
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: igi_timing
+    message_ro: Pregătește dosarul IGI după temeiul șederii, dar confirmă termenul și procedura curentă înainte de depunere.
+  source_claim_ids:
+  - claim.igi.eu_basis_documents
+  - claim.igi.registration_timing_gap
+  status: in_review
+  authority_level: national_operational
+  required_facts:
+  - citizenship_status
+  - residence_basis
+- id: rule.moved_from_abroad.eu_employment_docs
+  canonical_rule_id: moved_from_abroad.igi.eu_employment_docs
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizenship_status
+      value: eu_eea_swiss
+    - op: eq
+      field: residence_basis
+      value: employment
+  effects:
+  - type: include_requirement
+    requirement_id: req.igi_application
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  - type: include_requirement
+    requirement_id: req.employment_contract_or_employer_certificate
+  - type: include_requirement
+    requirement_id: req.reges_extract
+  source_claim_ids:
+  - claim.igi.eu_basis_documents
+  status: draft
+- id: rule.moved_from_abroad.eu_study_docs
+  canonical_rule_id: moved_from_abroad.igi.eu_study_docs
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizenship_status
+      value: eu_eea_swiss
+    - op: eq
+      field: residence_basis
+      value: study
+  effects:
+  - type: include_requirement
+    requirement_id: req.igi_application
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  - type: include_requirement
+    requirement_id: req.enrollment_proof
+  - type: include_requirement
+    requirement_id: req.means_of_support
+  - type: include_requirement
+    requirement_id: req.health_insurance
+  source_claim_ids:
+  - claim.igi.eu_basis_documents
+  status: draft
+- id: rule.moved_from_abroad.eu_self_sufficient_docs
+  canonical_rule_id: moved_from_abroad.igi.eu_self_sufficient_docs
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizenship_status
+      value: eu_eea_swiss
+    - op: eq
+      field: residence_basis
+      value: self_sufficient
+  effects:
+  - type: include_requirement
+    requirement_id: req.igi_application
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  - type: include_requirement
+    requirement_id: req.means_of_support
+  - type: include_requirement
+    requirement_id: req.health_insurance
+  source_claim_ids:
+  - claim.igi.eu_basis_documents
+  status: draft
+- id: rule.moved_from_abroad.third_country
+  canonical_rule_id: moved_from_abroad.igi.third_country
+  event_type_id: life.moved_from_abroad_to_ro
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: citizenship_status
+    value: third_country
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.residence_right_ro
+  - type: require_confirmation
+    tag: third_country_route
+    message_ro: Pentru cetățeanul unui stat terț folosește traseul separat privind dreptul de ședere; nu aplica lista UE/SEE.
+  source_claim_ids:
+  - claim.igi.third_country_route
+  status: in_review

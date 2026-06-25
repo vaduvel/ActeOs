@@ -1,0 +1,334 @@
+batch_id: B03_NAME_CHANGE_AFTER_MARRIAGE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.name_change_after_marriage
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: N01
+  desc: Nume schimbat, CEI, fără alte documente
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - replace_identity_document
+    requirements:
+    - req.current_identity_document
+    - req.marriage_certificate
+    - req.civil_status_documents_original
+    warnings_present:
+    - identity_name_change_deadline_15d
+    channels:
+    - ch.mai.cei
+    advice_tags:
+    - old_id_kept_until_new
+    - cei_any_service
+- id: N02
+  desc: Numele nu s-a schimbat
+  facts:
+    name_changed: false
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - no_identity_replacement_for_unchanged_name
+    included_steps: []
+- id: N03
+  desc: CIS în Timișoara
+  facts:
+    name_changed: true
+    identity_document_type: cis
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    channels:
+    - ch.timisoara.identity
+- id: N04
+  desc: CI veche în Timișoara
+  facts:
+    name_changed: true
+    identity_document_type: ci_legacy
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    channels:
+    - ch.timisoara.identity
+- id: N05
+  desc: Are pașaport
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: true
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - review_passport_name_data
+    needs_confirmation:
+    - confirm_passport_name_update
+- id: N06
+  desc: Are permis de conducere
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: true
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - review_driving_licence_name_data
+    needs_confirmation:
+    - confirm_driving_licence_name_update
+- id: N07
+  desc: Deține vehicul
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - review_vehicle_holder_name_data
+    needs_confirmation:
+    - confirm_vehicle_name_update
+- id: N08
+  desc: Are pașaport, permis și vehicul
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: true
+    has_driving_licence: true
+    owns_vehicle: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - review_passport_name_data
+    - review_driving_licence_name_data
+    - review_vehicle_holder_name_data
+    needs_confirmation:
+    - confirm_passport_name_update
+    - confirm_driving_licence_name_update
+    - confirm_vehicle_name_update
+- id: N09
+  desc: CIS în alt UAT
+  facts:
+    name_changed: true
+    identity_document_type: cis
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.identity
+    needs_confirmation:
+    - confirm_local_identity_service
+- id: N10
+  desc: CEI și domiciliu în alt UAT
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels:
+    - ch.mai.cei
+    advice_tags:
+    - cei_any_service
+- id: N11
+  desc: Nume neschimbat, deține toate documentele
+  facts:
+    name_changed: false
+    identity_document_type: cei
+    has_passport: true
+    has_driving_licence: true
+    owns_vehicle: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - no_identity_replacement_for_unchanged_name
+    needs_confirmation: []
+- id: N12
+  desc: Tip de act necunoscut
+  facts:
+    name_changed: true
+    identity_document_type: unknown
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_identity_document_type
+- id: N13
+  desc: Doar actualizarea actului de identitate
+  facts:
+    name_changed: true
+    identity_document_type: ci_legacy
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - replace_identity_document
+    requirements:
+    - req.marriage_certificate
+- id: N14
+  desc: CEI și pașaport
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: true
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    channels:
+    - ch.mai.cei
+    included_steps:
+    - review_passport_name_data
+- id: N15
+  desc: CI veche, permis și vehicul
+  facts:
+    name_changed: true
+    identity_document_type: ci_legacy
+    has_passport: false
+    has_driving_licence: true
+    owns_vehicle: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    channels:
+    - ch.timisoara.identity
+    included_steps:
+    - review_driving_licence_name_data
+    - review_vehicle_holder_name_data
+- id: N16
+  desc: Lipsește faptul obligatoriu name_changed
+  facts:
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - name_changed
+- id: N17
+  desc: Lipsește faptul obligatoriu identity_document_type
+  facts:
+    name_changed: true
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - identity_document_type
+- id: N18
+  desc: Lipsește faptul obligatoriu has_passport
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_driving_licence: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_passport
+- id: N19
+  desc: Lipsește faptul obligatoriu has_driving_licence
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    owns_vehicle: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_driving_licence
+- id: N20
+  desc: Lipsește faptul obligatoriu owns_vehicle
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - owns_vehicle
+- id: N21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    name_changed: true
+    identity_document_type: cei
+    has_passport: false
+    has_driving_licence: false
+    owns_vehicle: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: N22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - name_changed
+    - identity_document_type
+    - has_passport
+    - has_driving_licence
+    - owns_vehicle
+    - territory_id

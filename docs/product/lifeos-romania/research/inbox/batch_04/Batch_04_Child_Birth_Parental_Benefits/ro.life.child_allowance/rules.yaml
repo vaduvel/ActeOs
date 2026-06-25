@@ -1,0 +1,292 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.child_allowance
+status: draft
+rules:
+- id: rule.allowance.under18
+  canonical_rule_id: child_allowance.eligibility.under18
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '1993-10-01'
+  when:
+    op: age_on_date_lt
+    field: child_birth_date
+    value: 18
+  effects:
+  - type: include_step
+    step_id: apply_child_allowance
+  - type: include_requirement
+    requirement_id: req.application
+  - type: include_requirement
+    requirement_id: req.child_birth_certificate
+  - type: include_requirement
+    requirement_id: req.applicant_identity_document
+  source_claim_ids:
+  - claim.allowance.children_under_18
+  - claim.allowance.application_and_proof
+  status: draft
+  required_facts:
+  - child_birth_date
+- id: rule.allowance.over18_student
+  canonical_rule_id: child_allowance.eligibility.over18_student
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-12-15'
+  when:
+    op: all
+    args:
+    - op: age_on_date_gte
+      field: child_birth_date
+      value: 18
+    - op: eq
+      field: education_status
+      value: high_school_or_vocational
+    - op: eq
+      field: has_finished_program
+      value: false
+  effects:
+  - type: include_step
+    step_id: apply_or_continue_child_allowance
+  - type: include_requirement
+    requirement_id: req.school_enrollment_proof
+  source_claim_ids:
+  - claim.allowance.students_over_18
+  status: draft
+- id: rule.allowance.disabled_student_to26
+  canonical_rule_id: child_allowance.eligibility.disabled_student
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-12-15'
+  when:
+    op: all
+    args:
+    - op: age_on_date_gte
+      field: child_birth_date
+      value: 18
+    - op: age_on_date_lt
+      field: child_birth_date
+      value: 26
+    - op: eq
+      field: child_has_disability
+      value: true
+    - op: eq
+      field: education_status
+      value: preuniversity
+  effects:
+  - type: include_step
+    step_id: apply_or_continue_child_allowance
+  - type: include_requirement
+    requirement_id: req.disability_certificate
+  - type: include_requirement
+    requirement_id: req.school_enrollment_proof
+  source_claim_ids:
+  - claim.allowance.students_over_18
+  status: draft
+- id: rule.allowance.repeater_exclusion
+  canonical_rule_id: child_allowance.exclusion.repeating_year
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-12-15'
+  when:
+    op: all
+    args:
+    - op: age_on_date_gte
+      field: child_birth_date
+      value: 18
+    - op: eq
+      field: repeats_school_year
+      value: true
+    - op: eq
+      field: repeat_due_to_health
+      value: false
+  effects:
+  - type: exclude_step
+    step_id: apply_or_continue_child_allowance
+  - type: block
+    tag: repeat_year_not_eligible
+    message_ro: După 18 ani, repetarea anului exclude alocația dacă nu este dovedită o cauză medicală.
+  source_claim_ids:
+  - claim.allowance.repeat_year_exception
+  status: draft
+- id: rule.allowance.repeater_health
+  canonical_rule_id: child_allowance.exception.repeating_health
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2021-12-15'
+  when:
+    op: all
+    args:
+    - op: age_on_date_gte
+      field: child_birth_date
+      value: 18
+    - op: eq
+      field: repeats_school_year
+      value: true
+    - op: eq
+      field: repeat_due_to_health
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.medical_certificate_repeat_reason
+  source_claim_ids:
+  - claim.allowance.repeat_year_exception
+  status: draft
+- id: rule.allowance.foreign_child
+  canonical_rule_id: child_allowance.eligibility.foreign_resident
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '1993-10-01'
+  when:
+    op: all
+    args:
+    - op: neq
+      field: child_citizenship
+      value: ro
+    - op: eq
+      field: resident_in_romania
+      value: true
+    - op: eq
+      field: lives_with_parent_in_romania
+      value: true
+  effects:
+  - type: include_step
+    step_id: apply_child_allowance
+  - type: include_requirement
+    requirement_id: req.residence_documents
+  source_claim_ids:
+  - claim.allowance.foreign_resident
+  status: draft
+- id: rule.allowance.start_window
+  canonical_rule_id: child_allowance.payment.start_and_retro
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '1993-10-01'
+  when:
+    op: exists
+    field: application_date
+  effects:
+  - type: emit_advice
+    tag: allowance_start_rule
+    message_ro: Dreptul începe din luna următoare nașterii; plata urmează cererii, cu retroactivitate de cel mult 12 luni.
+  - type: set_deadline
+    step_id: retroactive_payment_limit
+    value:
+      kind: relative_calendar_months
+      months: 12
+      anchor: application_date
+      direction: past
+  source_claim_ids:
+  - claim.allowance.start_and_retro
+  status: draft
+- id: rule.allowance.payee
+  canonical_rule_id: child_allowance.payment.payee
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '1993-10-01'
+  when:
+    op: exists
+    field: requested_payee
+  effects:
+  - type: include_requirement
+    requirement_id: req.parent_agreement_or_legal_decision
+  source_claim_ids:
+  - claim.allowance.payee_parent
+  status: draft
+- id: rule.allowance.direct_14
+  canonical_rule_id: child_allowance.payment.direct_after14
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '1993-10-01'
+  when:
+    op: all
+    args:
+    - op: age_on_date_gte
+      field: child_birth_date
+      value: 14
+    - op: eq
+      field: direct_payment_requested
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_representative_consent
+  source_claim_ids:
+  - claim.allowance.direct_after_14
+  status: draft
+- id: rule.allowance.report_changes
+  canonical_rule_id: child_allowance.obligation.report_changes
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '1993-10-01'
+  when:
+    op: eq
+    field: relevant_change_occurred
+    value: true
+  effects:
+  - type: include_step
+    step_id: report_allowance_change
+  - type: set_deadline
+    step_id: report_allowance_change
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: change_date
+  - type: emit_warning
+    tag: report_change_15d
+    message_ro: Comunică modificarea în cel mult 15 zile.
+  source_claim_ids:
+  - claim.allowance.report_change_15d
+  status: draft
+- id: rule.allowance.amount_2026_confirmation
+  canonical_rule_id: child_allowance.amount.current
+  event_type_id: life.child_allowance
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-01-01'
+    - '2026-12-31'
+  effects:
+  - type: require_confirmation
+    tag: amount_2026_not_hardcoded
+    message_ro: Cuantumul numeric 2026 trebuie preluat dintr-o sursă oficială care publică valorile curente; nu se deduce manual din textul consolidat.
+  - type: set_freshness_state
+    step_id: show_current_amount
+    value: needs_confirmation
+  source_claim_ids:
+  - claim.allowance.amount_2026_freeze
+  status: in_review

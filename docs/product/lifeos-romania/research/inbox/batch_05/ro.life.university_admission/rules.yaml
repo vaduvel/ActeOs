@@ -1,0 +1,336 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.university_admission
+status: draft
+rules:
+- id: rule.uni.required_facts
+  canonical_rule_id: uni.required_facts
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  required_facts:
+  - cycle
+  - selected_institution_id
+  - selected_program_id
+  - entry_diploma_available
+  - citizenship_category
+  - requested_funding
+  - simultaneous_program_count_after_enrollment
+  - institution_rules_verified
+  - reference_date
+  - already_budget_funded_same_cycle
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.uni.choose_program
+  source_claim_ids:
+  - claim.uni.institution_regulation
+  status: draft
+- id: rule.uni.bachelor_diploma
+  canonical_rule_id: uni.bachelor_diploma
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: cycle
+      value: bachelor
+    - op: eq
+      field: entry_diploma_available
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.uni.verify_regulation
+  - type: include_requirement
+    requirement_id: req.uni.entry_diploma
+  source_claim_ids:
+  - claim.uni.bachelor_eligibility
+  status: draft
+- id: rule.uni.missing_diploma
+  canonical_rule_id: uni.missing_diploma
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: eq
+    field: entry_diploma_available
+    value: false
+  effects:
+  - type: block
+    tag: entry_diploma_missing
+    message_ro: Lipsește actul de studii care permite accesul la ciclul ales.
+  source_claim_ids:
+  - claim.uni.bachelor_eligibility
+  - claim.uni.cycles
+  status: draft
+- id: rule.uni.doctorate_ects
+  canonical_rule_id: uni.doctorate_ects
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: cycle
+      value: doctorate
+    - op: lt
+      field: cumulative_ects
+      value: 300
+  effects:
+  - type: block
+    tag: doctorate_ects_below_300
+    message_ro: Pentru doctorat, totalul studiilor anterioare trebuie să atingă minimum 300 ECTS.
+  source_claim_ids:
+  - claim.uni.cycles
+  status: draft
+- id: rule.uni.eu_conditions
+  canonical_rule_id: uni.eu_conditions
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-02-01'
+  when:
+    op: in
+    field: citizenship_category
+    values:
+    - eu_eea_swiss
+    - uk_wa_family
+  effects:
+  - type: emit_advice
+    tag: eu_equal_conditions
+    message_ro: Se aplică aceleași condiții legale de admitere ca pentru cetățenii români; documentele de recunoaștere rămân
+      de verificat.
+  source_claim_ids:
+  - claim.uni.eu_equal_conditions
+  status: draft
+- id: rule.uni.third_country
+  canonical_rule_id: uni.third_country
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: eq
+    field: citizenship_category
+    value: third_country
+  effects:
+  - type: require_confirmation
+    tag: third_country_route
+    message_ro: Ruta pentru cetățeni din state terțe are proceduri distincte de admitere/recunoaștere; verifică universitatea
+      și autoritatea competentă.
+  source_claim_ids:
+  - claim.uni.institution_regulation
+  status: in_review
+- id: rule.uni.max_two
+  canonical_rule_id: uni.max_two
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: gt
+    field: simultaneous_program_count_after_enrollment
+    value: 2
+  effects:
+  - type: block
+    tag: more_than_two_programs
+    message_ro: Nu poți fi înmatriculat simultan la mai mult de două programe de studii.
+  source_claim_ids:
+  - claim.uni.concurrent_programs
+  status: draft
+- id: rule.uni.budget_reuse
+  canonical_rule_id: uni.budget_reuse
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: requested_funding
+      value: budget
+    - op: eq
+      field: already_budget_funded_same_cycle
+      value: true
+  effects:
+  - type: block
+    tag: budget_already_used
+    message_ro: Finanțarea de la buget nu poate fi acordată la un al doilea program din același ciclu fără situația legală/instituțională
+      care permite recuperarea ori plata perioadei finanțate.
+  source_claim_ids:
+  - claim.uni.concurrent_programs
+  status: in_review
+- id: rule.uni.budget_original
+  canonical_rule_id: uni.budget_original
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: eq
+    field: requested_funding
+    value: budget
+  effects:
+  - type: include_requirement
+    requirement_id: req.uni.original_budget
+  - type: include_step
+    step_id: step.uni.confirm_place
+  source_claim_ids:
+  - claim.uni.budget_original
+  status: draft
+- id: rule.uni.online
+  canonical_rule_id: uni.online
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: eq
+    field: online_submission_requested
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: online_allowed_by_institution
+    message_ro: Confirmă în regulamentul 2026 că programul permite înscrierea și validarea online.
+  source_claim_ids:
+  - claim.uni.online
+  status: in_review
+- id: rule.uni.after_sep30
+  canonical_rule_id: uni.after_sep30
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-10-01'
+  when:
+    op: date_after
+    field: reference_date
+    value: '2026-09-30'
+  effects:
+  - type: block
+    tag: ordinary_admission_closed
+    message_ro: Limita-cadru pentru organizarea concursului de admitere este 30 septembrie; orice rută ulterioară trebuie
+      confirmată oficial.
+  source_claim_ids:
+  - claim.uni.sessions_deadline
+  status: draft
+- id: rule.uni.institution_gap
+  canonical_rule_id: uni.institution_gap
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: institution_rules_verified
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.uni.verify_regulation
+  - type: include_requirement
+    requirement_id: req.uni.institution_dossier
+  - type: require_confirmation
+    tag: institution_rules_unverified
+    message_ro: Nu afișa termen, taxă, probă sau listă de acte până la verificarea regulamentului oficial 2026 al programului.
+  source_claim_ids:
+  - claim.uni.institution_regulation
+  - claim.uni.publication_six_months
+  - claim.uni.timisoara.channels
+  status: in_review
+- id: rule.uni.channel_uvt
+  canonical_rule_id: uni.channel_uvt
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: selected_institution_id
+    value: uvt
+  effects:
+  - type: attach_channel
+    channel_id: ch.uni.uvt
+  source_claim_ids:
+  - claim.uni.timisoara.channels
+  status: in_review
+- id: rule.uni.channel_upt
+  canonical_rule_id: uni.channel_upt
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: selected_institution_id
+    value: upt
+  effects:
+  - type: attach_channel
+    channel_id: ch.uni.upt
+  source_claim_ids:
+  - claim.uni.timisoara.channels
+  status: in_review
+- id: rule.uni.foreign_recognition
+  canonical_rule_id: uni.foreign_recognition
+  event_type_id: life.university_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2024-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: foreign_diploma
+      value: true
+    - op: eq
+      field: recognition_document_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.uni.recognition
+  - type: require_confirmation
+    tag: recognition_document_unverified
+    message_ro: Confirmă documentul de recunoaștere/echivalare cerut de universitate pentru diploma străină.
+  source_claim_ids:
+  - claim.uni.budget_original
+  - claim.uni.institution_regulation
+  status: in_review

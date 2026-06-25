@@ -1,0 +1,263 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.reinsertion_incentive
+status: draft
+rules:
+- id: rule.insertion.base_eligibility
+  canonical_rule_id: reinsertion_incentive.eligibility.income
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: ccc_entitled
+      value: true
+    - op: eq
+      field: taxable_income_started
+      value: true
+  effects:
+  - type: include_step
+    step_id: apply_insertion_incentive
+  - type: include_requirement
+    requirement_id: req.application
+  - type: include_requirement
+    requirement_id: req.income_start_proof
+  - type: include_requirement
+    requirement_id: req.child_birth_certificate
+  - type: include_requirement
+    requirement_id: req.applicant_identity_document
+  source_claim_ids:
+  - claim.insertion.eligibility_income
+  status: draft
+  required_facts:
+  - ccc_entitled
+  - taxable_income_started
+  - income_start_date
+  - child_birth_date
+  - child_has_disability
+- id: rule.insertion.early_standard
+  canonical_rule_id: reinsertion_incentive.amount.early_standard
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-05-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: child_has_disability
+      value: false
+    - op: lt
+      field: child_age_months_at_income_start
+      value: 6
+  effects:
+  - type: emit_advice
+    tag: insertion_1500
+    message_ro: Nivelul legal este 1.500 lei pentru veniturile începute înainte de 6 luni.
+  - type: set_deadline
+    step_id: early_incentive_end
+    value:
+      kind: child_age
+      years: 2
+      anchor: child_birth_date
+  source_claim_ids:
+  - claim.insertion.early_1500
+  - claim.insertion.early_duration
+  status: draft
+- id: rule.insertion.early_disability
+  canonical_rule_id: reinsertion_incentive.amount.early_disability
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-05-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: child_has_disability
+      value: true
+    - op: lt
+      field: child_age_months_at_income_start
+      value: 12
+  effects:
+  - type: emit_advice
+    tag: insertion_1500
+    message_ro: Nivelul legal este 1.500 lei pentru veniturile începute înainte de 1 an.
+  - type: set_deadline
+    step_id: early_incentive_end
+    value:
+      kind: child_age
+      years: 3
+      anchor: child_birth_date
+  source_claim_ids:
+  - claim.insertion.early_1500
+  - claim.insertion.early_duration
+  status: draft
+- id: rule.insertion.late_standard
+  canonical_rule_id: reinsertion_incentive.amount.late_standard
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-05-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: child_has_disability
+      value: false
+    - op: gte
+      field: child_age_months_at_income_start
+      value: 6
+  effects:
+  - type: emit_advice
+    tag: insertion_650
+    message_ro: Nivelul legal este 650 lei pentru veniturile începute după pragul de 6 luni.
+  source_claim_ids:
+  - claim.insertion.late_650
+  status: draft
+- id: rule.insertion.late_disability
+  canonical_rule_id: reinsertion_incentive.amount.late_disability
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-05-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: child_has_disability
+      value: true
+    - op: gte
+      field: child_age_months_at_income_start
+      value: 12
+  effects:
+  - type: emit_advice
+    tag: insertion_650
+    message_ro: Nivelul legal este 650 lei pentru veniturile începute după pragul de 1 an.
+  source_claim_ids:
+  - claim.insertion.late_650
+  status: draft
+- id: rule.insertion.after_ccc
+  canonical_rule_id: reinsertion_incentive.duration.after_ccc
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-05-17'
+  when:
+    op: eq
+    field: ccc_natural_end_reached
+    value: true
+  effects:
+  - type: emit_advice
+    tag: insertion_after_ccc_650
+    message_ro: După finalul CCC, stimulentul de 650 lei poate continua până la 3 ani, respectiv 4 ani pentru copil cu dizabilități.
+  source_claim_ids:
+  - claim.insertion.after_ccc_650
+  status: draft
+- id: rule.insertion.no_cumulation
+  canonical_rule_id: reinsertion_incentive.non_cumulation
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: ccc_indemnity_currently_paid
+    value: true
+  effects:
+  - type: include_step
+    step_id: suspend_ccc_indemnity
+  - type: emit_warning
+    tag: insertion_no_cumulation
+    message_ro: Stimulentul nu se cumulează cu indemnizația CCC.
+  source_claim_ids:
+  - claim.insertion.no_cumulation
+  status: draft
+- id: rule.insertion.application_window
+  canonical_rule_id: reinsertion_incentive.application.30_workdays
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2021-05-17'
+  when:
+    op: eq
+    field: taxable_income_started
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: apply_insertion_incentive
+    value:
+      kind: relative_business_days
+      days: 30
+      anchor: income_start_date
+  - type: emit_warning
+    tag: insertion_apply_30_workdays
+    message_ro: Depune în 30 de zile lucrătoare pentru acordare din ziua următoare începerii veniturilor.
+  source_claim_ids:
+  - claim.insertion.application_30_workdays
+  status: draft
+- id: rule.insertion.report_changes
+  canonical_rule_id: reinsertion_incentive.report_changes
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: relevant_change_occurred
+    value: true
+  effects:
+  - type: include_step
+    step_id: report_incentive_change
+  - type: set_deadline
+    step_id: report_incentive_change
+    value:
+      kind: relative_business_days
+      days: 15
+      anchor: change_date
+  source_claim_ids:
+  - claim.insertion.report_change_15d
+  status: draft
+- id: rule.insertion.timisoara_channel
+  canonical_rule_id: reinsertion_incentive.channel.timisoara
+  event_type_id: life.reinsertion_incentive
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: operational
+  effective_from: '2024-01-01'
+  when:
+    op: jurisdiction_descends_from
+    field: jurisdiction
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    step_id: apply_insertion_incentive
+    channel_id: ch.insertion_incentive.timisoara
+  - type: require_confirmation
+    tag: insertion_timisoara_flow
+    message_ro: Confirmă în portal că fluxul selectat este cel pentru stimulent de inserție și verifică lista dinamică de documente.
+  source_claim_ids:
+  - claim.insertion.timisoara_online
+  status: in_review

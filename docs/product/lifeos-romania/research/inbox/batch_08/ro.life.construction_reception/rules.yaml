@@ -1,0 +1,504 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.construction_reception
+event_type_id: ro.life.construction_reception
+required_facts:
+- jurisdiction_id
+- works_completed
+- executor_notified_investor
+- reception_decision
+- technical_book_complete
+- permit_and_project_docs_complete
+- isc_payment_confirmation_available
+- energy_certificate_applicable
+- energy_certificate_available
+- tax_regularization_applicable
+- tax_regularization_proof_available
+- designer_and_site_manager_reports_available
+- warranty_expired
+status: draft
+rules:
+- id: rule.reception.not_completed.v1
+  canonical_rule_id: rule.reception.not_completed
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: eq
+    field: works_completed
+    value: false
+  effects:
+  - type: block
+    code: works_not_completed
+    message_ro: Recepția la terminarea lucrărilor nu se organizează înainte de finalizarea lucrărilor.
+  - type: emit_advice
+    tag: complete_works_before_reception
+    message_ro: Finalizează lucrările autorizate înainte de inițierea recepției.
+  source_claim_ids:
+  - clm.construction_reception.regulation.general
+  status: active
+  reviewer_id: null
+- id: rule.reception.completed_route.v1
+  canonical_rule_id: rule.reception.completed_route
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: eq
+    field: works_completed
+    value: true
+  effects:
+  - type: include_step
+    step_id: executor_notifies_completion_in_writing
+  - type: include_step
+    step_id: organise_reception_at_completion
+  source_claim_ids:
+  - clm.construction_reception.regulation.general
+  - clm.construction_reception.regulation.notifications
+  status: active
+  reviewer_id: null
+- id: rule.reception.executor_notice_missing.v1
+  canonical_rule_id: rule.reception.executor_notice_missing
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: works_completed
+      value: true
+    - op: eq
+      field: executor_notified_investor
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: written_executor_completion_notice
+  - type: include_step
+    step_id: obtain_executor_completion_notice
+  source_claim_ids:
+  - clm.construction_reception.regulation.notifications
+  status: active
+  reviewer_id: null
+- id: rule.reception.not_started.v1
+  canonical_rule_id: rule.reception.not_started
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: works_completed
+      value: true
+    - op: eq
+      field: reception_decision
+      value: not_started
+  effects:
+  - type: include_step
+    step_id: investor_requests_representatives_within_5_days
+  - type: include_step
+    step_id: set_reception_date_and_place
+  - type: include_step
+    step_id: collect_participant_responses
+  - type: include_step
+    step_id: appoint_reception_commission
+  - type: emit_advice
+    tag: participant_response_10_days
+    message_ro: Reprezentanții solicitați răspund în 10 zile.
+  - type: emit_advice
+    tag: commission_appointment_max_3_days
+    message_ro: Comisia se numește în maximum 3 zile după primirea răspunsurilor.
+  source_claim_ids:
+  - clm.construction_reception.regulation.notifications
+  status: active
+  reviewer_id: null
+- id: rule.reception.missing_permit_project_docs.v1
+  canonical_rule_id: rule.reception.missing_permit_project_docs
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: works_completed
+      value: true
+    - op: eq
+      field: permit_and_project_docs_complete
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: permit_project_execution_and_as_built_documents
+  source_claim_ids:
+  - clm.construction_reception.regulation.documents
+  status: active
+  reviewer_id: null
+- id: rule.reception.missing_technical_book.v1
+  canonical_rule_id: rule.reception.missing_technical_book
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: works_completed
+      value: true
+    - op: eq
+      field: technical_book_complete
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: complete_technical_book
+  source_claim_ids:
+  - clm.construction_reception.regulation.documents
+  status: active
+  reviewer_id: null
+- id: rule.reception.missing_isc_payment.v1
+  canonical_rule_id: rule.reception.missing_isc_payment
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: works_completed
+      value: true
+    - op: eq
+      field: isc_payment_confirmation_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: isc_payment_confirmation
+  source_claim_ids:
+  - clm.construction_reception.regulation.documents
+  status: active
+  reviewer_id: null
+- id: rule.reception.missing_energy_certificate.v1
+  canonical_rule_id: rule.reception.missing_energy_certificate
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: works_completed
+      value: true
+    - op: eq
+      field: energy_certificate_applicable
+      value: true
+    - op: eq
+      field: energy_certificate_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: energy_performance_certificate
+  source_claim_ids:
+  - clm.construction_reception.regulation.documents
+  status: active
+  reviewer_id: null
+- id: rule.reception.suspended.v1
+  canonical_rule_id: rule.reception.suspended
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: eq
+    field: reception_decision
+    value: suspended
+  effects:
+  - type: include_step
+    step_id: remedy_reception_defects_and_missing_documents
+  - type: emit_warning
+    tag: reception_suspended
+    message_ro: Recepția este suspendată până la remediere.
+  - type: emit_advice
+    tag: suspension_communication_max_3_working_days
+    message_ro: Suspendarea se comunică în maximum 3 zile lucrătoare.
+  - type: emit_advice
+    tag: remediation_max_90_days
+    message_ro: Termenul de remediere este de maximum 90 de zile.
+  - type: emit_advice
+    tag: possible_external_factor_extension_max_90_days
+    message_ro: Pentru factori independenți poate exista o prelungire de cel mult 90 de zile.
+  - type: emit_warning
+    tag: do_not_use_before_admission
+    message_ro: Construcția nu se utilizează înainte de admiterea recepției.
+  source_claim_ids:
+  - clm.construction_reception.regulation.suspension
+  - clm.construction_reception.regulation.use_after_admission
+  status: active
+  reviewer_id: null
+- id: rule.reception.rejected.v1
+  canonical_rule_id: rule.reception.rejected
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: eq
+    field: reception_decision
+    value: rejected
+  effects:
+  - type: include_step
+    step_id: remedy_rejection_causes
+  - type: include_step
+    step_id: restart_reception_after_remediation
+  - type: emit_warning
+    tag: reception_rejected
+    message_ro: Recepția respinsă interzice folosirea construcției până la remediere și o nouă recepție.
+  source_claim_ids:
+  - clm.construction_reception.regulation.suspension
+  - clm.construction_reception.regulation.use_after_admission
+  status: active
+  reviewer_id: null
+- id: rule.reception.admitted.v1
+  canonical_rule_id: rule.reception.admitted
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: eq
+    field: reception_decision
+    value: admitted
+  effects:
+  - type: include_step
+    step_id: investor_approves_and_signs_minutes_within_3_days
+  - type: include_step
+    step_id: communicate_reception_minutes_within_5_days
+  - type: include_step
+    step_id: take_over_construction
+  - type: include_step
+    step_id: obtain_use_authorisations_if_required
+  - type: emit_advice
+    tag: use_only_after_admitted_reception
+    message_ro: Folosirea este permisă după admitere, preluare și autorizațiile de utilizare aplicabile.
+  source_claim_ids:
+  - clm.construction_reception.regulation.decision
+  - clm.construction_reception.regulation.use_after_admission
+  status: active
+  reviewer_id: null
+- id: rule.reception.tax_regularization_missing.v1
+  canonical_rule_id: rule.reception.tax_regularization_missing
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: reception_decision
+      value: admitted
+    - op: eq
+      field: tax_regularization_applicable
+      value: true
+    - op: eq
+      field: tax_regularization_proof_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: authorisation_fee_regularization_proof
+  source_claim_ids:
+  - clm.construction_reception.regulation.documents
+  - clm.construction_reception.pmt.finalization
+  status: active
+  reviewer_id: null
+- id: rule.reception.final.v1
+  canonical_rule_id: rule.reception.final
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: hotărâre a Guvernului
+  severity: critical
+  effective_from: '2017-07-29'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: reception_decision
+      value: admitted
+    - op: eq
+      field: warranty_expired
+      value: true
+  effects:
+  - type: include_step
+    step_id: organise_final_reception_within_10_days_after_warranty
+  - type: emit_advice
+    tag: final_reception_after_warranty
+    message_ro: Recepția finală se organizează după expirarea perioadei de garanție.
+  source_claim_ids:
+  - clm.construction_reception.regulation.decision
+  status: active
+  reviewer_id: null
+- id: rule.reception.timisoara_finalization.v1
+  canonical_rule_id: rule.reception.timisoara_finalization
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: reception_decision
+      value: admitted
+  effects:
+  - type: include_step
+    step_id: submit_timisoara_work_finalization_file
+  - type: include_requirement
+    requirement_id: building_permit_copy
+  - type: include_requirement
+    requirement_id: reception_minutes
+  - type: attach_channel
+    channel_id: pmt_construction_finalization_online
+  source_claim_ids:
+  - clm.construction_reception.pmt.finalization
+  status: active
+  reviewer_id: null
+- id: rule.reception.timisoara_reports_missing.v1
+  canonical_rule_id: rule.reception.timisoara_reports_missing
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: reception_decision
+      value: admitted
+    - op: eq
+      field: designer_and_site_manager_reports_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: designer_and_site_manager_completion_reports
+  source_claim_ids:
+  - clm.construction_reception.pmt.finalization
+  status: active
+  reviewer_id: null
+- id: rule.reception.other_uat_finalization.v1
+  canonical_rule_id: rule.reception.other_uat_finalization
+  event_type_id: ro.life.construction_reception
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: reception_decision
+      value: admitted
+  effects:
+  - type: include_step
+    step_id: identify_local_post_reception_procedure
+  - type: require_confirmation
+    tag: confirm_local_post_reception_finalization
+    message_ro: Procedura locală de finalizare/certificare după recepție trebuie confirmată la UAT.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Serviciul post-recepție verificat este cel al Timișoarei.
+  source_claim_ids:
+  - clm.construction_reception.pmt.finalization
+  status: in_review
+  reviewer_id: null

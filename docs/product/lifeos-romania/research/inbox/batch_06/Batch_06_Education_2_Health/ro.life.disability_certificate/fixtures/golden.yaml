@@ -1,0 +1,318 @@
+batch_id: B06_DISABILITY_CERTIFICATE
+defaults:
+  alias_event_type_id: ro.life.disability_certificate
+  event_type_id: life.disability_certificate
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: DC01
+  description: Adult, cerere inițială, Timiș
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_adult_complex_evaluation_file
+    - submit_adult_disability_evaluation_request_to_dgaspc
+    requirements:
+    - req.adult_evaluation_application
+    - req.valid_identity_document
+    - req.current_medical_documents
+    - req.social_inquiry_if_required_by_local_file
+    channels:
+    - ch.dgaspc_tm_adult_disability
+    confirmations:
+    - adult_dossier_current_local
+- id: DC02
+  description: Adult, dosar depus de reprezentant legal
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+    requester_role: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_adult_complex_evaluation_file
+    - submit_adult_disability_evaluation_request_to_dgaspc
+    channels:
+    - ch.dgaspc_tm_adult_disability
+    confirmations:
+    - adult_dossier_current_local
+- id: DC03
+  description: Adult, grad grav anterior, solicită evaluare la domiciliu
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+    previous_degree: severe
+    home_evaluation_requested: true
+    certificate_validity: fixed
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_adult_complex_evaluation_file
+    - submit_adult_disability_evaluation_request_to_dgaspc
+    - request_adult_evaluation_at_home
+    requirements:
+    - req.home_evaluation_request
+    advice:
+    - home_evaluation_requires_scheduling
+    confirmations:
+    - adult_dossier_current_local
+- id: DC04
+  description: Adult, grad accentuat, solicită domiciliu
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+    previous_degree: accentuated
+    home_evaluation_requested: true
+    certificate_validity: fixed
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - adult_dossier_current_local
+    - home_evaluation_eligibility
+- id: DC05
+  description: Copil, cerere inițială, Timiș
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_child_complex_evaluation_file
+    - submit_child_disability_evaluation_request_to_dgaspc
+    requirements:
+    - req.child_disability_application
+    - req.child_birth_certificate_or_identity_copy
+    - req.parents_or_legal_representative_identity_copies
+    - req.social_inquiry
+    - req.synthetic_medical_sheet
+    - req.medical_certificate_a5
+    - req.additional_medical_documents
+    - req.psychopedagogical_sheet
+    channels:
+    - ch.dgaspc_tm_child_complex_evaluation
+- id: DC06
+  description: Copil fără certificat medical A5
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    medical_certificate_a5_available: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.medical_certificate_a5
+    channels:
+    - ch.dgaspc_tm_child_complex_evaluation
+- id: DC07
+  description: Copil reprezentat prin hotărâre
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    requester_role: legal_representative
+  expect:
+    status: resolved
+    requirements:
+    - req.proof_of_legal_representation_if_applicable
+- id: DC08
+  description: Adult contestă în ziua 10
+  facts:
+    person_type: adult
+    request_type: appeal
+    county: TM
+    certificate_communication_date: '2026-06-15'
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_and_submit_adult_certificate_contestation
+    requirements:
+    - req.contested_certificate_copy
+    - req.contestation_reason_and_supporting_evidence
+    deadlines:
+    - adult_certificate_appeal_30_calendar_days
+    channels:
+    - ch.superior_adult_disability_commission
+- id: DC09
+  description: Adult contestă după 31 zile
+  facts:
+    person_type: adult
+    request_type: appeal
+    county: TM
+    certificate_communication_date: '2026-05-20'
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_and_submit_adult_certificate_contestation
+    overdue:
+    - adult_certificate_appeal_30_calendar_days
+- id: DC10
+  description: Copil, certificat emis pentru 6 luni
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    certificate_issued: true
+    certificate_validity_months: 6
+  expect:
+    status: resolved
+    advice:
+    - child_validity_case_specific_6m_2y
+- id: DC11
+  description: Copil, certificat emis pentru 24 luni
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    certificate_issued: true
+    certificate_validity_months: 24
+  expect:
+    status: resolved
+    advice:
+    - child_validity_case_specific_6m_2y
+- id: DC12
+  description: Copil, utilizatorul presupune 36 luni fără excepție
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    certificate_issued: false
+    requested_validity_months: 36
+    two_consecutive_severe_two_year_certificates: false
+    specialist_certified_palliative_care: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - validity_decided_by_child_protection_commission
+- id: DC13
+  description: Adult, certificat emis
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+    certificate_issued: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - receive_certificate_and_piris
+    requirements:
+    - req.disability_certificate
+    - req.piris
+    advice:
+    - piris_issued_with_certificate
+    - certificate_stamp_duty_exempt
+    confirmations:
+    - adult_dossier_current_local
+- id: DC14
+  description: Adult cu afecțiune ireversibilă
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+    condition_irreversible_no_recovery: true
+  expect:
+    status: needs_confirmation
+    advice:
+    - permanent_validity_decided_by_commission
+    - certificate_stamp_duty_exempt
+    confirmations:
+    - adult_dossier_current_local
+- id: DC15
+  description: Adult fără județ
+  facts:
+    person_type: adult
+    request_type: initial
+  expect:
+    status: needs_facts
+    missing_facts:
+    - county
+- id: DC16
+  description: Lipsește tipul persoanei
+  facts:
+    request_type: initial
+    county: TM
+  expect:
+    status: needs_facts
+    missing_facts:
+    - person_type
+- id: DC17
+  description: Copil în Cluj — gap local
+  facts:
+    person_type: child
+    request_type: initial
+    county: CJ
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - local_dgaspc_channel_and_dossier
+- id: DC18
+  description: Adult în alt județ — gap local
+  facts:
+    person_type: adult
+    request_type: initial
+    county: BH
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - adult_dossier_current_local
+    - local_dgaspc_channel_and_dossier
+- id: DC19
+  description: Copil cu două certificate grave de câte 2 ani
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    two_consecutive_severe_two_year_certificates: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - child_until_18_specific_criteria
+- id: DC20
+  description: Copil cu îngrijiri paliative certificate
+  facts:
+    person_type: child
+    request_type: initial
+    county: TM
+    specialist_certified_palliative_care: true
+  expect:
+    status: resolved
+    requirements:
+    - req.specialist_palliative_care_certificate
+    advice:
+    - child_palliative_validity_until_18
+- id: DC21
+  description: Adult întreabă taxa de timbru
+  facts:
+    person_type: adult
+    request_type: initial
+    county: TM
+    asks_stamp_duty: true
+  expect:
+    status: needs_confirmation
+    advice:
+    - certificate_stamp_duty_exempt
+    confirmations:
+    - adult_dossier_current_local
+- id: DC22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - person_type
+    - request_type
+    - county

@@ -1,0 +1,467 @@
+batch_id: B01_PASSPORT_LOST_STOLEN
+defaults:
+  event_type_id: life.passport_lost_stolen
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: P01
+  desc: pașaport pierdut în România, adult
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_event
+    - request_replacement_passport
+    channels:
+    - ch.any_passport_service_ro
+    - ch.passports_timisoara_demetriade_1
+- id: P02
+  desc: pașaport distrus în România
+  facts:
+    incident_type: destroyed
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 40
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_event
+    - request_replacement_passport
+- id: P03
+  desc: pașaport furat în România cu adeverință
+  facts:
+    incident_type: stolen
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 29
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: true
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    included_steps:
+    - report_passport_theft_to_police
+    - request_replacement_passport
+    requirements:
+    - req.police_theft_certificate
+- id: P04
+  desc: pașaport furat fără adeverință
+  facts:
+    incident_type: stolen
+    incident_country: ro
+    event_declared: false
+    passport_found_after_declaration: false
+    age_years: 29
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: blocked
+    blocks:
+    - police_certificate_missing
+    - event_not_declared
+- id: P05
+  desc: pașaport furat în străinătate
+  facts:
+    incident_type: stolen
+    incident_country: foreign
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 35
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: true
+    request_location: abroad
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    channels:
+    - ch.romanian_mission_or_consulate
+- id: P06
+  desc: pașaport pierdut în străinătate
+  facts:
+    incident_type: lost
+    incident_country: foreign
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 35
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: abroad
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    channels:
+    - ch.romanian_mission_or_consulate
+- id: P07
+  desc: document găsit după declarare
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: true
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: blocked
+    blocks:
+    - declared_passport_cannot_be_used
+    included_steps:
+    - surrender_found_invalid_passport
+- id: P08
+  desc: cere înlocuire înainte de declarare
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: false
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: blocked
+    blocks:
+    - event_not_declared
+- id: P09
+  desc: cerere electronică
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: electronic
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: blocked
+    blocks:
+    - electronic_documents_not_accepted
+- id: P10
+  desc: adult cu pașaport electronic
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 18
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    requirements:
+    - req.valid_identity_document
+    - req.payment_proof
+    - req.previous_passport_if_available
+    advice:
+    - electronic_passport_5_current_15_legal
+- id: P11
+  desc: minor sub 14 ani
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 8
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_birth_cert: true
+    parent_identity: true
+    parental_consent: true
+    minor_present: true
+  expect:
+    status: ok
+    requirements:
+    - req.minor_birth_certificate
+    - req.parent_or_representative_identity
+    - req.parental_consent_or_legal_basis
+    - req.minor_presence
+- id: P12
+  desc: minor 14-17 ani
+  facts:
+    incident_type: stolen
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 15
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: true
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+    has_birth_cert: true
+    parental_consent: true
+    minor_present: true
+  expect:
+    status: ok
+    requirements:
+    - req.minor_valid_identity
+    - req.minor_birth_certificate
+    - req.parental_consent_or_legal_basis
+    - req.minor_presence
+- id: P13
+  desc: minor fără prezență
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 12
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_birth_cert: true
+    parent_identity: true
+    parental_consent: true
+    minor_present: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.minor_presence
+- id: P14
+  desc: pașaport temporar pentru tratament medical
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: temporary
+    urgency_reason: medical
+    urgent_evidence_present: true
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    requirements:
+    - req.objective_urgent_evidence
+    advice:
+    - temporary_1_3_workdays
+- id: P15
+  desc: pașaport temporar pentru studii
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 17
+    passport_type: temporary
+    urgency_reason: study
+    urgent_evidence_present: true
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+    has_birth_cert: true
+    parental_consent: true
+    minor_present: true
+  expect:
+    status: ok
+    requirements:
+    - req.objective_urgent_evidence
+- id: P16
+  desc: pașaport temporar pentru turism
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: temporary
+    urgency_reason: tourism
+    urgent_evidence_present: false
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: blocked
+    blocks:
+    - tourism_not_temporary_urgency
+- id: P17
+  desc: ridicare prin mandatar
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: proxy
+    pickup_power_present: true
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    advice:
+    - pickup_method_supported
+- id: P18
+  desc: livrare prin curier
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: courier
+    delivery_address_in_ro: true
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: ok
+    advice:
+    - pickup_method_supported
+- id: P19
+  desc: taxa neplătită
+  facts:
+    incident_type: lost
+    incident_country: ro
+    event_declared: true
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: unpaid
+    has_valid_id: true
+  expect:
+    status: needs_facts
+    requirements:
+    - req.passport_payment_265_ron
+- id: P20
+  desc: tip incident invalid
+  facts:
+    incident_type: forgotten_at_home
+    incident_country: ro
+    event_declared: false
+    passport_found_after_declaration: false
+    age_years: 33
+    passport_type: electronic
+    urgency_reason: none
+    has_police_certificate: false
+    request_location: country
+    request_channel: counter
+    pickup_method: personal
+    payment_status: paid
+    has_valid_id: true
+  expect:
+    status: blocked
+    errors:
+    - invalid_incident_type
+- id: P21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - incident_type
+    - incident_country
+    - event_declared
+    - passport_found_after_declaration
+    - age_years
+    - passport_type
+    - request_location
+    - request_channel
+    - pickup_method
+    - payment_status

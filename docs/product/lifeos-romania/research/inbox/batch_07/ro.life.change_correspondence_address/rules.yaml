@@ -1,0 +1,202 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_CHANGE_CORRESPONDENCE_ADDRESS
+event_alias: ro.life.change_correspondence_address
+event_type_id: life.change_correspondence_address
+status: research_inbox
+rules:
+- id: rule.correspondence.only_not_identity
+  canonical_rule_id: change_correspondence.scope.only_not_identity
+  event_type_id: life.change_correspondence_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: eq
+    field: change_scope
+    value: correspondence_only
+  effects:
+  - type: exclude_step
+    step_id: update_identity_card
+  - type: exclude_step
+    step_id: register_residence
+  - type: emit_advice
+    tag: correspondence_not_domicile
+    message_ro: O adresă folosită numai pentru corespondență nu schimbă singură domiciliul sau reședința din evidența persoanelor.
+  source_claim_ids:
+  - claim.correspondence.scope_distinction
+  status: draft
+  required_facts:
+  - change_scope
+- id: rule.correspondence.dfmt_tm
+  canonical_rule_id: change_correspondence.dfmt.timisoara
+  event_type_id: life.change_correspondence_address
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_scope
+      value: correspondence_only
+    - op: eq
+      field: target_institution
+      value: dfmt_timisoara
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: request_dfmt_personal_data_correction
+  - type: attach_channel
+    step_id: request_dfmt_personal_data_correction
+    channel_id: ch.dfmt.atlas.correct_data
+  - type: set_freshness_state
+    step_id: request_dfmt_personal_data_correction
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: dfmt_correspondence_field
+    message_ro: Atlas este canalul oficial pentru corectarea datelor, dar confirmă că serviciul acceptă exact câmpul «adresă de corespondență»
+      și ce dovadă cere.
+  source_claim_ids:
+  - claim.correspondence.tm_dfmt_channel
+  status: in_review
+  required_facts:
+  - change_scope
+  - target_institution
+  - jurisdiction_id
+- id: rule.correspondence.other_institution
+  canonical_rule_id: change_correspondence.target.other
+  event_type_id: life.change_correspondence_address
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2011-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_scope
+      value: correspondence_only
+    - op: neq
+      field: target_institution
+      value: dfmt_timisoara
+  effects:
+  - type: include_step
+    step_id: contact_target_institution_for_correspondence_update
+  - type: set_freshness_state
+    step_id: contact_target_institution_for_correspondence_update
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: institution_specific_correspondence
+    message_ro: Nu există un canal universal verificat. Confirmă la instituția selectată documentele, termenul și dacă acceptă o adresă distinctă
+      de domiciliu.
+  source_claim_ids:
+  - claim.correspondence.no_universal_channel
+  status: in_review
+  required_facts:
+  - change_scope
+  - target_institution
+- id: rule.correspondence.domicile
+  canonical_rule_id: change_correspondence.scope.domicile
+  event_type_id: life.change_correspondence_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: eq
+    field: change_scope
+    value: domicile
+  effects:
+  - type: include_step
+    step_id: update_identity_card
+  - type: set_deadline
+    step_id: update_identity_card
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: emit_warning
+    tag: identity_deadline_15d
+    message_ro: 'Ai selectat schimbarea domiciliului, nu doar corespondența: solicită actualizarea actului de identitate în 15 zile.'
+  source_claim_ids:
+  - claim.identity.domicile_new_id_15d
+  - claim.identity.address_proof
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - change_scope
+  - move_date
+- id: rule.correspondence.residence_over_15
+  canonical_rule_id: change_correspondence.scope.residence
+  event_type_id: life.change_correspondence_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2023-06-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_scope
+      value: residence
+    - op: gt
+      field: days_per_month_at_new_address
+      value: 15
+  effects:
+  - type: include_step
+    step_id: register_residence
+  - type: set_deadline
+    step_id: register_residence
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: include_requirement
+    requirement_id: req.residence_declaration
+  source_claim_ids:
+  - claim.identity.residence_over_15d
+  - claim.identity.residence_docs
+  - claim.identity.move_other_address_15d
+  status: draft
+  required_facts:
+  - change_scope
+  - days_per_month_at_new_address
+  - move_date
+- id: rule.correspondence.residence_not_over_15
+  canonical_rule_id: change_correspondence.scope.residence_below_threshold
+  event_type_id: life.change_correspondence_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_scope
+      value: residence
+    - op: lte
+      field: days_per_month_at_new_address
+      value: 15
+  effects:
+  - type: exclude_step
+    step_id: register_residence
+  - type: emit_advice
+    tag: residence_threshold_not_met
+    message_ro: La valoarea declarată de cel mult 15 zile pe lună, regula verificată privind înscrierea reședinței nu se activează.
+  source_claim_ids:
+  - claim.identity.residence_over_15d
+  status: draft
+  required_facts:
+  - change_scope
+  - days_per_month_at_new_address

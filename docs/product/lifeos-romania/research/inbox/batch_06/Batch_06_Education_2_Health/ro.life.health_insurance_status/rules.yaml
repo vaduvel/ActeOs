@@ -1,0 +1,385 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_HEALTH_INSURANCE_STATUS
+alias_event_type_id: ro.life.health_insurance_status
+event_type_id: life.health_insurance_status
+status: draft
+rules:
+- id: rule.insurance_status.required_facts
+  canonical_rule_id: insurance_status.required_facts
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_insurance_status_facts
+    message_ro: Precizează dacă poți folosi verificarea online și rezultatul returnat.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+  required_facts:
+  - can_use_online_check
+  - status_result
+- id: rule.insurance_status.check_online
+  canonical_rule_id: insurance_status.check_online
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: can_use_online_check
+    value: true
+  effects:
+  - type: include_step
+    step_id: check_insurance_status_in_siui
+  - type: attach_channel
+    channel_id: ch.siui_insured_status
+  - type: emit_advice
+    tag: use_current_siui_address
+    message_ro: Folosește adresa SIUI indicată de CNAS pentru verificarea calității de asigurat.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  - claim.insurance_status.portal_since_2025_03_01
+  status: draft
+- id: rule.insurance_status.insured
+  canonical_rule_id: insurance_status.insured
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: status_result
+    value: insured
+  effects:
+  - type: emit_advice
+    tag: portal_reports_insured
+    message_ro: Rezultatul online indică persoană asigurată; păstrează dovada rezultatului și data verificării.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+- id: rule.insurance_status.not_insured
+  canonical_rule_id: insurance_status.not_insured
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: status_result
+    value: not_insured
+  effects:
+  - type: include_step
+    step_id: identify_insurance_category_or_correction_route
+  - type: require_confirmation
+    tag: insurance_category_and_supporting_documents
+    message_ro: Stabilește categoria legală și documentele justificative; rezultatul negativ nu arată singur cauza.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+- id: rule.insurance_status.portal_unavailable
+  canonical_rule_id: insurance_status.portal_unavailable
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: status_result
+    value: portal_unavailable
+  effects:
+  - type: include_step
+    step_id: retry_or_contact_territorial_cas
+  - type: emit_warning
+    tag: portal_unavailability_not_uninsured
+    message_ro: Indisponibilitatea portalului nu înseamnă lipsa calității de asigurat.
+  source_claim_ids:
+  - claim.insurance_status.portal_since_2025_03_01
+  status: draft
+- id: rule.insurance_status.d212_candidate
+  canonical_rule_id: insurance_status.d212_candidate
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: status_result
+      value: not_insured
+    - op: eq
+      field: insurance_category
+      value: no_employment_or_taxable_income
+  effects:
+  - type: include_step
+    step_id: review_and_submit_current_d212_if_eligible
+  - type: set_deadline
+    code: d212_insurance_period
+    value:
+      kind: relative_calendar_months
+      anchor: d212_submission_date
+      months: 12
+    message_ro: Pentru categoria descrisă de CNAS, calitatea se acordă 12 luni de la depunerea D212.
+  - type: require_confirmation
+    tag: current_d212_contribution_and_form
+    message_ro: Confirmă formularul, baza și suma actuală la ANAF; exemplul monetar vechi din FAQ nu se folosește.
+  source_claim_ids:
+  - claim.insurance_status.d212_12_months
+  status: draft
+- id: rule.insurance_status.student_candidate
+  canonical_rule_id: insurance_status.student_candidate
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: status_result
+      value: not_insured
+    - op: eq
+      field: insurance_category
+      value: student_18_26
+    - op: eq
+      field: education_form
+      value: day
+  effects:
+  - type: include_step
+    step_id: submit_student_insurance_documents_to_cas
+  - type: include_requirement
+    requirement_id: req.valid_identity_document_copy
+  - type: include_requirement
+    requirement_id: req.valid_student_or_pupil_document_endorsed_by_school
+  - type: require_confirmation
+    tag: student_income_conditions_current
+    message_ro: Confirmă condițiile curente privind veniturile și categoria exactă.
+  source_claim_ids:
+  - claim.insurance_status.student_18_26
+  - claim.insurance_status.student_documents
+  status: draft
+- id: rule.insurance_status.student_outside_scope
+  canonical_rule_id: insurance_status.student_outside_scope
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: insurance_category
+      value: student_18_26
+    - op: any
+      args:
+      - op: lt
+        field: age
+        value: 18
+      - op: gt
+        field: age
+        value: 26
+      - op: neq
+        field: education_form
+        value: day
+  effects:
+  - type: require_confirmation
+    tag: alternative_insurance_category
+    message_ro: Ruta verificată pentru student se aplică vârstei 18–26 și formei de zi; identifică altă categorie.
+  source_claim_ids:
+  - claim.insurance_status.student_18_26
+  status: draft
+- id: rule.insurance_status.no_card_but_insured
+  canonical_rule_id: insurance_status.no_card_but_insured
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: status_result
+      value: insured
+    - op: eq
+      field: card_issued
+      value: false
+  effects:
+  - type: emit_advice
+    tag: no_replacement_certificate_needed_if_never_issued
+    message_ro: Dacă ești asigurat și cardul nu a fost emis, furnizorul verifică statutul în portal; nu este necesară adeverință
+      de înlocuire.
+  source_claim_ids:
+  - claim.insurance_status.no_card_issued
+  status: draft
+- id: rule.insurance_status.tm_cas
+  canonical_rule_id: insurance_status.tm_cas
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_cas_contact
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.cas_tm
+  - type: emit_advice
+    tag: cas_tm_contact
+    message_ro: 'CAS Timiș: Timișoara, str. Corbului nr. 4, tel. 0736-110007.'
+  source_claim_ids:
+  - claim.insurance_status.cas_tm_contact
+  status: draft
+- id: rule.insurance_status.other_county
+  canonical_rule_id: insurance_status.other_county
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_cas_contact
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: territorial_cas_contact
+    message_ro: Confirmă datele CAS teritoriale competente.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+- id: rule.insurance_status.assisted_check
+  canonical_rule_id: insurance_status.assisted_check
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: can_use_online_check
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: assisted_status_check_or_cas_route
+    message_ro: Confirmă o verificare asistată ori contactul CAS; nu deduce statutul fără rezultat oficial.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+- id: rule.insurance_status.d212_elapsed
+  canonical_rule_id: insurance_status.d212_elapsed
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: d212_period_state
+    value: elapsed
+  effects:
+  - type: emit_warning
+    tag: d212_12_month_period_elapsed
+    message_ro: Perioada de 12 luni verificată pentru această categorie a trecut; confirmă o nouă bază de asigurare.
+  source_claim_ids:
+  - claim.insurance_status.d212_12_months
+  status: draft
+- id: rule.insurance_status.provider_discrepancy
+  canonical_rule_id: insurance_status.provider_discrepancy
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: status_result
+      value: insured
+    - op: eq
+      field: provider_result
+      value: not_insured
+  effects:
+  - type: emit_warning
+    tag: status_discrepancy
+    message_ro: Rezultatul portalului și cel al furnizorului diferă.
+  - type: require_confirmation
+    tag: cas_correction_or_provider_recheck
+    message_ro: Cere reverificarea furnizorului sau clarificarea CAS cu dovada rezultatului.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+- id: rule.insurance_status.recent_employee
+  canonical_rule_id: insurance_status.recent_employee
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: status_result
+      value: not_insured
+    - op: eq
+      field: insurance_category
+      value: employee
+    - op: eq
+      field: employment_started_recently
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: employer_declaration_and_cas_update
+    message_ro: Confirmă declarația angajatorului și actualizarea în sistem cu angajatorul/CAS.
+  source_claim_ids:
+  - claim.insurance_status.online_check
+  status: draft
+- id: rule.insurance_status.stale_result
+  canonical_rule_id: insurance_status.stale_result
+  event_type_id: life.health_insurance_status
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: status_result_freshness
+    value: stale
+  effects:
+  - type: emit_warning
+    tag: stale_status_result_recheck_now
+    message_ro: Rezultatul este vechi; repetă verificarea în portalul curent înainte de a-l folosi.
+  source_claim_ids:
+  - claim.insurance_status.portal_since_2025_03_01
+  status: draft

@@ -1,0 +1,398 @@
+batch_id: B01_DOCUMENTS_APOSTILLE
+defaults:
+  event_type_id: life.documents_apostille
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: A01
+  desc: certificat de naștere folosit în alt stat UE
+  facts:
+    destination_scope: eu
+    destination_country: de
+    document_category: administrative
+    document_subject: birth
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    excluded_steps:
+    - obtain_apostille
+    advice:
+    - eu_apostille_not_required_for_authenticity
+    - eu_multilingual_form_option
+    warnings:
+    - authenticity_not_legal_effect
+- id: A02
+  desc: certificat de căsătorie pentru Franța
+  facts:
+    destination_scope: eu
+    destination_country: fr
+    document_category: administrative
+    document_subject: marriage
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    excluded_steps:
+    - obtain_apostille
+- id: A03
+  desc: document fiscal pentru stat UE neacoperit explicit
+  facts:
+    destination_scope: eu
+    destination_country: it
+    document_category: administrative
+    document_subject: fiscal
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - determine_apostille_authority
+    warnings:
+    - authenticity_not_legal_effect
+- id: A04
+  desc: certificat pentru stat parte la Haga
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: birth
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: false
+    convention_status_known: true
+  expect:
+    status: ok
+    included_steps:
+    - determine_apostille_authority
+    - obtain_apostille
+    - submit_to_prefecture_apostille_office
+    channels:
+    - ch.any_prefecture_for_civil_or_criminal_record
+- id: A05
+  desc: destinație non-Haga fără tratat
+  facts:
+    destination_scope: non_hague
+    destination_country: unknown_non_hague
+    document_category: administrative
+    document_subject: birth
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    excluded_steps:
+    - obtain_apostille
+    child_events:
+    - life.documents_superlegalization
+    warnings:
+    - superlegalization_route
+- id: A06
+  desc: destinație necunoscută
+  facts:
+    destination_scope: unknown
+    destination_country: null
+    document_category: administrative
+    document_subject: birth
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - destination_convention_unknown
+- id: A07
+  desc: act administrativ original pe hârtie
+  facts:
+    destination_scope: hague
+    destination_country: gb
+    document_category: administrative
+    document_subject: name
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: false
+    convention_status_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.original_official_act
+    - req.apostille_request_per_holder
+    channels:
+    - ch.prefecture_apostille
+- id: A08
+  desc: original electronic semnat digital cu cont validat
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: fiscal
+    issuance_format: digitally_signed_original
+    requester_role: holder
+    hub_account_validated: true
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    channels:
+    - ch.hub_apostille_online
+    advice:
+    - digital_same_day_usually
+- id: A09
+  desc: original electronic fără cont validat
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: fiscal
+    issuance_format: digitally_signed_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: blocked
+    blocks:
+    - validated_hub_account_required
+- id: A10
+  desc: scan al unui document
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: birth
+    issuance_format: scan
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: blocked
+    blocks:
+    - scan_is_not_original
+- id: A11
+  desc: hotărâre judecătorească
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: judicial
+    document_subject: other
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    channels:
+    - ch.competent_tribunal
+    advice:
+    - tribunal_competence
+- id: A12
+  desc: act notarial
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: notarial
+    document_subject: other
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    channels:
+    - ch.chamber_of_notaries
+    advice:
+    - notary_chamber_competence
+- id: A13
+  desc: act sub semnătură privată
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: private
+    document_subject: other
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    channels:
+    - ch.chamber_of_notaries
+    advice:
+    - notary_chamber_competence
+- id: A14
+  desc: carte de identitate
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: identity_document
+    document_subject: other
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: blocked
+    blocks:
+    - identity_or_passport_not_apostilled_by_prefecture
+- id: A15
+  desc: pașaport
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: passport
+    document_subject: other
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: blocked
+    blocks:
+    - identity_or_passport_not_apostilled_by_prefecture
+- id: A16
+  desc: solicitant soț al titularului
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: birth
+    issuance_format: paper_original
+    requester_role: spouse
+    relationship_proof_present: true
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: false
+    convention_status_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.requester_identity
+    - req.relationship_or_authorization
+- id: A17
+  desc: rudă gradul II
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: criminal_record
+    issuance_format: paper_original
+    requester_role: relative_degree_2
+    relationship_proof_present: true
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: false
+    convention_status_known: true
+  expect:
+    status: ok
+    channels:
+    - ch.any_prefecture_for_civil_or_criminal_record
+- id: A18
+  desc: alt solicitant cu procură
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: fiscal
+    issuance_format: paper_original
+    requester_role: proxy
+    power_present: true
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.requester_identity
+    - req.relationship_or_authorization
+- id: A19
+  desc: act administrativ fără legătură teritorială cu Timiș
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: other
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: false
+    issuer_headquarters_county: false
+    convention_status_known: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tm_territorial_competence
+- id: A20
+  desc: act de studii fără viză confirmată
+  facts:
+    destination_scope: hague
+    destination_country: us
+    document_category: administrative
+    document_subject: studies
+    issuance_format: paper_original
+    requester_role: holder
+    hub_account_validated: false
+    holder_or_relative_domicile_timisoara: true
+    issuer_headquarters_county: true
+    convention_status_known: true
+    required_prior_visa_present: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_to_prefecture_apostille_office
+    confirmations:
+    - prior_education_visa
+- id: A21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - destination_scope
+    - destination_country
+    - document_category
+    - document_subject
+    - issuance_format
+    - requester_role
+    - convention_status_known

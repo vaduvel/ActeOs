@@ -1,0 +1,279 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_SOLD_HOME
+event_alias: ro.life.sold_home
+event_type_id: life.sold_home
+status: research_inbox
+rules:
+- id: rule.sold.notary
+  canonical_rule_id: sold.transfer.notary
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: is_real_estate
+    value: true
+  effects:
+  - type: include_step
+    step_id: complete_authentic_notarial_transfer
+  source_claim_ids:
+  - claim.notary.immovable_authentic
+  status: draft
+- id: rule.sold.association_certificate
+  canonical_rule_id: sold.association.certificate
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: eq
+      field: association_exists
+      value: true
+    - op: eq
+      field: association_has_president_admin
+      value: true
+  effects:
+  - type: include_step
+    step_id: request_association_sale_certificate
+  - type: set_deadline
+    step_id: request_association_sale_certificate
+    value:
+      kind: relative_working_days
+      days: 3
+      anchor: association_certificate_request_date
+      actor: association
+  - type: emit_advice
+    tag: certificate_valid_30d
+    message_ro: Adeverința asociației este valabilă 30 de zile calendaristice de la emitere.
+  source_claim_ids:
+  - claim.association.seller_dues
+  - claim.association.certificate_issue_3wd
+  - claim.association.certificate_validity
+  status: draft
+- id: rule.sold.no_association
+  canonical_rule_id: sold.association.no_association
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: association_exists
+        value: false
+      - op: eq
+        field: association_has_president_admin
+        value: false
+  effects:
+  - type: include_step
+    step_id: prepare_no_association_declaration_and_bill
+  - type: include_requirement
+    requirement_id: req.seller_self_declaration
+  - type: include_requirement
+    requirement_id: req.latest_utility_bill_and_payment_proof
+  - type: emit_warning
+    tag: bill_max_2_months
+    message_ro: Folosește alternativa legală numai dacă sunt îndeplinite condițiile; ultima factură trebuie să respecte limita legală de vechime.
+  source_claim_ids:
+  - claim.association.no_association_alternative
+  status: draft
+- id: rule.sold.debts_clear
+  canonical_rule_id: sold.association.debts_clear
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: eq
+      field: debts_exist
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_dues_and_utilities_current
+  source_claim_ids:
+  - claim.association.seller_dues
+  status: draft
+- id: rule.sold.debts_accepted
+  canonical_rule_id: sold.association.debts_accepted
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: eq
+      field: debts_exist
+      value: true
+    - op: eq
+      field: buyer_accepts_debts
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.express_debt_assumption_in_deed
+  - type: emit_warning
+    tag: debt_assumption
+    message_ro: Dobânditorul trebuie să accepte expres preluarea integrală a datoriilor în act.
+  source_claim_ids:
+  - claim.association.debt_takeover
+  status: draft
+- id: rule.sold.debts_block
+  canonical_rule_id: sold.association.debts_block
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: eq
+      field: debts_exist
+      value: true
+    - op: eq
+      field: buyer_accepts_debts
+      value: false
+  effects:
+  - type: block
+    tag: debts_not_resolved
+    message_ro: Stinge datoriile sau obține acceptarea expresă a cumpărătorului; nu presupune că autentificarea poate continua.
+  source_claim_ids:
+  - claim.association.seller_dues
+  - claim.association.debt_takeover
+  status: draft
+- id: rule.sold.energy
+  canonical_rule_id: sold.energy.handover
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2010-01-01'
+  when:
+    op: eq
+    field: is_real_estate
+    value: true
+  effects:
+  - type: include_step
+    step_id: provide_energy_certificate_copy_before_sale
+  - type: include_step
+    step_id: hand_over_energy_certificate_original
+  - type: include_step
+    step_id: deposit_energy_certificate_copy_at_tax_body
+  source_claim_ids:
+  - claim.energy.copy_before_contract
+  - claim.energy.original_to_buyer
+  - claim.energy.copy_to_tax_body
+  status: draft
+- id: rule.sold.energy_missing
+  canonical_rule_id: sold.energy.missing
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2010-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_real_estate
+      value: true
+    - op: eq
+      field: energy_certificate_available
+      value: false
+  effects:
+  - type: block
+    tag: energy_certificate_missing
+    message_ro: Obține certificatul energetic înaintea fluxului de vânzare, sub rezerva excepțiilor legale aplicabile.
+  source_claim_ids:
+  - claim.energy.required_sale_rent
+  - claim.energy.copy_before_contract
+  status: draft
+- id: rule.sold.membership_ends
+  canonical_rule_id: sold.association.membership_ends
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: eq
+      field: seller_was_association_member
+      value: true
+  effects:
+  - type: emit_advice
+    tag: membership_ends
+    message_ro: Statutul de membru al asociației încetează odată cu pierderea calității de proprietar.
+  source_claim_ids:
+  - claim.association.membership_ends
+  status: draft
+- id: rule.sold.tm_fiscal
+  canonical_rule_id: sold.local_tax.timisoara
+  event_type_id: life.sold_home
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: is_real_estate
+      value: true
+  effects:
+  - type: include_step
+    step_id: obtain_local_fiscal_certificate_if_requested
+  - type: attach_channel
+    step_id: obtain_local_fiscal_certificate_if_requested
+    channel_id: ch.dfmt.atlas.fiscal_certificate
+  - type: include_step
+    step_id: remove_home_from_local_tax_record
+  - type: attach_channel
+    step_id: remove_home_from_local_tax_record
+    channel_id: ch.dfmt.atlas.home_removal
+  - type: set_freshness_state
+    step_id: remove_home_from_local_tax_record
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: removal_deadline_docs
+    message_ro: Canalul Atlas este verificat; termenul și documentele scoaterii din evidență trebuie confirmate.
+  source_claim_ids:
+  - claim.tm.sell_fiscal_certificate
+  - claim.tm.sell_remove_channel
+  - claim.tm.sell_remove_deadline_gap
+  status: in_review

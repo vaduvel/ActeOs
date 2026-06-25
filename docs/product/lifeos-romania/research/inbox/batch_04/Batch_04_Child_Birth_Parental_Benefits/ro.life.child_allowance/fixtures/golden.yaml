@@ -1,0 +1,419 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.child_allowance
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: nou-născut român
+  facts:
+    child_birth_date: '2026-06-20'
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps:
+    - apply_child_allowance
+    requirements:
+    - req.application
+    - req.child_birth_certificate
+    - req.applicant_identity_document
+    emitted_tags:
+    - allowance_start_rule
+    - amount_2026_not_hardcoded
+  id: ro.life.child_allowance.F01
+- title: copil de 10 ani
+  facts:
+    child_birth_date: '2016-03-10'
+    child_citizenship: ro
+    education_status: school
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: father
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps:
+    - apply_child_allowance
+  id: ro.life.child_allowance.F02
+- title: minor de 15 ani solicită plata directă
+  facts:
+    child_birth_date: '2011-01-10'
+    child_citizenship: ro
+    education_status: school
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: child
+    direct_payment_requested: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    requirements:
+    - req.legal_representative_consent
+  id: ro.life.child_allowance.F03
+- title: elev de 18 ani la liceu
+  facts:
+    child_birth_date: '2008-01-10'
+    child_citizenship: ro
+    education_status: high_school_or_vocational
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: young_adult
+    direct_payment_requested: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps:
+    - apply_or_continue_child_allowance
+    requirements:
+    - req.school_enrollment_proof
+  id: ro.life.child_allowance.F04
+- title: tânăr de 19 ani a terminat liceul
+  facts:
+    child_birth_date: '2007-01-10'
+    child_citizenship: ro
+    education_status: high_school_or_vocational
+    has_finished_program: true
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: young_adult
+    direct_payment_requested: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - apply_or_continue_child_allowance
+  id: ro.life.child_allowance.F05
+- title: elev major repetent fără motiv medical
+  facts:
+    child_birth_date: '2007-01-10'
+    child_citizenship: ro
+    education_status: high_school_or_vocational
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: true
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: young_adult
+    direct_payment_requested: true
+    relevant_change_occurred: false
+  expected:
+    status: blocked
+    emitted_tags:
+    - repeat_year_not_eligible
+  id: ro.life.child_allowance.F06
+- title: elev major repetent din motive de sănătate
+  facts:
+    child_birth_date: '2007-01-10'
+    child_citizenship: ro
+    education_status: high_school_or_vocational
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: true
+    repeat_due_to_health: true
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: young_adult
+    direct_payment_requested: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    requirements:
+    - req.school_enrollment_proof
+    - req.medical_certificate_repeat_reason
+  id: ro.life.child_allowance.F07
+- title: tânăr cu dizabilitate, 22 ani, în învățământ preuniversitar
+  facts:
+    child_birth_date: '2004-01-10'
+    child_citizenship: ro
+    education_status: preuniversity
+    has_finished_program: false
+    child_has_disability: true
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: young_adult
+    direct_payment_requested: true
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps:
+    - apply_or_continue_child_allowance
+    requirements:
+    - req.disability_certificate
+    - req.school_enrollment_proof
+  id: ro.life.child_allowance.F08
+- title: copil străin rezident și locuiește cu părintele
+  facts:
+    child_birth_date: '2022-01-10'
+    child_citizenship: ua
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps:
+    - apply_child_allowance
+    requirements:
+    - req.residence_documents
+  id: ro.life.child_allowance.F09
+- title: copil străin nu locuiește cu părintele în România
+  facts:
+    child_birth_date: '2022-01-10'
+    child_citizenship: ua
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: false
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - apply_child_allowance
+  id: ro.life.child_allowance.F10
+- title: mutare în străinătate — obligație de notificare
+  facts:
+    child_birth_date: '2022-01-10'
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: true
+    change_date: '2026-06-20'
+  expected:
+    status: resolved
+    included_steps:
+    - report_allowance_change
+    emitted_tags:
+    - report_change_15d
+  id: ro.life.child_allowance.F11
+- title: cerere depusă la 18 luni de la naștere
+  facts:
+    child_birth_date: '2024-12-01'
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - allowance_start_rule
+    limits:
+      retroactive_months_max: 12
+  id: ro.life.child_allowance.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - child_birth_date
+  id: ro.life.child_allowance.F13
+- title: lipsește faptul obligatoriu child_birth_date
+  facts:
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - child_birth_date
+  id: ro.life.child_allowance.F14
+- title: valoare invalidă pentru child_birth_date
+  facts:
+    child_birth_date: __invalid__
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - child_birth_date
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.child_allowance.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    child_birth_date: '2022-01-10'
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: false
+  expected:
+    status: resolved
+    channels_absent:
+    - ch.child_allowance.timisoara
+  id: ro.life.child_allowance.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.child_allowance.F17
+  reference_date: '1993-09-21'
+- title: exact la limita termenului principal
+  facts:
+    child_birth_date: '2022-01-10'
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: true
+    change_date: '2026-06-10'
+  expected:
+    status: resolved
+    emitted_tags:
+    - report_change_15d
+  id: ro.life.child_allowance.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    child_birth_date: '2022-01-10'
+    child_citizenship: ro
+    education_status: not_applicable
+    has_finished_program: false
+    child_has_disability: false
+    repeats_school_year: false
+    repeat_due_to_health: false
+    resident_in_romania: true
+    lives_with_parent_in_romania: true
+    application_date: '2026-06-25'
+    requested_payee: mother
+    direct_payment_requested: false
+    relevant_change_occurred: true
+    change_date: '2026-06-09'
+  expected:
+    status: resolved
+    emitted_tags:
+    - report_change_overdue
+  id: ro.life.child_allowance.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.child_allowance.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.child_allowance.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: needs_confirmation
+  id: ro.life.child_allowance.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

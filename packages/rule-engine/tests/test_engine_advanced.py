@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from wb_rule_engine import resolve
 
-from .conftest import _advanced_bundle
+from tests.conftest import _advanced_bundle
 
 NOW = datetime(2026, 6, 1, tzinfo=timezone.utc)
 BUNDLE = _advanced_bundle()

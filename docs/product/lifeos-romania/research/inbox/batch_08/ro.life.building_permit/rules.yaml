@@ -1,0 +1,447 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.building_permit
+event_type_id: ro.life.building_permit
+required_facts:
+- jurisdiction_id
+- work_scope
+- has_real_right
+- has_urbanism_certificate
+- cadastral_evidence_requirement_satisfied
+- has_dt
+- approvals_requirement_satisfied
+- environmental_requirement_satisfied
+- has_fee_proof
+- protected_area
+- application_complete
+status: draft
+rules:
+- id: rule.building_permit.route.v1
+  canonical_rule_id: rule.building_permit.route
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope:
+  - building_permit
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: in
+    field: work_scope
+    values:
+    - new_building
+    - reconstruction
+    - consolidation
+    - modification
+    - extension
+    - rehabilitation
+    - change_of_use_with_works
+    - repair_not_exempt
+  effects:
+  - type: include_step
+    step_id: obtain_urbanism_certificate
+  - type: include_step
+    step_id: complete_environmental_procedure
+  - type: include_step
+    step_id: obtain_required_approvals
+  - type: include_step
+    step_id: prepare_technical_documentation_dt
+  - type: include_step
+    step_id: pay_authorisation_fee
+  - type: include_step
+    step_id: submit_complete_permit_file
+  - type: include_step
+    step_id: receive_building_permit
+  - type: emit_warning
+    tag: do_not_start_before_permit
+    message_ro: Lucrările nu se încep înaintea emiterii autorizației.
+  source_claim_ids:
+  - clm.building_permit.law50.permit_scope
+  - clm.building_permit.law50.procedure_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_real_right.v1
+  canonical_rule_id: rule.building_permit.missing_real_right
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_real_right
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: proof_of_title_or_real_right
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_cu.v1
+  canonical_rule_id: rule.building_permit.missing_cu
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_urbanism_certificate
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: urbanism_certificate
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_cadastral.v1
+  canonical_rule_id: rule.building_permit.missing_cadastral
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: cadastral_evidence_requirement_satisfied
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: current_cadastral_plan_and_land_book_extract_if_applicable
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_dt.v1
+  canonical_rule_id: rule.building_permit.missing_dt
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_dt
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: technical_documentation_for_authorisation
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_approvals.v1
+  canonical_rule_id: rule.building_permit.missing_approvals
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: approvals_requirement_satisfied
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: approvals_and_agreements_from_urbanism_certificate
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_environment.v1
+  canonical_rule_id: rule.building_permit.missing_environment
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: environmental_requirement_satisfied
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: environmental_authority_act_if_applicable
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.missing_fee_proof.v1
+  canonical_rule_id: rule.building_permit.missing_fee_proof
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_fee_proof
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: authorisation_fee_payment_proof
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.inconsistent_complete_file.v1
+  canonical_rule_id: rule.building_permit.inconsistent_complete_file
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: application_complete
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: has_real_right
+        value: false
+      - op: eq
+        field: has_urbanism_certificate
+        value: false
+      - op: eq
+        field: cadastral_evidence_requirement_satisfied
+        value: false
+      - op: eq
+        field: has_dt
+        value: false
+      - op: eq
+        field: approvals_requirement_satisfied
+        value: false
+      - op: eq
+        field: environmental_requirement_satisfied
+        value: false
+      - op: eq
+        field: has_fee_proof
+        value: false
+  effects:
+  - type: override_rule
+    rule_id: rule.building_permit.complete_file.v1
+  - type: block
+    code: inconsistent_complete_file
+    message_ro: Dosarul nu poate fi tratat ca complet cât timp o cerință obligatorie este nesatisfăcută.
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  - clm.building_permit.law50.procedure_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.complete_file.v1
+  canonical_rule_id: rule.building_permit.complete_file
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: application_complete
+    value: true
+  effects:
+  - type: emit_advice
+    tag: permit_decision_max_30_calendar_days
+    message_ro: Termenul legal este de cel mult 30 de zile de la depunerea documentației complete.
+  source_claim_ids:
+  - clm.building_permit.law50.procedure_docs
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.incomplete_file.v1
+  canonical_rule_id: rule.building_permit.incomplete_file
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: application_complete
+    value: false
+  effects:
+  - type: emit_advice
+    tag: incomplete_notice_5_working_days
+    message_ro: Autoritatea notifică lipsurile în 5 zile lucrătoare.
+  - type: emit_advice
+    tag: supplement_window_max_3_months
+    message_ro: Completările se depun în cel mult 3 luni de la notificare.
+  source_claim_ids:
+  - clm.building_permit.law50.incomplete
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.protected.v1
+  canonical_rule_id: rule.building_permit.protected
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: protected_area
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: specific_heritage_and_protected_area_approvals
+  - type: emit_warning
+    tag: protected_area_special_route
+    message_ro: Nu se depune dosarul fără avizele specifice zonei protejate sau monumentului.
+  source_claim_ids:
+  - clm.building_permit.law50.protected
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.validity.v1
+  canonical_rule_id: rule.building_permit.validity
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: explanatory
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: start_validity_max_24_months
+    message_ro: Perioada pentru începerea lucrărilor este de cel mult 24 de luni.
+  - type: emit_advice
+    tag: extension_request_45_working_days_before
+    message_ro: Prelungirea se cere cu cel puțin 45 de zile lucrătoare înainte de expirare.
+  - type: emit_advice
+    tag: single_free_extension_max_24_months
+    message_ro: Prelungirea poate fi acordată o singură dată, gratuit, pentru cel mult 24 de luni.
+  source_claim_ids:
+  - clm.building_permit.law50.validity
+  status: active
+  reviewer_id: null
+- id: rule.building_permit.timisoara_channel_gap.v1
+  canonical_rule_id: rule.building_permit.timisoara_channel_gap
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială expirată
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: emit_advice
+    tag: timisoara_archived_permit_service
+    message_ro: Pagina identificată pentru serviciu indică încheierea disponibilității în 2024.
+  - type: require_confirmation
+    tag: confirm_current_timisoara_permit_submission_channel
+    message_ro: Canalul curent de depunere din Timișoara trebuie confirmat înainte de trimiterea dosarului.
+  source_claim_ids:
+  - clm.building_permit.pmt.permit_page_expired
+  status: in_review
+  reviewer_id: null
+- id: rule.building_permit.other_uat_channel.v1
+  canonical_rule_id: rule.building_permit.other_uat_channel
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: identify_authorising_local_authority
+  - type: require_confirmation
+    tag: confirm_local_permit_submission_channel
+    message_ro: Canalul, programarea și procedura locală trebuie confirmate la autoritatea competentă.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Pilotul local verificat este Timișoara.
+  source_claim_ids:
+  - clm.building_permit.law50.procedure_docs
+  status: in_review
+  reviewer_id: null
+- id: rule.building_permit.fee_amount_gap.v1
+  canonical_rule_id: rule.building_permit.fee_amount_gap
+  event_type_id: ro.life.building_permit
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: taxă locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_local_permit_fee_amount
+    message_ro: Cuantumul taxei trebuie calculat și confirmat de autoritatea locală pentru proiectul concret.
+  source_claim_ids:
+  - clm.building_permit.law50.required_docs
+  status: in_review
+  reviewer_id: null

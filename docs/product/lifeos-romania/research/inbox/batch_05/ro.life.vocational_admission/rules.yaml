@@ -1,0 +1,409 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.vocational_admission
+status: draft
+rules:
+- id: rule.voc.required_facts
+  canonical_rule_id: voc.required_facts
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  required_facts:
+  - entry_path
+  - reference_date
+  - previously_enrolled
+  - target_program_id
+  - unit_procedure_verified
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.voc.select_path
+  source_claim_ids:
+  - claim.voc.grade8.framework
+  - claim.voc.level4.scope
+  status: draft
+- id: rule.voc.prior_enrolled
+  canonical_rule_id: voc.prior_enrolled
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: eq
+    field: previously_enrolled
+    value: true
+  effects:
+  - type: block
+    tag: use_transfer
+    message_ro: Candidatul deja înmatriculat/retras/întrerupt/repetent folosește transferul sau reînmatricularea, nu o nouă
+      admitere.
+  - type: trigger_child_event
+    event_type_id: life.school_transfer
+  source_claim_ids:
+  - claim.voc.level4.prior_enrolled
+  - claim.voc.grade8.framework
+  status: draft
+- id: rule.voc.grade8_path
+  canonical_rule_id: voc.grade8_path
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: eq
+    field: entry_path
+    value: grade8_to_grade9
+  effects:
+  - type: include_step
+    step_id: step.voc.verify_offer
+  - type: emit_advice
+    tag: grade8_uses_6060
+    message_ro: Ruta de clasa a IX-a folosește calendarul general/special al admiterii liceale 2026-2027.
+  source_claim_ids:
+  - claim.voc.grade8.framework
+  - claim.voc.grade8.calendar
+  status: draft
+- id: rule.voc.level4.day
+  canonical_rule_id: voc.level4.day
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: study_form
+      value: day
+    - op: eq
+      field: level3_certificate
+      value: true
+    - op: eq
+      field: same_training_field
+      value: true
+    - op: eq
+      field: age_within_day_limit
+      value: true
+    - op: eq
+      field: school_situation_closed
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.voc.obtain_sheet
+  - type: include_requirement
+    requirement_id: req.voc.level3_certificate
+  source_claim_ids:
+  - claim.voc.level4.day_eligibility
+  status: draft
+- id: rule.voc.level4.evening
+  canonical_rule_id: voc.level4.evening
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: study_form
+      value: evening
+    - op: eq
+      field: level3_certificate
+      value: true
+    - op: eq
+      field: same_training_field
+      value: true
+    - op: eq
+      field: school_situation_closed
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.voc.obtain_sheet
+  - type: include_requirement
+    requirement_id: req.voc.level3_certificate
+  source_claim_ids:
+  - claim.voc.level4.evening_eligibility
+  status: draft
+- id: rule.voc.no_level3
+  canonical_rule_id: voc.no_level3
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: level3_certificate
+      value: false
+  effects:
+  - type: block
+    tag: missing_level3_certificate
+    message_ro: Fără certificatul de calificare nivel 3 nu se eliberează fișa pentru ruta nivel 4.
+  source_claim_ids:
+  - claim.voc.level4.no_sheet
+  status: draft
+- id: rule.voc.field_mismatch
+  canonical_rule_id: voc.field_mismatch
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: same_training_field
+      value: false
+  effects:
+  - type: block
+    tag: training_field_mismatch
+    message_ro: Calificarea de nivel 3 nu este în domeniul cerut pentru continuarea în nivelul 4.
+  source_claim_ids:
+  - claim.voc.level4.day_eligibility
+  - claim.voc.level4.evening_eligibility
+  status: draft
+- id: rule.voc.day_age
+  canonical_rule_id: voc.day_age
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: study_form
+      value: day
+    - op: eq
+      field: age_within_day_limit
+      value: false
+  effects:
+  - type: block
+    tag: day_age_limit
+    message_ro: Limita de vârstă pentru forma de zi nu este îndeplinită; verifică ruta serală.
+  source_claim_ids:
+  - claim.voc.level4.day_eligibility
+  - claim.voc.level4.evening_eligibility
+  status: draft
+- id: rule.voc.school_situation
+  canonical_rule_id: voc.school_situation
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-09-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: school_situation_closed
+      value: false
+  effects:
+  - type: block
+    tag: school_situation_open
+    message_ro: Situația școlară neîncheiată/corigența/repetenția blochează eliberarea fișei în această etapă.
+  source_claim_ids:
+  - claim.voc.level4.no_sheet
+  status: draft
+- id: rule.voc.level4_application_window
+  canonical_rule_id: voc.level4_application_window
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-13'
+  effective_to: '2026-07-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-07-13'
+      - '2026-07-17'
+  effects:
+  - type: include_step
+    step_id: step.voc.obtain_sheet
+  - type: set_deadline
+    step_id: step.voc.obtain_sheet
+    value:
+      kind: window
+      from: '2026-07-13'
+      to: '2026-07-17'
+  source_claim_ids:
+  - claim.voc.level4.calendar
+  status: draft
+- id: rule.voc.level4_tests
+  canonical_rule_id: voc.level4_tests
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-20'
+  effective_to: '2026-07-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-07-20'
+      - '2026-07-28'
+    - op: eq
+      field: unit_tests_required
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.voc.take_tests
+  - type: include_requirement
+    requirement_id: req.voc.test_result
+  source_claim_ids:
+  - claim.voc.level4.calendar
+  - claim.voc.unit_procedure
+  status: draft
+- id: rule.voc.level4_dossier
+  canonical_rule_id: voc.level4_dossier
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-30'
+  effective_to: '2026-07-31'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: level3_to_level4
+    - op: eq
+      field: admitted
+      value: true
+    - op: date_between
+      field: reference_date
+      values:
+      - '2026-07-30'
+      - '2026-07-31'
+  effects:
+  - type: include_step
+    step_id: step.voc.submit_dossier
+  - type: include_requirement
+    requirement_id: req.voc.identity_birth
+  source_claim_ids:
+  - claim.voc.level4.calendar
+  status: draft
+- id: rule.voc.pilot
+  canonical_rule_id: voc.pilot
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-05-01'
+  when:
+    op: eq
+    field: pilot_unit
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: pilot_procedure
+    message_ro: Unitatea este într-un pilot nominal; aplică numai procedura oficială specifică unității, nu regulile generale
+      în mod automat.
+  source_claim_ids:
+  - claim.voc.pilot_exception
+  status: in_review
+- id: rule.voc.local_gap
+  canonical_rule_id: voc.local_gap
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-05-04'
+  when:
+    op: eq
+    field: unit_procedure_verified
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.voc.verify_offer
+  - type: include_requirement
+    requirement_id: req.voc.unit_documents
+  - type: require_confirmation
+    tag: unit_procedure_unverified
+    message_ro: Operatorul, locurile, probele și actele unității nu sunt verificate.
+  source_claim_ids:
+  - claim.voc.unit_procedure
+  - claim.voc.timis.offer
+  status: in_review
+- id: rule.voc.grade8_no_en
+  canonical_rule_id: voc.grade8_no_en
+  event_type_id: life.vocational_admission
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2025-08-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entry_path
+      value: grade8_to_grade9
+    - op: eq
+      field: evaluation_national_taken
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: grade8_without_en_county_route
+    message_ro: Folosește procedura județeană pentru candidații fără Evaluare Națională; nu aplica repartizarea standard.
+  source_claim_ids:
+  - claim.voc.grade8.no_en
+  status: in_review

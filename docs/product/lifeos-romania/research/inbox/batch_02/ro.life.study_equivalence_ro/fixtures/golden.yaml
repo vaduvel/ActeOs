@@ -1,0 +1,439 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.study_equivalence_ro
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: EQV01
+  desc: bac UE, dosar complet
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    deadlines:
+    - 30_working_days
+- id: EQV02
+  desc: bac, dosar incomplet
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: false
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - dossier_incomplete
+- id: EQV03
+  desc: bac, document în altă limbă
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: other
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.eq.translation
+- id: EQV04
+  desc: bac, stat Convenția Haga, fără apostilă
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: hague_apostille
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: false
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - authentication_missing
+- id: EQV05
+  desc: bac, apostilă completă
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: hague_apostille
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+- id: EQV06
+  desc: bac, nume schimbat
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: true
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.eq.name_change
+- id: EQV07
+  desc: bac prin universitate
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: university
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+- id: EQV08
+  desc: bac prin inspectorat
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: school_inspectorate
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+- id: EQV09
+  desc: bac, contestație
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+    decision_contested: true
+  expect:
+    status: ready
+    deadlines:
+    - 45_working_days
+    - 60_working_days
+- id: EQV10
+  desc: licență UE, dosar complet
+  facts:
+    study_level: bachelor
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.eq.transcript
+- id: EQV11
+  desc: licență, contestație
+  facts:
+    study_level: bachelor
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+    decision_contested: true
+  expect:
+    status: ready
+    deadlines:
+    - 30_working_days
+    - 60_working_days
+- id: EQV12
+  desc: licență pentru profesie reglementată UE
+  facts:
+    study_level: bachelor
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: regulated_profession
+    regulated_profession: true
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - use_competent_professional_authority
+- id: EQV13
+  desc: licență pentru profesie nereglementată
+  facts:
+    study_level: bachelor
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: employment
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+- id: EQV14
+  desc: master
+  facts:
+    study_level: master
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.eq.uni
+- id: EQV15
+  desc: doctorat
+  facts:
+    study_level: doctorate
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.eq.uni
+- id: EQV16
+  desc: ani de studiu I-XII
+  facts:
+    study_level: school_years
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: school_inspectorate
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - school_years_isj_route
+- id: EQV17
+  desc: diplomă profesională
+  facts:
+    study_level: vocational
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.eq.pre
+- id: EQV18
+  desc: postliceală
+  facts:
+    study_level: postsecondary
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.eq.pre
+- id: EQV19
+  desc: stat UE, recunoaștere automată nivel
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - eu_automatic_level
+- id: EQV20
+  desc: taxă cerută, cuantum neverificat
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+    fee_requested_by_channel: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - fee_unverified
+- id: EQV21
+  desc: lipsă nivel studii
+  facts:
+    study_level: null
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - study_level
+- id: EQV22
+  desc: lipsă stat emitent
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: null
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issuing_country_group
+- id: EQV23
+  desc: lipsă scop
+  facts:
+    study_level: bac
+    applicant_citizenship: romanian
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: null
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - purpose
+- id: EQV24
+  desc: solicitant cetățean din stat terț
+  facts:
+    study_level: bac
+    applicant_citizenship: third_country
+    issuing_country_group: eu_eea_swiss
+    document_language: english
+    purpose: continue_studies
+    regulated_profession: false
+    dossier_complete: true
+    authentication_complete: true
+    name_changed: false
+    procedure_channel: pcue
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    note: pagina detaliată pentru cetățeni români nu trebuie extrapolată

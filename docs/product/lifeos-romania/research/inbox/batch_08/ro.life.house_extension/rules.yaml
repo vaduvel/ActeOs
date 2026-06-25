@@ -1,0 +1,553 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.house_extension
+event_type_id: ro.life.house_extension
+required_facts:
+- jurisdiction_id
+- is_extension
+- fits_local_urbanism
+- has_real_right
+- has_urbanism_certificate
+- cadastral_evidence_requirement_satisfied
+- has_dt
+- approvals_requirement_satisfied
+- environmental_requirement_satisfied
+- has_fee_proof
+- protected_area
+- application_complete
+status: draft
+rules:
+- id: rule.house_extension.not_applicable.v1
+  canonical_rule_id: rule.house_extension.not_applicable
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: is_extension
+    value: false
+  effects:
+  - type: block
+    code: event_not_applicable
+    message_ro: Evenimentul nu este aplicabil dacă lucrarea nu este o extindere a casei.
+  - type: emit_advice
+    tag: choose_correct_construction_event
+    message_ro: Selectează evenimentul corespunzător lucrării reale.
+  source_claim_ids:
+  - clm.house_extension.law50.permit_scope
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.permit_route.v1
+  canonical_rule_id: rule.house_extension.permit_route
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when: &id001
+    op: eq
+    field: is_extension
+    value: true
+  effects:
+  - type: include_step
+    step_id: obtain_urbanism_certificate
+  - type: include_step
+    step_id: verify_local_urbanism_fit
+  - type: include_step
+    step_id: complete_environmental_procedure
+  - type: include_step
+    step_id: obtain_required_approvals
+  - type: include_step
+    step_id: prepare_extension_dt
+  - type: include_step
+    step_id: pay_authorisation_fee
+  - type: include_step
+    step_id: submit_complete_extension_file
+  - type: include_step
+    step_id: receive_building_permit
+  - type: trigger_child_event
+    event_type_id: ro.life.building_permit
+  - type: emit_warning
+    tag: extension_requires_building_permit
+    message_ro: Extinderea rămâne lucrare supusă autorizației de construire.
+  source_claim_ids:
+  - clm.house_extension.law50.permit_scope
+  - clm.house_extension.law50.procedure_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.rlu_fit.v1
+  canonical_rule_id: rule.house_extension.rlu_fit
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: fits_local_urbanism
+      value: true
+  effects:
+  - type: emit_advice
+    tag: no_prior_planning_documentation_if_rlu_fit
+    message_ro: Dacă propunerea respectă regulamentul local, autorizația poate fi emisă fără o documentație de urbanism prealabilă
+      distinctă.
+  source_claim_ids:
+  - clm.house_extension.law50.no_prior_planning_if_rlu
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.rlu_not_fit.v1
+  canonical_rule_id: rule.house_extension.rlu_not_fit
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: fits_local_urbanism
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_required_planning_documentation
+    message_ro: Necesitatea PUZ/PUD ori imposibilitatea extinderii trebuie stabilită prin certificatul de urbanism și reglementările
+      locale.
+  - type: emit_warning
+    tag: rlu_nonconformity
+    message_ro: Neconformitatea cu regulamentul local blochează aplicarea excepției privind documentația de urbanism prealabilă.
+  source_claim_ids:
+  - clm.house_extension.law50.no_prior_planning_if_rlu
+  status: in_review
+  reviewer_id: null
+- id: rule.house_extension.missing_real_right.v1
+  canonical_rule_id: rule.house_extension.missing_real_right
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: has_real_right
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: proof_of_title_or_real_right
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.missing_cu.v1
+  canonical_rule_id: rule.house_extension.missing_cu
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: has_urbanism_certificate
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: urbanism_certificate
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.missing_cadastral.v1
+  canonical_rule_id: rule.house_extension.missing_cadastral
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: cadastral_evidence_requirement_satisfied
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: current_cadastral_plan_and_land_book_extract_if_applicable
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.missing_dt.v1
+  canonical_rule_id: rule.house_extension.missing_dt
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: has_dt
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: technical_documentation_for_extension
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.missing_approvals.v1
+  canonical_rule_id: rule.house_extension.missing_approvals
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: approvals_requirement_satisfied
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: approvals_and_agreements_from_urbanism_certificate
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.missing_environment.v1
+  canonical_rule_id: rule.house_extension.missing_environment
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: environmental_requirement_satisfied
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: environmental_authority_act_if_applicable
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.missing_fee.v1
+  canonical_rule_id: rule.house_extension.missing_fee
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: has_fee_proof
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: authorisation_fee_payment_proof
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.inconsistent_complete_file.v1
+  canonical_rule_id: rule.house_extension.inconsistent_complete_file
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: application_complete
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: has_real_right
+        value: false
+      - op: eq
+        field: has_urbanism_certificate
+        value: false
+      - op: eq
+        field: cadastral_evidence_requirement_satisfied
+        value: false
+      - op: eq
+        field: has_dt
+        value: false
+      - op: eq
+        field: approvals_requirement_satisfied
+        value: false
+      - op: eq
+        field: environmental_requirement_satisfied
+        value: false
+      - op: eq
+        field: has_fee_proof
+        value: false
+  effects:
+  - type: override_rule
+    rule_id: rule.house_extension.complete_file.v1
+  - type: block
+    code: inconsistent_complete_file
+    message_ro: Dosarul de extindere nu poate fi tratat ca complet cât timp o cerință este nesatisfăcută.
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  - clm.house_extension.law50.procedure_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.complete_file.v1
+  canonical_rule_id: rule.house_extension.complete_file
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: application_complete
+      value: true
+  effects:
+  - type: emit_advice
+    tag: extension_decision_max_30_calendar_days
+    message_ro: Termenul legal este de cel mult 30 de zile pentru dosarul complet.
+  source_claim_ids:
+  - clm.house_extension.law50.procedure_docs
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.incomplete_file.v1
+  canonical_rule_id: rule.house_extension.incomplete_file
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: application_complete
+      value: false
+  effects:
+  - type: emit_advice
+    tag: incomplete_notice_5_working_days
+    message_ro: Lipsurile se notifică în 5 zile lucrătoare.
+  - type: emit_advice
+    tag: supplement_window_max_3_months
+    message_ro: Completările se depun în cel mult 3 luni.
+  source_claim_ids:
+  - clm.house_extension.law50.incomplete
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.protected.v1
+  canonical_rule_id: rule.house_extension.protected
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: protected_area
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: specific_heritage_and_protected_area_approvals
+  source_claim_ids:
+  - clm.house_extension.law50.protected
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.validity.v1
+  canonical_rule_id: rule.house_extension.validity
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: explanatory
+  effective_from: '2026-03-27'
+  effective_to: null
+  when: *id001
+  effects:
+  - type: emit_advice
+    tag: start_validity_max_24_months
+    message_ro: Perioada pentru începerea lucrărilor este de cel mult 24 de luni.
+  - type: emit_advice
+    tag: extension_request_45_working_days_before
+    message_ro: Prelungirea se cere cu cel puțin 45 de zile lucrătoare înainte de expirare.
+  source_claim_ids:
+  - clm.house_extension.law50.validity
+  status: active
+  reviewer_id: null
+- id: rule.house_extension.timisoara_channel_gap.v1
+  canonical_rule_id: rule.house_extension.timisoara_channel_gap
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială expirată
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: emit_advice
+    tag: timisoara_archived_permit_service
+    message_ro: Pagina serviciului identificat a expirat în 2024.
+  - type: require_confirmation
+    tag: confirm_current_timisoara_extension_submission_channel
+    message_ro: Canalul actual pentru dosarul de extindere trebuie confirmat la Primăria Timișoara.
+  source_claim_ids:
+  - clm.house_extension.pmt.permit_page_expired
+  status: in_review
+  reviewer_id: null
+- id: rule.house_extension.other_uat.v1
+  canonical_rule_id: rule.house_extension.other_uat
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: identify_authorising_local_authority
+  - type: require_confirmation
+    tag: confirm_local_extension_submission_channel
+    message_ro: Canalul și procedura locală trebuie confirmate.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Pilotul operațional este Timișoara.
+  source_claim_ids:
+  - clm.house_extension.law50.procedure_docs
+  status: in_review
+  reviewer_id: null
+- id: rule.house_extension.fee_gap.v1
+  canonical_rule_id: rule.house_extension.fee_gap
+  event_type_id: ro.life.house_extension
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: taxă locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when: *id001
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_local_extension_fee_amount
+    message_ro: Cuantumul taxei locale pentru extindere trebuie confirmat pentru proiectul concret.
+  source_claim_ids:
+  - clm.house_extension.law50.required_docs
+  status: in_review
+  reviewer_id: null

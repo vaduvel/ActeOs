@@ -1,0 +1,399 @@
+batch_id: B01_IDENTITY_THEFT_SUSPECTED
+defaults:
+  event_type_id: life.identity_theft_suspected
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: T01
+  desc: tranzacție neautorizată și dovezi
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: true
+    controller_contacted: false
+    controller_response: none
+    evidence_available: true
+    complaint_channel: paper
+    has_qualified_esignature: false
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    included_steps:
+    - preserve_identity_theft_evidence
+    - file_criminal_complaint
+    - contact_personal_data_controller
+    requirements:
+    - req.fact_description
+    - req.available_evidence
+- id: T02
+  desc: pericol imediat
+  facts:
+    urgent_danger: true
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: oral
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    warnings:
+    - call_112
+    channels:
+    - ch.emergency_112
+- id: T03
+  desc: act de identitate fizic lipsă
+  facts:
+    urgent_danger: false
+    physical_id_missing: true
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: false
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    child_events:
+    - life.identity_card_lost_stolen
+- id: T04
+  desc: pașaport lipsă
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: true
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: false
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    child_events:
+    - life.passport_lost_stolen
+- id: T05
+  desc: ambele documente lipsă
+  facts:
+    urgent_danger: false
+    physical_id_missing: true
+    passport_missing: true
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: false
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    child_events:
+    - life.identity_card_lost_stolen
+    - life.passport_lost_stolen
+- id: T06
+  desc: cont deschis în numele victimei
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: true
+    document_used_by_other: true
+    known_controller: true
+    controller_contacted: false
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    included_steps:
+    - file_criminal_complaint
+    - contact_personal_data_controller
+- id: T07
+  desc: plângere electronică fără semnătură
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: electronic
+    has_qualified_esignature: false
+    only_id_copy_leaked: false
+  expect:
+    status: blocked
+    blocks:
+    - electronic_complaint_not_form_valid
+- id: T08
+  desc: plângere electronică semnată
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: electronic
+    has_qualified_esignature: true
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    included_steps:
+    - file_criminal_complaint
+- id: T09
+  desc: plângere orală
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: oral
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    advice:
+    - oral_complaint_recorded
+- id: T10
+  desc: operator cunoscut, necontactat
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: true
+    controller_contacted: false
+    controller_response: none
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_personal_data_controller
+    confirmations:
+    - impact_not_yet_confirmed
+- id: T11
+  desc: operator contactat, termenul de o lună nu a trecut
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: true
+    controller_contacted: true
+    controller_response: pending_under_one_month
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: true
+  expect:
+    status: needs_confirmation
+    included_steps_absent:
+    - file_anspdcp_complaint
+- id: T12
+  desc: operator fără răspuns după o lună
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: true
+    controller_contacted: true
+    controller_response: none_after_one_month
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: true
+  expect:
+    status: resolved
+    included_steps:
+    - file_anspdcp_complaint
+    channels:
+    - ch.anspdcp_complaint
+- id: T13
+  desc: răspuns nesatisfăcător al operatorului
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: true
+    controller_contacted: true
+    controller_response: unsatisfactory
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: true
+  expect:
+    status: resolved
+    included_steps:
+    - file_anspdcp_complaint
+- id: T14
+  desc: doar copie CI scursă, fără utilizare confirmată
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - impact_not_yet_confirmed
+    warnings:
+    - no_automatic_cnp_change
+- id: T15
+  desc: dovezi indisponibile
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: false
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    requirements:
+    - req.available_evidence
+    warnings:
+    - describe_known_facts_even_if_evidence_missing
+- id: T16
+  desc: făptuitor necunoscut
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    perpetrator_known: false
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    requirements:
+    - req.fact_description
+    warnings_absent:
+    - perpetrator_required
+- id: T17
+  desc: lipsește indicatorul de urgență
+  facts:
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - urgent_danger
+- id: T18
+  desc: lipsește canalul plângerii
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    only_id_copy_leaked: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - complaint_channel
+- id: T19
+  desc: petiție online pentru urgență
+  facts:
+    urgent_danger: true
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: true
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: true
+    complaint_channel: petition_portal
+    only_id_copy_leaked: false
+  expect:
+    status: resolved
+    warnings:
+    - call_112
+- id: T20
+  desc: nu există încă niciun indiciu concret
+  facts:
+    urgent_danger: false
+    physical_id_missing: false
+    passport_missing: false
+    unauthorized_transaction: false
+    account_created_in_name: false
+    document_used_by_other: false
+    known_controller: false
+    evidence_available: false
+    complaint_channel: paper
+    only_id_copy_leaked: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - collect_minimum_facts_before_route
+- id: T21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - urgent_danger
+    - physical_id_missing
+    - passport_missing
+    - unauthorized_transaction
+    - account_created_in_name
+    - document_used_by_other
+    - known_controller
+    - evidence_available
+    - complaint_channel
+    - only_id_copy_leaked

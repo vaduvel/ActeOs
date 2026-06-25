@@ -1,0 +1,380 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.return_from_parental_leave
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: salariat revine peste 45 zile și va obține venituri
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_steps:
+    - notify_employer_return
+    - verify_return_conditions
+    - report_return_to_primaria
+    included_child_events:
+    - life.reinsertion_incentive
+    emitted_tags:
+    - return_notice_30d
+    - return_not_less_favourable
+  id: ro.life.return_from_parental_leave.F01
+- title: salariat revine exact peste 30 zile
+  facts:
+    is_employee: true
+    planned_return_date: '2026-07-25'
+    days_until_return: 30
+    will_earn_taxable_income: true
+    income_start_date: '2026-07-25'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - return_notice_30d
+  id: ro.life.return_from_parental_leave.F02
+- title: salariat anunță cu 29 zile înainte
+  facts:
+    is_employee: true
+    planned_return_date: '2026-07-24'
+    days_until_return: 29
+    will_earn_taxable_income: true
+    income_start_date: '2026-07-24'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - return_notice_late
+  id: ro.life.return_from_parental_leave.F03
+- title: PFA revine la venituri — fără notificare de angajator
+  facts:
+    is_employee: false
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - notify_employer_return
+    - verify_return_conditions
+    included_child_events:
+    - life.reinsertion_incentive
+  id: ro.life.return_from_parental_leave.F04
+- title: revine fără a solicita stimulent
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: false
+    income_start_date: null
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_child_events_absent:
+    - life.reinsertion_incentive
+  id: ro.life.return_from_parental_leave.F05
+- title: plata CCC activă — notifică primăria
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_steps:
+    - report_return_to_primaria
+  id: ro.life.return_from_parental_leave.F06
+- title: nu există plată activă — fără notificarea de 15 zile pe acest drept
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: false
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - report_return_to_primaria
+  id: ro.life.return_from_parental_leave.F07
+- title: ambii părinți eligibili, cele 2 luni nu sunt rezolvate
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: true
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_steps:
+    - resolve_other_parent_reserved_period
+    emitted_tags:
+    - other_parent_period_unresolved
+  id: ro.life.return_from_parental_leave.F08
+- title: celălalt părinte a efectuat perioada rezervată
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: true
+    other_parent_reserved_period_taken: true
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - resolve_other_parent_reserved_period
+  id: ro.life.return_from_parental_leave.F09
+- title: angajatorul oferă post mai puțin favorabil
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: true
+  expected:
+    status: resolved
+    included_steps:
+    - document_and_challenge_return_conditions
+    emitted_tags:
+    - return_conditions_violation
+  id: ro.life.return_from_parental_leave.F10
+- title: copil cu dizabilitate — hand-off stimulent cu prag special
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2025-12-01'
+    child_has_disability: true
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    included_child_events:
+    - life.reinsertion_incentive
+  id: ro.life.return_from_parental_leave.F11
+- title: dosar local Timișoara
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: needs_confirmation
+    channels:
+    - ch.return_parental_leave.timisoara
+    emitted_tags:
+    - return_timisoara_documents
+  id: ro.life.return_from_parental_leave.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - is_employee
+    - planned_return_date
+  id: ro.life.return_from_parental_leave.F13
+- title: lipsește faptul obligatoriu is_employee
+  facts:
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - is_employee
+  id: ro.life.return_from_parental_leave.F14
+- title: valoare invalidă pentru is_employee
+  facts:
+    is_employee: __invalid__
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - is_employee
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.return_from_parental_leave.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 45
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    channels_absent:
+    - ch.return_parental_leave.timisoara
+  id: ro.life.return_from_parental_leave.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.return_from_parental_leave.F17
+  reference_date: '2010-12-31'
+- title: exact la limita termenului principal
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 30
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - return_notice_30d
+  id: ro.life.return_from_parental_leave.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    is_employee: true
+    planned_return_date: '2026-08-09'
+    days_until_return: 29
+    will_earn_taxable_income: true
+    income_start_date: '2026-08-09'
+    child_birth_date: '2026-02-01'
+    child_has_disability: false
+    ccc_or_incentive_payment_active: true
+    both_parents_eligible: false
+    other_parent_reserved_period_taken: false
+    employer_offers_less_favourable_conditions: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - return_notice_late
+  id: ro.life.return_from_parental_leave.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.return_from_parental_leave.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.return_from_parental_leave.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: needs_confirmation
+  id: ro.life.return_from_parental_leave.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

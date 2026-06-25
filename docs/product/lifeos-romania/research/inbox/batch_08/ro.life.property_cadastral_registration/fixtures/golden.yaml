@@ -1,0 +1,676 @@
+batch_id: batch08.property_cadastral_registration
+defaults:
+  event_type_id: ro.life.property_cadastral_registration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.house.normal.complete
+  desc: Locuință individuală, regim normal, dosar complet
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.house.urgent.complete
+  desc: Locuință individuală, urgență, dosar complet
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_urgent_term_5_working_days
+- id: fx.ownership.complete
+  desc: Înscriere proprietate, dosar complet
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: ownership
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    confirmations:
+    - confirm_current_generic_cadastral_tariff
+    - confirm_current_generic_cadastral_term
+- id: fx.other_construction.complete
+  desc: Altă construcție finalizată, dosar complet
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_other_construction
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    confirmations:
+    - confirm_current_generic_cadastral_tariff
+    - confirm_current_generic_cadastral_term
+- id: fx.ownership.no_title
+  desc: Înscriere proprietate fără act de titlu
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: ownership
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: false
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - ownership_title_documents
+    channels:
+    - ocpi_timis_documents_and_service_info
+    confirmations:
+    - confirm_current_generic_cadastral_tariff
+    - confirm_current_generic_cadastral_term
+- id: fx.house.no_completion
+  desc: Construcție fără certificat de edificare/finalizare
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: false
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - municipality_completion_or_edification_certificate
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.house.no_fiscal
+  desc: Construcție fără certificat fiscal
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: false
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - fiscal_certificate_with_tax_value
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.house.superficies_missing
+  desc: Drept de superficie aplicabil, dar actul lipsește
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: true
+    superficies_act_available: false
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - surface_right_or_superficies_act
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.house.no_application
+  desc: Lipsește cererea tip
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: false
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - standard_ocpi_application
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.house.no_cadastral_docs
+  desc: Lipsește documentația cadastrală
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: false
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - received_cadastral_documentation_if_applicable
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.house.no_fee_proof
+  desc: Lipsește dovada tarifului
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: false
+    urgent_service: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    requirements:
+    - cadastral_tariff_payment_proof
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+- id: fx.other_county.house
+  desc: Locuință individuală în alt județ
+  facts:
+    jurisdiction_id: other_county
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    - identify_competent_ocpi
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_ocpi_channel
+- id: fx.other_county.ownership
+  desc: Înscriere proprietate în alt județ
+  facts:
+    jurisdiction_id: other_county
+    registration_case: ownership
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    - identify_competent_ocpi
+    advice_tags:
+    - verified_with_local_gap
+    confirmations:
+    - confirm_current_generic_cadastral_tariff
+    - confirm_current_generic_cadastral_term
+    - confirm_local_ocpi_channel
+- id: fx.ownership.urgent
+  desc: Înscriere proprietate cu opțiune urgentă
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: ownership
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    confirmations:
+    - confirm_current_generic_cadastral_tariff
+    - confirm_current_generic_cadastral_term
+- id: fx.other_construction.urgent
+  desc: Altă construcție cu opțiune urgentă
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_other_construction
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    confirmations:
+    - confirm_current_generic_cadastral_tariff
+    - confirm_current_generic_cadastral_term
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.registration_case
+  desc: Lipsește faptul obligatoriu registration_case
+  facts:
+    jurisdiction_id: ro.tm
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    missing_facts:
+    - registration_case
+- id: fx.missing.has_application
+  desc: Lipsește faptul obligatoriu has_application
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - has_application
+- id: fx.missing.has_cadastral_documentation
+  desc: Lipsește faptul obligatoriu has_cadastral_documentation
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - has_cadastral_documentation
+- id: fx.missing.has_title_document
+  desc: Lipsește faptul obligatoriu has_title_document
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - has_title_document
+- id: fx.missing.has_completion_certificate
+  desc: Lipsește faptul obligatoriu has_completion_certificate
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - has_completion_certificate
+- id: fx.missing.has_fiscal_certificate
+  desc: Lipsește faptul obligatoriu has_fiscal_certificate
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - has_fiscal_certificate
+- id: fx.missing.superficies_act_applicable
+  desc: Lipsește faptul obligatoriu superficies_act_applicable
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_available: true
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - superficies_act_applicable
+- id: fx.missing.superficies_act_available
+  desc: Lipsește faptul obligatoriu superficies_act_available
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    has_fee_proof: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - superficies_act_available
+- id: fx.missing.has_fee_proof
+  desc: Lipsește faptul obligatoriu has_fee_proof
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    urgent_service: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    advice_tags:
+    - individual_house_tariff_0_05_percent
+    - individual_house_normal_term_15_working_days
+    missing_facts:
+    - has_fee_proof
+- id: fx.missing.urgent_service
+  desc: Lipsește faptul obligatoriu urgent_service
+  facts:
+    jurisdiction_id: ro.tm
+    registration_case: finished_individual_house
+    has_application: true
+    has_cadastral_documentation: true
+    has_title_document: true
+    has_completion_certificate: true
+    has_fiscal_certificate: true
+    superficies_act_applicable: false
+    superficies_act_available: true
+    has_fee_proof: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    channels:
+    - ocpi_timis_documents_and_service_info
+    missing_facts:
+    - urgent_service
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_ocpi_registration_file
+    - submit_cadastral_and_land_book_request
+    missing_facts:
+    - jurisdiction_id
+    - registration_case
+    - has_application
+    - has_cadastral_documentation
+    - has_title_document
+    - has_completion_certificate
+    - has_fiscal_certificate
+    - superficies_act_applicable
+    - superficies_act_available
+    - has_fee_proof
+    - urgent_service

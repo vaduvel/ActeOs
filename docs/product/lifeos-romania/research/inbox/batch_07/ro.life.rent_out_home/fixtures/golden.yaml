@@ -1,0 +1,476 @@
+batch_id: B07_RENT_OUT_HOME
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.rent_out_home
+  event_alias: ro.life.rent_out_home
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: contract nou standard
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_c168
+    - provide_energy_certificate_copy_before_contract
+    - deposit_energy_certificate_copy_at_tax_body
+    deadlines:
+      submit_c168: '2026-07-01'
+- id: F02
+  desc: contract nou, certificat lipsă
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: false
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_energy_certificate
+    - submit_c168
+    blocks:
+    - energy_certificate_missing
+- id: F03
+  desc: anunț publicat
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: true
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - include_energy_indicators_in_ad
+    - submit_c168
+- id: F04
+  desc: modificare contract
+  facts:
+    contract_change_date: '2026-06-10'
+    filing_type: modification
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_c168_modification
+    deadlines:
+      submit_c168_modification: '2026-07-10'
+- id: F05
+  desc: încetare contract
+  facts:
+    contract_change_date: '2026-06-10'
+    filing_type: termination
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_c168_termination
+    confirmations:
+    - c168_termination_deadline
+- id: F06
+  desc: arendă
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: true
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: false
+    energy_certificate_available: false
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - submit_c168
+    confirmations:
+    - different_tax_route
+- id: F07
+  desc: camere turistice în locuință personală
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: true
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: true
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - submit_c168
+    confirmations:
+    - different_tax_route
+- id: F08
+  desc: coproprietate cu desemnat
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: true
+    is_designated_registrant: true
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_c168
+    advice:
+    - designated_registrant
+- id: F09
+  desc: coproprietate fără desemnat
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: true
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: blocked
+    blocks:
+    - missing_designated_registrant
+- id: F10
+  desc: condominiu
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: true
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_association_of_tenant
+    - submit_c168
+    deadlines:
+      notify_association_of_tenant: '2026-06-11'
+    advice:
+    - owner_remains_obligor
+- id: F11
+  desc: notificare asociație întârziată
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: true
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    warnings:
+    - association_notice_overdue
+  reference_date: '2026-06-25'
+- id: F12
+  desc: C168 ziua 31
+  facts:
+    contract_date: '2026-05-25'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    warnings:
+    - c168_overdue
+- id: F13
+  desc: venit 2025, chiriaș persoană fizică
+  facts:
+    contract_date: '2025-01-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2025
+    tenant_payer_type: individual
+  expect:
+    status: resolved
+    included_steps:
+    - submit_d212_for_2025_income
+    deadlines:
+      submit_d212_for_2025_income: '2026-05-25'
+- id: F14
+  desc: venit 2025, plătitor persoană juridică
+  facts:
+    contract_date: '2025-01-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2025
+    tenant_payer_type: legal_entity_accounting
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_d212_for_2025_income
+    note: verifică excepțiile și plata în natură/avans
+- id: F15
+  desc: venit 2026
+  facts:
+    contract_date: '2026-01-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - d212_future_year
+- id: F16
+  desc: lipsește filing_type
+  facts:
+    contract_date: '2026-06-01'
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_facts
+    missing_facts:
+    - filing_type
+- id: F17
+  desc: lipsește contract_date la initial
+  facts:
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_facts
+    missing_facts:
+    - contract_date
+- id: F18
+  desc: lipsește contract_change_date la modificare
+  facts:
+    filing_type: modification
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_facts
+    missing_facts:
+    - contract_change_date
+- id: F19
+  desc: bun în afara patrimoniului personal
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: false
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: false
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_c168
+    note: poate aparține unei activități/firme
+- id: F20
+  desc: alt UAT
+  facts:
+    contract_date: '2026-06-01'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: false
+    is_designated_registrant: false
+    is_condominium: true
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: false
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    local_state: verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.bv
+  - ro.bv.brasov
+- id: F21
+  desc: contract complet, toate ramurile
+  facts:
+    contract_date: '2026-06-20'
+    filing_type: initial
+    is_personal_property_income: true
+    is_arenda: false
+    is_tourist_rooms_personal_home: false
+    is_co_owned: true
+    is_designated_registrant: true
+    is_condominium: true
+    is_residential_building: true
+    energy_certificate_available: true
+    advertisement_published: true
+    income_year: 2026
+    tenant_payer_type: individual
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - include_energy_indicators_in_ad
+    - provide_energy_certificate_copy_before_contract
+    - submit_c168
+    - notify_association_of_tenant
+    - deposit_energy_certificate_copy_at_tax_body
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - filing_type
+    - is_personal_property_income
+    - is_arenda
+    - is_tourist_rooms_personal_home

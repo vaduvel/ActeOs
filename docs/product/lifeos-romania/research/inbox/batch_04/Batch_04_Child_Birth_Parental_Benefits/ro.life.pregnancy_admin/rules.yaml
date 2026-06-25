@@ -1,0 +1,246 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.pregnancy_admin
+status: draft
+rules:
+- id: rule.pregnancy.notify_employer
+  canonical_rule_id: pregnancy_admin.notify_employer
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: written_notice_sent
+    value: false
+  effects:
+  - type: include_step
+    step_id: notify_employer_pregnancy
+  - type: include_requirement
+    requirement_id: req.written_pregnancy_notice
+  - type: include_requirement
+    requirement_id: req.pregnancy_medical_document
+  - type: emit_warning
+    tag: pregnancy_protection_requires_notice
+    message_ro: Trimite notificarea scrisă și documentul medical pentru activarea protecțiilor specifice.
+  source_claim_ids:
+  - claim.pregnancy.written_notice_medical
+  status: draft
+  required_facts:
+  - written_notice_sent
+  - medical_document_attached
+- id: rule.pregnancy.employer_10d
+  canonical_rule_id: pregnancy_admin.employer.notify_authorities
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: written_notice_sent
+    value: true
+  effects:
+  - type: emit_advice
+    tag: employer_notify_itm_10d
+    message_ro: Angajatorul notifică medicina muncii și ITM în 10 zile lucrătoare.
+  - type: emit_advice
+    tag: pregnancy_confidentiality
+    message_ro: Starea de graviditate este tratată confidențial în condițiile legii.
+  source_claim_ids:
+  - claim.pregnancy.employer_notify_10d
+  - claim.pregnancy.confidentiality
+  status: draft
+- id: rule.pregnancy.workplace_risk
+  canonical_rule_id: pregnancy_admin.workplace_risk_hierarchy
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: workplace_risk_identified
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_risk_assessment_and_adaptation
+  - type: emit_advice
+    tag: risk_control_hierarchy
+    message_ro: Mai întâi se adaptează condițiile/programul, apoi se caută un post fără risc; concediul de risc maternal este ultima treaptă.
+  source_claim_ids:
+  - claim.pregnancy.risk_hierarchy
+  status: draft
+- id: rule.pregnancy.risk_leave
+  canonical_rule_id: pregnancy_admin.risk_leave
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workplace_risk_identified
+      value: true
+    - op: eq
+      field: adaptation_or_transfer_possible
+      value: false
+  effects:
+  - type: include_step
+    step_id: request_maternity_risk_leave
+  - type: set_deadline
+    step_id: maternity_risk_leave_max
+    value:
+      kind: duration_calendar_days
+      days: 120
+  - type: emit_advice
+    tag: risk_leave_75_percent
+    message_ro: Concediul poate avea cel mult 120 zile; indemnizația legală este 75% din baza de calcul, fără stagiu minim.
+  source_claim_ids:
+  - claim.pregnancy.risk_leave_120
+  - claim.pregnancy.risk_benefit_75_no_stage
+  status: draft
+- id: rule.pregnancy.reduced_work
+  canonical_rule_id: pregnancy_admin.reduced_work_quarter
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: doctor_recommends_reduced_schedule
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_quarter_schedule_reduction
+  - type: include_requirement
+    requirement_id: req.family_doctor_recommendation
+  - type: emit_advice
+    tag: quarter_reduction_full_pay
+    message_ro: Programul se reduce cu o pătrime, cu menținerea veniturilor salariale.
+  source_claim_ids:
+  - claim.pregnancy.reduced_work_quarter
+  status: draft
+- id: rule.pregnancy.consultations
+  canonical_rule_id: pregnancy_admin.prenatal_consultations
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: prenatal_consultations_only_during_work
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_prenatal_consultation_leave
+  - type: set_deadline
+    step_id: prenatal_consultation_monthly_limit
+    value:
+      kind: duration_hours_per_month
+      hours: 16
+  - type: include_requirement
+    requirement_id: req.prenatal_consultation_proof
+  source_claim_ids:
+  - claim.pregnancy.prenatal_consultations_16h
+  status: draft
+- id: rule.pregnancy.breastfeeding
+  canonical_rule_id: pregnancy_admin.breastfeeding_breaks
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_breastfeeding
+      value: true
+    - op: lt
+      field: child_age_months
+      value: 12
+  effects:
+  - type: include_step
+    step_id: request_breastfeeding_breaks_or_reduction
+  - type: emit_advice
+    tag: breastfeeding_breaks
+    message_ro: Alege două pauze de câte o oră sau reducerea programului cu două ore, fără diminuarea veniturilor.
+  source_claim_ids:
+  - claim.pregnancy.breastfeeding_breaks
+  status: draft
+- id: rule.pregnancy.night_work
+  canonical_rule_id: pregnancy_admin.no_night_work
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: works_night_shift
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_day_work_transfer
+  - type: emit_warning
+    tag: no_forced_night_work
+    message_ro: Nu poți fi obligată să lucrezi noaptea în situația protejată de lege.
+  source_claim_ids:
+  - claim.pregnancy.no_night_work
+  status: draft
+- id: rule.pregnancy.insalubrious
+  canonical_rule_id: pregnancy_admin.no_insalubrious_work
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: insalubrious_or_hard_work
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_safe_work_transfer
+  - type: emit_warning
+    tag: no_insalubrious_work
+    message_ro: Solicită transferul la un loc de muncă fără condiții insalubre sau greu de suportat, cu menținerea salariului de bază.
+  source_claim_ids:
+  - claim.pregnancy.no_insalubrious_hard_work
+  status: draft
+- id: rule.pregnancy.dismissal_risk
+  canonical_rule_id: pregnancy_admin.dismissal_protection
+  event_type_id: life.pregnancy_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-02-01'
+  when:
+    op: eq
+    field: dismissal_or_retaliation_threat
+    value: true
+  effects:
+  - type: include_step
+    step_id: document_and_challenge_retaliation
+  - type: emit_warning
+    tag: pregnancy_dismissal_protection
+    message_ro: Documentează măsura și solicită verificare juridică/ITM; legea interzice încetarea pentru motive direct legate de starea protejată.
+  source_claim_ids:
+  - claim.pregnancy.dismissal_protection
+  status: draft

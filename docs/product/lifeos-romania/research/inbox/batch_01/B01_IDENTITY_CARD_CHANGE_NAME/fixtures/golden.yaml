@@ -1,0 +1,309 @@
+batch_id: B01_IDENTITY_CARD_CHANGE_NAME
+defaults:
+  event_type_id: life.identity_card_change_name
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: N01
+  desc: căsătorie, cerere în 5 zile
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+    domicile_changed: false
+  expect:
+    status: resolved
+    included_steps:
+    - replace_identity_card_after_name_change
+    deadline_days: 15
+    requirements:
+    - req.marriage_certificate_with_current_name
+    advice:
+    - fee_70_ron
+- id: N02
+  desc: căsătorie, ziua 15
+  facts:
+    change_date: '2026-06-10'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+  expect:
+    status: resolved
+    overdue: false
+- id: N03
+  desc: căsătorie, ziua 16
+  facts:
+    change_date: '2026-06-09'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+  expect:
+    status: resolved
+    overdue: true
+- id: N04
+  desc: divorț definitiv
+  facts:
+    change_date: '2026-06-18'
+    request_date: '2026-06-25'
+    change_basis: divorce
+    requested_document: cis
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+  expect:
+    status: resolved
+    requirements:
+    - req.final_divorce_certificate_or_judgment
+    advice:
+    - fee_40_ron
+- id: N05
+  desc: divorț fără hotărâre/certificat
+  facts:
+    change_date: '2026-06-18'
+    request_date: '2026-06-25'
+    change_basis: divorce
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.final_divorce_certificate_or_judgment
+- id: N06
+  desc: schimbare administrativă cu dispoziție
+  facts:
+    change_date: '2026-06-15'
+    request_date: '2026-06-25'
+    change_basis: administrative
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_admin_or_court_act: true
+  expect:
+    status: resolved
+    requirements:
+    - req.final_name_change_act
+- id: N07
+  desc: schimbare administrativă fără act final
+  facts:
+    change_date: '2026-06-15'
+    request_date: '2026-06-25'
+    change_basis: administrative
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_admin_or_court_act: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.final_name_change_act
+- id: N08
+  desc: hotărâre judecătorească definitivă
+  facts:
+    change_date: '2026-06-15'
+    request_date: '2026-06-25'
+    change_basis: court
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_admin_or_court_act: true
+  expect:
+    status: resolved
+    requirements:
+    - req.final_name_change_act
+- id: N09
+  desc: modificare în străinătate neînregistrată în România
+  facts:
+    change_date: '2026-05-01'
+    request_date: '2026-06-25'
+    change_basis: foreign
+    requested_document: cei
+    applicant_present: true
+    foreign_change_registered_in_ro: false
+  expect:
+    status: blocked
+    blocks:
+    - foreign_change_not_registered_in_ro
+    child_events:
+    - life.civil_status_transcription
+- id: N10
+  desc: modificare în străinătate înregistrată
+  facts:
+    change_date: '2026-05-01'
+    request_date: '2026-06-25'
+    change_basis: foreign
+    requested_document: cei
+    applicant_present: true
+    foreign_change_registered_in_ro: true
+  expect:
+    status: resolved
+    requirements:
+    - req.romanian_civil_certificate_with_mentions
+- id: N11
+  desc: act vechi lipsă
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: false
+    has_updated_civil_certificate: true
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.old_identity_card
+    warnings:
+    - possible_lost_identity_document
+- id: N12
+  desc: titular absent cu procură
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: false
+    proxy_present: true
+  expect:
+    status: blocked
+    blocks:
+    - applicant_presence_required
+- id: N13
+  desc: CEI în alt județ
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+  expect:
+    status: resolved
+    channels:
+    - ch.hub_cei_any_spcep
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: N14
+  desc: CIS la serviciu necompetent
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cis
+    applicant_present: true
+    service_matches_domicile: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - cis_local_only
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: N15
+  desc: schimbare nume și domiciliu
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+    domicile_changed: true
+  expect:
+    status: resolved
+    child_events:
+    - life.id_card_change_address
+- id: N16
+  desc: pilot Timișoara
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+    has_old_id: true
+    has_updated_civil_certificate: true
+  expect:
+    status: resolved
+    channels:
+    - ch.hub_cei_any_spcep
+    - ch.dep_timisoara_mihai_eminescu_15
+- id: N17
+  desc: lipsește data schimbării
+  facts:
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_date
+- id: N18
+  desc: lipsește temeiul schimbării
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    requested_document: cei
+    applicant_present: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_basis
+- id: N19
+  desc: lipsește tipul actului solicitat
+  facts:
+    change_date: '2026-06-20'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    applicant_present: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requested_document
+- id: N20
+  desc: data schimbării în viitor
+  facts:
+    change_date: '2026-07-01'
+    request_date: '2026-06-25'
+    change_basis: marriage
+    requested_document: cei
+    applicant_present: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - future_change_date
+- id: N21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_date
+    - request_date
+    - change_basis
+    - requested_document
+    - applicant_present

@@ -1,0 +1,363 @@
+batch_id: B02_FOREIGN_DOCUMENT_RECOGNITION
+defaults:
+  event_type_id: ro.life.foreign_document_recognition
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.fdr.001
+  desc: Diplomă de bacalaureat UE pentru continuarea studiilor.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_preuniversity_recognition_to_cnred
+    advice_tags:
+    - academic_auto_eu_see_ch
+    - cnred_preuniversity_route
+    - preuniversity_30_working_days
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_preuniversity
+- id: fx.fdr.002
+  desc: Diplomă preuniversitară din stat terț.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    issuing_country_group: third_country
+    profession_regulated: false
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_preuniversity_recognition_to_cnred
+    advice_tags:
+    - cnred_preuniversity_route
+    - preuniversity_30_working_days
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_preuniversity
+- id: fx.fdr.003
+  desc: Alt nivel preuniversitar, fără termenul special de 30 zile modelat.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_preuniversity_recognition_to_cnred
+    advice_tags:
+    - academic_auto_eu_see_ch
+    - cnred_preuniversity_route
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_preuniversity
+- id: fx.fdr.004
+  desc: Diplomă universitară UE pentru angajare nereglementată.
+  facts:
+    document_category: university_studies
+    intended_use: employment
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: bachelor_master_doctor
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_university_recognition_to_cnred
+    advice_tags:
+    - academic_auto_eu_see_ch
+    - university_30_working_days
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_university
+- id: fx.fdr.005
+  desc: Diplomă universitară din stat terț.
+  facts:
+    document_category: university_studies
+    intended_use: continue_studies
+    issuing_country_group: third_country
+    profession_regulated: false
+    document_level: bachelor_master_doctor
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_university_recognition_to_cnred
+    advice_tags:
+    - university_30_working_days
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_university
+- id: fx.fdr.006
+  desc: Diplomă universitară pentru profesie reglementată.
+  facts:
+    document_category: university_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: true
+    document_level: bachelor_master_doctor
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - identify_regulated_profession_authority
+    - submit_university_recognition_to_cnred
+    advice_tags:
+    - university_30_working_days
+    warnings_present:
+    - academic_recognition_not_professional_authorisation
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_university
+- id: fx.fdr.007
+  desc: Calificare profesională pentru profesie reglementată.
+  facts:
+    document_category: professional_qualification
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: true
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - identify_regulated_profession_authority
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_professional_assistance
+    needs_confirmation:
+    - regulated_authority_required
+- id: fx.fdr.008
+  desc: Calificare profesională cu statut reglementat necunoscut.
+  facts:
+    document_category: professional_qualification
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: unknown
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - check_if_profession_is_regulated
+    - classify_document_and_intended_use
+    warnings_present:
+    - authenticity_not_recognition
+    needs_confirmation:
+    - regulated_status_unknown
+- id: fx.fdr.009
+  desc: Calificare profesională nereglementată.
+  facts:
+    document_category: professional_qualification
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    advice_tags:
+    - nonregulated_employer_or_sector_check
+    warnings_present:
+    - authenticity_not_recognition
+- id: fx.fdr.010
+  desc: Certificat străin de naștere pentru utilizare în România.
+  facts:
+    document_category: civil_status
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - route_to_foreign_civil_status_transcription_or_registration
+    warnings_present:
+    - authenticity_not_recognition
+    - civil_status_not_cnred
+- id: fx.fdr.011
+  desc: Hotărâre judecătorească străină.
+  facts:
+    document_category: court_judgment
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - confirm_foreign_judgment_recognition_route
+    warnings_present:
+    - authenticity_not_recognition
+    needs_confirmation:
+    - court_judgment_special_route
+- id: fx.fdr.012
+  desc: Alt document străin, autoritatea primitoare trebuie identificată.
+  facts:
+    document_category: other
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: other
+  expect:
+    status: ok
+    included_steps:
+    - ask_receiving_authority_for_recognition_basis
+    - classify_document_and_intended_use
+    warnings_present:
+    - authenticity_not_recognition
+    needs_confirmation:
+    - other_document_authority
+- id: fx.fdr.013
+  desc: Diplomă preuniversitară pentru profesie reglementată.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: true
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - identify_regulated_profession_authority
+    - submit_preuniversity_recognition_to_cnred
+    advice_tags:
+    - cnred_preuniversity_route
+    - preuniversity_30_working_days
+    warnings_present:
+    - academic_recognition_not_professional_authorisation
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_preuniversity
+- id: fx.fdr.014
+  desc: Diplomă universitară UE pentru continuarea studiilor.
+  facts:
+    document_category: university_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: bachelor_master_doctor
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_university_recognition_to_cnred
+    advice_tags:
+    - academic_auto_eu_see_ch
+    - university_30_working_days
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_university
+- id: fx.fdr.015
+  desc: Diplomă preuniversitară UE pentru angajare.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: employment
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_intended_use
+    - submit_preuniversity_recognition_to_cnred
+    advice_tags:
+    - academic_auto_eu_see_ch
+    - cnred_preuniversity_route
+    - preuniversity_30_working_days
+    warnings_present:
+    - authenticity_not_recognition
+    channels:
+    - ch.cnred_preuniversity
+- id: fx.fdr.016
+  desc: Lipsește faptul obligatoriu `document_category`.
+  facts:
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_category
+- id: fx.fdr.017
+  desc: Lipsește faptul obligatoriu `intended_use`.
+  facts:
+    document_category: preuniversity_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: needs_facts
+    missing_facts:
+    - intended_use
+- id: fx.fdr.018
+  desc: Lipsește faptul obligatoriu `issuing_country_group`.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    profession_regulated: false
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issuing_country_group
+- id: fx.fdr.019
+  desc: Lipsește faptul obligatoriu `profession_regulated`.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    document_level: bac_vocational_postsecondary
+  expect:
+    status: needs_facts
+    missing_facts:
+    - profession_regulated
+- id: fx.fdr.020
+  desc: Lipsește faptul obligatoriu `document_level`.
+  facts:
+    document_category: preuniversity_studies
+    intended_use: continue_studies
+    issuing_country_group: eu_see_ch
+    profession_regulated: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_level
+- id: fx.fdr.021
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_category
+    - intended_use
+    - issuing_country_group
+    - profession_regulated
+    - document_level

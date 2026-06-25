@@ -1,0 +1,246 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_DRIVING_LICENCE_LOST_STOLEN
+event_type_id: life.driving_licence_lost_stolen
+status: draft
+rules:
+- id: rule.dldup.route
+  canonical_rule_id: driving_licence_lost_stolen.duplicate_route
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: in
+    field: incident_type
+    values:
+    - lost
+    - stolen
+    - damaged
+  effects:
+  - type: include_step
+    step_id: request_driving_licence_duplicate
+  - type: attach_channel
+    channel_id: ch.any_spcrpciv
+  source_claim_ids:
+  - claim.dldup.eligible
+  status: draft
+  required_facts:
+  - incident_type
+- id: rule.dldup.expired_child
+  canonical_rule_id: driving_licence_lost_stolen.expired_child
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: eq
+    field: current_licence_expired
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.driving_licence_expired
+  - type: emit_warning
+    tag: duplicate_would_not_restore_validity
+    message_ro: Pentru un permis expirat, verifică traseul de valabilitate nouă.
+  source_claim_ids:
+  - claim.dldup.eligible
+  status: draft
+- id: rule.dldup.new_validity_child
+  canonical_rule_id: driving_licence_lost_stolen.new_validity_child
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: eq
+    field: wants_new_validity
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.driving_licence_expired
+  source_claim_ids:
+  - claim.dldup.same_validity_without_medical_tm
+  status: draft
+- id: rule.dldup.counter
+  canonical_rule_id: driving_licence_lost_stolen.counter
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2024-06-01'
+  when:
+    op: eq
+    field: request_channel
+    value: counter
+  effects:
+  - type: include_requirement
+    requirement_id: req.counter_identity_and_application
+  source_claim_ids:
+  - claim.dldup.counter_flow
+  status: draft
+- id: rule.dldup.email
+  canonical_rule_id: driving_licence_lost_stolen.email
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: eq
+    field: request_channel
+    value: email
+  effects:
+  - type: include_step
+    step_id: send_duplicate_documents_to_selected_spcrpciv
+  - type: include_requirement
+    requirement_id: req.selected_spcrpciv_email
+  - type: include_step
+    step_id: collect_duplicate_in_person
+  source_claim_ids:
+  - claim.dldup.email_flow
+  status: draft
+- id: rule.dldup.email_no_pickup
+  canonical_rule_id: driving_licence_lost_stolen.email_requires_pickup
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_channel
+      value: email
+    - op: eq
+      field: pickup_in_person
+      value: false
+  effects:
+  - type: block
+    tag: email_route_requires_counter_pickup
+    message_ro: Fluxul e-mail publicat se finalizează prin ridicare la ghișeu.
+  source_claim_ids:
+  - claim.dldup.email_flow
+  status: draft
+- id: rule.dldup.fee
+  canonical_rule_id: driving_licence_lost_stolen.fee_89
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2020-09-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.payment_89_ron
+  - type: emit_advice
+    tag: fee_89_ron
+    message_ro: Tariful publicat este 89 lei.
+  source_claim_ids:
+  - claim.dldup.fee
+  status: draft
+- id: rule.dldup.same_validity_tm
+  canonical_rule_id: driving_licence_lost_stolen.same_validity_without_medical_tm
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: medical_document_present
+      value: false
+    - op: eq
+      field: current_licence_expired
+      value: false
+    - op: eq
+      field: wants_new_validity
+      value: false
+  effects:
+  - type: emit_advice
+    tag: same_validity_as_previous
+    message_ro: În pilotul Timiș, fără fișă medicală duplicatul păstrează valabilitatea permisului anterior.
+  source_claim_ids:
+  - claim.dldup.same_validity_without_medical_tm
+  status: draft
+- id: rule.dldup.exact_docs
+  canonical_rule_id: driving_licence_lost_stolen.exact_dossier_confirmation
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: exact_dossier_pending
+    message_ro: Verifică lista exactă DGPCI; nu este completată prin presupunere.
+  source_claim_ids:
+  - claim.dldup.exact_dossier
+  status: in_review
+- id: rule.dldup.delivery
+  canonical_rule_id: driving_licence_lost_stolen.delivery
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2025-03-18'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: delivery_5_to_14
+    message_ro: HUB publică 5 zile lucrătoare mediu și 14 zile calendaristice maxim.
+  source_claim_ids:
+  - claim.dldup.delivery
+  status: draft
+- id: rule.dldup.cei_tm
+  canonical_rule_id: driving_licence_lost_stolen.cei_no_address_certificate_tm
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2025-07-24'
+  when:
+    op: eq
+    field: applicant_has_cei
+    value: true
+  effects:
+  - type: exclude_step
+    step_id: obtain_address_certificate
+  - type: emit_advice
+    tag: address_checked_at_counter
+    message_ro: În Timiș, adresa CEI se verifică la ghișeu.
+  source_claim_ids:
+  - claim.dldup.cei_no_address_certificate_tm
+  status: draft
+- id: rule.dldup.timisoara
+  canonical_rule_id: driving_licence_lost_stolen.timisoara_channel
+  event_type_id: life.driving_licence_lost_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: explanatory
+  effective_from: '2025-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timisoara_demetriade_1
+  - type: emit_advice
+    tag: delivery_fallback_9_10_days
+    message_ro: FAQ-ul local indică verificarea la ghișeul de eliberări dacă livrarea nu ajunge în 9-10 zile.
+  source_claim_ids:
+  - claim.dldup.timisoara_contact
+  - claim.dldup.delivery_fallback_tm
+  status: draft

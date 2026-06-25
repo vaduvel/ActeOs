@@ -1,0 +1,307 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_FOREIGN_DOCUMENT_RECOGNITION
+event_type_id: ro.life.foreign_document_recognition
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- document_category
+- intended_use
+- issuing_country_group
+- profession_regulated
+- document_level
+rules:
+- id: rule.fdr.start
+  canonical_rule_id: foreign_document_recognition.start
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_document_and_intended_use
+  - type: emit_warning
+    tag: authenticity_not_recognition
+    message_ro: Apostila sau acceptarea formală nu rezolvă automat recunoașterea studiilor, profesiei, stării civile ori hotărârii.
+  source_claim_ids:
+  - claim.fdr.auth_not_recognition
+  status: in_review
+- id: rule.fdr.preuniversity_route
+  canonical_rule_id: foreign_document_recognition.preuniversity_route
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_category
+    value: preuniversity_studies
+  effects:
+  - type: include_step
+    step_id: submit_preuniversity_recognition_to_cnred
+  - type: attach_channel
+    channel_id: ch.cnred_preuniversity
+  - type: emit_advice
+    tag: cnred_preuniversity_route
+    message_ro: Folosește procedura CNRED pentru actul de studii preuniversitare și scopul declarat.
+  source_claim_ids:
+  - claim.fdr.preuniversity_cnred
+  status: in_review
+- id: rule.fdr.preuniversity_30
+  canonical_rule_id: foreign_document_recognition.preuniversity_30
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_category
+      value: preuniversity_studies
+    - op: eq
+      field: document_level
+      value: bac_vocational_postsecondary
+  effects:
+  - type: emit_advice
+    tag: preuniversity_30_working_days
+    message_ro: Termenul publicat pentru această categorie este de 30 de zile lucrătoare; verificările pot prelungi soluționarea.
+  source_claim_ids:
+  - claim.fdr.preuniversity_30
+  status: in_review
+- id: rule.fdr.university_route
+  canonical_rule_id: foreign_document_recognition.university_route
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_category
+    value: university_studies
+  effects:
+  - type: include_step
+    step_id: submit_university_recognition_to_cnred
+  - type: attach_channel
+    channel_id: ch.cnred_university
+  - type: emit_advice
+    tag: university_30_working_days
+    message_ro: Pagina CNRED indică 30 de zile lucrătoare, cu posibilă prelungire pentru verificări.
+  source_claim_ids:
+  - claim.fdr.university_cnred
+  status: in_review
+- id: rule.fdr.eu_academic_auto
+  canonical_rule_id: foreign_document_recognition.eu_academic_auto
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: document_category
+      values:
+      - preuniversity_studies
+      - university_studies
+    - op: eq
+      field: issuing_country_group
+      value: eu_see_ch
+    - op: neq
+      field: profession_regulated
+      value: true
+  effects:
+  - type: emit_advice
+    tag: academic_auto_eu_see_ch
+    message_ro: Aplică ramura de recunoaștere academică automată publicată de CNRED, fără a confunda aceasta cu autorizarea
+      unei profesii reglementate.
+  source_claim_ids:
+  - claim.fdr.eu_auto_academic
+  status: in_review
+- id: rule.fdr.regulated_profession
+  canonical_rule_id: foreign_document_recognition.regulated_profession
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_category
+      value: professional_qualification
+    - op: eq
+      field: profession_regulated
+      value: true
+  effects:
+  - type: include_step
+    step_id: identify_regulated_profession_authority
+  - type: attach_channel
+    channel_id: ch.cnred_professional_assistance
+  - type: require_confirmation
+    tag: regulated_authority_required
+    message_ro: Identifică autoritatea competentă pentru profesia concretă; CNRED asistă, dar nu este automat autoritatea
+      de recunoaștere pentru fiecare profesie.
+  source_claim_ids:
+  - claim.fdr.professional_route
+  status: in_review
+- id: rule.fdr.professional_unknown
+  canonical_rule_id: foreign_document_recognition.professional_unknown
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_category
+      value: professional_qualification
+    - op: eq
+      field: profession_regulated
+      value: unknown
+  effects:
+  - type: include_step
+    step_id: check_if_profession_is_regulated
+  - type: require_confirmation
+    tag: regulated_status_unknown
+    message_ro: Verifică dacă activitatea este profesie reglementată înainte de a selecta procedura.
+  source_claim_ids:
+  - claim.fdr.professional_route
+  status: in_review
+- id: rule.fdr.professional_nonregulated
+  canonical_rule_id: foreign_document_recognition.professional_nonregulated
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_category
+      value: professional_qualification
+    - op: eq
+      field: profession_regulated
+      value: false
+  effects:
+  - type: emit_advice
+    tag: nonregulated_employer_or_sector_check
+    message_ro: Pentru o profesie nereglementată, confirmă cerința angajatorului sau a autorității sectoriale; nu impune automat
+      o procedură profesională.
+  source_claim_ids:
+  - claim.fdr.professional_route
+  status: in_review
+- id: rule.fdr.civil_status
+  canonical_rule_id: foreign_document_recognition.civil_status
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_category
+    value: civil_status
+  effects:
+  - type: include_step
+    step_id: route_to_foreign_civil_status_transcription_or_registration
+  - type: trigger_child_event
+    event_type_id: ro.life.transcribe_foreign_birth
+  - type: emit_warning
+    tag: civil_status_not_cnred
+    message_ro: Actele de stare civilă nu se trimit la CNRED.
+  source_claim_ids:
+  - claim.fdr.auth_not_recognition
+  status: in_review
+- id: rule.fdr.court_judgment
+  canonical_rule_id: foreign_document_recognition.court_judgment
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_category
+    value: court_judgment
+  effects:
+  - type: include_step
+    step_id: confirm_foreign_judgment_recognition_route
+  - type: require_confirmation
+    tag: court_judgment_special_route
+    message_ro: Procedura depinde de stat, materie și instrumentul internațional/UE; este necesară o analiză separată.
+  source_claim_ids:
+  - claim.fdr.auth_not_recognition
+  status: in_review
+- id: rule.fdr.other
+  canonical_rule_id: foreign_document_recognition.other
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_category
+    value: other
+  effects:
+  - type: include_step
+    step_id: ask_receiving_authority_for_recognition_basis
+  - type: require_confirmation
+    tag: other_document_authority
+    message_ro: Autoritatea care cere documentul trebuie să indice forma de recunoaștere aplicabilă.
+  source_claim_ids:
+  - claim.fdr.auth_not_recognition
+  status: in_review
+- id: rule.fdr.regulated_academic_warning
+  canonical_rule_id: foreign_document_recognition.regulated_academic_warning
+  event_type_id: ro.life.foreign_document_recognition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: document_category
+      values:
+      - preuniversity_studies
+      - university_studies
+    - op: eq
+      field: profession_regulated
+      value: true
+  effects:
+  - type: emit_warning
+    tag: academic_recognition_not_professional_authorisation
+    message_ro: Recunoașterea academică nu înlocuiește dreptul de practică într-o profesie reglementată.
+  - type: include_step
+    step_id: identify_regulated_profession_authority
+  source_claim_ids:
+  - claim.fdr.eu_auto_academic
+  - claim.fdr.professional_route
+  status: in_review
