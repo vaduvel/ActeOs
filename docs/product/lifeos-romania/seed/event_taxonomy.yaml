@@ -1,0 +1,87 @@
+version: 2.0.0
+locale: ro-RO
+# frequency_tier: high/medium/low (NU A/B/C — acelea sunt clase de freshness). Vezi ADR-024, ADR-025.
+categories:
+  - { id: home_housing, label: Casa si locuinta, frequency_tier: high }
+  - { id: auto_mobility, label: Auto si mobilitate, frequency_tier: high }
+  - { id: identity_documents, label: Identitate si acte, frequency_tier: high }
+  - { id: family_children, label: Copii si familie, frequency_tier: medium }
+  - { id: work_benefits, label: Munca si beneficii, frequency_tier: medium }
+  - { id: business_tax, label: Firma si fiscal, frequency_tier: medium }
+  - { id: health_admin, label: Sanatate administrativa, frequency_tier: medium }
+  - { id: education, label: Educatie, frequency_tier: medium }
+  - { id: legal_notarial, label: Juridic si notarial, frequency_tier: low }
+  - { id: civic_local, label: Cetatean si local, frequency_tier: high }
+  - { id: emergencies, label: Urgente, frequency_tier: high }
+event_types:
+  - id: life.moved
+    category_id: home_housing
+    label: M-am mutat
+    frequency_tier: high
+    r1_scope: true
+    example_queries: [m-am mutat, mi-am schimbat domiciliul, am alta adresa]
+    disambiguation_facts: [move.same_county, user.owns_vehicle, user.has_minor_children, user.is_self_employed, housing.is_owner]
+    procedures:
+      - { obligation_id: identity.change_domicile, obligation: mandatory, depends_on: [], phase_order: 0 }
+      - { obligation_id: vehicle.update_registration_address, obligation: mandatory, depends_on: [identity.change_domicile], phase_order: 1, applies_when: { user.owns_vehicle: true } }
+      - { obligation_id: local_taxes.update_address, obligation: conditional, depends_on: [], phase_order: 1, applies_when: { housing.is_owner: true } }
+      - { obligation_id: utilities.change_contract_holder, obligation: conditional, depends_on: [], phase_order: 1 }
+      - { obligation_id: health.change_family_doctor, obligation: optional, depends_on: [], phase_order: 2 }
+  - id: life.bought_vehicle
+    category_id: auto_mobility
+    label: Mi-am cumparat masina
+    frequency_tier: high
+    r1_scope: true
+    example_queries: [am cumparat masina, vreau sa inscriu masina, transcriere auto]
+    disambiguation_facts: [vehicle.bought_from, vehicle.category, vehicle.itp_valid]
+    procedures:
+      - { obligation_id: vehicle.transcribe_ownership, obligation: mandatory, depends_on: [], phase_order: 0 }
+      - { obligation_id: local_taxes.register_vehicle, obligation: mandatory, depends_on: [vehicle.transcribe_ownership], phase_order: 1 }
+      - { obligation_id: local_taxes.request_certificate, obligation: mandatory, depends_on: [local_taxes.register_vehicle], phase_order: 2 }
+      - { obligation_id: insurance.rca_purchase, obligation: mandatory, depends_on: [vehicle.transcribe_ownership], phase_order: 1 }
+      - { obligation_id: vehicle.itp_perform, obligation: mandatory, depends_on: [], phase_order: 0, applies_when: { vehicle.itp_valid: false } }
+      - { obligation_id: vehicle.register, obligation: mandatory, depends_on: [local_taxes.request_certificate, insurance.rca_purchase], phase_order: 3 }
+  - id: life.lost_documents
+    category_id: identity_documents
+    label: Mi-am pierdut actele
+    frequency_tier: high
+    r1_scope: true
+    example_queries: [mi-am pierdut buletinul, mi-au furat actele, am pierdut talonul]
+    disambiguation_facts: [lost.items, lost.context, lost.abroad]
+    procedures:
+      - { obligation_id: identity.replace_id_card, obligation: mandatory, depends_on: [], phase_order: 0, applies_when: { lost.id_card: true } }
+      - { obligation_id: passport.replace, obligation: conditional, depends_on: [], phase_order: 1, applies_when: { lost.passport: true } }
+      - { obligation_id: driver_license.replace, obligation: conditional, depends_on: [identity.replace_id_card], phase_order: 1, applies_when: { lost.driver_license: true } }
+      - { obligation_id: vehicle.registration_certificate_replace, obligation: conditional, depends_on: [identity.replace_id_card], phase_order: 1, applies_when: { lost.vehicle_doc: true } }
+      - { obligation_id: health.health_card_replace, obligation: conditional, depends_on: [], phase_order: 1, applies_when: { lost.health_card: true } }
+  - id: life.id_expiring
+    category_id: identity_documents
+    label: Imi expira buletinul
+    frequency_tier: high
+    r1_scope: true
+    example_queries: [imi expira buletinul, carte identitate expirata]
+    disambiguation_facts: [id.choose_electronic, user.address_changed]
+    procedures:
+      - { obligation_id: identity.renew_id_card, obligation: mandatory, depends_on: [], phase_order: 0, applies_when: { id.choose_electronic: false } }
+      - { obligation_id: identity.issue_electronic_id, obligation: conditional, depends_on: [], phase_order: 0, applies_when: { id.choose_electronic: true } }
+      - { obligation_id: vehicle.update_registration_address, obligation: conditional, depends_on: [], phase_order: 1, applies_when: { user.address_changed: true, user.owns_vehicle: true } }
+  - id: life.local_taxes_certificate
+    category_id: civic_local
+    label: Am nevoie de certificat fiscal / taxe locale
+    frequency_tier: high
+    r1_scope: true
+    example_queries: [certificat fiscal, platesc taxe locale, declar masina la taxe]
+    procedures:
+      - { obligation_id: local_taxes.pay, obligation: mandatory, depends_on: [], phase_order: 0 }
+      - { obligation_id: local_taxes.request_certificate, obligation: mandatory, depends_on: [local_taxes.pay], phase_order: 1 }
+  - id: life.child_born
+    category_id: family_children
+    label: Mi s-a nascut copilul
+    frequency_tier: medium
+    r1_scope: false
+    example_queries: [mi s-a nascut copilul, certificat nastere, alocatie copil]
+    procedures:
+      - { obligation_id: civil_status.register_birth, obligation: mandatory, depends_on: [], phase_order: 0 }
+      - { obligation_id: identity.obtain_cnp, obligation: mandatory, depends_on: [civil_status.register_birth], phase_order: 1 }
+      - { obligation_id: benefits.child_allowance, obligation: mandatory, depends_on: [civil_status.register_birth], phase_order: 1 }
+      - { obligation_id: benefits.child_raising_indemnity, obligation: conditional, depends_on: [civil_status.register_birth], phase_order: 1, applies_when: { parents.employed_last_2y: true } }

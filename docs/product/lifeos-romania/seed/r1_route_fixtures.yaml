@@ -1,0 +1,46 @@
+# Fixture-uri deterministe pentru golden hashes (plan + rute). Productie-safe (fara demo_mode).
+fixtures:
+  - id: fixture_moved_with_vehicle_owner
+    event_type_id: life.moved
+    jurisdiction: ro.tm.timisoara
+    facts:
+      move.same_county: false
+      user.owns_vehicle: true
+      housing.is_owner: true
+      user.is_self_employed: false
+    expected_nodes:
+      - { obligation_id: identity.change_domicile, state: actionable, depends_on: [] }
+      - { obligation_id: vehicle.update_registration_address, state: upcoming, depends_on: [identity.change_domicile] }
+      - { obligation_id: local_taxes.update_address, state: actionable, depends_on: [] }
+      - { obligation_id: utilities.change_contract_holder, state: actionable, depends_on: [] }
+    expected_edges:
+      - [identity.change_domicile, vehicle.update_registration_address]
+  - id: fixture_bought_vehicle_itp_expired
+    event_type_id: life.bought_vehicle
+    jurisdiction: ro.tm.timisoara
+    facts:
+      vehicle.bought_from: individual
+      vehicle.itp_valid: false
+    expected_nodes:
+      - { obligation_id: vehicle.transcribe_ownership, state: actionable, depends_on: [] }
+      - { obligation_id: vehicle.itp_perform, state: actionable, depends_on: [] }
+      - { obligation_id: local_taxes.register_vehicle, state: upcoming, depends_on: [vehicle.transcribe_ownership] }
+      - { obligation_id: insurance.rca_purchase, state: upcoming, depends_on: [vehicle.transcribe_ownership] }
+      - { obligation_id: vehicle.register, state: upcoming, depends_on: [local_taxes.request_certificate, insurance.rca_purchase] }
+  - id: fixture_lost_id_and_license
+    event_type_id: life.lost_documents
+    jurisdiction: ro.tm.timisoara
+    facts:
+      lost.id_card: true
+      lost.driver_license: true
+    expected_nodes:
+      - { obligation_id: identity.replace_id_card, state: actionable, depends_on: [] }
+      - { obligation_id: driver_license.replace, state: upcoming, depends_on: [identity.replace_id_card] }
+  - id: fixture_moved_unknown_vehicle
+    event_type_id: life.moved
+    jurisdiction: ro.tm.timisoara
+    facts:
+      move.same_county: false
+      # user.owns_vehicle necunoscut -> nodul auto devine needs_confirmation, nu se omite
+    expected_status: NEEDS_FACTS
+    expected_question: "Detii un autovehicul inmatriculat pe numele tau?"
