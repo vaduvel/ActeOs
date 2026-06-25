@@ -1,0 +1,99 @@
+openapi: 3.1.0
+info:
+  title: LifeOS Romania API (canonical superbook)
+  version: 1.0.0
+  description: >
+    Eveniment de viata -> plan (graf de obligatii cu depends_on) -> trasee
+    deterministe per obligatie. AI doar la interpret (assist-only). Productie,
+    nu demo.
+paths:
+  /health:
+    get:
+      summary: Healthcheck
+      responses:
+        '200': { description: OK }
+  /v1/events/interpret:
+    post:
+      summary: Interpret natural language into life event candidates (assist-only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+                locale: { type: string, default: ro-RO }
+                jurisdiction_hint: { type: string }
+      responses:
+        '200': { description: Candidates with required_facts and unsafe_to_resolve flag }
+  /v1/event-types:
+    get:
+      summary: List life event types
+      responses:
+        '200': { description: Event types }
+  /v1/event-sessions:
+    post:
+      summary: Create event session
+      responses:
+        '201': { description: Created }
+  /v1/event-sessions/{session_id}/facts:
+    patch:
+      summary: Update typed facts (ternary aware)
+      parameters:
+        - { name: session_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Updated }
+  /v1/event-sessions/{session_id}/resolve:
+    post:
+      summary: Resolve session into an event plan (obligation graph) and per-node routes
+      parameters:
+        - { name: session_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Event plan with nodes, edges, event_plan_hash, confidence }
+  /v1/event-plans/{plan_id}:
+    get:
+      summary: Get a resolved event plan
+      parameters:
+        - { name: plan_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Event plan }
+  /v1/routes/{route_id}:
+    get:
+      summary: Get a deterministic route for one obligation node
+      parameters:
+        - { name: route_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Route run }
+  /v1/documents/classify:
+    post:
+      summary: Classify a document (offline/assist)
+      responses:
+        '200': { description: Document type candidate }
+  /v1/documents/readiness:
+    post:
+      summary: Check document readiness against requirements
+      responses:
+        '200': { description: Readiness report }
+  /v1/feedback/rejections:
+    post:
+      summary: Report a rejected dossier
+      responses:
+        '201': { description: Incident created }
+  /v1/curator/sources:
+    get:
+      summary: List sources
+      responses:
+        '200': { description: Sources }
+    post:
+      summary: Create source
+      responses:
+        '201': { description: Created }
+  /v1/curator/bundles/{bundle_id}/publish:
+    post:
+      summary: Publish a rule bundle (two-person rule, impact analysis)
+      parameters:
+        - { name: bundle_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Published }
