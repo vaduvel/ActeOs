@@ -40,7 +40,6 @@ def test_age_and_days_use_context():
     assert evaluate({"op": "age_on_date_gte", "field": "bd", "value": 3}, {"bd": "2021-03-10"}, ctx) is Tri.TRUE
     assert evaluate({"op": "age_on_date_lt", "field": "bd", "value": 3}, {"bd": "2025-01-10"}, ctx) is Tri.TRUE
     assert evaluate({"op": "days_between_lte", "field": "d", "value": 30}, {"d": "2026-08-20"}, ctx) is Tri.TRUE
-    # without context the temporal ops cannot decide
     assert evaluate({"op": "age_on_date_gte", "field": "bd", "value": 3}, {"bd": "2021-03-10"}) is Tri.UNKNOWN
 
 
@@ -56,3 +55,67 @@ def test_collect_fact_refs():
     p = {"op": "all", "args": [{"op": "eq", "field": "a", "value": 1}, {"op": "not", "arg": {"op": "exists", "field": "b"}}]}
     assert collect_fact_refs(p) == {"a", "b"}
     assert collect_fact_refs({"op": "const", "value": True}) == set()
+
+
+# --- facts.* / context.* namespace shim -------------------------------------
+
+
+def test_facts_prefix_is_equivalent_to_bare_name():
+    assert evaluate({"op": "eq", "field": "facts.x", "value": 1}, {"x": 1}) is Tri.TRUE
+    assert evaluate({"op": "eq", "field": "facts.x", "value": 1}, {"x": 2}) is Tri.FALSE
+    assert evaluate({"op": "eq", "field": "facts.x", "value": 1}, {}) is Tri.UNKNOWN
+    assert evaluate({"op": "exists", "field": "facts.x"}, {"x": 5}) is Tri.TRUE
+    assert evaluate({"op": "exists", "field": "facts.x"}, {}) is Tri.FALSE
+    assert evaluate({"op": "missing", "field": "facts.x"}, {}) is Tri.TRUE
+    assert evaluate({"op": "in", "field": "facts.x", "values": ["a", "b"]}, {"x": "a"}) is Tri.TRUE
+    assert evaluate({"op": "gte", "field": "facts.n", "value": 5}, {"n": 5}) is Tri.TRUE
+    assert evaluate({"op": "contains", "field": "facts.tags", "value": "x"}, {"tags": ["x", "y"]}) is Tri.TRUE
+
+
+def test_facts_prefix_date_and_relative_tokens():
+    assert evaluate(
+        {"op": "date_before", "field": "facts.d", "value": "2026-01-01"}, {"d": "2025-12-31"}
+    ) is Tri.TRUE
+    facts = {"expiry_date": "2026-06-30"}
+    assert evaluate(
+        {"op": "date_after", "field": "facts.expiry_date", "value": "facts.expiry_date_minus_180d"},
+        facts,
+    ) is Tri.TRUE
+
+
+def test_context_namespace_maps_to_eval_context():
+    ctx = EvalContext(reference_date=date(2026, 6, 25), jurisdiction_path=("ro", "ro.tm"))
+    assert evaluate(
+        {"op": "date_before", "field": "facts.d", "value": "context.reference_date"},
+        {"d": "2026-06-01"},
+        ctx,
+    ) is Tri.TRUE
+    assert evaluate(
+        {"op": "authority_scope_contains", "field": "context.jurisdiction_path", "value": "ro.tm"},
+        {},
+        ctx,
+    ) is Tri.TRUE
+    assert evaluate(
+        {"op": "authority_scope_contains", "field": "context.jurisdiction_path", "value": "ro.cj"},
+        {},
+        ctx,
+    ) is Tri.FALSE
+
+
+def test_context_reference_date_missing_is_unknown():
+    assert evaluate(
+        {"op": "date_before", "field": "facts.d", "value": "context.reference_date"},
+        {"d": "2026-06-01"},
+    ) is Tri.UNKNOWN
+
+
+def test_collect_fact_refs_strips_facts_prefix_and_excludes_context():
+    p = {
+        "op": "all",
+        "args": [
+            {"op": "eq", "field": "facts.a", "value": 1},
+            {"op": "date_before", "field": "facts.d", "value": "context.reference_date"},
+            {"op": "authority_scope_contains", "field": "context.jurisdiction_path", "value": "ro.tm"},
+        ],
+    }
+    assert collect_fact_refs(p) == {"a", "d"}

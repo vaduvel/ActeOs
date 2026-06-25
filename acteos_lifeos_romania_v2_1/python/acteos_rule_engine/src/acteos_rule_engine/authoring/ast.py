@@ -15,12 +15,17 @@ both sides through ``resolve_date_token``, which understands:
 
 No dynamic code execution: every operator is matched explicitly.
 
-NOTE (v2.1 reconciliation, tracked for M3 API wiring): the published runtime
-contract (docs/05_RULE_ENGINE_SPEC.md) namespaces predicate fields as
-``facts.*`` and ``context.*``. This evaluator currently uses bare fact names
-(matching the migrated R1 batches). A normalization shim that strips ``facts.``
-and maps ``context.*`` to EvalContext will be added when the API layer is wired,
-with its own unit tests; behavior is intentionally unchanged here.
+Field namespace shim (v2.1 reconciliation, docs/05_RULE_ENGINE_SPEC.md):
+the published runtime contract namespaces predicate fields as ``facts.*`` and
+``context.*``. This evaluator accepts both the namespaced and the bare form:
+  * ``facts.<name>``  -> looked up as the bare fact key ``<name>``
+  * ``context.reference_date``    -> EvalContext.reference_date
+  * ``context.jurisdiction_path`` -> list(EvalContext.jurisdiction_path)
+  * ``<name>``        -> bare fact key (unchanged legacy behavior)
+The stripping/mapping is purely at lookup time, so the migrated R1 batches
+(which use bare names) behave exactly as before. ``context.*`` references are
+injected from the ambient context and are therefore NOT reported by
+``collect_fact_refs`` as user-answerable facts.
 """
 from __future__ import annotations
 
@@ -36,6 +41,9 @@ MISSING = object()
 
 _DELTA_RE = re.compile(r"^(.+)_(minus|plus)_(\d+)d$")
 DATE_CMP_OPS = frozenset({"date_before", "date_after", "date_between", "within_window"})
+
+_FACTS_PREFIX = "facts."
+_CONTEXT_PREFIX = "context."
 
 
 class UnsupportedOperator(Exception):
@@ -61,11 +69,45 @@ def _num(value: Any):
         return None
 
 
+def _strip_facts_prefix(field_id: str) -> str:
+    """Strip a leading ``facts.`` namespace so the bare fact key is looked up."""
+    if field_id.startswith(_FACTS_PREFIX):
+        return field_id[len(_FACTS_PREFIX):]
+    return field_id
+
+
+def _context_value(name: str, ctx: EvalContext) -> Any:
+    """Resolve a ``context.*`` reference from the ambient EvalContext.
+
+    Returns MISSING for an unset reference_date or an unknown context name so
+    that the three-valued guards treat it as undecidable rather than False.
+    """
+    if name == "reference_date":
+        return ctx.reference_date if ctx.reference_date is not None else MISSING
+    if name == "jurisdiction_path":
+        return list(ctx.jurisdiction_path)
+    return MISSING
+
+
+def _lookup_field(field_id: Any, facts: Mapping[str, Any], ctx: EvalContext) -> Any:
+    """Resolve a (possibly namespaced) ``field`` reference to its value or MISSING.
+
+    ``context.*`` resolves from the EvalContext; ``facts.<name>`` and bare
+    ``<name>`` both resolve from the facts mapping.
+    """
+    if not isinstance(field_id, str):
+        return MISSING
+    if field_id.startswith(_CONTEXT_PREFIX):
+        return _context_value(field_id[len(_CONTEXT_PREFIX):], ctx)
+    return facts.get(_strip_facts_prefix(field_id), MISSING)
+
+
 def resolve_date_token(token: Any, facts: Mapping[str, Any], ctx: EvalContext | None = None) -> date | None:
     """Resolve a date token to a concrete date (or None if it cannot be resolved).
 
-    Supports literal ISO dates, 'reference_date', fact names, and relative
-    expressions like 'expiry_date_minus_180d' / 'move_date_plus_15d'.
+    Supports literal ISO dates, 'reference_date', fact names, relative
+    expressions like 'expiry_date_minus_180d' / 'move_date_plus_15d', and the
+    namespaced forms 'facts.<name>' and 'context.reference_date'.
     """
     if token is None:
         return None
@@ -79,11 +121,17 @@ def resolve_date_token(token: Any, facts: Mapping[str, Any], ctx: EvalContext | 
             return None
         delta = timedelta(days=int(m.group(3)))
         return base - delta if m.group(2) == "minus" else base + delta
+    if s.startswith(_CONTEXT_PREFIX):
+        name = s[len(_CONTEXT_PREFIX):]
+        if name == "reference_date":
+            return ctx.reference_date if ctx else None
+        return None
     if s == "reference_date":
         return ctx.reference_date if ctx else None
-    if s in facts:
-        return parse_date(facts.get(s))
-    return parse_date(s)
+    key = _strip_facts_prefix(s)
+    if key in facts:
+        return parse_date(facts.get(key))
+    return parse_date(key)
 
 
 def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext | None = None) -> Tri:
@@ -104,15 +152,15 @@ def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext
     field_id = pred.get("field")
 
     if op == "exists":
-        v = facts.get(field_id, MISSING) if field_id is not None else MISSING
+        v = _lookup_field(field_id, facts, ctx)
         return from_bool(v is not MISSING and v is not None)
     if op == "missing":
-        v = facts.get(field_id, MISSING) if field_id is not None else MISSING
+        v = _lookup_field(field_id, facts, ctx)
         return from_bool(v is MISSING or v is None)
 
     # Date-comparison ops resolve tokens on both sides (field may be
-    # 'reference_date' or a relative expression), so they run before the
-    # generic missing-fact guard below.
+    # 'reference_date', 'context.reference_date' or a relative expression), so
+    # they run before the generic missing-fact guard below.
     if op in ("date_before", "date_after"):
         a = resolve_date_token(field_id, facts, ctx)
         b = resolve_date_token(pred.get("value"), facts, ctx)
@@ -128,7 +176,7 @@ def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext
             return Tri.UNKNOWN
         return from_bool(lo <= a <= hi)
 
-    value = facts.get(field_id, MISSING) if field_id is not None else MISSING
+    value = _lookup_field(field_id, facts, ctx)
     if value is MISSING or value is None:
         return Tri.UNKNOWN
 
@@ -184,7 +232,11 @@ def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext
 
 
 def collect_fact_refs(pred: Mapping[str, Any]) -> set[str]:
-    """Return every fact id referenced anywhere inside a predicate tree."""
+    """Return every user-answerable fact id referenced inside a predicate tree.
+
+    ``facts.`` prefixes are stripped to the bare key; ``context.*`` references
+    are injected from the ambient context and are intentionally excluded.
+    """
     if not isinstance(pred, Mapping):
         return set()
     op = pred.get("op")
@@ -196,4 +248,8 @@ def collect_fact_refs(pred: Mapping[str, Any]) -> set[str]:
     if op == "not":
         return collect_fact_refs(pred.get("arg", {}))
     field_id = pred.get("field")
-    return {field_id} if field_id else set()
+    if not field_id or not isinstance(field_id, str):
+        return set()
+    if field_id.startswith(_CONTEXT_PREFIX):
+        return set()
+    return {_strip_facts_prefix(field_id)}
