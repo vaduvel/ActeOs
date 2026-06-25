@@ -11,6 +11,8 @@ dependencies = [
   "psycopg[binary]>=3.2.9,<4",
   "alembic>=1.16,<2",
   "httpx>=0.28,<0.29",
+  "pyyaml>=6,<7",
+  "acteos-intent-resolver==2.1.0",
   "structlog>=25.4,<26",
   "opentelemetry-api>=1.34,<2",
   "opentelemetry-sdk>=1.34,<2"
@@ -25,6 +27,15 @@ dev = [
   "mypy>=1.16,<2",
   "types-PyYAML>=6.0.12"
 ]
+
+# NOTE: install order for local/dev/CI:
+#   pip install -e python/acteos_intent_resolver
+#   pip install -e "services/api[dev]"
+# (the resolver is a workspace path dependency; install it editable first so the
+# pinned requirement above is already satisfied and pip does not hit the index.)
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 line-length = 100
