@@ -1,0 +1,92 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_VEHICLE_BOUGHT_USED
+event_type_id: life.vehicle_bought_used
+status: draft
+rules:
+  - id: rule.veh.fiscal_declaration_30d
+    canonical_rule_id: vehicle_bought_used.fiscal_declaration_30d
+    event_type_id: life.vehicle_bought_used
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: declare_vehicle_local_tax }
+      - { type: set_deadline, step_id: declare_vehicle_local_tax, value: { kind: relative_days, anchor: contract_date, days: 30 } }
+    source_claim_ids: [claim.veh.fiscal_declaration_30d]
+    status: draft
+  - id: rule.veh.transcription_90d
+    canonical_rule_id: vehicle_bought_used.transcription_90d
+    event_type_id: life.vehicle_bought_used
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2017-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: transcribe_vehicle }
+      - { type: set_deadline, step_id: transcribe_vehicle, value: { kind: relative_days, anchor: contract_date, days: 90 } }
+      - { type: require_confirmation, message_ro: 'Termenul de 90 de zile pentru transcriere se confirma din Ordinul MAI 1501/2006 inainte de afisare ferma.' }
+    source_claim_ids: [claim.veh.transcription_90d, claim.veh.transcription_docs]
+    status: in_review
+  - id: rule.veh.require_itp
+    canonical_rule_id: vehicle_bought_used.require_itp
+    event_type_id: life.vehicle_bought_used
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2006-01-01'
+    when:
+      op: eq
+      field: has_valid_itp
+      value: false
+    effects:
+      - { type: block, message_ro: 'Transcrierea nu se poate face fara ITP in termen de valabilitate; efectueaza ITP intai.' }
+      - { type: include_step, step_id: do_itp }
+    source_claim_ids: [claim.veh.transcription_docs]
+    status: draft
+  - id: rule.veh.require_rca
+    canonical_rule_id: vehicle_bought_used.require_rca
+    event_type_id: life.vehicle_bought_used
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2006-01-01'
+    when:
+      op: eq
+      field: has_rca
+      value: false
+    effects:
+      - { type: include_requirement, requirement_id: req.rca_buyer }
+      - { type: emit_warning, message_ro: 'Ai nevoie de RCA valabil pe numele tau inainte de transcriere.' }
+    source_claim_ids: [claim.veh.rca_required]
+    status: draft
+  - id: rule.veh.new_plates
+    canonical_rule_id: vehicle_bought_used.new_plates
+    event_type_id: life.vehicle_bought_used
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2006-01-01'
+    when:
+      op: eq
+      field: keeps_old_plates
+      value: false
+    effects:
+      - { type: include_requirement, requirement_id: req.new_plates_fee }
+      - { type: emit_warning, message_ro: 'Daca nu pastrezi numerele vechi, platesti pentru placute noi.' }
+    source_claim_ids: [claim.veh.transcription_fee_37]
+    status: in_review
+  - id: rule.veh.tm_fiscal_channel
+    canonical_rule_id: vehicle_bought_used.tm_fiscal_channel
+    event_type_id: life.vehicle_bought_used
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.dfmt_timisoara }
+      - { type: attach_channel, channel_id: ch.spcrpciv_timis }
+    source_claim_ids: [claim.veh.tm_fiscal_channel]
+    status: in_review

@@ -1,0 +1,96 @@
+batch_id: R1_VEHICLE_BOUGHT_USED
+defaults:
+  event_type_id: life.vehicle_bought_used
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: V01
+    desc: cumparare standard, ITP+RCA ok, pastreaza numerele
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, included_steps: [declare_vehicle_local_tax, transcribe_vehicle], fiscal_deadline_days: 30, transcription_deadline_days: 90 }
+  - id: V02
+    desc: fara ITP - transcriere blocata
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: false, has_rca: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle], included_steps: [do_itp, declare_vehicle_local_tax] }
+  - id: V03
+    desc: fara RCA - cerinta RCA
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true, has_rca: false }
+    expect: { status: ok, requirements: [req.rca_buyer] }
+  - id: V04
+    desc: numere noi - taxa placute
+    facts: { contract_date: '2026-06-20', keeps_old_plates: false, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, requirements: [req.new_plates_fee] }
+  - id: V05
+    desc: fiscal exact la 30 zile
+    facts: { contract_date: '2026-05-26', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, included_steps: [declare_vehicle_local_tax] }
+  - id: V06
+    desc: fiscal depasit (40 zile)
+    facts: { contract_date: '2026-05-16', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, fiscal_overdue: true }
+  - id: V07
+    desc: transcriere exact la 90 zile
+    facts: { contract_date: '2026-03-27', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, included_steps: [transcribe_vehicle], confirmations: [transcription_90d] }
+  - id: V08
+    desc: transcriere depasita (120 zile)
+    facts: { contract_date: '2026-02-25', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, transcription_overdue: true }
+  - id: V09
+    desc: fara ITP si fara RCA (cumul)
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: false, has_rca: false }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle], requirements: [req.rca_buyer], included_steps: [do_itp] }
+  - id: V10
+    desc: lipseste contract_date - fara deadline-uri
+    facts: { keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: needs_facts, missing_facts: [contract_date] }
+  - id: V11
+    desc: lipseste has_valid_itp - regula ITP nu se evalueaza
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_rca: true }
+    expect: { status: needs_facts, missing_facts: [has_valid_itp] }
+  - id: V12
+    desc: lipseste has_rca
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true }
+    expect: { status: needs_facts, missing_facts: [has_rca] }
+  - id: V13
+    desc: lipseste keeps_old_plates - regula numere nu se evalueaza
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_rca: true }
+    expect: { status: needs_facts, missing_facts: [keeps_old_plates] }
+  - id: V14
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [contract_date, keeps_old_plates, has_valid_itp, has_rca] }
+  - id: V15
+    desc: alt judet - canale Timisoara absente
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.dfmt_timisoara, ch.spcrpciv_timis] }
+  - id: V16
+    desc: Timisoara - canale fiscal + inmatriculari
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, channels: [ch.dfmt_timisoara, ch.spcrpciv_timis] }
+  - id: V17
+    desc: contract in viitor (data invalida logic)
+    facts: { contract_date: '2026-12-01', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, warnings: [future_contract_date] }
+  - id: V18
+    desc: transcriere 90d ramane in_review (confirmare necesara)
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, needs_confirmation: [transcription_90d] }
+  - id: V19
+    desc: pastreaza numere - fara taxa placute noi
+    facts: { contract_date: '2026-06-20', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, requirements_absent: [req.new_plates_fee] }
+  - id: V20
+    desc: fiscal in termen + transcriere in termen (ambele ok)
+    facts: { contract_date: '2026-06-10', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, included_steps: [declare_vehicle_local_tax, transcribe_vehicle] }
+  - id: V21
+    desc: contract azi - termene pline
+    facts: { contract_date: '2026-06-25', keeps_old_plates: true, has_valid_itp: true, has_rca: true }
+    expect: { status: ok, fiscal_deadline_days: 30, transcription_deadline_days: 90 }
+  - id: V22
+    desc: numere noi + fara ITP (cumul cerinte si blocaj)
+    facts: { contract_date: '2026-06-20', keeps_old_plates: false, has_valid_itp: false, has_rca: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle], requirements: [req.new_plates_fee], included_steps: [do_itp] }
