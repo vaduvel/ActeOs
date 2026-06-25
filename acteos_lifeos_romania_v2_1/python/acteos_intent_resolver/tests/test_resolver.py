@@ -48,30 +48,58 @@ _RAW = [
 ]
 
 
+def _catalog():
+    return IntentCatalog.from_records(_RAW, catalog_version="2.1.0", index_version="test")
+
+
 @pytest.fixture()
 def resolver() -> IntentResolver:
-    catalog = IntentCatalog.from_records(_RAW, catalog_version="2.1.0", index_version="test")
-    return IntentResolver(catalog, RankingConfig())
+    return IntentResolver(_catalog(), RankingConfig())
 
 
 def test_exact_title_is_high(resolver):
     res = resolver.resolve("Vreau s\u0103 schimb cartea de identitate expirat\u0103")
     assert res.resolution_state == "high"
-    assert res.candidates[0].intent_type_id == "ro.intent.identity.renew_expired_id"
-    assert res.candidates[0].score >= 1.0
+    top = res.candidates[0]
+    assert top.intent_type_id == "ro.intent.identity.renew_expired_id"
+    assert top.match_mode == "exact_title"
+    assert top.score == pytest.approx(1.0, abs=1e-6)  # no uniform jurisdiction bonus
     assert res.needs_confirmation is True  # never auto-start, even at high
 
 
 def test_exact_alias_diacritics_insensitive(resolver):
     res = resolver.resolve("buletin expirat")
     assert res.resolution_state == "high"
-    assert res.candidates[0].intent_type_id == "ro.intent.identity.renew_expired_id"
-    assert res.candidates[0].score == pytest.approx(1.06, abs=1e-6)
+    top = res.candidates[0]
+    assert top.intent_type_id == "ro.intent.identity.renew_expired_id"
+    assert top.match_mode == "exact_alias"
+    assert top.matched_alias == "buletin expirat"
+    assert top.score == pytest.approx(0.96, abs=1e-6)
+
+
+def test_no_uniform_jurisdiction_bonus_when_unknown(resolver):
+    # Without a jurisdiction set, no +0.10 is added to anyone.
+    res = resolver.resolve("cazier")
+    assert res.candidates[0].score == pytest.approx(0.96, abs=1e-6)
+    assert "jurisdiction_available_bonus" not in res.candidates[0].signals
+
+
+def test_jurisdiction_bonus_only_when_known_and_available():
+    # Soft filter: known jurisdiction availability differentiates candidates.
+    res = IntentResolver(_catalog()).resolve(
+        "buletin expirat",
+        jurisdiction_available_ids={"ro.intent.identity.renew_expired_id"},
+        apply_hard_filters=False,
+    )
+    top = res.candidates[0]
+    assert top.intent_type_id == "ro.intent.identity.renew_expired_id"
+    assert top.score == pytest.approx(1.06, abs=1e-6)  # 0.96 + 0.10 jurisdiction
+    assert top.signals["jurisdiction_available_bonus"] == pytest.approx(0.10, abs=1e-6)
 
 
 def test_negative_alias_demotes_other_intent(resolver):
     # 'buletin pierdut' is an exact alias of replace_lost_id and a NEGATIVE
-    # alias of renew_expired_id -> lost must win, expired must not be returned high.
+    # alias of renew_expired_id -> lost must win, expired must not be returned.
     res = resolver.resolve("buletin pierdut")
     assert res.candidates[0].intent_type_id == "ro.intent.identity.replace_lost_id"
     ids = [c.intent_type_id for c in res.candidates]
@@ -81,12 +109,14 @@ def test_negative_alias_demotes_other_intent(resolver):
 def test_diacritics_insensitive_query_matches_address_intent(resolver):
     res = resolver.resolve("schimb domiciliul in buletin")  # no diacritics
     assert res.candidates[0].intent_type_id == "ro.intent.identity.change_address_on_id"
+    assert res.candidates[0].match_mode == "exact_alias"
     assert res.resolution_state == "high"
 
 
 def test_cazier_exact_alias(resolver):
     res = resolver.resolve("cazier")
     assert res.candidates[0].intent_type_id == "ro.intent.identity.obtain_criminal_record"
+    assert res.candidates[0].match_mode == "exact_alias"
 
 
 def test_query_too_short(resolver):
@@ -113,18 +143,15 @@ def test_hard_filter_excludes_not_available():
     catalog = IntentCatalog.from_records(raw, catalog_version="2.1.0")
     res = IntentResolver(catalog).resolve("buletin expirat")
     assert res.resolution_state == "no_result"
-    # with hard filters disabled the same query resolves
     res2 = IntentResolver(catalog).resolve("buletin expirat", apply_hard_filters=False)
     assert res2.candidates[0].intent_type_id == "ro.intent.identity.renew_expired_id"
 
 
 def test_jurisdiction_hard_filter():
-    catalog = IntentCatalog.from_records(_RAW, catalog_version="2.1.0")
-    res = IntentResolver(catalog).resolve(
+    res = IntentResolver(_catalog()).resolve(
         "buletin expirat",
         jurisdiction_available_ids={"ro.intent.identity.change_address_on_id"},
     )
-    # renew_expired_id is filtered out by jurisdiction availability
     ids = [c.intent_type_id for c in res.candidates]
     assert "ro.intent.identity.renew_expired_id" not in ids
 
