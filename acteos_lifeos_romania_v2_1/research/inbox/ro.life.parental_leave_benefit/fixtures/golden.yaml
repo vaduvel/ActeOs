@@ -1,0 +1,343 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.parental_leave_benefit
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: 12 luni eligibile, copil fără dizabilitate, după maternitate
+  facts:
+    eligible_months_in_last_24: 12
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_parental_leave_application
+    - request_parental_leave_from_employer
+    - notify_employer_parental_leave
+    emitted_tags:
+    - ccc_amount_formula
+    - ccc_60_workdays_after_maternity
+    - ccc_prefile_30d
+  id: ro.life.parental_leave_benefit.F01
+- title: 24 luni eligibile, copil cu dizabilitate
+  facts:
+    eligible_months_in_last_24: 24
+    child_birth_date: '2026-04-01'
+    child_has_disability: true
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    deadlines:
+      parental_leave_end:
+        child_age_years: 3
+    requirements:
+    - req.child_disability_certificate
+  id: ro.life.parental_leave_benefit.F02
+- title: 11 luni eligibile, fără perioade asimilate confirmate
+  facts:
+    eligible_months_in_last_24: 11
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: false
+    is_employee: true
+    planned_parental_leave_start: '2026-04-01'
+  expected:
+    status: blocked
+    emitted_tags:
+    - ccc_less_than_12_months
+    - check_assimilated_periods
+  id: ro.life.parental_leave_benefit.F03
+- title: 12 luni obținute inclusiv prin perioade asimilate
+  facts:
+    eligible_months_in_last_24: 12
+    has_assimilated_periods: true
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: false
+    is_employee: false
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_parental_leave_application
+  id: ro.life.parental_leave_benefit.F04
+- title: gemeni
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 2
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    emitted_tags:
+    - multiple_birth_supplement
+  id: ro.life.parental_leave_benefit.F05
+- title: tripleți
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 3
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    emitted_tags:
+    - multiple_birth_supplement
+  id: ro.life.parental_leave_benefit.F06
+- title: ambii părinți eligibili
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: true
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    included_steps:
+    - plan_other_parent_two_months
+    emitted_tags:
+    - other_parent_two_months
+  id: ro.life.parental_leave_benefit.F07
+- title: un singur părinte eligibil
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    included_steps_absent:
+    - plan_other_parent_two_months
+  id: ro.life.parental_leave_benefit.F08
+- title: fără concediu de maternitate
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-06-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: false
+    is_employee: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - ccc_60_workdays_from_birth
+  id: ro.life.parental_leave_benefit.F09
+- title: salariat — cererea către angajator
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    requirements:
+    - req.employer_parental_leave_request
+    deadlines:
+      employer_notice_days_before: 10
+  id: ro.life.parental_leave_benefit.F10
+- title: persoană independentă — fără pas de angajator
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: false
+    is_employee: false
+  expected:
+    status: resolved
+    included_steps_absent:
+    - notify_employer_parental_leave
+  id: ro.life.parental_leave_benefit.F11
+- title: dosar Timișoara online
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: needs_confirmation
+    channels:
+    - ch.parental_benefit.timisoara_online
+    emitted_tags:
+    - timisoara_dynamic_document_list
+  id: ro.life.parental_leave_benefit.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - eligible_months_in_last_24
+    - child_birth_date
+    - child_has_disability
+  id: ro.life.parental_leave_benefit.F13
+- title: lipsește faptul obligatoriu eligible_months_in_last_24
+  facts:
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: needs_facts
+    missing_facts:
+    - eligible_months_in_last_24
+  id: ro.life.parental_leave_benefit.F14
+- title: valoare invalidă pentru eligible_months_in_last_24
+  facts:
+    eligible_months_in_last_24: __invalid__
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: needs_facts
+    missing_facts:
+    - eligible_months_in_last_24
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.parental_leave_benefit.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: true
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+  expected:
+    status: resolved
+    channels_absent:
+    - ch.parental_benefit.timisoara_online
+  id: ro.life.parental_leave_benefit.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.parental_leave_benefit.F17
+  reference_date: '2010-12-31'
+- title: exact la limita termenului principal
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: false
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+    application_business_days_after_anchor: 60
+  expected:
+    status: resolved
+    emitted_tags:
+    - ccc_60_workdays_from_birth
+  id: ro.life.parental_leave_benefit.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    eligible_months_in_last_24: 18
+    child_birth_date: '2026-04-01'
+    child_has_disability: false
+    children_count_in_birth: 1
+    both_parents_eligible: false
+    had_maternity_leave: false
+    maternity_leave_end_date: '2026-08-05'
+    is_employee: true
+    planned_parental_leave_start: '2026-08-06'
+    application_business_days_after_anchor: 61
+  expected:
+    status: resolved
+    emitted_tags:
+    - ccc_late_application_start_from_filing
+  id: ro.life.parental_leave_benefit.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.parental_leave_benefit.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.parental_leave_benefit.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: needs_confirmation
+  id: ro.life.parental_leave_benefit.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

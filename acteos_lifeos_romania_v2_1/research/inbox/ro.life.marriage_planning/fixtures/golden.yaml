@@ -1,0 +1,339 @@
+batch_id: B03_MARRIAGE_PLANNING
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.marriage_planning
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: M01
+  desc: Doi adulți, prima căsătorie, data în fereastra legală, Timișoara
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: ok
+    included_steps:
+    - file_marriage_declaration
+    - celebrate_civil_marriage
+    requirements:
+    - req.identity_documents
+    - req.birth_certificates
+    - req.prenuptial_medical_certificates
+    channels:
+    - ch.timisoara.marriage
+    advice_tags:
+    - marriage_window_11_30
+    - local_medical_certificate_30d
+- id: M02
+  desc: Data dorită este ziua 10
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 10
+    surname_choice_known: true
+  expect:
+    status: ok
+    warnings_present:
+    - early_marriage_requires_approval
+    needs_confirmation:
+    - confirm_early_marriage_approval
+- id: M03
+  desc: Data dorită este ziua 31
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 31
+    surname_choice_known: true
+  expect:
+    status: ok
+    included_steps:
+    - refile_marriage_declaration
+    warnings_present:
+    - new_marriage_declaration_required
+- id: M04
+  desc: Există o căsătorie anterioară încetată
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: ended
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.proof_prior_marriage_ended
+- id: M05
+  desc: Există încă o căsătorie în ființă
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: current_marriage
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: blocked
+- id: M06
+  desc: Un viitor soț este cetățean străin
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: true
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.foreign_birth_document
+    - req.authorized_romanian_translation
+    - req.marital_capacity_document
+    needs_confirmation:
+    - confirm_foreign_document_form
+- id: M07
+  desc: Solicitant de 17 ani
+  facts:
+    applicant_age: 17
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.special_medical_opinion
+    - req.parent_or_guardian_consent
+    - req.court_authorization
+    needs_confirmation:
+    - minor_marriage_special_route
+- id: M08
+  desc: Partener de 16 ani
+  facts:
+    applicant_age: 30
+    partner_age: 16
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: ok
+    requirements:
+    - req.court_authorization
+    needs_confirmation:
+    - minor_marriage_special_route
+- id: M09
+  desc: Solicitant sub 16 ani
+  facts:
+    applicant_age: 15
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: blocked
+- id: M10
+  desc: Partener sub 16 ani
+  facts:
+    applicant_age: 30
+    partner_age: 15
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: blocked
+- id: M11
+  desc: Numele după căsătorie nu este decis
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: false
+  expect:
+    status: ok
+    advice_tags:
+    - choose_post_marriage_surname
+- id: M12
+  desc: Alt UAT decât Timișoara
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.marriage
+    needs_confirmation:
+    - confirm_local_marriage_channel
+- id: M13
+  desc: 'Limita inferioară: ziua 11'
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 11
+    surname_choice_known: true
+  expect:
+    status: ok
+    included_steps:
+    - celebrate_civil_marriage
+    advice_tags:
+    - marriage_window_11_30
+- id: M14
+  desc: 'Limita superioară: ziua 30'
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 30
+    surname_choice_known: true
+  expect:
+    status: ok
+    included_steps:
+    - celebrate_civil_marriage
+    advice_tags:
+    - marriage_window_11_30
+- id: M15
+  desc: Lipsește faptul obligatoriu applicant_age
+  facts:
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_age
+- id: M16
+  desc: Lipsește faptul obligatoriu partner_age
+  facts:
+    applicant_age: 30
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - partner_age
+- id: M17
+  desc: Lipsește faptul obligatoriu prior_marriage_status
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - prior_marriage_status
+- id: M18
+  desc: Lipsește faptul obligatoriu foreign_citizen_involved
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - foreign_citizen_involved
+- id: M19
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    desired_days_from_declaration: 15
+    surname_choice_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: M20
+  desc: Lipsește faptul obligatoriu desired_days_from_declaration
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    surname_choice_known: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - desired_days_from_declaration
+- id: M21
+  desc: Lipsește faptul obligatoriu surname_choice_known
+  facts:
+    applicant_age: 30
+    partner_age: 31
+    prior_marriage_status: never_married
+    foreign_citizen_involved: false
+    territory_id: RO-TM-TIMISOARA
+    desired_days_from_declaration: 15
+  expect:
+    status: needs_facts
+    missing_facts:
+    - surname_choice_known
+- id: M22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_age
+    - partner_age
+    - prior_marriage_status
+    - foreign_citizen_involved
+    - territory_id
+    - desired_days_from_declaration
+    - surname_choice_known

@@ -1,0 +1,280 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.bank_account_change_admin
+status: draft
+rules:
+- id: rule.bank_change.require_admin_body
+  canonical_rule_id: bank_account_change_admin.admin_body
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: missing
+    field: paying_authority
+  effects:
+  - type: require_confirmation
+    tag: paying_authority_missing
+    message_ro: Trebuie identificată instituția care efectuează plata; procedurile nu sunt interschimbabile.
+  source_claim_ids:
+  - claim.bank_change.cnpp_payment_change_form
+  status: draft
+  required_facts:
+  - paying_authority
+- id: rule.bank_change.cnpp_scope
+  canonical_rule_id: bank_account_change_admin.cnpp_scope
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: paying_authority
+    value: cnpp_or_territorial_pension_house
+  effects:
+  - type: include_step
+    step_id: select_cnpp_payment_change_form
+  - type: include_step
+    step_id: prepare_cnpp_payment_change_request
+  - type: include_requirement
+    requirement_id: cnpp_payment_method_change_form
+  - type: attach_channel
+    channel_id: ch.cnpp.online_forms
+  - type: emit_advice
+    tag: cnpp_payment_change_route
+    message_ro: Se folosește formularul CNPP pentru schimbarea modalității de plată.
+  source_claim_ids:
+  - claim.bank_change.cnpp_payment_change_form
+  - claim.bank_change.online_forms_available
+  status: draft
+- id: rule.bank_change.not_cnpp
+  canonical_rule_id: bank_account_change_admin.not_cnpp
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: paying_authority
+    - op: neq
+      field: paying_authority
+      value: cnpp_or_territorial_pension_house
+  effects:
+  - type: require_confirmation
+    tag: institution_specific_payment_change_required
+    message_ro: Pentru această plată trebuie folosită procedura instituției plătitoare, care nu este confirmată în acest eveniment.
+  source_claim_ids:
+  - claim.bank_change.supporting_documents_unspecified
+  status: draft
+- id: rule.bank_change.post_to_bank
+  canonical_rule_id: bank_account_change_admin.post_to_bank
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: paying_authority
+      value: cnpp_or_territorial_pension_house
+    - op: eq
+      field: old_payment_method
+      value: post
+    - op: in
+      field: new_payment_method
+      values:
+      - current_account
+      - card_account
+  effects:
+  - type: include_step
+    step_id: switch_cnpp_payment_to_bank
+  - type: emit_advice
+    tag: cnpp_post_to_bank
+    message_ro: CNPP permite plata în cont curent sau cont de card, în condițiile convențiilor aplicabile.
+  source_claim_ids:
+  - claim.bank_change.cnpp_payment_methods
+  status: draft
+- id: rule.bank_change.bank_to_post
+  canonical_rule_id: bank_account_change_admin.bank_to_post
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: paying_authority
+      value: cnpp_or_territorial_pension_house
+    - op: in
+      field: old_payment_method
+      values:
+      - current_account
+      - card_account
+    - op: eq
+      field: new_payment_method
+      value: post
+  effects:
+  - type: include_step
+    step_id: switch_cnpp_payment_to_post
+  - type: emit_advice
+    tag: cnpp_bank_to_post
+    message_ro: Plata la domiciliu/reședință este una dintre modalitățile publicate de CNPP.
+  source_claim_ids:
+  - claim.bank_change.cnpp_payment_methods
+  status: draft
+- id: rule.bank_change.bank_to_bank
+  canonical_rule_id: bank_account_change_admin.bank_to_bank
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: paying_authority
+      value: cnpp_or_territorial_pension_house
+    - op: in
+      field: old_payment_method
+      values:
+      - current_account
+      - card_account
+    - op: in
+      field: new_payment_method
+      values:
+      - current_account
+      - card_account
+    - op: neq
+      field: old_iban
+      value: new_iban
+  effects:
+  - type: include_step
+    step_id: replace_cnpp_payment_account
+  - type: emit_advice
+    tag: cnpp_bank_account_replacement
+    message_ro: Schimbarea contului se tratează prin cererea de schimbare a modalității de plată.
+  source_claim_ids:
+  - claim.bank_change.cnpp_payment_change_form
+  status: draft
+- id: rule.bank_change.beneficiary_data_separate
+  canonical_rule_id: bank_account_change_admin.beneficiary_data_separate
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: also_changes_identity_or_contact_data
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: cnpp_beneficiary_data_change_form
+  - type: emit_advice
+    tag: beneficiary_data_form_separate
+    message_ro: Pentru datele beneficiarului există un formular CNPP separat.
+  source_claim_ids:
+  - claim.bank_change.cnpp_beneficiary_data_form
+  status: draft
+- id: rule.bank_change.supporting_documents_confirmation
+  canonical_rule_id: bank_account_change_admin.supporting_documents_confirmation
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: paying_authority
+    value: cnpp_or_territorial_pension_house
+  effects:
+  - type: require_confirmation
+    tag: payment_change_attachments_need_confirmation
+    message_ro: Confirmați anexele cerute, dovada contului și data de aplicare la casa teritorială competentă.
+  source_claim_ids:
+  - claim.bank_change.supporting_documents_unspecified
+  status: draft
+- id: rule.bank_change.third_party_account
+  canonical_rule_id: bank_account_change_admin.third_party_account
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: account_holder_is_beneficiary
+    value: false
+  effects:
+  - type: block
+    code: THIRD_PARTY_ACCOUNT_NOT_VERIFIED
+  - type: require_confirmation
+    tag: third_party_account_not_verified
+    message_ro: Acceptarea unui cont al altei persoane nu este confirmată de sursele acestui eveniment.
+  source_claim_ids:
+  - claim.bank_change.supporting_documents_unspecified
+  status: draft
+- id: rule.bank_change.foreign_account
+  canonical_rule_id: bank_account_change_admin.foreign_account
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: account_country
+    value: foreign
+  effects:
+  - type: require_confirmation
+    tag: foreign_account_route_needs_confirmation
+    message_ro: Pentru contul din străinătate este necesară procedura CNPP de plăți internaționale, neacoperită aici.
+  source_claim_ids:
+  - claim.bank_change.supporting_documents_unspecified
+  status: draft
+- id: rule.bank_change.timisoara_channel
+  canonical_rule_id: bank_account_change_admin.timisoara_channel
+  event_type_id: life.bank_account_change_admin
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: paying_authority
+      value: cnpp_or_territorial_pension_house
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjp_timisoara.contact
+  - type: require_confirmation
+    tag: local_payment_change_submission_confirmation
+    message_ro: Confirmați la CJP Timiș anexele și canalul concret de depunere.
+  source_claim_ids:
+  - claim.bank_change.cjp_timisoara_contact
+  status: draft

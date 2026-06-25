@@ -1,0 +1,598 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.home_fire_flood
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: HFF01
+  desc: inundație naturală, în siguranță, PAD valabilă
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: ready
+    requirements:
+    - req.home.valid_pad
+    - req.home.authority_report
+    channels:
+    - ch.home.pad_claim
+- id: HFF02
+  desc: incendiu încă activ
+  facts:
+    hazard: fire
+    danger_active: true
+    people_safe: false
+    emergency_services_contacted: false
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - safety_first_active_emergency
+    channels:
+    - ch.home.emergency_112
+- id: HFF03
+  desc: inundație naturală cu persoane nesigure
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: false
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - safety_first_active_emergency
+- id: HFF04
+  desc: incendiu stins, poliță facultativă confirmată
+  facts:
+    hazard: fire
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - fire_not_pad_check_facultative_policy
+- id: HFF05
+  desc: incendiu, poliță facultativă necunoscută
+  facts:
+    hazard: fire
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: unknown
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - fire_not_pad_check_facultative_policy
+    - verify_facultative_policy_and_deadline
+- id: HFF06
+  desc: incendiu fără poliță facultativă confirmată
+  facts:
+    hazard: fire
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'no'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    warnings:
+    - no_confirmed_facultative_cover
+- id: HFF07
+  desc: apă din instalație, poliță facultativă
+  facts:
+    hazard: plumbing_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - plumbing_flood_not_natural_pad_risk
+- id: HFF08
+  desc: apă din instalație, poliță necunoscută
+  facts:
+    hazard: plumbing_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: unknown
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - plumbing_flood_not_natural_pad_risk
+    - verify_facultative_policy_and_deadline
+- id: HFF09
+  desc: cutremur cu PAD valabilă
+  facts:
+    hazard: earthquake
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: false
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: ready
+    requirements:
+    - req.home.valid_pad
+- id: HFF10
+  desc: alunecare de teren
+  facts:
+    hazard: landslide
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: ready
+    requirements:
+    - req.home.authority_report
+- id: HFF11
+  desc: risc neclar
+  facts:
+    hazard: unknown
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - hazard_classification_required
+- id: HFF12
+  desc: PAD lipsește la inundație naturală
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: false
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - no_valid_pad_for_pad_claim
+    warnings:
+    - pad_is_mandatory_for_home
+- id: HFF13
+  desc: PAD necunoscută la cutremur
+  facts:
+    hazard: earthquake
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: null
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_pad_validity_at_event_date
+    channels:
+    - ch.home.pad_verify
+- id: HFF14
+  desc: ziua 60, dauna încă neavizată
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 60
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: ready
+    warnings:
+    - notify_pad_no_later_than_60_days
+- id: HFF15
+  desc: ziua 61, dauna neavizată
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 61
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - pad_notice_over_60_days_requires_insurer_review
+- id: HFF16
+  desc: inundație naturală fără proces-verbal
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: false
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - authority_event_report_missing
+- id: HFF17
+  desc: alunecare fără proces-verbal
+  facts:
+    hazard: landslide
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: false
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - authority_event_report_missing
+- id: HFF18
+  desc: act de identitate indisponibil
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: false
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - identity_document_missing_for_pad_notice
+- id: HFF19
+  desc: actele de proprietate lipsesc
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: false
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - ownership_proof_alternative_needed
+- id: HFF20
+  desc: numai bunuri din interior avariate
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: true
+    target_uat: Timișoara
+  expect:
+    status: ready
+    warnings:
+    - contents_not_covered_by_pad
+- id: HFF21
+  desc: reparațiile au început înainte de constatare
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: true
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: blocked
+    blocks:
+    - do_not_start_repairs_before_inspection
+- id: HFF22
+  desc: dauna avizată, constatarea este în așteptare
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: true
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: ready
+    warnings:
+    - insurer_inspection_max_5_days_after_written_notice
+- id: HFF23
+  desc: constatarea a fost făcută
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: true
+    authority_report_available: true
+    insurer_inspection_done: true
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Timișoara
+  expect:
+    status: ready
+    included_steps:
+    - step.home.wait_inspection
+- id: HFF24
+  desc: locuință în alt UAT
+  facts:
+    hazard: natural_flood
+    danger_active: false
+    people_safe: true
+    emergency_services_contacted: true
+    event_date: '2026-06-20'
+    reference_date: '2026-06-25'
+    days_since_event: 5
+    pad_valid: true
+    facultative_policy: 'yes'
+    insurer_notified: false
+    authority_report_available: true
+    insurer_inspection_done: false
+    repairs_started: false
+    identity_document_available: true
+    ownership_docs_available: true
+    contents_damage_only: false
+    target_uat: Lugoj
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_local_emergency_authority_channel

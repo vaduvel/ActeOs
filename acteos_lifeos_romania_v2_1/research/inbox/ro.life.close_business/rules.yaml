@@ -1,0 +1,438 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_CLOSE_BUSINESS
+event_type_id: life.close_business
+status: draft
+rules:
+- id: rule.close_business.entity_required
+  canonical_rule_id: close_business.entity_required
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează dacă închizi PFA sau SRL; traseele sunt juridic diferite.
+  source_claim_ids:
+  - claim.biz.close.pfa_guide
+  - claim.biz.close.srl_guides
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+- id: rule.close_business.pfa_voluntary
+  canonical_rule_id: close_business.pfa_voluntary
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: closure_reason
+      value: voluntary
+  effects:
+  - type: include_step
+    step_id: file_pfa_deregistration
+  - type: include_requirement
+    requirement_id: req.pfa_deregistration_request
+  source_claim_ids:
+  - claim.biz.close.pfa_voluntary
+  - claim.biz.close.pfa_request
+  - claim.biz.close.pfa_guide
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - closure_reason
+  legal_rank: OUG
+- id: rule.close_business.pfa_nonvoluntary
+  canonical_rule_id: close_business.pfa_nonvoluntary
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: neq
+      field: closure_reason
+      value: voluntary
+  effects:
+  - type: require_confirmation
+    tag: pfa_closure_evidence_required
+    message_ro: Pentru deces sau alt temei de radiere sunt necesare actele doveditoare specifice.
+  source_claim_ids:
+  - claim.biz.close.pfa_request
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - closure_reason
+  legal_rank: OUG
+- id: rule.close_business.srl_route_simplified
+  canonical_rule_id: close_business.srl_route_simplified
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: associates_agree_liquidation
+      value: true
+    - op: eq
+      field: liabilities_settled_or_regularized
+      value: true
+  effects:
+  - type: include_step
+    step_id: approve_simultaneous_dissolution_liquidation
+  - type: include_step
+    step_id: file_srl_dissolution_liquidation
+  - type: emit_advice
+    tag: simplified_route_candidate
+    message_ro: Datele indică ruta simultană, sub rezerva distribuirii activelor și documentelor fiscale.
+  source_claim_ids:
+  - claim.biz.close.simplified_conditions
+  - claim.biz.close.srl_guides
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - associates_agree_liquidation
+  - liabilities_settled_or_regularized
+  legal_rank: Lege
+- id: rule.close_business.srl_route_standard
+  canonical_rule_id: close_business.srl_route_standard
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: any
+      args:
+      - op: eq
+        field: associates_agree_liquidation
+        value: false
+      - op: eq
+        field: liabilities_settled_or_regularized
+        value: false
+  effects:
+  - type: include_step
+    step_id: start_standard_dissolution_liquidation
+  - type: require_confirmation
+    tag: liquidator_and_staged_route
+    message_ro: Condițiile rutei simultane nu sunt îndeplinite; folosește procedura etapizată cu lichidator, după caz.
+  source_claim_ids:
+  - claim.biz.close.simplified_conditions
+  - claim.biz.close.srl_guides
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - associates_agree_liquidation
+  - liabilities_settled_or_regularized
+  legal_rank: Lege
+- id: rule.close_business.no_new_operations
+  canonical_rule_id: close_business.no_new_operations
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '1990-11-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: dissolution_registered
+      value: true
+    - op: eq
+      field: new_operations_planned
+      value: true
+  effects:
+  - type: block
+    tag: new_operations_after_dissolution
+    message_ro: După dizolvare nu se inițiază operațiuni noi în afara lichidării.
+  source_claim_ids:
+  - claim.biz.close.no_new_operations
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - dissolution_registered
+  - new_operations_planned
+  legal_rank: Lege
+- id: rule.close_business.assets_distribution
+  canonical_rule_id: close_business.assets_distribution
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: remaining_assets_exist
+      value: true
+    - op: eq
+      field: assets_distribution_unanimous
+      value: false
+  effects:
+  - type: block
+    tag: unanimous_asset_distribution_missing
+    message_ro: Distribuirea activelor rămase cere votul unanim al asociaților pentru ruta art. 235.
+  source_claim_ids:
+  - claim.biz.close.assets_unanimous_tax
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - remaining_assets_exist
+  - assets_distribution_unanimous
+  legal_rank: Lege
+- id: rule.close_business.liquidation_tax_proof
+  canonical_rule_id: close_business.liquidation_tax_proof
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: remaining_assets_exist
+      value: true
+    - op: eq
+      field: liquidation_income_tax_proof_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.liquidation_income_tax_proof
+  - type: block
+    tag: liquidation_tax_proof_missing
+    message_ro: Dovada fiscală aferentă distribuirii activelor trebuie pregătită pentru radiere.
+  source_claim_ids:
+  - claim.biz.close.assets_unanimous_tax
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - remaining_assets_exist
+  - liquidation_income_tax_proof_available
+  legal_rank: Lege
+- id: rule.close_business.mention_deadline
+  canonical_rule_id: close_business.mention_deadline
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: exists
+      field: decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_15_days
+    value:
+      days: 15
+      from: decision_date
+  - type: emit_warning
+    tag: deadline_check
+    message_ro: Verifică dacă cererea de mențiune este în termenul legal de 15 zile.
+  source_claim_ids:
+  - claim.biz.close.mention_deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - decision_date
+  legal_rank: Lege
+- id: rule.close_business.online_qes
+  canonical_rule_id: close_business.online_qes
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Pentru depunerea online este necesară semnătura electronică calificată sau un alt canal.
+  source_claim_ids:
+  - claim.biz.close.electronic
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.close_business.publication_after_admission
+  canonical_rule_id: close_business.publication_after_admission
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-30'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: onrc_application_status
+      value: admitted
+    - op: eq
+      field: publication_required
+      value: true
+  effects:
+  - type: include_step
+    step_id: pay_monitorul_oficial_publication_tariff
+  - type: require_confirmation
+    tag: use_generated_publication_note
+    message_ro: Achită numai nota de calcul generată după admitere.
+  source_claim_ids:
+  - claim.biz.close.publication_payment
+  status: draft
+  authority_level: national_operational
+- id: rule.close_business.timisoara_cancel
+  canonical_rule_id: close_business.timisoara_cancel
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: include_step
+    step_id: cancel_timisoara_commercial_agreement
+  - type: include_requirement
+    requirement_id: req.local_documents_certified_true_copy
+  - type: require_confirmation
+    tag: confirm_local_cancellation_documents
+    message_ro: Lista documentelor este stabilită de cazul local și trebuie verificată înainte de trimitere.
+  source_claim_ids:
+  - claim.biz.close.local_cancel
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+- id: rule.close_business.srl_signer
+  canonical_rule_id: close_business.srl_signer
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: not_in
+      field: filing_actor
+      values:
+      - legal_representative
+      - authenticated_proxy
+      - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Cererea societății trebuie semnată de un reprezentant legal, mandatar autentic sau avocat.
+  source_claim_ids:
+  - claim.biz.close.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - filing_actor
+  legal_rank: Lege
+- id: rule.close_business.pfa_signer
+  canonical_rule_id: close_business.pfa_signer
+  event_type_id: life.close_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: not_in
+      field: filing_actor
+      values:
+      - pfa_holder
+      - authenticated_proxy
+      - lawyer
+      - interested_person
+      - heir
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Calitatea indicată nu este suficientă pentru cererea de radiere PFA în traseul modelat.
+  source_claim_ids:
+  - claim.biz.close.pfa_request
+  - claim.biz.close.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - filing_actor
+  legal_rank: OUG

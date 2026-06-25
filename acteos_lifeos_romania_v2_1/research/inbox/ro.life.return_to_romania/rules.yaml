@@ -1,0 +1,193 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_RETURN_TO_ROMANIA
+event_alias: ro.life.return_to_romania
+event_type_id: life.return_to_romania
+status: research_inbox
+rules:
+- id: rule.return_ro.passport_status
+  canonical_rule_id: return_ro.passport.status
+  event_type_id: life.return_to_romania
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_romanian_citizen
+      value: true
+    - op: eq
+      field: prior_domicile_status
+      value: domicile_abroad
+    - op: eq
+      field: restores_domicile_in_ro
+      value: true
+  effects:
+  - type: include_step
+    step_id: replace_passport_for_domicile_ro_status
+  - type: emit_warning
+    tag: passport_status_change
+    message_ro: Trecerea de la domiciliu în străinătate la domiciliu în România cere anularea pașaportului deținut și emiterea unuia corespunzător
+      statutului dobândit.
+  source_claim_ids:
+  - claim.passport.status_change
+  status: draft
+- id: rule.return_ro.identity
+  canonical_rule_id: return_ro.identity.domicile
+  event_type_id: life.return_to_romania
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_romanian_citizen
+      value: true
+    - op: eq
+      field: restores_domicile_in_ro
+      value: true
+  effects:
+  - type: include_step
+    step_id: establish_domicile_and_update_identity
+  - type: set_deadline
+    step_id: establish_domicile_and_update_identity
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: emit_warning
+    tag: identity_deadline_15d
+    message_ro: Solicită actul de identitate la noul domiciliu în 15 zile de la mutare.
+  source_claim_ids:
+  - claim.identity.domicile_new_id_15d
+  - claim.identity.address_proof
+  status: draft
+- id: rule.return_ro.residence
+  canonical_rule_id: return_ro.identity.residence
+  event_type_id: life.return_to_romania
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2023-06-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: restores_domicile_in_ro
+      value: false
+    - op: gt
+      field: lives_at_secondary_address_days_per_month
+      value: 15
+  effects:
+  - type: include_step
+    step_id: register_residence
+  - type: set_deadline
+    step_id: register_residence
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  - type: include_requirement
+    requirement_id: req.residence_declaration
+  source_claim_ids:
+  - claim.identity.residence_over_15d
+  - claim.identity.residence_docs
+  - claim.identity.move_other_address_15d
+  status: draft
+- id: rule.return_ro.z015
+  canonical_rule_id: return_ro.tax.z015
+  event_type_id: life.return_to_romania
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fiscal_status_on_arrival
+      value: nonresident
+    - op: gte
+      field: days_present_in_rolling_12m
+      value: 184
+    - op: eq
+      field: arrival_tax_exception
+      value: none
+  effects:
+  - type: include_step
+    step_id: submit_z015
+  - type: set_deadline
+    step_id: submit_z015
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: day_183_date
+  - type: include_requirement
+    requirement_id: req.valid_passport_or_eu_id
+  - type: include_requirement
+    requirement_id: req.romania_housing_proof
+  - type: include_requirement
+    requirement_id: req.foreign_tax_residence_certificate_if_applicable
+  - type: attach_channel
+    step_id: submit_z015
+    channel_id: ch.anaf.spv_z015
+  source_claim_ids:
+  - claim.tax_arrival.threshold
+  - claim.tax_arrival.deadline_30d
+  - claim.tax_arrival.form_z015_spv
+  - claim.tax_arrival.documents
+  status: draft
+- id: rule.return_ro.z015_exception
+  canonical_rule_id: return_ro.tax.z015_exception
+  event_type_id: life.return_to_romania
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-25'
+  when:
+    op: in
+    field: arrival_tax_exception
+    values:
+    - diplomatic_consular
+    - international_body_employee
+    - foreign_state_employee
+    - family_of_exception
+  effects:
+  - type: exclude_step
+    step_id: submit_z015
+  - type: emit_advice
+    tag: z015_exception
+    message_ro: Statutul declarat este exceptat de la Z015, sub rezerva documentului doveditor.
+  source_claim_ids:
+  - claim.tax_arrival.exceptions
+  status: draft
+- id: rule.return_ro.tax_multifactor
+  canonical_rule_id: return_ro.tax.multifactor
+  event_type_id: life.return_to_romania
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2025-03-25'
+  when:
+    op: gte
+    field: days_present_in_rolling_12m
+    value: 184
+  effects:
+  - type: emit_advice
+    tag: tax_residence_not_automatic
+    message_ro: Revenirea definitivă declarată nu înlocuiește analiza ANAF a rezidenței fiscale.
+  source_claim_ids:
+  - claim.tax_arrival.multifactor
+  - claim.tax_arrival.decision_30d
+  status: draft

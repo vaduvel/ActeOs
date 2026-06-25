@@ -1,0 +1,380 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_RENT_OUT_HOME
+event_alias: ro.life.rent_out_home
+event_type_id: life.rent_out_home
+status: research_inbox
+rules:
+- id: rule.rent_out.energy_copy
+  canonical_rule_id: rent_out.energy.copy
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2010-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_residential_building
+      value: true
+    - op: eq
+      field: energy_certificate_available
+      value: true
+  effects:
+  - type: include_step
+    step_id: provide_energy_certificate_copy_before_contract
+  - type: include_requirement
+    requirement_id: req.energy_certificate_copy
+  source_claim_ids:
+  - claim.energy.required_sale_rent
+  - claim.energy.copy_before_contract
+  status: draft
+- id: rule.rent_out.energy_missing
+  canonical_rule_id: rent_out.energy.missing
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2010-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_residential_building
+      value: true
+    - op: eq
+      field: energy_certificate_available
+      value: false
+  effects:
+  - type: include_step
+    step_id: obtain_energy_certificate
+  - type: block
+    tag: energy_certificate_missing
+    message_ro: Nu finaliza fluxul de închiriere fără verificarea obligației de certificat energetic și punerea copiei la dispoziția chiriașului.
+  source_claim_ids:
+  - claim.energy.required_sale_rent
+  - claim.energy.copy_before_contract
+  status: draft
+- id: rule.rent_out.ad
+  canonical_rule_id: rent_out.energy.advertisement
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2013-07-19'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: advertisement_published
+      value: true
+    - op: eq
+      field: is_residential_building
+      value: true
+  effects:
+  - type: include_step
+    step_id: include_energy_indicators_in_ad
+  - type: include_requirement
+    requirement_id: req.energy_performance_indicators
+  source_claim_ids:
+  - claim.energy.advertisement
+  status: draft
+- id: rule.rent_out.c168_initial
+  canonical_rule_id: rent_out.tax.c168_initial
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-02-06'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_type
+      value: initial
+    - op: eq
+      field: is_personal_property_income
+      value: true
+    - op: eq
+      field: is_arenda
+      value: false
+    - op: eq
+      field: is_tourist_rooms_personal_home
+      value: false
+  effects:
+  - type: include_step
+    step_id: submit_c168
+  - type: set_deadline
+    step_id: submit_c168
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: contract_date
+  - type: include_requirement
+    requirement_id: req.c168
+  - type: include_requirement
+    requirement_id: req.lease_copy
+  - type: attach_channel
+    step_id: submit_c168
+    channel_id: ch.anaf.c168
+  - type: emit_warning
+    tag: c168_deadline_30d
+    message_ro: Înregistrează contractul în cel mult 30 de zile de la încheiere.
+  source_claim_ids:
+  - claim.c168.deadline_30d
+  - claim.c168.exclusions
+  - claim.c168.channels
+  - claim.c168.contract_copy
+  - claim.c168.current_form
+  status: draft
+- id: rule.rent_out.c168_modification
+  canonical_rule_id: rent_out.tax.c168_modification
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-02-06'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_type
+      value: modification
+    - op: eq
+      field: is_personal_property_income
+      value: true
+    - op: eq
+      field: is_arenda
+      value: false
+    - op: eq
+      field: is_tourist_rooms_personal_home
+      value: false
+  effects:
+  - type: include_step
+    step_id: submit_c168_modification
+  - type: set_deadline
+    step_id: submit_c168_modification
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: contract_change_date
+  - type: include_requirement
+    requirement_id: req.c168
+  - type: include_requirement
+    requirement_id: req.lease_amendment_copy
+  source_claim_ids:
+  - claim.c168.deadline_30d
+  - claim.c168.current_form
+  status: draft
+- id: rule.rent_out.c168_termination
+  canonical_rule_id: rent_out.tax.c168_termination
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-03-26'
+  when:
+    op: eq
+    field: filing_type
+    value: termination
+  effects:
+  - type: include_step
+    step_id: submit_c168_termination
+  - type: set_freshness_state
+    step_id: submit_c168_termination
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: c168_termination_deadline
+    message_ro: Formularul curent permite încetarea, dar termenul exact pentru această ramură trebuie confirmat înainte de calcularea scadenței.
+  source_claim_ids:
+  - claim.c168.current_form
+  status: in_review
+- id: rule.rent_out.c168_exclusion
+  canonical_rule_id: rent_out.tax.c168_exclusion
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-02-06'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: is_arenda
+      value: true
+    - op: eq
+      field: is_tourist_rooms_personal_home
+      value: true
+  effects:
+  - type: exclude_step
+    step_id: submit_c168
+  - type: require_confirmation
+    tag: different_tax_route
+    message_ro: Această categorie este exclusă din procedura C168 modelată; deschide traseul fiscal specific.
+  source_claim_ids:
+  - claim.c168.exclusions
+  status: in_review
+- id: rule.rent_out.coowner
+  canonical_rule_id: rent_out.tax.coowner
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-02-06'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_co_owned
+      value: true
+    - op: eq
+      field: is_designated_registrant
+      value: true
+  effects:
+  - type: emit_advice
+    tag: designated_registrant
+    message_ro: Pentru bunul deținut în comun depune persoana desemnată în contract sau actul de modificare.
+  source_claim_ids:
+  - claim.c168.coowner_designated
+  status: draft
+- id: rule.rent_out.coowner_missing
+  canonical_rule_id: rent_out.tax.coowner_missing
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-02-06'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_co_owned
+      value: true
+    - op: eq
+      field: is_designated_registrant
+      value: false
+  effects:
+  - type: block
+    tag: missing_designated_registrant
+    message_ro: Stabilește în contract sau actul de modificare deținătorul legal desemnat pentru înregistrare.
+  source_claim_ids:
+  - claim.c168.coowner_designated
+  status: draft
+- id: rule.rent_out.association_notice
+  canonical_rule_id: rent_out.association.notice
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: eq
+    field: is_condominium
+    value: true
+  effects:
+  - type: include_step
+    step_id: notify_association_of_tenant
+  - type: set_deadline
+    step_id: notify_association_of_tenant
+    value:
+      kind: relative_calendar_days
+      days: 10
+      anchor: contract_date
+  - type: emit_warning
+    tag: association_notice_10d
+    message_ro: Notifică în scris asociația în 10 zile de la semnarea contractului.
+  source_claim_ids:
+  - claim.association.occupants_10d
+  status: draft
+- id: rule.rent_out.owner_maintenance
+  canonical_rule_id: rent_out.association.owner_maintenance
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2018-09-28'
+  when:
+    op: eq
+    field: is_condominium
+    value: true
+  effects:
+  - type: emit_advice
+    tag: owner_remains_obligor
+    message_ro: Față de asociație, obligația cotelor de întreținere rămâne a proprietarului, chiar dacă contractul prevede recuperarea de la chiriaș.
+  source_claim_ids:
+  - claim.association.owner_remains_obligor
+  - claim.association.maintenance_owner
+  status: draft
+- id: rule.rent_out.energy_tax_copy
+  canonical_rule_id: rent_out.energy.tax_copy
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2010-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_residential_building
+      value: true
+    - op: eq
+      field: filing_type
+      value: initial
+  effects:
+  - type: include_step
+    step_id: deposit_energy_certificate_copy_at_tax_body
+  - type: include_requirement
+    requirement_id: req.energy_certificate_copy
+  source_claim_ids:
+  - claim.energy.copy_to_tax_body
+  status: draft
+- id: rule.rent_out.d212_2025
+  canonical_rule_id: rent_out.tax.d212_2025
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: income_year
+      value: 2025
+    - op: eq
+      field: tenant_payer_type
+      value: individual
+  effects:
+  - type: include_step
+    step_id: submit_d212_for_2025_income
+  - type: set_deadline
+    step_id: submit_d212_for_2025_income
+    value:
+      kind: absolute
+      date: '2026-05-25'
+  - type: attach_channel
+    step_id: submit_d212_for_2025_income
+    channel_id: ch.anaf.spv_d212
+  source_claim_ids:
+  - claim.d212.2025_deadline
+  - claim.d212.rental_scope
+  status: draft
+- id: rule.rent_out.d212_future
+  canonical_rule_id: rent_out.tax.d212_future
+  event_type_id: life.rent_out_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: gt
+    field: income_year
+    value: 2025
+  effects:
+  - type: require_confirmation
+    tag: d212_future_year
+    message_ro: Termenul și formularul pentru anul de venit selectat nu sunt încă fixate în această sursă; verifică ediția ANAF aferentă.
+  source_claim_ids:
+  - claim.d212.2025_deadline
+  status: in_review

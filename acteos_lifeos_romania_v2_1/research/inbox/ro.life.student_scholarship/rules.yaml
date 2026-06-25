@@ -1,0 +1,367 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.student_scholarship
+status: draft
+rules:
+- id: rule.sch.required_facts
+  canonical_rule_id: sch.required_facts
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  required_facts:
+  - institution_sector
+  - scholarship_type
+  - study_mode
+  - funding_place
+  - student_age
+  - promoted
+  - social_category
+  - institution_method_verified
+  - reference_date
+  - academic_year
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.sch.select_type
+  source_claim_ids:
+  - claim.sch.scope
+  status: draft
+- id: rule.sch.private_gap
+  canonical_rule_id: sch.private_gap
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: eq
+    field: institution_sector
+    value: private
+  effects:
+  - type: require_confirmation
+    tag: private_institution_rules
+    message_ro: Criteriile naționale analizate nu stabilesc automat dreptul la bursă într-o instituție privată; verifică regulamentul
+      instituției.
+  source_claim_ids:
+  - claim.sch.scope
+  status: in_review
+- id: rule.sch.social_fulltime
+  canonical_rule_id: sch.social_fulltime
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: eq
+      field: study_mode
+      value: full_time
+    - op: eq
+      field: funding_place
+      value: budget
+  effects:
+  - type: include_step
+    step_id: step.sch.verify_eligibility
+  - type: include_step
+    step_id: step.sch.prepare_dossier
+  source_claim_ids:
+  - claim.sch.social_fulltime_budget
+  status: draft
+- id: rule.sch.social_wrong_mode
+  canonical_rule_id: sch.social_wrong_mode
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: neq
+      field: study_mode
+      value: full_time
+  effects:
+  - type: block
+    tag: social_requires_fulltime
+    message_ro: Bursa socială din cadrul analizat se acordă studenților la forma cu frecvență.
+  source_claim_ids:
+  - claim.sch.social_fulltime_budget
+  status: draft
+- id: rule.sch.social_fee_place
+  canonical_rule_id: sch.social_fee_place
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: eq
+      field: funding_place
+      value: fee
+  effects:
+  - type: block
+    tag: social_requires_budget_place
+    message_ro: Criteriul național analizat pentru bursa socială cere loc finanțat de la buget.
+  source_claim_ids:
+  - claim.sch.social_fulltime_budget
+  status: draft
+- id: rule.sch.age_limit
+  canonical_rule_id: sch.age_limit
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: gte
+      field: student_age
+      value: 35
+  effects:
+  - type: block
+    tag: social_age_limit
+    message_ro: Limita de vârstă pentru bursa socială este până la împlinirea a 35 de ani.
+  source_claim_ids:
+  - claim.sch.social_age
+  status: draft
+- id: rule.sch.promotion
+  canonical_rule_id: sch.promotion
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: eq
+      field: promoted
+      value: false
+  effects:
+  - type: block
+    tag: not_promoted
+    message_ro: Criteriul de promovabilitate nu este îndeplinit.
+  source_claim_ids:
+  - claim.sch.no_academic_extra
+  status: draft
+- id: rule.sch.medical
+  canonical_rule_id: sch.medical
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: eq
+      field: social_category
+      value: medical
+  effects:
+  - type: include_requirement
+    requirement_id: req.sch.category_documents
+  - type: emit_advice
+    tag: medical_income_exception
+    message_ro: Pentru afecțiunile expres enumerate se verifică ruta medicală, care nu folosește pragul de venit în același
+      mod.
+  source_claim_ids:
+  - claim.sch.social_categories
+  status: draft
+- id: rule.sch.income_route
+  canonical_rule_id: sch.income_route
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: scholarship_type
+      value: social
+    - op: in
+      field: social_category
+      values:
+      - income
+      - orphan
+      - single_parent
+      - placement
+  effects:
+  - type: include_step
+    step_id: step.sch.calculate_income
+  - type: include_requirement
+    requirement_id: req.sch.income_declaration
+  source_claim_ids:
+  - claim.sch.social_categories
+  - claim.sch.income_age_method
+  status: draft
+- id: rule.sch.income_above
+  canonical_rule_id: sch.income_above
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: social_category
+      value: income
+    - op: eq
+      field: income_below_threshold
+      value: false
+  effects:
+  - type: block
+    tag: income_above_threshold
+    message_ro: Venitul mediu aplicabil depășește pragul legal pentru categoria bazată pe venit.
+  source_claim_ids:
+  - claim.sch.social_categories
+  status: draft
+- id: rule.sch.under26
+  canonical_rule_id: sch.under26
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2023-10-01'
+  when:
+    op: lt
+    field: student_age
+    value: 26
+  effects:
+  - type: emit_advice
+    tag: family_income_method
+    message_ro: Pentru studentul sub 26 de ani, calculul folosește veniturile familiei conform metodologiei.
+  source_claim_ids:
+  - claim.sch.income_age_method
+  status: draft
+- id: rule.sch.age26_35
+  canonical_rule_id: sch.age26_35
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: student_age
+      value: 26
+    - op: lt
+      field: student_age
+      value: 35
+  effects:
+  - type: emit_advice
+    tag: personal_income_method
+    message_ro: Între 26 și 35 de ani se analizează veniturile proprii și ale persoanelor aflate în grijă.
+  source_claim_ids:
+  - claim.sch.income_age_method
+  status: draft
+- id: rule.sch.social_inquiry
+  canonical_rule_id: sch.social_inquiry
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: no_family_income
+      value: true
+    - op: eq
+      field: parent_abroad
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.sch.social_inquiry
+  source_claim_ids:
+  - claim.sch.documents_inquiry
+  status: draft
+- id: rule.sch.institution_gap
+  canonical_rule_id: sch.institution_gap
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: institution_method_verified
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.sch.verify_institution_method
+  - type: include_requirement
+    requirement_id: req.sch.institution_documents
+  - type: require_confirmation
+    tag: institution_method_unverified
+    message_ro: Termenul, cuantumul și lista finală de acte nu sunt verificate în metodologia universității.
+  source_claim_ids:
+  - claim.sch.institution_method
+  - claim.sch.amount_2025_26_only
+  status: in_review
+- id: rule.sch.amount_2026_27
+  canonical_rule_id: sch.amount_2026_27
+  event_type_id: life.student_scholarship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: academic_year
+    value: 2026-2027
+  effects:
+  - type: require_confirmation
+    tag: amount_2026_27_unverified
+    message_ro: Nu reutiliza automat cuantumul 2025-2026 pentru anul universitar 2026-2027.
+  source_claim_ids:
+  - claim.sch.amount_2025_26_only
+  status: in_review

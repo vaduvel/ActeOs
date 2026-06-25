@@ -1,0 +1,96 @@
+batch_id: R1_CRIMINAL_RECORD_CERTIFICATE
+defaults:
+  event_type_id: life.criminal_record_certificate
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: J01
+    desc: adult roman la ghiseu
+    facts: { applicant_age: 30, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, included_steps: [request_criminal_record], requirements: [req.valid_id, req.cerere_tip], advice_tags: [issue_ro_3d], channels: [ch.cazier_timis] }
+  - id: J02
+    desc: adult roman online
+    facts: { applicant_age: 30, channel_pref: online, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, channels: [ch.cazier_online], advice_tags: [online_cazier] }
+  - id: J03
+    desc: minor 10 ani - reprezentant legal
+    facts: { applicant_age: 10, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, requirements: [req.legal_representative], warnings_present: [under14_legal_rep] }
+  - id: J04
+    desc: exact 14 ani - fara reprezentant legal
+    facts: { applicant_age: 14, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, requirements_absent: [req.legal_representative] }
+  - id: J05
+    desc: cetatean UE - 30 zile
+    facts: { applicant_age: 40, channel_pref: counter, is_for_third_party: false, citizen_type: eu_citizen }
+    expect: { status: ok, warnings_present: [issue_foreign_30d] }
+  - id: J06
+    desc: resortisant tara terta - 30 zile
+    facts: { applicant_age: 40, channel_pref: counter, is_for_third_party: false, citizen_type: third_country }
+    expect: { status: ok, warnings_present: [issue_foreign_30d] }
+  - id: J07
+    desc: prin imputernicit - procura notariala
+    facts: { applicant_age: 35, channel_pref: counter, is_for_third_party: true, citizen_type: ro_citizen }
+    expect: { status: ok, requirements: [req.notarial_power_of_attorney, req.proxy_id_card] }
+  - id: J08
+    desc: valabilitate 6 luni setata
+    facts: { applicant_age: 30, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, deadline_days: 180 }
+  - id: J09
+    desc: valabilitate ramane in_review
+    facts: { applicant_age: 30, channel_pref: online, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, needs_confirmation: [validity_6m] }
+  - id: J10
+    desc: taxa - conflict marcat
+    facts: { applicant_age: 30, channel_pref: online, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, warnings_present: [fee_conflict] }
+  - id: J11
+    desc: documente de baza mereu prezente
+    facts: { applicant_age: 30, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, requirements: [req.valid_id, req.cerere_tip] }
+  - id: J12
+    desc: roman online - fara canal Timis ghiseu
+    facts: { applicant_age: 30, channel_pref: online, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, channels_absent: [ch.cazier_timis] }
+  - id: J13
+    desc: alt judet la ghiseu - canal Timis absent
+    facts: { applicant_age: 30, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.cazier_timis] }
+  - id: J14
+    desc: lipseste applicant_age
+    facts: { channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: needs_facts, missing_facts: [applicant_age] }
+  - id: J15
+    desc: lipseste channel_pref
+    facts: { applicant_age: 30, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: needs_facts, missing_facts: [channel_pref] }
+  - id: J16
+    desc: lipseste is_for_third_party
+    facts: { applicant_age: 30, channel_pref: counter, citizen_type: ro_citizen }
+    expect: { status: needs_facts, missing_facts: [is_for_third_party] }
+  - id: J17
+    desc: lipseste citizen_type
+    facts: { applicant_age: 30, channel_pref: counter, is_for_third_party: false }
+    expect: { status: needs_facts, missing_facts: [citizen_type] }
+  - id: J18
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [applicant_age, channel_pref, is_for_third_party, citizen_type] }
+  - id: J19
+    desc: roman online prin imputernicit
+    facts: { applicant_age: 35, channel_pref: online, is_for_third_party: true, citizen_type: ro_citizen }
+    expect: { status: ok, channels: [ch.cazier_online], requirements: [req.notarial_power_of_attorney] }
+  - id: J20
+    desc: in nume propriu - fara procura
+    facts: { applicant_age: 30, channel_pref: counter, is_for_third_party: false, citizen_type: ro_citizen }
+    expect: { status: ok, requirements_absent: [req.notarial_power_of_attorney] }
+  - id: J21
+    desc: cetatean UE online - 30 zile + canal online
+    facts: { applicant_age: 45, channel_pref: online, is_for_third_party: false, citizen_type: eu_citizen }
+    expect: { status: ok, warnings_present: [issue_foreign_30d], channels: [ch.cazier_online] }
+  - id: J22
+    desc: minor 13 ani prin reprezentant la ghiseu Timis
+    facts: { applicant_age: 13, channel_pref: counter, is_for_third_party: true, citizen_type: ro_citizen }
+    expect: { status: ok, requirements: [req.legal_representative, req.notarial_power_of_attorney], channels: [ch.cazier_timis] }

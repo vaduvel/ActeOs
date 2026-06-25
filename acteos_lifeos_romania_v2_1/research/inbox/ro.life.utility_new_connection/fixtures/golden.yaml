@@ -1,0 +1,882 @@
+batch_id: B16_UTILITY_NEW_CONNECTION
+defaults:
+  event_type_id: ro.life.utility_new_connection
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.unc.001
+  desc: Electricitate, adresă fără racord, operator Rețele Electrice, ATR nesolicitat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_electricity_connection_request_and_documents
+    advice_tags:
+    - new_connection_is_multistage
+    - electric_review_10_working_days
+    - electric_atr_stage_30_calendar_days
+    warnings_present:
+    - electric_cost_not_fixed
+    channels:
+    - ch.retele_electrice_connection
+    requirements:
+    - req.official_electricity_atr_document_set
+- id: fx.unc.002
+  desc: Electricitate, cererea de ATR este deja depusă.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - track_electricity_document_review_and_atr
+    advice_tags:
+    - new_connection_is_multistage
+    - electric_review_10_working_days
+    channels:
+    - ch.retele_electrice_connection
+- id: fx.unc.003
+  desc: Electricitate, ATR emis, contractul de racordare încă nesemnat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    network_extension_needed: 'no'
+    operator_contract_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - request_and_sign_electricity_connection_contract
+    advice_tags:
+    - new_connection_is_multistage
+    - electric_contract_proposal_5_working_days
+    warnings_present:
+    - electric_contract_contains_costs
+- id: fx.unc.004
+  desc: Electricitate, ATR emis și contract de racordare semnat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: issued
+    network_extension_needed: 'no'
+    operator_contract_status: signed
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - handoff_to_electricity_connection_construction
+    advice_tags:
+    - new_connection_is_multistage
+    child_events:
+    - ro.life.utility_connection_construction
+- id: fx.unc.005
+  desc: Electricitate, operatorul de distribuție nu este identificat.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: unknown
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - identify_electricity_distribution_operator
+    advice_tags:
+    - new_connection_is_multistage
+    needs_confirmation:
+    - electricity_operator
+- id: fx.unc.006
+  desc: Electricitate, alt operator decât Rețele Electrice.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: other
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - obtain_electric_operator_live_connection_route
+    advice_tags:
+    - new_connection_is_multistage
+    needs_confirmation:
+    - electric_operator_specific_rules
+- id: fx.unc.007
+  desc: Apă/canal în Timișoara, Aquatim, aviz tehnic nesolicitat.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: aquatim
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_aquatim_technical_approval_file
+    advice_tags:
+    - new_connection_is_multistage
+    - aquatim_approval_fee_84_70
+    warnings_present:
+    - aquatim_fee_recheck_at_payment
+    channels:
+    - ch.aquatim_technical_approval
+    requirements:
+    - req.aquatim_technical_approval_request
+    - req.aquatim_specific_annexes
+    - req.aquatim_gdpr_consent
+- id: fx.unc.008
+  desc: Apă/canal, avizul Aquatim este în lucru.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: aquatim
+    technical_approval_status: requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - track_aquatim_technical_approval_and_invoice
+    advice_tags:
+    - new_connection_is_multistage
+    warnings_present:
+    - approval_not_issued_yet
+    channels:
+    - ch.aquatim_technical_approval
+- id: fx.unc.009
+  desc: Apă/canal, aviz emis, contractul încă în pregătire.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: aquatim
+    technical_approval_status: issued
+    network_extension_needed: 'no'
+    operator_contract_status: pending
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_or_complete_aquatim_service_contract
+    advice_tags:
+    - new_connection_is_multistage
+    - aquatim_contract_file_15_working_days
+    warnings_present:
+    - aquatim_contract_effect_after_reception
+    channels:
+    - ch.aquatim_contract
+- id: fx.unc.010
+  desc: Apă/canal, aviz și contract pregătite pentru execuție.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: aquatim
+    technical_approval_status: issued
+    network_extension_needed: 'no'
+    operator_contract_status: prepared
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - handoff_to_water_connection_construction
+    advice_tags:
+    - new_connection_is_multistage
+    child_events:
+    - ro.life.utility_connection_construction
+- id: fx.unc.011
+  desc: Chiriaș care cere contract Aquatim fără acordul proprietarului.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: tenant_user
+    title_or_use_document_status: available
+    owner_consent_status: unavailable
+    operator_code: aquatim
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: blocked
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_aquatim_technical_approval_file
+    advice_tags:
+    - new_connection_is_multistage
+    - aquatim_approval_fee_84_70
+    warnings_present:
+    - aquatim_fee_recheck_at_payment
+    channels:
+    - ch.aquatim_technical_approval
+    requirements:
+    - req.owner_written_consent
+    - req.aquatim_technical_approval_request
+    - req.aquatim_specific_annexes
+    - req.aquatim_gdpr_consent
+    blocks:
+    - owner_consent_missing
+- id: fx.unc.012
+  desc: Extindere de rețea apă/canal, nu simplu branșament.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: aquatim
+    technical_approval_status: not_requested
+    network_extension_needed: 'yes'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_aquatim_technical_approval_file
+    - prepare_aquatim_network_extension_approval
+    advice_tags:
+    - new_connection_is_multistage
+    - aquatim_approval_fee_84_70
+    warnings_present:
+    - aquatim_fee_recheck_at_payment
+    - extension_is_not_simple_branch
+    channels:
+    - ch.aquatim_technical_approval
+    requirements:
+    - req.aquatim_technical_approval_request
+    - req.aquatim_specific_annexes
+    - req.aquatim_gdpr_consent
+    - req.urbanism_certificate
+    - req.land_registry_extract_for_extension_land
+    - req.technical_execution_design
+    - req.utility_network_placement_approval
+    - req.documents_imposed_by_urbanism_certificate
+- id: fx.unc.013
+  desc: Apă/canal într-o localitate din Timiș diferită de Timișoara.
+  facts:
+    utility_type: water_sewer
+    pilot_area: timis_other
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: aquatim
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_aquatim_technical_approval_file
+    advice_tags:
+    - new_connection_is_multistage
+    - aquatim_approval_fee_84_70
+    warnings_present:
+    - aquatim_fee_recheck_at_payment
+    channels:
+    - ch.aquatim_technical_approval
+    requirements:
+    - req.aquatim_technical_approval_request
+    - req.aquatim_specific_annexes
+    - req.aquatim_gdpr_consent
+    needs_confirmation:
+    - aquatim_service_area_and_local_channel
+- id: fx.unc.014
+  desc: Gaze naturale, operatorul de distribuție nu este încă identificat.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: unknown
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - lookup_gas_distribution_operator_in_anre_registry
+    advice_tags:
+    - new_connection_is_multistage
+    channels:
+    - ch.anre_gas_licence_registry
+    needs_confirmation:
+    - gas_distribution_operator
+- id: fx.unc.015
+  desc: Gaze, operator confirmat, ATR nesolicitat.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: gas_operator_confirmed
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_gas_atr_request_and_operator_document_set
+    advice_tags:
+    - new_connection_is_multistage
+    warnings_present:
+    - gas_atr_fee_invoice_specific
+    requirements:
+    - req.gas_operator_atr_request
+    - req.gas_operator_document_set
+- id: fx.unc.016
+  desc: Gaze, ATR emis și contract de racordare semnat.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: gas_operator_confirmed
+    technical_approval_status: issued
+    network_extension_needed: 'no'
+    operator_contract_status: signed
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - handoff_to_gas_connection_construction
+    advice_tags:
+    - new_connection_is_multistage
+    child_events:
+    - ro.life.utility_connection_construction
+- id: fx.unc.017
+  desc: Gaze, ATR respins.
+  facts:
+    utility_type: natural_gas
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: gas_operator_confirmed
+    technical_approval_status: rejected
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: blocked
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - review_operator_rejection_and_correction_route
+    advice_tags:
+    - new_connection_is_multistage
+    blocks:
+    - technical_approval_rejected
+- id: fx.unc.018
+  desc: Termoficare COLTERM, branșament nou, verificare tehnică necesară.
+  facts:
+    utility_type: district_heat
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: colterm
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_colterm_standard_connection_request_for_technical_review
+    advice_tags:
+    - new_connection_is_multistage
+    warnings_present:
+    - colterm_connection_page_stale
+    channels:
+    - ch.colterm_connection
+    needs_confirmation:
+    - colterm_current_connection_conditions
+- id: fx.unc.019
+  desc: Termoficare COLTERM, aviz/răspuns tehnic și contract confirmate.
+  facts:
+    utility_type: district_heat
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: colterm
+    technical_approval_status: issued
+    network_extension_needed: 'no'
+    operator_contract_status: signed
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_colterm_standard_connection_request_for_technical_review
+    - handoff_to_heat_connection_construction
+    advice_tags:
+    - new_connection_is_multistage
+    warnings_present:
+    - colterm_connection_page_stale
+    channels:
+    - ch.colterm_connection
+    needs_confirmation:
+    - colterm_current_connection_conditions
+    child_events:
+    - ro.life.utility_connection_construction
+- id: fx.unc.020
+  desc: Termoficare într-un alt UAT.
+  facts:
+    utility_type: district_heat
+    pilot_area: other_uat
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: other
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - identify_and_contact_local_heat_operator
+    advice_tags:
+    - new_connection_is_multistage
+    needs_confirmation:
+    - local_heat_connection_route
+- id: fx.unc.021
+  desc: Internet fix DIGI, contract încă nesemnat.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: digi
+    technical_approval_status: not_applicable
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - check_digi_availability_and_sign_service_contract
+    advice_tags:
+    - new_connection_is_multistage
+    warnings_present:
+    - digi_installation_term_starts_from_contract
+    channels:
+    - ch.digi_new_service
+- id: fx.unc.022
+  desc: Internet fix DIGI, contract semnat și instalare de programat.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: digi
+    technical_approval_status: not_applicable
+    network_extension_needed: 'no'
+    operator_contract_status: signed
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - handoff_to_digi_installation
+    advice_tags:
+    - new_connection_is_multistage
+    - digi_installation_max_90_days_unless_other_term
+    child_events:
+    - ro.life.utility_connection_construction
+- id: fx.unc.023
+  desc: Internet fix Orange, termenii instalației trebuie confirmați în ofertă.
+  facts:
+    utility_type: fixed_internet
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: orange
+    technical_approval_status: not_applicable
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - obtain_provider_coverage_offer_and_installation_terms
+    advice_tags:
+    - new_connection_is_multistage
+    warnings_present:
+    - digi_deadline_not_portable
+    needs_confirmation:
+    - internet_provider_new_connection_terms
+- id: fx.unc.024
+  desc: Există deja un racord activ.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: existing_active
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: blocked
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - verify_existing_point_and_contract
+    - submit_electricity_connection_request_and_documents
+    advice_tags:
+    - new_connection_is_multistage
+    - electric_review_10_working_days
+    - electric_atr_stage_30_calendar_days
+    warnings_present:
+    - new_connection_may_be_wrong_route
+    - electric_cost_not_fixed
+    channels:
+    - ch.retele_electrice_connection
+    requirements:
+    - req.official_electricity_atr_document_set
+    blocks:
+    - duplicate_new_connection_route
+- id: fx.unc.025
+  desc: Există un racord vechi inactiv.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: existing_inactive
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - request_operator_reactivation_or_new_connection_assessment
+    - submit_electricity_connection_request_and_documents
+    advice_tags:
+    - new_connection_is_multistage
+    - electric_review_10_working_days
+    - electric_atr_stage_30_calendar_days
+    warnings_present:
+    - electric_cost_not_fixed
+    channels:
+    - ch.retele_electrice_connection
+    requirements:
+    - req.official_electricity_atr_document_set
+    needs_confirmation:
+    - reactivation_vs_new_connection
+- id: fx.unc.026
+  desc: Solicitantul nu are dovada proprietății sau folosinței.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: unavailable
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: ok
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - submit_electricity_connection_request_and_documents
+    advice_tags:
+    - new_connection_is_multistage
+    - electric_review_10_working_days
+    - electric_atr_stage_30_calendar_days
+    warnings_present:
+    - electric_cost_not_fixed
+    channels:
+    - ch.retele_electrice_connection
+    requirements:
+    - req.official_electricity_atr_document_set
+    needs_confirmation:
+    - operator_title_or_use_document
+- id: fx.unc.027
+  desc: 'Operator ales greșit: DIGI pentru racordare la apă.'
+  facts:
+    utility_type: water_sewer
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: digi
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: blocked
+    included_steps:
+    - classify_utility_location_and_existing_connection
+    - correct_utility_operator_pair
+    advice_tags:
+    - new_connection_is_multistage
+    blocks:
+    - operator_utility_mismatch
+- id: fx.unc.028
+  desc: Lipsește faptul obligatoriu `utility_type`.
+  facts:
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - utility_type
+- id: fx.unc.029
+  desc: Lipsește faptul obligatoriu `pilot_area`.
+  facts:
+    utility_type: electricity
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - pilot_area
+- id: fx.unc.030
+  desc: Lipsește faptul obligatoriu `existing_connection_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - existing_connection_status
+- id: fx.unc.031
+  desc: Lipsește faptul obligatoriu `applicant_role`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_role
+- id: fx.unc.032
+  desc: Lipsește faptul obligatoriu `title_or_use_document_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - title_or_use_document_status
+- id: fx.unc.033
+  desc: Lipsește faptul obligatoriu `owner_consent_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - owner_consent_status
+- id: fx.unc.034
+  desc: Lipsește faptul obligatoriu `operator_code`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - operator_code
+- id: fx.unc.035
+  desc: Lipsește faptul obligatoriu `technical_approval_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    network_extension_needed: 'no'
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - technical_approval_status
+- id: fx.unc.036
+  desc: Lipsește faptul obligatoriu `network_extension_needed`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    operator_contract_status: not_started
+  expect:
+    status: needs_facts
+    missing_facts:
+    - network_extension_needed
+- id: fx.unc.037
+  desc: Lipsește faptul obligatoriu `operator_contract_status`.
+  facts:
+    utility_type: electricity
+    pilot_area: timisoara
+    existing_connection_status: none
+    applicant_role: owner
+    title_or_use_document_status: available
+    owner_consent_status: not_applicable
+    operator_code: retele_electrice
+    technical_approval_status: not_requested
+    network_extension_needed: 'no'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - operator_contract_status
+- id: fx.unc.038
+  desc: Niciun fapt furnizat; motorul cere toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - utility_type
+    - pilot_area
+    - existing_connection_status
+    - applicant_role
+    - title_or_use_document_status
+    - owner_consent_status
+    - operator_code
+    - technical_approval_status
+    - network_extension_needed
+    - operator_contract_status

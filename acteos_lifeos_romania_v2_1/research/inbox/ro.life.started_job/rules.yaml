@@ -1,0 +1,250 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.started_job
+event_type_id: ro.life.started_job
+required_facts:
+- worker_citizenship_scope
+- third_country_work_right_ready
+- has_written_cim
+- cim_transmitted_before_start
+- received_cim_copy_before_start
+- has_medical_aptitude
+- ssm_induction_completed
+status: draft
+rules:
+- id: rule.started_job.route.v1
+  canonical_rule_id: rule.started_job.route
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: review_employment_offer_and_terms
+  - type: include_step
+    step_id: sign_written_employment_contract
+  - type: include_step
+    step_id: complete_occupational_health_check
+  - type: include_step
+    step_id: verify_reges_transmission
+  - type: include_step
+    step_id: receive_employee_contract_copy
+  - type: include_step
+    step_id: complete_ssm_induction
+  source_claim_ids:
+  - clm.started_job.cim_written
+  - clm.started_job.cim_register
+  - clm.started_job.medical_aptitude
+  - clm.started_job.ssm_employer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.missing_written_cim.v1
+  canonical_rule_id: rule.started_job.missing_written_cim
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_written_cim
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: written_employment_contract_before_start
+  - type: block
+    code: do_not_start_without_written_cim
+    message_ro: Nu începe activitatea fără contract individual de muncă încheiat în scris.
+  source_claim_ids:
+  - clm.started_job.cim_written
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.missing_reges_transmission.v1
+  canonical_rule_id: rule.started_job.missing_reges_transmission
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: cim_transmitted_before_start
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: reges_transmission_before_start
+  - type: block
+    code: do_not_start_before_reges_transmission
+    message_ro: Transmiterea contractului în REGES trebuie rezolvată înainte de începerea activității.
+  source_claim_ids:
+  - clm.started_job.cim_register
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.missing_employee_copy.v1
+  canonical_rule_id: rule.started_job.missing_employee_copy
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: received_cim_copy_before_start
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: employee_copy_of_signed_cim
+  - type: emit_warning
+    tag: request_contract_copy_before_start
+    message_ro: Solicită exemplarul semnat înainte de începerea activității.
+  source_claim_ids:
+  - clm.started_job.cim_copy
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.missing_medical_aptitude.v1
+  canonical_rule_id: rule.started_job.missing_medical_aptitude
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_medical_aptitude
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: occupational_medical_aptitude
+  - type: block
+    code: do_not_start_without_medical_aptitude
+    message_ro: Aptitudinea medicală trebuie stabilită înainte de prestarea muncii.
+  source_claim_ids:
+  - clm.started_job.medical_aptitude
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.missing_ssm.v1
+  canonical_rule_id: rule.started_job.missing_ssm
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-07-25'
+  effective_to: null
+  when:
+    op: eq
+    field: ssm_induction_completed
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: ssm_induction_and_instruction
+  - type: block
+    code: do_not_start_without_ssm_induction
+    message_ro: Instruirea de securitate și sănătate în muncă trebuie finalizată.
+  source_claim_ids:
+  - clm.started_job.ssm_employer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.third_country_ready.v1
+  canonical_rule_id: rule.started_job.third_country_ready
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: worker_citizenship_scope
+      value: third_country
+    - op: eq
+      field: third_country_work_right_ready
+      value: true
+  effects:
+  - type: emit_advice
+    tag: third_country_work_authorisation_or_exemption_verified
+    message_ro: Păstrează dovada avizului ori a excepției legale aplicabile.
+  - type: emit_advice
+    tag: foreign_worker_medical_by_start_date
+    message_ro: Certificatul medical trebuie obținut cel târziu la data începerii activității.
+  source_claim_ids:
+  - clm.started_job.third_country_ro_work
+  - clm.started_job.foreign_medical
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.started_job.third_country_not_ready.v1
+  canonical_rule_id: rule.started_job.third_country_not_ready
+  event_type_id: ro.life.started_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-10-28'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: worker_citizenship_scope
+      value: third_country
+    - op: eq
+      field: third_country_work_right_ready
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: employment_authorisation_or_documented_exemption
+  - type: block
+    code: third_country_work_right_not_ready
+    message_ro: Nu începe activitatea până când dreptul de muncă nu este documentat.
+  source_claim_ids:
+  - clm.started_job.third_country_ro_work
+  override_rule_ids: []
+  status: active
+  reviewer_id: null

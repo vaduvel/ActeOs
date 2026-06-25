@@ -1,0 +1,97 @@
+batch_id: R1_LOCAL_TAX_CERTIFICATE
+defaults:
+  event_type_id: life.local_tax_certificate
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: C01
+    desc: cerere generala simpla
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, included_steps: [request_fiscal_certificate], requirements: [req.form_itl010, req.id_card] }
+  - id: C02
+    desc: pentru vanzare vehicul
+    facts: { purpose: sale_vehicle, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, included_steps: [request_fiscal_certificate] }
+  - id: C03
+    desc: pentru vanzare imobil
+    facts: { purpose: sale_property, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, included_steps: [request_fiscal_certificate] }
+  - id: C04
+    desc: succesiune - documente suplimentare
+    facts: { purpose: succession, is_for_third_party: false, is_succession: true }
+    expect: { status: ok, requirements: [req.death_certificate, req.notary_request] }
+  - id: C05
+    desc: prin imputernicit
+    facts: { purpose: general, is_for_third_party: true, is_succession: false }
+    expect: { status: ok, requirements: [req.power_of_attorney, req.proxy_id_card] }
+  - id: C06
+    desc: succesiune + imputernicit (cumul)
+    facts: { purpose: succession, is_for_third_party: true, is_succession: true }
+    expect: { status: ok, requirements: [req.death_certificate, req.notary_request, req.power_of_attorney, req.proxy_id_card] }
+  - id: C07
+    desc: valabilitate ramane in_review
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, needs_confirmation: [validity, issue_term] }
+  - id: C08
+    desc: termen eliberare - warning prezent
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, warnings_present: [issue_term] }
+  - id: C09
+    desc: deadline valabilitate 30 zile setat
+    facts: { purpose: sale_vehicle, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, deadline_days: 30 }
+  - id: C10
+    desc: Timisoara - canal DFMT + advice online
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, channels: [ch.dfmt_timisoara], advice_present: [online_dfmt] }
+  - id: C11
+    desc: alt judet - canal Timis absent
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.dfmt_timisoara] }
+  - id: C12
+    desc: lipseste purpose
+    facts: { is_for_third_party: false, is_succession: false }
+    expect: { status: needs_facts, missing_facts: [purpose] }
+  - id: C13
+    desc: lipseste is_for_third_party
+    facts: { purpose: general, is_succession: false }
+    expect: { status: needs_facts, missing_facts: [is_for_third_party] }
+  - id: C14
+    desc: lipseste is_succession
+    facts: { purpose: general, is_for_third_party: false }
+    expect: { status: needs_facts, missing_facts: [is_succession] }
+  - id: C15
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [purpose, is_for_third_party, is_succession] }
+  - id: C16
+    desc: documente de baza mereu prezente
+    facts: { purpose: sale_property, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, requirements: [req.form_itl010, req.id_card] }
+  - id: C17
+    desc: non-succesiune - fara acte succesorale
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: C18
+    desc: non-imputernicit - fara imputernicire
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, requirements_absent: [req.power_of_attorney] }
+  - id: C19
+    desc: taxa timbru - warning prezent
+    facts: { purpose: general, is_for_third_party: false, is_succession: false }
+    expect: { status: ok, warnings_present: [fee_info] }
+  - id: C20
+    desc: succesiune in alt judet - acte succesorale dar fara canal Timis
+    facts: { purpose: succession, is_for_third_party: false, is_succession: true }
+    jurisdiction_path: [eu, ro, ro.b, ro.b.bucuresti]
+    expect: { status: ok, requirements: [req.death_certificate], channels_absent: [ch.dfmt_timisoara] }
+  - id: C21
+    desc: vanzare imobil prin imputernicit la Timisoara
+    facts: { purpose: sale_property, is_for_third_party: true, is_succession: false }
+    expect: { status: ok, requirements: [req.power_of_attorney, req.proxy_id_card], channels: [ch.dfmt_timisoara] }
+  - id: C22
+    desc: succesiune + valabilitate 30 zile
+    facts: { purpose: succession, is_for_third_party: false, is_succession: true }
+    expect: { status: ok, requirements: [req.death_certificate], deadline_days: 30 }

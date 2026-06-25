@@ -1,0 +1,74 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_LOST_ALL_DOCUMENTS
+event_type_id: life.lost_all_documents
+status: draft
+rules:
+  - id: rule.lad.ci_first_ordering
+    canonical_rule_id: lost_all_documents.ci_first_ordering
+    event_type_id: life.lost_all_documents
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-04-19'
+    when:
+      op: eq
+      field: lost_id_card
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.id_card_lost_stolen }
+      - { type: emit_advice, message_ro: 'Reface intai cartea de identitate; restul documentelor necesita un act de identitate valid.' }
+    source_claim_ids: []
+    status: draft
+  - id: rule.lad.loss_not_theft
+    canonical_rule_id: lost_all_documents.loss_not_theft
+    event_type_id: life.lost_all_documents
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2021-04-19'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Pierdere (nu furt): de regula nu este necesara sesizarea la politie.' }
+      - { type: require_confirmation, message_ro: 'Confirma formularea oficiala SPCLEP privind pierderea vs furtul.' }
+    source_claim_ids: [claim.lad.loss_no_police_required]
+    status: in_review
+  - id: rule.lad.trigger_passport
+    canonical_rule_id: lost_all_documents.trigger_passport
+    event_type_id: life.lost_all_documents
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-04-19'
+    when:
+      op: eq
+      field: lost_passport
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.passport_first_or_renew }
+    source_claim_ids: []
+    status: draft
+  - id: rule.lad.trigger_driving_license
+    canonical_rule_id: lost_all_documents.trigger_driving_license
+    event_type_id: life.lost_all_documents
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-04-19'
+    when:
+      op: eq
+      field: lost_driving_license
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.driving_license_duplicate }
+    source_claim_ids: []
+    status: draft
+  - id: rule.lad.trigger_vehicle_registration
+    canonical_rule_id: lost_all_documents.trigger_vehicle_registration
+    event_type_id: life.lost_all_documents
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: lost_vehicle_registration
+      value: true
+    effects:
+      - { type: trigger_child_event, event_type_id: life.vehicle_registration_duplicate }
+    source_claim_ids: []
+    status: draft

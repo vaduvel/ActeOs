@@ -1,0 +1,319 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.vehicle_leasing_end
+status: draft
+rules:
+- id: rule.vle.base_route
+  canonical_rule_id: vle.base_route
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.vle.obtain_lessor_docs
+  - type: include_step
+    step_id: step.vle.choose_channel
+  - type: include_step
+    step_id: step.vle.submit_transcription
+  - type: include_requirement
+    requirement_id: req.vle.ownership_document
+  source_claim_ids:
+  - claim.vle.transcription_90d
+  status: draft
+- id: rule.vle.deadline_90d
+  canonical_rule_id: vle.deadline_90d
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: step.vle.submit_transcription
+    value:
+      kind: calendar_days_from_acquisition
+      days: 90
+  - type: emit_warning
+    tag: transcription_deadline_90_days
+    message_ro: Transcrierea trebuie solicitată în 90 de zile de la dobândire.
+  source_claim_ids:
+  - claim.vle.transcription_90d
+  status: draft
+- id: rule.vle.missing_lessor_document
+  canonical_rule_id: vle.missing_lessor_document
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  when:
+    op: eq
+    field: final_leasing_document_received
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: lessor_final_documents_unverified
+    message_ro: Solicită finanțatorului documentul final de transfer; lista contractuală exactă nu este uniform verificată
+      oficial.
+  source_claim_ids: []
+  status: draft
+- id: rule.vle.inperson_timis
+  canonical_rule_id: vle.inperson_timis
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: eq
+    field: submission_channel
+    value: in_person
+  effects:
+  - type: include_requirement
+    requirement_id: req.vle.local_tax_registration
+  - type: include_step
+    step_id: step.vle.book_timis
+  - type: attach_channel
+    channel_id: ch.vle.timis_appointment
+  source_claim_ids:
+  - claim.vle.inperson_fiscal_record
+  - claim.vle.timis_submission
+  - claim.vle.timis_appointment
+  status: draft
+- id: rule.vle.online_timis
+  canonical_rule_id: vle.online_timis
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: submission_channel
+    value: online
+  effects:
+  - type: include_requirement
+    requirement_id: req.vle.tax_certificate_online
+  - type: attach_channel
+    channel_id: ch.vle.dgpci
+  source_claim_ids:
+  - claim.vle.online_fiscal_certificate
+  status: draft
+  effective_from: '2026-03-04'
+- id: rule.vle.online_missing_fiscal
+  canonical_rule_id: vle.online_missing_fiscal
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: online
+    - op: eq
+      field: tax_clearance_certificate_available
+      value: false
+  effects:
+  - type: block
+    tag: online_fiscal_certificate_missing
+    message_ro: Fluxul online din Timiș nu este pregătit fără certificatul de atestare fiscală.
+  source_claim_ids:
+  - claim.vle.online_fiscal_certificate
+  status: draft
+- id: rule.vle.tax_record_missing
+  canonical_rule_id: vle.tax_record_missing
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: ownership_document_registered_local_tax
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.vle.register_local_tax
+  - type: block
+    tag: local_tax_registration_missing
+    message_ro: Înregistrează mai întâi documentul de proprietate la organul fiscal local.
+  source_claim_ids:
+  - claim.vle.inperson_fiscal_record
+  status: draft
+- id: rule.vle.itp_invalid
+  canonical_rule_id: vle.itp_invalid
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: itp_status
+      values:
+      - expired
+      - cancelled
+    - op: eq
+      field: plans_public_road_use
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.vle.verify_roadworthiness
+  - type: include_requirement
+    requirement_id: req.vle.valid_itp
+  - type: block
+    tag: do_not_drive_itp_invalid
+    message_ro: Nu circula pe drum public cu ITP expirat sau anulat.
+  source_claim_ids:
+  - claim.vle.no_road_without_itp_rca
+  status: draft
+- id: rule.vle.itp_invalid_no_road_use
+  canonical_rule_id: vle.itp_invalid_no_road_use
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: itp_status
+      values:
+      - expired
+      - cancelled
+    - op: eq
+      field: plans_public_road_use
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.vle.verify_roadworthiness
+  - type: emit_warning
+    tag: itp_invalid_keep_off_public_road
+    message_ro: Păstrează vehiculul în afara drumului public până la o ITP valabilă.
+  source_claim_ids:
+  - claim.vle.no_road_without_itp_rca
+  status: draft
+- id: rule.vle.rca_invalid
+  canonical_rule_id: vle.rca_invalid
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: rca_status
+      value: expired
+    - op: eq
+      field: plans_public_road_use
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.vle.verify_roadworthiness
+  - type: include_requirement
+    requirement_id: req.vle.valid_rca
+  - type: block
+    tag: do_not_drive_rca_invalid
+    message_ro: Nu circula pe drum public fără RCA valabilă.
+  source_claim_ids:
+  - claim.vle.no_road_without_itp_rca
+  status: draft
+- id: rule.vle.rca_invalid_no_road_use
+  canonical_rule_id: vle.rca_invalid_no_road_use
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: rca_status
+      value: expired
+    - op: eq
+      field: plans_public_road_use
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.vle.verify_roadworthiness
+  - type: emit_warning
+    tag: rca_invalid_keep_off_public_road
+    message_ro: Păstrează vehiculul în afara drumului public până la o RCA valabilă.
+  source_claim_ids:
+  - claim.vle.no_road_without_itp_rca
+  status: draft
+- id: rule.vle.road_status_unknown
+  canonical_rule_id: vle.road_status_unknown
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  when:
+    op: any
+    args:
+    - op: eq
+      field: itp_status
+      value: unknown
+    - op: eq
+      field: rca_status
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: verify_itp_rca_before_driving
+    message_ro: Confirmă ITP și RCA înainte de a circula.
+  source_claim_ids:
+  - claim.vle.no_road_without_itp_rca
+  status: draft
+- id: rule.vle.eid_timis
+  canonical_rule_id: vle.eid_timis
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: eq
+    field: electronic_id
+    value: true
+  effects:
+  - type: emit_advice
+    tag: eid_no_separate_domicile_certificate
+    message_ro: În Timiș, adresa este verificată la ghișeu pentru cartea electronică de identitate.
+  source_claim_ids:
+  - claim.vle.eid_address
+  status: draft
+- id: rule.vle.other_uat
+  canonical_rule_id: vle.other_uat
+  event_type_id: life.vehicle_leasing_end
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  severity: operational
+  when:
+    op: neq
+    field: target_uat
+    value: Timișoara
+  effects:
+  - type: require_confirmation
+    tag: verify_local_fiscal_route
+    message_ro: Verifică fluxul fiscal și de programare al UAT-ului competent; practica Timișoara nu se transferă automat.
+  source_claim_ids: []
+  status: draft

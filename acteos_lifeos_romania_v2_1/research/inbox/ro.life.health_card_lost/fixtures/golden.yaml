@@ -1,0 +1,310 @@
+batch_id: B06_HEALTH_CARD_LOST
+defaults:
+  alias_event_type_id: ro.life.health_card_lost
+  event_type_id: life.health_card_lost
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: HCL01
+  description: Card pierdut, titular, Timiș
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_and_submit_health_card_duplicate_request
+    - obtain_replacement_certificate
+    requirements:
+    - req.health_card_duplicate_application
+    - req.identity_document_copy
+    - req.duplicate_card_payment_proof
+    channels:
+    - ch.cas_tm
+    advice:
+    - duplicate_fee_20_36
+    - cas_tm_contact
+- id: HCL02
+  description: Card furat, titular, Timiș
+  facts:
+    replacement_reason: stolen
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: resolved
+    requirements:
+    - req.health_card_duplicate_application
+    - req.identity_document_copy
+    - req.duplicate_card_payment_proof
+    channels:
+    - ch.cas_tm
+- id: HCL03
+  description: Card distrus
+  facts:
+    replacement_reason: destroyed
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: resolved
+    included_steps:
+    - request_new_health_card_at_registered_cas
+    - obtain_replacement_certificate
+    requirements:
+    - req.health_card_duplicate_application
+    - req.identity_document_copy
+    - req.duplicate_card_payment_proof
+- id: HCL04
+  description: Date eronate pe card
+  facts:
+    replacement_reason: data_error
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: resolved
+    included_steps:
+    - request_free_replacement_for_erroneous_data
+    - obtain_replacement_certificate
+    requirements:
+    - req.health_card_replacement_application
+    - req.identity_document_copy
+    requirements_absent:
+    - req.duplicate_card_payment_proof
+    advice:
+    - data_error_replacement_free
+- id: HCL05
+  description: Schimbare nume
+  facts:
+    replacement_reason: name_changed
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.health_card_duplicate_application
+    - req.identity_document_copy
+    - req.duplicate_card_payment_proof
+    - req.return_initial_health_card
+    confirmations:
+    - current_name_change_supporting_documents
+- id: HCL06
+  description: Depunere prin reprezentant legal
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: legal_representative
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: resolved
+    requirements:
+    - req.representative_identity_copy
+    - req.proof_of_representation_or_authorization
+- id: HCL07
+  description: Depunere prin împuternicit
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: authorized_person
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: resolved
+    requirements:
+    - req.representative_identity_copy
+    - req.proof_of_representation_or_authorization
+- id: HCL08
+  description: Depunere e-mail Timiș
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    submission_channel: email
+    new_card_requested: true
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.registered_cas_email
+    - ch.cas_tm
+    confirmations:
+    - current_local_email_and_file_format
+- id: HCL09
+  description: Alt județ
+  facts:
+    replacement_reason: lost
+    insured_county: CJ
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - territorial_cas_contact_and_payment
+- id: HCL10
+  description: Dovada plății lipsește
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+    payment_proof_available: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.duplicate_card_payment_proof
+- id: HCL11
+  description: Cererea tip lipsește
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+    application_available: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.health_card_duplicate_application
+- id: HCL12
+  description: Copie CI lipsește
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    submission_channel: in_person
+    new_card_requested: true
+    identity_copy_available: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.identity_document_copy
+- id: HCL13
+  description: Adeverință emisă astăzi
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    new_card_requested: true
+    certificate_issue_date: '2026-06-25'
+    replacement_certificate_validity_state: valid
+  expect:
+    status: resolved
+    deadlines:
+    - replacement_certificate_validity
+- id: HCL14
+  description: Adeverință mai veche de trei luni
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    new_card_requested: true
+    certificate_issue_date: '2026-02-01'
+    replacement_certificate_validity_state: expired
+  expect:
+    status: resolved
+    warnings:
+    - replacement_certificate_expired
+- id: HCL15
+  description: Întrebare despre valabilitatea cardului
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    asks_card_validity: true
+  expect:
+    status: conflicting
+    conflicts:
+    - health_card_validity_5_vs_7
+    blocked_effects:
+    - card_validity_display
+    confirmations:
+    - current_card_validity
+- id: HCL16
+  description: Utilizatorul plătește 50 lei pe baza unui SMS
+  facts:
+    replacement_reason: lost
+    insured_county: TM
+    requester_role: holder
+    claimed_fee: 50
+    payment_instruction_source: sms
+  expect:
+    status: resolved
+    warnings:
+    - fee_or_payment_channel_not_official
+    advice:
+    - duplicate_fee_20_36
+- id: HCL17
+  description: Date eronate, i se cere taxă
+  facts:
+    replacement_reason: data_error
+    insured_county: TM
+    requester_role: holder
+    claimed_fee: 20.36
+  expect:
+    status: resolved
+    warnings:
+    - fee_conflicts_with_free_data_error_replacement
+    advice:
+    - data_error_replacement_free
+- id: HCL18
+  description: Card doar nefuncțional, nu pierdut
+  facts:
+    replacement_reason: technical_failure
+    insured_county: TM
+    requester_role: holder
+  expect:
+    status: blocked
+    reason: event_mismatch_use_health_card_blocked_or_cas_diagnosis
+- id: HCL19
+  description: Cardul nu a fost emis niciodată
+  facts:
+    replacement_reason: never_issued
+    insured_county: TM
+    requester_role: holder
+  expect:
+    status: blocked
+    reason: not_a_duplicate_route
+- id: HCL20
+  description: Lipsește motivul
+  facts:
+    insured_county: TM
+    requester_role: holder
+  expect:
+    status: needs_facts
+    missing_facts:
+    - replacement_reason
+- id: HCL21
+  description: Lipsește județul CAS
+  facts:
+    replacement_reason: lost
+    requester_role: holder
+  expect:
+    status: needs_facts
+    missing_facts:
+    - insured_county
+- id: HCL22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - replacement_reason
+    - insured_county
+    - requester_role

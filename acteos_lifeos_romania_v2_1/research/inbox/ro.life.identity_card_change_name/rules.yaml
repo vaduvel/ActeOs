@@ -1,0 +1,273 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_IDENTITY_CARD_CHANGE_NAME
+event_type_id: life.identity_card_change_name
+status: draft
+rules:
+- id: rule.idname.route
+  canonical_rule_id: identity_card_change_name.route
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: replace_identity_card_after_name_change
+  source_claim_ids:
+  - claim.id.name.case_deadline
+  status: draft
+- id: rule.idname.deadline
+  canonical_rule_id: identity_card_change_name.deadline_15d
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: change_date
+    - op: exists
+      field: request_date
+  effects:
+  - type: set_deadline
+    step_id: replace_identity_card_after_name_change
+    value:
+      kind: relative_calendar_days
+      anchor: change_date
+      days: 15
+  source_claim_ids:
+  - claim.id.name.case_deadline
+  status: draft
+  authority_level: national_normative
+  legal_rank: OUG
+  required_facts:
+  - change_date
+  - request_date
+- id: rule.idname.docs
+  canonical_rule_id: identity_card_change_name.general_documents
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2021-03-10'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.old_identity_card
+  - type: include_requirement
+    requirement_id: req.birth_certificate
+  - type: include_requirement
+    requirement_id: req.proof_of_domicile
+  - type: include_requirement
+    requirement_id: req.payment_proof_if_due
+  source_claim_ids:
+  - claim.id.name.general_docs
+  - claim.id.name.old_doc
+  status: draft
+  authority_level: national_normative
+- id: rule.idname.marriage_doc
+  canonical_rule_id: identity_card_change_name.marriage_document
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2021-03-10'
+  when:
+    op: eq
+    field: change_basis
+    value: marriage
+  effects:
+  - type: include_requirement
+    requirement_id: req.marriage_certificate_with_current_name
+  source_claim_ids:
+  - claim.id.name.general_docs
+  status: draft
+- id: rule.idname.divorce_doc
+  canonical_rule_id: identity_card_change_name.divorce_document
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2021-03-10'
+  when:
+    op: eq
+    field: change_basis
+    value: divorce
+  effects:
+  - type: include_requirement
+    requirement_id: req.final_divorce_certificate_or_judgment
+  source_claim_ids:
+  - claim.id.name.general_docs
+  status: draft
+- id: rule.idname.admin_court_doc
+  canonical_rule_id: identity_card_change_name.admin_or_court_document
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: in
+    field: change_basis
+    values:
+    - administrative
+    - court
+  effects:
+  - type: include_requirement
+    requirement_id: req.final_name_change_act
+  source_claim_ids:
+  - claim.id.name.general_docs
+  status: draft
+- id: rule.idname.foreign_block
+  canonical_rule_id: identity_card_change_name.foreign_registration_required
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_basis
+      value: foreign
+    - op: eq
+      field: foreign_change_registered_in_ro
+      value: false
+  effects:
+  - type: block
+    tag: foreign_change_not_registered_in_ro
+    message_ro: Înregistrează/transcrie mai întâi modificarea în registrele române de stare civilă.
+  - type: trigger_child_event
+    event_type_id: life.civil_status_transcription
+  source_claim_ids:
+  - claim.id.name.foreign_mentions
+  status: draft
+  authority_level: national_normative
+- id: rule.idname.foreign_doc
+  canonical_rule_id: identity_card_change_name.foreign_romanian_mentions
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_basis
+      value: foreign
+    - op: eq
+      field: foreign_change_registered_in_ro
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.romanian_civil_certificate_with_mentions
+  source_claim_ids:
+  - claim.id.name.foreign_mentions
+  status: draft
+- id: rule.idname.no_presence
+  canonical_rule_id: identity_card_change_name.physical_presence
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-04-24'
+  when:
+    op: eq
+    field: applicant_present
+    value: false
+  effects:
+  - type: block
+    tag: applicant_presence_required
+    message_ro: Titularul trebuie să fie prezent la depunerea cererii.
+  source_claim_ids:
+  - claim.id.name.presence
+  status: draft
+  required_facts:
+  - applicant_present
+- id: rule.idname.cei_fee
+  canonical_rule_id: identity_card_change_name.cei_fee_70
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-04-24'
+  when:
+    op: eq
+    field: requested_document
+    value: cei
+  effects:
+  - type: emit_advice
+    tag: fee_70_ron
+    message_ro: Contravaloarea publicată pentru noua CEI este 70 lei.
+  - type: attach_channel
+    channel_id: ch.hub_cei_any_spcep
+  source_claim_ids:
+  - claim.id.name.fees
+  - claim.id.name.channels
+  status: draft
+- id: rule.idname.cis_fee
+  canonical_rule_id: identity_card_change_name.cis_fee_40
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-04-24'
+  when:
+    op: eq
+    field: requested_document
+    value: cis
+  effects:
+  - type: emit_advice
+    tag: fee_40_ron
+    message_ro: Contravaloarea publicată pentru CIS este 40 lei.
+  - type: attach_channel
+    channel_id: ch.spcep_domicile
+  - type: emit_warning
+    tag: cis_local_only
+    message_ro: CIS se solicită la serviciul competent pentru domiciliu.
+  source_claim_ids:
+  - claim.id.name.fees
+  - claim.id.name.channels
+  status: draft
+- id: rule.idname.address_child
+  canonical_rule_id: identity_card_change_name.address_child
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2021-03-10'
+  when:
+    op: eq
+    field: domicile_changed
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.id_card_change_address
+  source_claim_ids:
+  - claim.id.name.general_docs
+  status: draft
+- id: rule.idname.timisoara
+  canonical_rule_id: identity_card_change_name.timisoara_channel
+  event_type_id: life.identity_card_change_name
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: explanatory
+  effective_from: '2026-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dep_timisoara_mihai_eminescu_15
+  source_claim_ids:
+  - claim.id.name.timisoara
+  status: draft

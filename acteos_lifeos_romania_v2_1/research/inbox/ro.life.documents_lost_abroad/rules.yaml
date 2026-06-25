@@ -1,0 +1,329 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_DOCUMENTS_LOST_ABROAD
+event_type_id: ro.life.documents_lost_abroad
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- document_type
+- loss_kind
+- current_region
+- romanian_mission_available
+- travel_need
+- local_report_status
+rules:
+- id: rule.dla.start
+  canonical_rule_id: documents_lost_abroad.start
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: secure_identity_and_contact_issuer
+  - type: emit_warning
+    tag: document_specific_route
+    message_ro: Procedura diferă după tipul documentului; nu trata permisul, cartea de identitate și permisul de ședere ca
+      pașaport.
+  source_claim_ids:
+  - claim.dla.border_rules
+  status: in_review
+- id: rule.dla.passport_lost_destroyed
+  canonical_rule_id: documents_lost_abroad.passport_lost_destroyed
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_type
+      value: passport
+    - op: in
+      field: loss_kind
+      values:
+      - lost
+      - destroyed
+  effects:
+  - type: include_step
+    step_id: declare_passport_loss_to_romanian_mission
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  - type: emit_advice
+    tag: passport_loss_consular_declaration
+    message_ro: Declară pierderea sau distrugerea la misiunea română competentă.
+  source_claim_ids:
+  - claim.dla.passport_report
+  status: in_review
+- id: rule.dla.passport_stolen
+  canonical_rule_id: documents_lost_abroad.passport_stolen
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_type
+      value: passport
+    - op: eq
+      field: loss_kind
+      value: stolen
+  effects:
+  - type: include_step
+    step_id: report_theft_to_local_police
+  - type: include_requirement
+    requirement_id: req.local_police_theft_certificate
+  - type: include_step
+    step_id: declare_theft_to_romanian_mission
+  - type: attach_channel
+    channel_id: ch.local_police
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  source_claim_ids:
+  - claim.dla.passport_theft
+  status: in_review
+- id: rule.dla.found_after_report
+  canonical_rule_id: documents_lost_abroad.found_after_report
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: loss_kind
+    value: found_after_report
+  effects:
+  - type: block
+    tag: reported_document_invalid
+    message_ro: Nu folosi documentul declarat pierdut, furat sau distrus.
+  - type: include_step
+    step_id: surrender_found_invalid_document
+  - type: emit_warning
+    tag: document_remains_null
+    message_ro: Găsirea ulterioară nu îi reactivează valabilitatea.
+  source_claim_ids:
+  - claim.dla.passport_null
+  status: in_review
+- id: rule.dla.urgent_continue_passport
+  canonical_rule_id: documents_lost_abroad.urgent_continue_passport
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_type
+      value: passport
+    - op: eq
+      field: travel_need
+      value: urgent_continue
+    - op: not
+      arg:
+        op: eq
+        field: loss_kind
+        value: found_after_report
+  effects:
+  - type: include_step
+    step_id: request_emergency_travel_assessment
+  - type: include_requirement
+    requirement_id: req.urgent_reason_evidence
+  - type: emit_advice
+    tag: temporary_passport_max_3_working_days
+    message_ro: Pentru o situație urgentă documentată, pașaportul simplu temporar are termen legal de cel mult trei zile lucrătoare.
+  - type: emit_warning
+    tag: temporary_not_tourism
+    message_ro: Nu este o rută pentru simpla călătorie turistică.
+  source_claim_ids:
+  - claim.dla.temporary_passport
+  status: in_review
+- id: rule.dla.return_ro
+  canonical_rule_id: documents_lost_abroad.return_ro
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: travel_need
+    value: return_to_ro
+  effects:
+  - type: include_step
+    step_id: obtain_consular_return_document_assessment
+  - type: require_confirmation
+    tag: return_document_type
+    message_ro: Misiunea stabilește documentul concret cu care poate fi realizată întoarcerea, în funcție de identitate și
+      itinerar.
+  source_claim_ids:
+  - claim.dla.border_rules
+  status: in_review
+- id: rule.dla.in_eu
+  canonical_rule_id: documents_lost_abroad.in_eu
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: current_region
+    value: eu
+  effects:
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  - type: emit_advice
+    tag: contact_own_consulate_first
+    message_ro: În UE, contactează mai întâi misiunea României.
+  source_claim_ids:
+  - claim.dla.consular_eu
+  status: in_review
+- id: rule.dla.outside_eu_unrepresented
+  canonical_rule_id: documents_lost_abroad.outside_eu_unrepresented
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: eu
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: current_region
+      value: outside_eu
+    - op: eq
+      field: romanian_mission_available
+      value: false
+  effects:
+  - type: include_step
+    step_id: request_eu_consular_protection
+  - type: attach_channel
+    channel_id: ch.other_eu_mission
+  - type: emit_advice
+    tag: other_eu_mission_when_unrepresented
+    message_ro: Poți solicita protecție consulară de la misiunea altui stat UE dacă România nu este reprezentată.
+  source_claim_ids:
+  - claim.dla.eu_consular_protection
+  status: in_review
+- id: rule.dla.outside_eu_represented
+  canonical_rule_id: documents_lost_abroad.outside_eu_represented
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: current_region
+      value: outside_eu
+    - op: eq
+      field: romanian_mission_available
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  - type: emit_advice
+    tag: romanian_mission_available
+    message_ro: Folosește misiunea română competentă teritorial.
+  source_claim_ids:
+  - claim.dla.passport_report
+  status: in_review
+- id: rule.dla.theft_certificate_missing
+  canonical_rule_id: documents_lost_abroad.theft_certificate_missing
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: loss_kind
+      value: stolen
+    - op: eq
+      field: local_report_status
+      value: not_obtained
+  effects:
+  - type: emit_warning
+    tag: local_theft_report_missing
+    message_ro: Pentru furtul pașaportului, adeverința poliției locale este o probă critică pentru noul document.
+  - type: require_confirmation
+    tag: local_report_remedy
+    message_ro: Cere misiunii instrucțiuni dacă autoritatea locală nu emite sau nu poate emite adeverința.
+  source_claim_ids:
+  - claim.dla.passport_theft
+  status: in_review
+- id: rule.dla.non_passport
+  canonical_rule_id: documents_lost_abroad.non_passport
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: document_type
+    values:
+    - national_id
+    - driving_licence
+    - residence_permit
+    - other
+  effects:
+  - type: include_step
+    step_id: confirm_document_specific_replacement_route
+  - type: require_confirmation
+    tag: issuer_specific_replacement
+    message_ro: Confirmă procedura la emitentul documentului și la misiunea română; regulile de pașaport nu sunt reutilizate
+      automat.
+  source_claim_ids:
+  - claim.dla.consular_eu
+  status: in_review
+- id: rule.dla.travel_itinerary
+  canonical_rule_id: documents_lost_abroad.travel_itinerary
+  event_type_id: ro.life.documents_lost_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: travel_need
+    values:
+    - return_to_ro
+    - urgent_continue
+  effects:
+  - type: include_step
+    step_id: verify_exit_transit_entry_acceptance
+  - type: emit_warning
+    tag: transit_not_guaranteed
+    message_ro: Verifică separat ieșirea, fiecare tranzit și intrarea; acceptarea nu este garantată de o regulă unică.
+  source_claim_ids:
+  - claim.dla.border_rules
+  status: in_review

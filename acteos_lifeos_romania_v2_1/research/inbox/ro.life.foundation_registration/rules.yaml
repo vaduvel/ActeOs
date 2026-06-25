@@ -1,0 +1,473 @@
+batch_id: batch18.foundation_registration
+event_type_id: ro.life.foundation_registration
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.foundation_registration.base
+  canonical_rule_id: canonical.foundation_registration.base
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: register_foundation
+  effects:
+  - type: include_step
+    step_id: step.reserve_or_verify_foundation_name
+  - type: include_step
+    step_id: step.prepare_foundation_statute
+  - type: include_step
+    step_id: step.establish_initial_foundation_assets
+  - type: include_step
+    step_id: step.file_at_district_court_of_seat
+  - type: include_requirement
+    requirement_id: req.foundation_statute
+  - type: include_requirement
+    requirement_id: req.seat_proof
+  - type: include_requirement
+    requirement_id: req.initial_assets_proof
+  - type: include_requirement
+    requirement_id: req.founders_and_board_identity_documents
+  - type: include_requirement
+    requirement_id: req.name_availability_or_refusal_proof
+  - type: include_requirement
+    requirement_id: req.court_stamp_fee_100_ron
+  - type: attach_channel
+    channel_id: channel.district_court_association_foundation_register
+  source_claim_ids:
+  - b18.foundation_registration.founders_court
+  - b18.foundation_registration.documents
+  - b18.foundation_registration.fee
+  status: active
+  legal_rank: OG nr. 26/2000; OUG nr. 80/2013
+- id: rule.b18.foundation_registration.no_founder
+  canonical_rule_id: canonical.foundation_registration.no_founder
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: lt
+      field: founder_count
+      value: 1
+  effects:
+  - type: block
+    code: foundation_min_one_founder
+    message_ro: Este necesar cel puțin un fondator.
+  source_claim_ids:
+  - b18.foundation_registration.founders_court
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.standard_low
+  canonical_rule_id: canonical.foundation_registration.standard_low
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: fundraising_only_for_other_ngos
+      value: false
+    - op: lt
+      field: initial_assets_multiple
+      value: 10
+  effects:
+  - type: block
+    code: foundation_assets_below_10x
+    message_ro: Patrimoniul este sub pragul 10x.
+  source_claim_ids:
+  - b18.foundation_registration.assets
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.special_low
+  canonical_rule_id: canonical.foundation_registration.special_low
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: fundraising_only_for_other_ngos
+      value: true
+    - op: lt
+      field: initial_assets_multiple
+      value: 2
+  effects:
+  - type: block
+    code: foundation_assets_below_2x
+    message_ro: Patrimoniul este sub pragul 2x.
+  source_claim_ids:
+  - b18.foundation_registration.assets
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.standard_threshold
+  canonical_rule_id: canonical.foundation_registration.standard_threshold
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: fundraising_only_for_other_ngos
+      value: false
+  effects:
+  - type: emit_advice
+    tag: standard_assets_threshold_10x
+    message_ro: Pragul standard este 10x salariul minim brut în vigoare.
+  source_claim_ids:
+  - b18.foundation_registration.assets
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.special_threshold
+  canonical_rule_id: canonical.foundation_registration.special_threshold
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: fundraising_only_for_other_ngos
+      value: true
+  effects:
+  - type: emit_advice
+    tag: special_assets_threshold_2x
+    message_ro: Pragul 2x se aplică numai scopului exclusiv de fundraising pentru alte ONG-uri.
+  source_claim_ids:
+  - b18.foundation_registration.assets
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.immovable
+  canonical_rule_id: canonical.foundation_registration.immovable
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: immovable_contribution
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.authentic_form_statute
+  source_claim_ids:
+  - b18.foundation_registration.statute
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.movable
+  canonical_rule_id: canonical.foundation_registration.movable
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: immovable_contribution
+      value: false
+  effects:
+  - type: emit_advice
+    tag: private_signature_statute_allowed
+    message_ro: Forma sub semnătură privată este permisă fără imobil.
+  source_claim_ids:
+  - b18.foundation_registration.statute
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.bo_exempt
+  canonical_rule_id: canonical.foundation_registration.bo_exempt
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: founders_only_natural
+      value: true
+    - op: eq
+      field: board_only_natural
+      value: true
+    - op: eq
+      field: beneficiaries_identifiable_from_file
+      value: true
+  effects:
+  - type: emit_advice
+    tag: beneficial_owner_declaration_exemption
+    message_ro: Se verifică excepția legală.
+  source_claim_ids:
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.bo_required
+  canonical_rule_id: canonical.foundation_registration.bo_required
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: any
+      args:
+      - op: eq
+        field: founders_only_natural
+        value: false
+      - op: eq
+        field: board_only_natural
+        value: false
+      - op: eq
+        field: beneficiaries_identifiable_from_file
+        value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_declaration
+  source_claim_ids:
+  - b18.foundation_registration.documents
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.foreign
+  canonical_rule_id: canonical.foundation_registration.foreign
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: foreign_documents
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.certified_copies_and_legalized_romanian_translations
+  source_claim_ids:
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.religious
+  canonical_rule_id: canonical.foundation_registration.religious
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: religious_activities
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.cult_ministry_advisory_opinion_if_applicable
+  source_claim_ids:
+  - b18.foundation_registration.documents
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.national_name
+  canonical_rule_id: canonical.foundation_registration.national_name
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: name_has_national_or_roman
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.obtain_sgg_prior_name_approval
+  - type: include_requirement
+    requirement_id: req.sgg_prior_approval
+  source_claim_ids:
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.confusing_name
+  canonical_rule_id: canonical.foundation_registration.confusing_name
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: name_confuses_public_authority
+      value: true
+  effects:
+  - type: block
+    code: foundation_name_confuses_public_authority
+    message_ro: Denumirea este interzisă.
+  source_claim_ids:
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.no_activity
+  canonical_rule_id: canonical.foundation_registration.no_activity
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: no_activity_at_seat
+      value: true
+  effects:
+  - type: emit_advice
+    tag: no_condominium_destination_approval
+    message_ro: Se aplică excepția pentru sediul fără activitate.
+  source_claim_ids:
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.regulated
+  canonical_rule_id: canonical.foundation_registration.regulated
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: regulated_activities
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.obtain_sector_authorizations_before_activity
+  - type: emit_warning
+    tag: do_not_start_regulated_activity_before_authorization
+    message_ro: Nu începe activitatea înainte de autorizare.
+  source_claim_ids:
+  - b18.foundation_registration.association_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.foundation_registration.timis
+  canonical_rule_id: canonical.foundation_registration.timis
+  event_type_id: ro.life.foundation_registration
+  jurisdiction_ids:
+  - ro.county.timis
+  authority_level: county
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_foundation
+    - op: eq
+      field: seat_county
+      value: timis
+  effects:
+  - type: require_confirmation
+    tag: timisoara_court_local_filing_mechanics
+    message_ro: Confirmă canalul, programul și plata taxei.
+  - type: attach_channel
+    channel_id: channel.judecatoria_timisoara_to_confirm
+  source_claim_ids:
+  - b18.foundation_registration.local_gap
+  status: in_review

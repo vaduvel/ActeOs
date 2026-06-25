@@ -1,0 +1,295 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.parental_leave_benefit
+status: draft
+rules:
+- id: rule.ccc.eligibility
+  canonical_rule_id: parental_leave.eligibility.12_of_24
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: gte
+    field: eligible_months_in_last_24
+    value: 12
+  effects:
+  - type: include_step
+    step_id: prepare_parental_leave_application
+  - type: include_step
+    step_id: request_parental_leave_from_employer
+  source_claim_ids:
+  - claim.ccc.eligibility_12_of_24
+  - claim.ccc.duration_2_or_3
+  status: draft
+  required_facts:
+  - eligible_months_in_last_24
+  - child_birth_date
+  - child_has_disability
+- id: rule.ccc.not_eligible_months
+  canonical_rule_id: parental_leave.block.less_than_12_months
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: lt
+    field: eligible_months_in_last_24
+    value: 12
+  effects:
+  - type: block
+    tag: ccc_less_than_12_months
+    message_ro: Condiția de 12 luni eligibile în ultimii 2 ani nu este îndeplinită pe faptele declarate.
+  - type: emit_advice
+    tag: check_assimilated_periods
+    message_ro: Verifică perioadele asimilate înainte de concluzia finală.
+  source_claim_ids:
+  - claim.ccc.eligibility_12_of_24
+  - claim.ccc.assimilated_periods
+  status: draft
+- id: rule.ccc.amount_formula
+  canonical_rule_id: parental_leave.amount.formula
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: gte
+    field: eligible_months_in_last_24
+    value: 12
+  effects:
+  - type: emit_advice
+    tag: ccc_amount_formula
+    message_ro: Indemnizația se calculează la 85% din media veniturilor nete eligibile, între minimul legat de ISR și plafonul de 8.500 lei.
+  source_claim_ids:
+  - claim.ccc.amount_formula
+  status: draft
+- id: rule.ccc.disability_duration
+  canonical_rule_id: parental_leave.duration.disability
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: child_has_disability
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: parental_leave_end
+    value:
+      kind: child_age
+      years: 3
+      anchor: child_birth_date
+  - type: include_requirement
+    requirement_id: req.child_disability_certificate
+  source_claim_ids:
+  - claim.ccc.duration_2_or_3
+  status: draft
+- id: rule.ccc.standard_duration
+  canonical_rule_id: parental_leave.duration.standard
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: child_has_disability
+    value: false
+  effects:
+  - type: set_deadline
+    step_id: parental_leave_end
+    value:
+      kind: child_age
+      years: 2
+      anchor: child_birth_date
+  source_claim_ids:
+  - claim.ccc.duration_2_or_3
+  status: draft
+- id: rule.ccc.multiple_birth
+  canonical_rule_id: parental_leave.amount.multiple_birth
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: gt
+    field: children_count_in_birth
+    value: 1
+  effects:
+  - type: emit_advice
+    tag: multiple_birth_supplement
+    message_ro: Indemnizația se majorează cu 50% pentru fiecare copil începând cu al doilea, în limitele legii.
+  source_claim_ids:
+  - claim.ccc.multiple_birth_supplement
+  status: draft
+- id: rule.ccc.other_parent_reserve
+  canonical_rule_id: parental_leave.reserve.other_parent
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-19'
+  when:
+    op: eq
+    field: both_parents_eligible
+    value: true
+  effects:
+  - type: include_step
+    step_id: plan_other_parent_two_months
+  - type: set_deadline
+    step_id: reserved_parent_period
+    value:
+      kind: duration_calendar_months
+      months: 2
+  - type: emit_warning
+    tag: other_parent_two_months
+    message_ro: Cel puțin 2 luni sunt rezervate părintelui care nu a cerut inițial CCC.
+  source_claim_ids:
+  - claim.ccc.other_parent_two_months
+  status: draft
+- id: rule.ccc.application_docs
+  canonical_rule_id: parental_leave.requirements.application
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2011-01-01'
+  when:
+    op: gte
+    field: eligible_months_in_last_24
+    value: 12
+  effects:
+  - type: include_requirement
+    requirement_id: req.application
+  - type: include_requirement
+    requirement_id: req.applicant_identity_document
+  - type: include_requirement
+    requirement_id: req.child_birth_certificate
+  - type: include_requirement
+    requirement_id: req.eligible_periods_proof
+  - type: include_requirement
+    requirement_id: req.income_proof
+  - type: include_requirement
+    requirement_id: req.activity_suspension_proof
+  source_claim_ids:
+  - claim.ccc.mandatory_docs
+  status: draft
+- id: rule.ccc.start_after_maternity
+  canonical_rule_id: parental_leave.application.window.after_maternity
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: had_maternity_leave
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: submit_parental_leave_benefit
+    value:
+      kind: relative_business_days
+      days: 60
+      anchor: maternity_leave_end_date
+  - type: emit_warning
+    tag: ccc_60_workdays_after_maternity
+    message_ro: Pentru data de început protejată, depune în 60 de zile lucrătoare de la încetarea maternității.
+  - type: emit_advice
+    tag: ccc_prefile_30d
+    message_ro: Poți depune cu 30 de zile înainte de finalul concediului de maternitate.
+  source_claim_ids:
+  - claim.ccc.application_60_workdays
+  - claim.ccc.pre_file_30d
+  status: draft
+  required_facts:
+  - maternity_leave_end_date
+- id: rule.ccc.start_from_birth
+  canonical_rule_id: parental_leave.application.window.no_maternity
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: had_maternity_leave
+    value: false
+  effects:
+  - type: set_deadline
+    step_id: submit_parental_leave_benefit
+    value:
+      kind: relative_business_days
+      days: 60
+      anchor: child_birth_date
+  - type: emit_warning
+    tag: ccc_60_workdays_from_birth
+    message_ro: Fără drept la maternitate, depune în 60 de zile lucrătoare de la naștere pentru acordare de la naștere.
+  source_claim_ids:
+  - claim.ccc.application_60_workdays
+  status: draft
+- id: rule.ccc.employer_notice
+  canonical_rule_id: parental_leave.employer.notice
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-19'
+  when:
+    op: eq
+    field: is_employee
+    value: true
+  effects:
+  - type: include_step
+    step_id: notify_employer_parental_leave
+  - type: set_deadline
+    step_id: notify_employer_parental_leave
+    value:
+      kind: relative_calendar_days_before
+      days: 10
+      anchor: planned_parental_leave_start
+  - type: include_requirement
+    requirement_id: req.employer_parental_leave_request
+  source_claim_ids:
+  - claim.ccc.employer_notice_10d
+  status: draft
+- id: rule.ccc.timisoara_channel
+  canonical_rule_id: parental_leave.channel.timisoara
+  event_type_id: life.parental_leave_benefit
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: operational
+  effective_from: '2024-01-01'
+  when:
+    op: jurisdiction_descends_from
+    field: jurisdiction
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    step_id: submit_parental_leave_benefit
+    channel_id: ch.parental_benefit.timisoara_online
+  - type: require_confirmation
+    tag: timisoara_dynamic_document_list
+    message_ro: Lista exactă de documente din portal depinde de situația selectată; verifică înainte de depunere.
+  source_claim_ids:
+  - claim.ccc.timisoara_online
+  status: in_review

@@ -1,0 +1,503 @@
+batch_id: batch10.changed_job
+defaults:
+  event_type_id: ro.life.changed_job
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.resignation.execution
+  desc: Schimbare prin demisie din funcție de execuție
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+- id: fx.resignation.management
+  desc: Demisie din funcție de conducere
+  facts:
+    old_end_method: resignation
+    role_level: management
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_45_working_days
+- id: fx.resignation.waived
+  desc: Demisie cu renunțare documentată la preaviz
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: true
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_without_notice_document_basis
+- id: fx.dismissal.nonpersonal
+  desc: Schimbare după concediere neimputabilă
+  facts:
+    old_end_method: nonpersonal_dismissal
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - dismissal_notice_min_20_working_days
+- id: fx.other.end
+  desc: Încetare prin alt temei
+  facts:
+    old_end_method: other
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+- id: fx.no_termination_doc
+  desc: Lipsește documentul de încetare
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: false
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    requirements:
+    - termination_document_from_previous_employer
+    advice_tags:
+    - resignation_notice_max_20_working_days
+- id: fx.no_history
+  desc: Lipsește dovada vechimii
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: false
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - request_history_document_or_reges_extract
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    requirements:
+    - employment_activity_and_seniority_document
+    advice_tags:
+    - resignation_notice_max_20_working_days
+- id: fx.no_offer
+  desc: Nu există încă o ofertă nouă
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: false
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+- id: fx.employment_services
+  desc: Persoana cere servicii de schimbare a locului de muncă
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: true
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - register_for_employment_services
+    - complete_new_occupational_health_exam
+    channels:
+    - ajofm_by_domicile_or_residence
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    - employed_person_can_seek_job_change_support
+- id: fx.same_profession
+  desc: Noul post nu schimbă locul/meseria relevantă
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: false
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    advice_tags:
+    - resignation_notice_max_20_working_days
+- id: fx.no_medical_file
+  desc: Schimbare relevantă fără copia dosarului medical
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: false
+    wants_employment_services: false
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    requirements:
+    - copy_of_previous_occupational_medical_file
+    advice_tags:
+    - resignation_notice_max_20_working_days
+- id: fx.no_offer.with_services
+  desc: Fără ofertă, cu solicitare AJOFM
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: false
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: true
+  expect:
+    status: resolved
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - register_for_employment_services
+    - complete_new_occupational_health_exam
+    channels:
+    - ajofm_by_domicile_or_residence
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    - employed_person_can_seek_job_change_support
+- id: fx.missing.old_end_method
+  desc: Lipsește faptul obligatoriu `old_end_method`
+  facts:
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    missing_facts:
+    - old_end_method
+- id: fx.missing.role_level
+  desc: Lipsește faptul obligatoriu `role_level`
+  facts:
+    old_end_method: resignation
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    missing_facts:
+    - role_level
+- id: fx.missing.notice_waived_or_employer_breach
+  desc: Lipsește faptul obligatoriu `notice_waived_or_employer_breach`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    missing_facts:
+    - notice_waived_or_employer_breach
+- id: fx.missing.received_termination_document
+  desc: Lipsește faptul obligatoriu `received_termination_document`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    missing_facts:
+    - received_termination_document
+- id: fx.missing.received_history_proof
+  desc: Lipsește faptul obligatoriu `received_history_proof`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    missing_facts:
+    - received_history_proof
+- id: fx.missing.has_new_offer
+  desc: Lipsește faptul obligatoriu `has_new_offer`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    missing_facts:
+    - has_new_offer
+- id: fx.missing.workplace_or_profession_changed
+  desc: Lipsește faptul obligatoriu `workplace_or_profession_changed`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    medical_file_copy_available: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    missing_facts:
+    - workplace_or_profession_changed
+- id: fx.missing.medical_file_copy_available
+  desc: Lipsește faptul obligatoriu `medical_file_copy_available`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    wants_employment_services: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    missing_facts:
+    - medical_file_copy_available
+- id: fx.missing.wants_employment_services
+  desc: Lipsește faptul obligatoriu `wants_employment_services`
+  facts:
+    old_end_method: resignation
+    role_level: execution
+    notice_waived_or_employer_breach: false
+    received_termination_document: true
+    received_history_proof: true
+    has_new_offer: true
+    workplace_or_profession_changed: true
+    medical_file_copy_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    - verify_new_contract_before_start
+    - complete_new_occupational_health_exam
+    advice_tags:
+    - resignation_notice_max_20_working_days
+    missing_facts:
+    - wants_employment_services
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - close_previous_employment_record
+    - collect_termination_and_history_documents
+    - prepare_new_employment_start
+    missing_facts:
+    - old_end_method
+    - role_level
+    - notice_waived_or_employer_breach
+    - received_termination_document
+    - received_history_proof
+    - has_new_offer
+    - workplace_or_profession_changed
+    - medical_file_copy_available
+    - wants_employment_services

@@ -1,0 +1,260 @@
+batch_id: B12_CHANGE_BUSINESS_ACTIVITY
+defaults:
+  event_type_id: life.change_business_activity
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: SRL doar actualizare CAEN Rev.3
+  facts:
+    entity_type: srl
+    activity_change_type: caen_rev3_update_only
+    involves_caen_rev3_update: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - file_simple_caen_rev3_update
+    requirements:
+    - req.onrc_annex_2a
+    advice:
+    - no_other_documents_except_mandate
+    - new_registration_certificate_free
+- id: F02
+  desc: PFA doar actualizare CAEN Rev.3
+  facts:
+    entity_type: pfa
+    activity_change_type: caen_rev3_update_only
+    resulting_caen_class_count: 3
+    involves_caen_rev3_update: true
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+    requirements:
+    - req.onrc_annex_2b
+- id: F03
+  desc: tip entitate lipsă
+  facts:
+    activity_change_type: add_activity
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F04
+  desc: tip modificare lipsă
+  facts:
+    entity_type: srl
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - activity_change_type_required
+- id: F05
+  desc: SRL adaugă activitate
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_activity_modification
+    - file_activity_modification
+    requirements:
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F06
+  desc: SRL schimbă activitatea principală
+  facts:
+    entity_type: srl
+    activity_change_type: change_main_activity
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    requirements:
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F07
+  desc: SRL elimină activitate
+  facts:
+    entity_type: srl
+    activity_change_type: remove_activity
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F08
+  desc: actualizare cu agregare clase
+  facts:
+    entity_type: srl
+    activity_change_type: split_or_aggregate
+    involves_caen_rev3_update: true
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_activity_modification
+    - file_activity_modification
+- id: F09
+  desc: PFA rezultat cinci clase
+  facts:
+    entity_type: pfa
+    activity_change_type: add_activity
+    resulting_caen_class_count: 5
+    new_activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+- id: F10
+  desc: PFA rezultat șase clase
+  facts:
+    entity_type: pfa
+    activity_change_type: add_activity
+    resulting_caen_class_count: 6
+    new_activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - pfa_caen_limit_exceeded
+- id: F11
+  desc: PFA activitate nouă neautorizată
+  facts:
+    entity_type: pfa
+    activity_change_type: add_activity
+    resulting_caen_class_count: 4
+    new_activity_already_registered_authorized: false
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - new_activity_not_authorized
+    requirements:
+    - req.onrc_operating_declaration
+- id: F12
+  desc: PFA activitate nouă autorizată
+  facts:
+    entity_type: pfa
+    activity_change_type: add_activity
+    resulting_caen_class_count: 4
+    new_activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+- id: F13
+  desc: activitate reglementată fără permis și operare imediată
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    special_permit_required: true
+    special_permit_obtained: false
+    intends_to_operate_new_activity: true
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - special_permit_missing
+- id: F14
+  desc: activitate reglementată fără operare încă
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    special_permit_required: true
+    special_permit_obtained: false
+    intends_to_operate_new_activity: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F15
+  desc: modificare în ziua 15
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F16
+  desc: modificare după 16 zile
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F17
+  desc: contabil fără mandat
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F18
+  desc: avocat depune actualizarea
+  facts:
+    entity_type: srl
+    activity_change_type: caen_rev3_update_only
+    involves_caen_rev3_update: true
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F19
+  desc: perioada duală CAEN la 25.06.2026
+  facts:
+    entity_type: srl
+    activity_change_type: caen_rev3_update_only
+    reference_date: '2026-06-25'
+    involves_caen_rev3_update: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    advice:
+    - caen_dual_version_transition
+- id: F20
+  desc: acord comercial Timișoara trebuie modificat
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: true
+    activity_data_changes: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - modify_timisoara_commercial_agreement
+- id: F21
+  desc: activitate în alt UAT
+  facts:
+    entity_type: srl
+    activity_change_type: add_activity
+    municipality_id: ro.cj.cluj
+    local_commercial_agreement_exists: true
+    activity_data_changes: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    warnings:
+    - verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj

@@ -1,0 +1,303 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.birth_registration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: copil viu, ziua 2, părinți căsătoriți cu același nume
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - declare_birth
+    requirements:
+    - req.birth_medical_certificate
+    - req.mother_identity_document
+    - req.declarant_identity_document
+    - req.parents_marriage_certificate
+    emitted_tags:
+    - birth_registration_30d
+  id: ro.life.birth_registration.F01
+- title: copil viu, părinți căsătoriți cu nume diferite
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: married
+    parents_have_different_surnames: true
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    requirements:
+    - req.parents_marriage_certificate
+    - req.parents_child_surname_declaration
+  id: ro.life.birth_registration.F02
+- title: copil din afara căsătoriei, tatăl recunoaște la înregistrare
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: unmarried
+    parents_have_different_surnames: false
+    father_recognises_at_registration: true
+  expected:
+    status: resolved
+    requirements:
+    - req.paternity_recognition_declaration
+    - req.mother_surname_consent
+  id: ro.life.birth_registration.F03
+- title: copil din afara căsătoriei, fără recunoaștere la ghișeu
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: unmarried
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    requirements_absent:
+    - req.paternity_recognition_declaration
+  id: ro.life.birth_registration.F04
+- title: copil născut mort, în ziua 1
+  facts:
+    registration_case: stillborn
+    birth_date: '2026-06-24'
+    days_since_birth: 1
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - declare_birth
+    emitted_tags:
+    - stillborn_registration_3d
+  id: ro.life.birth_registration.F05
+- title: copil născut viu, decedat azi
+  facts:
+    registration_case: live_died_within_30d
+    birth_date: '2026-06-10'
+    death_date: '2026-06-25'
+    days_since_birth: 15
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - declare_birth
+    emitted_tags:
+    - liveborn_death_24h
+  id: ro.life.birth_registration.F06
+- title: copil găsit
+  facts:
+    registration_case: found_child
+    finding_or_abandonment_date: '2026-06-20'
+    days_since_birth: 5
+    parents_marital_status: unknown
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - special_registration
+  id: ro.life.birth_registration.F07
+- title: copil părăsit în maternitate
+  facts:
+    registration_case: abandoned_in_maternity
+    finding_or_abandonment_date: '2026-06-20'
+    days_since_birth: 5
+    parents_marital_status: unknown
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - special_registration
+  id: ro.life.birth_registration.F08
+- title: depunere în ziua 45 — sub un an
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-05-11'
+    request_date: '2026-06-25'
+    days_since_birth: 45
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_late_registration_mayor_approval
+    emitted_tags:
+    - late_registration_under_one_year
+  id: ro.life.birth_registration.F09
+- title: depunere după 14 luni
+  facts:
+    registration_case: live_alive
+    birth_date: '2025-04-20'
+    request_date: '2026-06-25'
+    days_since_birth: 431
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    included_steps:
+    - request_tardy_registration
+    requirements:
+    - req.county_conforming_opinion
+    emitted_tags:
+    - late_registration_over_one_year
+  id: ro.life.birth_registration.F10
+- title: caz de deces fără death_date
+  facts:
+    registration_case: live_died_within_30d
+    birth_date: '2026-06-10'
+    days_since_birth: 15
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - death_date
+  id: ro.life.birth_registration.F11
+- title: canal Timișoara atașat
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    channels:
+    - ch.birth_registration.timisoara
+    - ch.birth_certificate_pickup.timisoara
+  id: ro.life.birth_registration.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - registration_case
+    - birth_date
+  id: ro.life.birth_registration.F13
+- title: lipsește faptul obligatoriu registration_case
+  facts:
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - registration_case
+  id: ro.life.birth_registration.F14
+- title: valoare invalidă pentru registration_case
+  facts:
+    registration_case: __invalid__
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: needs_facts
+    missing_facts:
+    - registration_case
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.birth_registration.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    registration_case: live_alive
+    birth_date: '2026-06-23'
+    days_since_birth: 2
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    channels_absent:
+    - ch.birth_registration.timisoara
+    - ch.birth_certificate_pickup.timisoara
+  id: ro.life.birth_registration.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.birth_registration.F17
+  reference_date: '2024-03-28'
+- title: exact la limita termenului principal
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-05-26'
+    days_since_birth: 30
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - birth_registration_30d
+  id: ro.life.birth_registration.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    registration_case: live_alive
+    birth_date: '2026-05-25'
+    days_since_birth: 31
+    parents_marital_status: married
+    parents_have_different_surnames: false
+    father_recognises_at_registration: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - late_registration_under_one_year
+  id: ro.life.birth_registration.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.birth_registration.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.birth_registration.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: resolved
+  id: ro.life.birth_registration.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

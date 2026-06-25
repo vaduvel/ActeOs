@@ -1,0 +1,399 @@
+batch_id: batch18.association_registration
+event_type_id: ro.life.association_registration
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.association_registration.base
+  canonical_rule_id: canonical.association_registration.base
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: register_association
+  effects:
+  - type: include_step
+    step_id: step.reserve_or_verify_association_name
+  - type: include_step
+    step_id: step.prepare_association_statute
+  - type: include_step
+    step_id: step.prepare_association_registration_file
+  - type: include_step
+    step_id: step.file_at_district_court_of_seat
+  - type: include_requirement
+    requirement_id: req.association_statute
+  - type: include_requirement
+    requirement_id: req.founders_identity_documents
+  - type: include_requirement
+    requirement_id: req.name_availability_or_refusal_proof
+  - type: include_requirement
+    requirement_id: req.court_stamp_fee_100_ron
+  - type: attach_channel
+    channel_id: channel.district_court_association_register
+  - type: emit_advice
+    tag: judge_check_3_days
+    message_ro: 'Verificarea judecătorului: 3 zile de la depunere.'
+  - type: emit_advice
+    tag: appeal_5_days
+    message_ro: 'Apel: termen legal de 5 zile.'
+  source_claim_ids:
+  - b18.association_registration.founders_court
+  - b18.association_registration.filing_documents
+  - b18.association_registration.judge_appeal
+  - b18.association_registration.fee
+  status: active
+  legal_rank: OG nr. 26/2000; OUG nr. 80/2013
+- id: rule.b18.association_registration.founders_low
+  canonical_rule_id: canonical.association_registration.founders_low
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: lt
+      field: founder_count
+      value: 3
+  effects:
+  - type: block
+    code: association_min_three_founders
+    message_ro: Sunt necesari cel puțin trei fondatori.
+  source_claim_ids:
+  - b18.association_registration.founders_court
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.immovable
+  canonical_rule_id: canonical.association_registration.immovable
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: immovable_contribution
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.authentic_form_statute
+  - type: include_requirement
+    requirement_id: req.proof_of_initial_assets_immovable
+  source_claim_ids:
+  - b18.association_registration.statute_form
+  - b18.association_registration.filing_documents
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.movable
+  canonical_rule_id: canonical.association_registration.movable
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: immovable_contribution
+      value: false
+  effects:
+  - type: emit_advice
+    tag: private_signature_statute_allowed
+    message_ro: Forma sub semnătură privată este permisă fără aport imobiliar.
+  source_claim_ids:
+  - b18.association_registration.statute_form
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.bo_exempt
+  canonical_rule_id: canonical.association_registration.bo_exempt
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: founders_only_natural
+      value: true
+    - op: eq
+      field: management_only_natural
+      value: true
+    - op: eq
+      field: beneficiaries_identifiable_from_file
+      value: true
+  effects:
+  - type: emit_advice
+    tag: beneficial_owner_declaration_exemption
+    message_ro: Se aplică excepția legală.
+  source_claim_ids:
+  - b18.association_registration.bo_exemption
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.bo_required
+  canonical_rule_id: canonical.association_registration.bo_required
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: any
+      args:
+      - op: eq
+        field: founders_only_natural
+        value: false
+      - op: eq
+        field: management_only_natural
+        value: false
+      - op: eq
+        field: beneficiaries_identifiable_from_file
+        value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_declaration
+  source_claim_ids:
+  - b18.association_registration.filing_documents
+  - b18.association_registration.bo_exemption
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.foreign
+  canonical_rule_id: canonical.association_registration.foreign
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: foreign_documents
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.certified_copies_and_legalized_romanian_translations
+  source_claim_ids:
+  - b18.association_registration.filing_documents
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.legal_founder
+  canonical_rule_id: canonical.association_registration.legal_founder
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: legal_person_founder
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_person_founder_registry_extract
+  - type: include_requirement
+    requirement_id: req.legal_person_founder_resolution
+  source_claim_ids:
+  - b18.association_registration.filing_documents
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.religious
+  canonical_rule_id: canonical.association_registration.religious
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: religious_activities
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.cult_ministry_advisory_opinion_if_applicable
+  source_claim_ids:
+  - b18.association_registration.filing_documents
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.national_name
+  canonical_rule_id: canonical.association_registration.national_name
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: name_has_national_or_roman
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.obtain_sgg_prior_name_approval
+  - type: include_requirement
+    requirement_id: req.sgg_prior_approval
+  source_claim_ids:
+  - b18.association_registration.name_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.confusing_name
+  canonical_rule_id: canonical.association_registration.confusing_name
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: name_confuses_public_authority
+      value: true
+  effects:
+  - type: block
+    code: association_name_confuses_public_authority
+    message_ro: Denumirea este interzisă.
+  source_claim_ids:
+  - b18.association_registration.name_rules
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.no_activity
+  canonical_rule_id: canonical.association_registration.no_activity
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: no_activity_at_seat
+      value: true
+  effects:
+  - type: emit_advice
+    tag: no_condominium_destination_approval
+    message_ro: Se aplică excepția pentru sediul fără activitate.
+  source_claim_ids:
+  - b18.association_registration.seat_no_activity
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.regulated
+  canonical_rule_id: canonical.association_registration.regulated
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: regulated_activities
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.obtain_sector_authorizations_before_activity
+  - type: emit_warning
+    tag: do_not_start_regulated_activity_before_authorization
+    message_ro: Nu începe activitatea înainte de autorizație.
+  source_claim_ids:
+  - b18.association_registration.regulated
+  status: active
+  legal_rank: OG nr. 26/2000
+- id: rule.b18.association_registration.timis
+  canonical_rule_id: canonical.association_registration.timis
+  event_type_id: ro.life.association_registration
+  jurisdiction_ids:
+  - ro.county.timis
+  authority_level: county
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: register_association
+    - op: eq
+      field: seat_county
+      value: timis
+  effects:
+  - type: require_confirmation
+    tag: timisoara_court_local_filing_mechanics
+    message_ro: Confirmă canalul, programul și plata taxei.
+  - type: attach_channel
+    channel_id: channel.judecatoria_timisoara_to_confirm
+  source_claim_ids:
+  - b18.association_registration.local_gap
+  status: in_review

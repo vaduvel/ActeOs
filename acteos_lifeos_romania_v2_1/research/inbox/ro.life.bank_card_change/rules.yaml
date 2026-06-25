@@ -1,0 +1,432 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.bank_card_change
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: provider_id
+  type: enum
+  label: Cine a emis cardul?
+  reason: Procesul de reînnoire/reemitere este specific băncii.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - ing
+  - bcr
+  - cec
+  - other
+  - unknown
+- id: change_reason
+  type: enum
+  label: De ce ai nevoie de alt card?
+  reason: Motivul selectează traseul corect.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - expiry
+  - damaged
+  - name_change
+  - product_change
+  - compromised
+  - lost_or_stolen
+  - unknown
+- id: expiry_month
+  type: date
+  label: În ce lună expiră cardul?
+  reason: Determină dacă fereastra de reînnoire este deschisă.
+  sensitive: false
+  required_for_resolution: false
+- id: can_access_banking_app
+  type: boolean
+  label: Ai acces la aplicația băncii?
+  reason: Unele fluxuri sunt disponibile în aplicație.
+  sensitive: false
+  required_for_resolution: true
+- id: new_identity_document_ready
+  type: boolean
+  label: Ai noul act de identitate?
+  reason: La schimbarea numelui trebuie actualizate datele înaintea cardului.
+  sensitive: true
+  required_for_resolution: false
+- id: delivery_address_current
+  type: boolean
+  label: Adresa de livrare este actuală?
+  reason: Cardul poate fi trimis prin curier.
+  sensitive: true
+  required_for_resolution: false
+- id: renewal_option_visible
+  type: boolean
+  label: Vezi opțiunea de reînnoire?
+  reason: Poate indica poziția în fereastra operațională.
+  sensitive: false
+  required_for_resolution: false
+gates:
+- id: gate.lost_redirect
+  priority: 100
+  when: change_reason == lost_or_stolen
+  effect: block
+  code: USE_LOST_STOLEN_FLOW
+  message: Pentru card pierdut sau furat, folosește fluxul urgent de blocare, nu simpla schimbare.
+  recovery_actions:
+  - Deschide intentul «Blochez un card pierdut sau furat».
+  source_claim_ids:
+  - claim.bank_card_change.ing_damaged_reissue
+- id: gate.compromised
+  priority: 95
+  when: change_reason == compromised
+  effect: warn
+  code: BLOCK_BEFORE_REISSUE
+  message: Dacă datele cardului sunt compromise, blochează-l înainte de reemitere.
+  recovery_actions:
+  - Folosește canalul oficial al băncii.
+  source_claim_ids:
+  - claim.bank_card_change.ing_damaged_reissue
+- id: gate.name_id
+  priority: 90
+  when: change_reason == name_change and new_identity_document_ready == false
+  effect: block
+  code: UPDATE_IDENTITY_FIRST
+  message: Pregătește noul act și actualizează datele la bancă înainte de cardul cu numele nou.
+  recovery_actions:
+  - Finalizează actul de identitate.
+  - Actualizează profilul bancar.
+  source_claim_ids:
+  - claim.bank_card_change.ing_name_change
+- id: gate.other_provider
+  priority: 70
+  when: provider_id in [other, unknown]
+  effect: needs_confirmation
+  code: PROVIDER_REISSUE_RULES_REQUIRED
+  message: Termenul, costul și canalul trebuie confirmate la emitent.
+  recovery_actions:
+  - Selectează emitentul.
+  - Verifică pagina oficială a cardului.
+  source_claim_ids:
+  - claim.bank_card_change.ing_valid_until_month_end
+steps:
+- id: step.identify_reason
+  title: Stabilește motivul schimbării
+  instruction: Alege expirare, deteriorare, schimbare de nume sau alt motiv.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Motivul este selectat și nu este o situație urgentă de pierdere/furt.
+  recovery_actions:
+  - Dacă este pierdut/furat, mută-te în fluxul urgent.
+  official_channel_ids:
+  - channel.ing_cards
+  - channel.bcr_cards
+  - channel.cec_cards
+  source_claim_ids:
+  - claim.bank_card_change.ing_damaged_reissue
+  - claim.bank_card_change.ing_name_change
+  - claim.bank_card_change.bcr_expiry_process
+  - claim.bank_card_change.cec_valid_month_end
+- id: step.update_profile
+  title: Actualizează datele și adresa
+  instruction: Confirmă numele și adresa de livrare înainte de comandă.
+  sequence_hint: 2
+  applies_when:
+    op: any
+    args:
+    - op: eq
+      field: change_reason
+      value: name_change
+    - op: eq
+      field: delivery_address_current
+      value: false
+  depends_on:
+  - step.identify_reason
+  deadline:
+    kind: none
+  completion_evidence: Profilul bancar afișează datele corecte.
+  recovery_actions:
+  - Folosește canalul oficial de actualizare date sau unitatea băncii.
+  official_channel_ids:
+  - channel.ing_cards
+  - channel.bcr_cards
+  - channel.cec_cards
+  source_claim_ids:
+  - claim.bank_card_change.ing_name_change
+  - claim.bank_card_change.bcr_expiry_process
+- id: step.request_card
+  title: Solicită reînnoirea sau reemiterea
+  instruction: Inițiază comanda în aplicație ori prin canalul oficial al emitentului.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.identify_reason
+  deadline:
+    kind: none
+  completion_evidence: Ai confirmarea comenzii și metoda de livrare/ridicare.
+  recovery_actions:
+  - Dacă opțiunea nu apare, contactează emitentul; nu deduce automat că s-a comandat.
+  official_channel_ids:
+  - channel.ing_cards
+  - channel.bcr_cards
+  - channel.cec_cards
+  source_claim_ids:
+  - claim.bank_card_change.ing_renewal_window
+  - claim.bank_card_change.ing_no_automatic_renewal
+  - claim.bank_card_change.ing_damaged_reissue
+  - claim.bank_card_change.bcr_expiry_process
+  - claim.bank_card_change.cec_valid_month_end
+- id: step.receive_activate
+  title: Primește și activează noul card
+  instruction: Verifică primirea, activează cardul și distruge/reciclează cardul vechi conform indicațiilor emitentului.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.request_card
+  deadline:
+    kind: none
+  completion_evidence: Noul card este activ și vechiul card nu mai poate fi folosit.
+  recovery_actions:
+  - Dacă livrarea întârzie, verifică adresa și contactează emitentul.
+  official_channel_ids:
+  - channel.ing_cards
+  - channel.bcr_cards
+  - channel.cec_cards
+  source_claim_ids:
+  - claim.bank_card_change.ing_valid_until_month_end
+  - claim.bank_card_change.bcr_expiry_process
+  - claim.bank_card_change.cec_valid_month_end
+requirements:
+- id: req.current_card_data
+  title: Cardul curent în aplicația oficială
+  description: Selectează cardul corect fără a transmite PIN/CVV către terți.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_card_change.ing_renewal_window
+- id: req.new_identity_document
+  title: Noul act de identitate
+  description: Necesar când numele sau alte date de identitate s-au schimbat.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: change_reason
+    value: name_change
+  accepted_forms:
+  - original
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - not_expired
+  - names_consistent
+  source_claim_ids:
+  - claim.bank_card_change.ing_name_change
+- id: req.delivery_address_confirmation
+  title: Confirmarea adresei de livrare
+  description: Verifică adresa înainte de emitere/livrare.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: in
+    field: provider_id
+    values:
+    - ing
+    - bcr
+    - cec
+  accepted_forms:
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - field_present
+  - address_consistent
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_card_change.ing_renewal_window
+  - claim.bank_card_change.bcr_expiry_process
+official_channels:
+- id: channel.ing_cards
+  type: web
+  label: ING — FAQ și Home'Bank pentru carduri
+  url: https://ing.ro/persoane-fizice/carduri-si-conturi/faq-carduri
+  integration_status: DEEP_LINK
+  official_domain: ing.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_change.ing_valid_until_month_end
+  - claim.bank_card_change.ing_renewal_window
+  - claim.bank_card_change.ing_no_automatic_renewal
+  - claim.bank_card_change.ing_damaged_reissue
+  - claim.bank_card_change.ing_name_change
+- id: channel.bcr_cards
+  type: web
+  label: BCR — card care expiră
+  url: https://www.bcr.ro/ro/persoane-fizice/help-center/carduri-faq-24
+  integration_status: DEEP_LINK
+  official_domain: bcr.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_change.bcr_expiry_process
+- id: channel.cec_cards
+  type: web
+  label: CEC — card care expiră
+  url: https://www.cec.ro/intrebari-raspunsuri/ce-trebuie-sa-fac-daca-imi-expira-cardul-curand
+  integration_status: SOURCE_ONLY
+  official_domain: cec.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_change.cec_valid_month_end
+rules:
+- id: rule.bank_card_change.redirect_lost.r1
+  canonical_rule_id: rule.bank_card_change.redirect_lost
+  event_type_id: ro.life.bank_card_change
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: change_reason
+    value: lost_or_stolen
+  effects:
+  - type: trigger_child_event
+    value: ro.life.bank_card_lost_stolen
+  - type: block
+    message_ro: Folosește fluxul urgent de card pierdut/furat.
+  source_claim_ids:
+  - claim.bank_card_change.ing_damaged_reissue
+  status: draft
+  reviewer_id: null
+- id: rule.bank_card_change.ing_expiry.r1
+  canonical_rule_id: rule.bank_card_change.ing_expiry
+  event_type_id: ro.life.bank_card_change
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:ing
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_id
+      value: ing
+    - op: eq
+      field: change_reason
+      value: expiry
+  effects:
+  - type: include_step
+    step_id: step.request_card
+  - type: emit_warning
+    message_ro: La ING, lipsa opțiunii exprimate poate însemna că nu se reînnoiește automat.
+  source_claim_ids:
+  - claim.bank_card_change.ing_renewal_window
+  - claim.bank_card_change.ing_no_automatic_renewal
+  status: draft
+  reviewer_id: null
+- id: rule.bank_card_change.ing_name_change.r1
+  canonical_rule_id: rule.bank_card_change.ing_name_change
+  event_type_id: ro.life.bank_card_change
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:ing
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_id
+      value: ing
+    - op: eq
+      field: change_reason
+      value: name_change
+  effects:
+  - type: include_step
+    step_id: step.update_profile
+  - type: include_requirement
+    requirement_id: req.new_identity_document
+  source_claim_ids:
+  - claim.bank_card_change.ing_name_change
+  status: draft
+  reviewer_id: null
+- id: rule.bank_card_change.provider_confirmation.r1
+  canonical_rule_id: rule.bank_card_change.provider_confirmation
+  event_type_id: ro.life.bank_card_change
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: provider_id
+    values:
+    - other
+    - unknown
+  effects:
+  - type: require_confirmation
+    message_ro: Regulile emitentului trebuie verificate înaintea comenzii.
+  source_claim_ids:
+  - claim.bank_card_change.ing_valid_until_month_end
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

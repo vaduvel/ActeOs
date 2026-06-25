@@ -1,0 +1,486 @@
+batch_id: B02_DOCUMENTS_LOST_ABROAD
+defaults:
+  event_type_id: ro.life.documents_lost_abroad
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.dla.001
+  desc: Pașaport pierdut într-un stat UE, întoarcere în România.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_loss_to_romanian_mission
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    - passport_loss_consular_declaration
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - return_document_type
+- id: fx.dla.002
+  desc: Pașaport distrus într-un stat UE.
+  facts:
+    document_type: passport
+    loss_kind: destroyed
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: no_immediate_travel
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_loss_to_romanian_mission
+    - secure_identity_and_contact_issuer
+    advice_tags:
+    - contact_own_consulate_first
+    - passport_loss_consular_declaration
+    warnings_present:
+    - document_specific_route
+    channels:
+    - ch.romanian_mission
+- id: fx.dla.003
+  desc: Pașaport furat, cu adeverință de la poliția locală.
+  facts:
+    document_type: passport
+    loss_kind: stolen
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: obtained
+  expect:
+    status: ok
+    included_steps:
+    - declare_theft_to_romanian_mission
+    - obtain_consular_return_document_assessment
+    - report_theft_to_local_police
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    requirements:
+    - req.local_police_theft_certificate
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.local_police
+    - ch.romanian_mission
+    needs_confirmation:
+    - return_document_type
+- id: fx.dla.004
+  desc: Pașaport furat, fără adeverință locală.
+  facts:
+    document_type: passport
+    loss_kind: stolen
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_obtained
+  expect:
+    status: ok
+    included_steps:
+    - declare_theft_to_romanian_mission
+    - obtain_consular_return_document_assessment
+    - report_theft_to_local_police
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    requirements:
+    - req.local_police_theft_certificate
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_specific_route
+    - local_theft_report_missing
+    - transit_not_guaranteed
+    channels:
+    - ch.local_police
+    - ch.romanian_mission
+    needs_confirmation:
+    - local_report_remedy
+    - return_document_type
+- id: fx.dla.005
+  desc: Pașaport declarat pierdut și găsit ulterior.
+  facts:
+    document_type: passport
+    loss_kind: found_after_report
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - surrender_found_invalid_document
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_remains_null
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - return_document_type
+- id: fx.dla.006
+  desc: Continuare urgentă a călătoriei cu motiv documentat.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: urgent_continue
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_loss_to_romanian_mission
+    - request_emergency_travel_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    requirements:
+    - req.urgent_reason_evidence
+    advice_tags:
+    - contact_own_consulate_first
+    - passport_loss_consular_declaration
+    - temporary_passport_max_3_working_days
+    warnings_present:
+    - document_specific_route
+    - temporary_not_tourism
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+- id: fx.dla.007
+  desc: Fără nevoie imediată de călătorie.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: no_immediate_travel
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_loss_to_romanian_mission
+    - secure_identity_and_contact_issuer
+    advice_tags:
+    - contact_own_consulate_first
+    - passport_loss_consular_declaration
+    warnings_present:
+    - document_specific_route
+    channels:
+    - ch.romanian_mission
+- id: fx.dla.008
+  desc: În afara UE, cu misiune română disponibilă.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: outside_eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_loss_to_romanian_mission
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - passport_loss_consular_declaration
+    - romanian_mission_available
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - return_document_type
+- id: fx.dla.009
+  desc: În afara UE, fără misiune română disponibilă.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: outside_eu
+    romanian_mission_available: false
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - declare_passport_loss_to_romanian_mission
+    - obtain_consular_return_document_assessment
+    - request_eu_consular_protection
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - other_eu_mission_when_unrepresented
+    - passport_loss_consular_declaration
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.other_eu_mission
+    - ch.romanian_mission
+    needs_confirmation:
+    - return_document_type
+- id: fx.dla.010
+  desc: Carte de identitate pierdută în UE.
+  facts:
+    document_type: national_id
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - confirm_document_specific_replacement_route
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - issuer_specific_replacement
+    - return_document_type
+- id: fx.dla.011
+  desc: Permis de conducere pierdut în afara UE.
+  facts:
+    document_type: driving_licence
+    loss_kind: lost
+    current_region: outside_eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - confirm_document_specific_replacement_route
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - romanian_mission_available
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - issuer_specific_replacement
+    - return_document_type
+- id: fx.dla.012
+  desc: Permis de ședere pierdut.
+  facts:
+    document_type: residence_permit
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - confirm_document_specific_replacement_route
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - issuer_specific_replacement
+    - return_document_type
+- id: fx.dla.013
+  desc: Alt document pierdut.
+  facts:
+    document_type: other
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - confirm_document_specific_replacement_route
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - issuer_specific_replacement
+    - return_document_type
+- id: fx.dla.014
+  desc: Document găsit după raportare și încercare de continuare urgentă.
+  facts:
+    document_type: passport
+    loss_kind: found_after_report
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: urgent_continue
+    local_report_status: not_applicable
+  expect:
+    status: blocked
+    included_steps:
+    - secure_identity_and_contact_issuer
+    - surrender_found_invalid_document
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_remains_null
+    - document_specific_route
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+- id: fx.dla.015
+  desc: Furt de carte de identitate, fără dovadă locală.
+  facts:
+    document_type: national_id
+    loss_kind: stolen
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_obtained
+  expect:
+    status: ok
+    included_steps:
+    - confirm_document_specific_replacement_route
+    - obtain_consular_return_document_assessment
+    - secure_identity_and_contact_issuer
+    - verify_exit_transit_entry_acceptance
+    advice_tags:
+    - contact_own_consulate_first
+    warnings_present:
+    - document_specific_route
+    - local_theft_report_missing
+    - transit_not_guaranteed
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - issuer_specific_replacement
+    - local_report_remedy
+    - return_document_type
+- id: fx.dla.016
+  desc: Lipsește faptul obligatoriu `document_type`.
+  facts:
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_type
+- id: fx.dla.017
+  desc: Lipsește faptul obligatoriu `loss_kind`.
+  facts:
+    document_type: passport
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - loss_kind
+- id: fx.dla.018
+  desc: Lipsește faptul obligatoriu `current_region`.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    romanian_mission_available: true
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - current_region
+- id: fx.dla.019
+  desc: Lipsește faptul obligatoriu `romanian_mission_available`.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: eu
+    travel_need: return_to_ro
+    local_report_status: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - romanian_mission_available
+- id: fx.dla.020
+  desc: Lipsește faptul obligatoriu `travel_need`.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    local_report_status: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - travel_need
+- id: fx.dla.021
+  desc: Lipsește faptul obligatoriu `local_report_status`.
+  facts:
+    document_type: passport
+    loss_kind: lost
+    current_region: eu
+    romanian_mission_available: true
+    travel_need: return_to_ro
+  expect:
+    status: needs_facts
+    missing_facts:
+    - local_report_status
+- id: fx.dla.022
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_type
+    - loss_kind
+    - current_region
+    - romanian_mission_available
+    - travel_need
+    - local_report_status

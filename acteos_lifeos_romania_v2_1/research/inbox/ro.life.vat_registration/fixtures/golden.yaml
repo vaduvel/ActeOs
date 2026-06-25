@@ -1,0 +1,389 @@
+batch_id: B13_VAT_REGISTRATION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.vat_registration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: VAT01
+  desc: Plafon confirmat depășit și formularul 700 pregătit
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+- id: VAT02
+  desc: Înregistrare voluntară confirmată
+  facts:
+    already_vat_registered: false
+    registration_reason: voluntary_confirmed
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+- id: VAT03
+  desc: Firma este deja înregistrată în scopuri de TVA
+  facts:
+    already_vat_registered: true
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - verify_existing_vat_registration_status
+    advice_tags:
+    - vat_registration_already_exists
+- id: VAT04
+  desc: Regim special intracomunitar
+  facts:
+    already_vat_registered: false
+    registration_reason: special_intra_eu
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - assess_special_vat_registration_route
+    warnings_present:
+    - do_not_substitute_form301_for_form700
+    needs_confirmation:
+    - confirm_special_vat_registration_and_form301_scope
+- id: VAT05
+  desc: Temeiul de înregistrare este necunoscut
+  facts:
+    already_vat_registered: false
+    registration_reason: unknown
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: blocked
+    included_steps:
+    - confirm_vat_registration_basis
+    needs_confirmation:
+    - confirm_vat_registration_basis
+- id: VAT06
+  desc: Nu există trigger confirmat
+  facts:
+    already_vat_registered: false
+    registration_reason: not_applicable
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    advice_tags:
+    - no_vat_registration_trigger_confirmed
+- id: VAT07
+  desc: Data efectivă nu este confirmată
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: false
+  expect:
+    status: blocked
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+    needs_confirmation:
+    - confirm_vat_effective_date
+- id: VAT08
+  desc: Versiunea curentă a formularului 700 nu poate fi accesată
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: false
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+    warnings_present:
+    - do_not_use_cached_form700
+    needs_confirmation:
+    - confirm_current_form700_access
+- id: VAT09
+  desc: Depunerea electronică nu este pregătită
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: false
+    effective_date_confirmed: true
+  expect:
+    status: blocked
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+- id: VAT10
+  desc: Contribuabilul afirmă că vectorul nu trebuie actualizat
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: false
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    needs_confirmation:
+    - confirm_correct_vat_registration_procedure
+- id: VAT11
+  desc: Firma deja înregistrată, dar are nevoie de modificarea vectorului
+  facts:
+    already_vat_registered: true
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - verify_existing_vat_registration_status
+    advice_tags:
+    - vat_registration_already_exists
+- id: VAT12
+  desc: Regim special și data efectivă neconfirmată
+  facts:
+    already_vat_registered: false
+    registration_reason: special_intra_eu
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: false
+  expect:
+    status: blocked
+    included_steps:
+    - confirm_vat_registration_basis
+    - assess_special_vat_registration_route
+    warnings_present:
+    - do_not_substitute_form301_for_form700
+    needs_confirmation:
+    - confirm_special_vat_registration_and_form301_scope
+    - confirm_vat_effective_date
+- id: VAT13
+  desc: Înregistrare voluntară, formular oficial indisponibil
+  facts:
+    already_vat_registered: false
+    registration_reason: voluntary_confirmed
+    fiscal_vector_update_needed: true
+    form700_access_available: false
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+    warnings_present:
+    - do_not_use_cached_form700
+    needs_confirmation:
+    - confirm_current_form700_access
+- id: VAT14
+  desc: Plafon confirmat, dar vectorul declarat inutil
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: false
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    needs_confirmation:
+    - confirm_correct_vat_registration_procedure
+- id: VAT15
+  desc: Toate condițiile tehnice sunt îndeplinite
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: ok
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+- id: VAT16
+  desc: Lipsește faptul obligatoriu already_vat_registered
+  facts:
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    missing_facts:
+    - already_vat_registered
+- id: VAT17
+  desc: Lipsește faptul obligatoriu registration_reason
+  facts:
+    already_vat_registered: false
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    missing_facts:
+    - registration_reason
+- id: VAT18
+  desc: Lipsește faptul obligatoriu fiscal_vector_update_needed
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    form700_access_available: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    missing_facts:
+    - fiscal_vector_update_needed
+- id: VAT19
+  desc: Lipsește faptul obligatoriu form700_access_available
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    electronic_submission_ready: true
+    effective_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+    missing_facts:
+    - form700_access_available
+- id: VAT20
+  desc: Lipsește faptul obligatoriu electronic_submission_ready
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    effective_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+    missing_facts:
+    - electronic_submission_ready
+- id: VAT21
+  desc: Lipsește faptul obligatoriu effective_date_confirmed
+  facts:
+    already_vat_registered: false
+    registration_reason: threshold_confirmed_exceeded
+    fiscal_vector_update_needed: true
+    form700_access_available: true
+    electronic_submission_ready: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    - prepare_form_700_vat_registration
+    requirements:
+    - req.current_form_700_package
+    channels:
+    - ch.anaf.form700_electronic
+    missing_facts:
+    - effective_date_confirmed
+- id: VAT22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - confirm_vat_registration_basis
+    missing_facts:
+    - already_vat_registered
+    - registration_reason
+    - fiscal_vector_update_needed
+    - form700_access_available
+    - electronic_submission_ready
+    - effective_date_confirmed

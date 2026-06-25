@@ -1,0 +1,456 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.medical_leave
+event_type_id: ro.life.medical_leave
+required_facts:
+- leave_reason_class
+- insurance_months_last_12
+- has_medical_certificate
+- certificate_delivered_by_day5
+- employer_registered_certificate
+- episode_days
+- cumulative_days_last_year
+- has_expert_approval_after_day90
+- one_day_reduction_exception_applies
+status: draft
+rules:
+- id: rule.medical_leave.route.v1
+  canonical_rule_id: rule.medical_leave.route
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: obtain_medical_certificate
+  - type: include_step
+    step_id: deliver_certificate_to_employer
+  - type: include_step
+    step_id: employer_registers_medical_leave_in_reges
+  source_claim_ids:
+  - clm.medical_leave.medical_certificate
+  - clm.medical_leave.medical_delivery
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.ordinary_insufficient_stage.v1
+  canonical_rule_id: rule.medical_leave.ordinary_insufficient_stage
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: leave_reason_class
+      value: ordinary_illness
+    - op: lt
+      field: insurance_months_last_12
+      value: 6
+  effects:
+  - type: block
+    code: ordinary_medical_leave_stage_not_met
+    message_ro: Pentru boala obișnuită, stagiul minim modelat este de 6 luni în ultimele 12 luni.
+  source_claim_ids:
+  - clm.medical_leave.medical_stage
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.no_stage_exception.v1
+  canonical_rule_id: rule.medical_leave.no_stage_exception
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: eq
+    field: leave_reason_class
+    value: statutory_no_stage_exception
+  effects:
+  - type: emit_advice
+    tag: no_minimum_stage_for_verified_exception_categories
+    message_ro: Categoria declarată intră pe ruta excepțiilor de la stagiul minim; diagnosticul și codul trebuie să rezulte
+      din certificatul medical.
+  source_claim_ids:
+  - clm.medical_leave.medical_no_stage
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.other_category.v1
+  canonical_rule_id: rule.medical_leave.other_category
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: eq
+    field: leave_reason_class
+    value: other_statutory_category
+  effects:
+  - type: require_confirmation
+    tag: confirm_category_specific_medical_leave_rules
+    message_ro: Durata, stagiul și calculul trebuie verificate pentru categoria exactă din certificat.
+  source_claim_ids:
+  - clm.medical_leave.medical_certificate
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.medical_leave.unknown_category.v1
+  canonical_rule_id: rule.medical_leave.unknown_category
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: eq
+    field: leave_reason_class
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_medical_leave_category
+    message_ro: Codul și categoria concediului medical trebuie identificate din certificatul emis.
+  source_claim_ids:
+  - clm.medical_leave.medical_certificate
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.medical_leave.missing_certificate.v1
+  canonical_rule_id: rule.medical_leave.missing_certificate
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: eq
+    field: has_medical_certificate
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: medical_leave_certificate_from_treating_physician
+  - type: block
+    code: no_medical_leave_without_certificate
+    message_ro: Concediul și indemnizația se acordă în baza certificatului medical.
+  source_claim_ids:
+  - clm.medical_leave.medical_certificate
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.late_delivery.v1
+  canonical_rule_id: rule.medical_leave.late_delivery
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: certificate_delivered_by_day5
+    value: false
+  effects:
+  - type: emit_warning
+    tag: certificate_not_delivered_by_day5
+    message_ro: Predă certificatul imediat și confirmă consecințele cu angajatorul/casa de asigurări.
+  source_claim_ids:
+  - clm.medical_leave.medical_delivery
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.employer_not_registered.v1
+  canonical_rule_id: rule.medical_leave.employer_not_registered
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: employer_registered_certificate
+    value: false
+  effects:
+  - type: emit_warning
+    tag: employer_reges_transmission_pending
+    message_ro: Angajatorul trebuie să opereze suspendarea în REGES în termenul indicat de FAQ-ul oficial.
+  source_claim_ids:
+  - clm.medical_leave.medical_delivery
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.rate_55.v1
+  canonical_rule_id: rule.medical_leave.rate_55
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: leave_reason_class
+      value: ordinary_illness
+    - op: lte
+      field: episode_days
+      value: 7
+  effects:
+  - type: emit_advice
+    tag: ordinary_illness_rate_55_percent
+    message_ro: Pentru episodul de până la 7 zile, tranșa publicată este 55%.
+  source_claim_ids:
+  - clm.medical_leave.medical_rates
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.rate_65.v1
+  canonical_rule_id: rule.medical_leave.rate_65
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: leave_reason_class
+      value: ordinary_illness
+    - op: gte
+      field: episode_days
+      value: 8
+    - op: lte
+      field: episode_days
+      value: 14
+  effects:
+  - type: emit_advice
+    tag: ordinary_illness_rate_65_percent
+    message_ro: Pentru 8-14 zile, tranșa publicată este 65%.
+  source_claim_ids:
+  - clm.medical_leave.medical_rates
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.day15_gap.v1
+  canonical_rule_id: rule.medical_leave.day15_gap
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: leave_reason_class
+      value: ordinary_illness
+    - op: eq
+      field: episode_days
+      value: 15
+  effects:
+  - type: require_confirmation
+    tag: confirm_ordinary_illness_rate_for_day_15
+    message_ro: Textul consolidat verificat nu încadrează explicit ziua 15; nu calcula automat procentul.
+  source_claim_ids:
+  - clm.medical_leave.medical_day15_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.medical_leave.rate_75.v1
+  canonical_rule_id: rule.medical_leave.rate_75
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: leave_reason_class
+      value: ordinary_illness
+    - op: gt
+      field: episode_days
+      value: 15
+  effects:
+  - type: emit_advice
+    tag: ordinary_illness_rate_75_percent
+    message_ro: Pentru episoade de peste 15 zile, tranșa publicată este 75%.
+  source_claim_ids:
+  - clm.medical_leave.medical_rates
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.over_90_no_approval.v1
+  canonical_rule_id: rule.medical_leave.over_90_no_approval
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gt
+      field: cumulative_days_last_year
+      value: 90
+    - op: eq
+      field: has_expert_approval_after_day90
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: medical_expert_approval_for_extension_after_day90
+  - type: block
+    code: extension_after_day90_not_approved
+    message_ro: Prelungirea peste ziua 90 necesită avizul medical prevăzut de norma verificată.
+  source_claim_ids:
+  - clm.medical_leave.medical_duration
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.over_183.v1
+  canonical_rule_id: rule.medical_leave.over_183
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: null
+  when:
+    op: gt
+    field: cumulative_days_last_year
+    value: 183
+  effects:
+  - type: block
+    code: ordinary_annual_duration_limit_exceeded
+    message_ro: Limita obișnuită de 183 de zile este depășită; este necesară evaluarea medicală și juridică a excepției aplicabile.
+  source_claim_ids:
+  - clm.medical_leave.medical_duration
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.one_day_reduction.v1
+  canonical_rule_id: rule.medical_leave.one_day_reduction
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-02-01'
+  effective_to: null
+  when:
+    op: eq
+    field: one_day_reduction_exception_applies
+    value: false
+  effects:
+  - type: emit_advice
+    tag: temporary_one_day_reduction_2026_2027
+    message_ro: Pentru perioada 1 februarie 2026-31 decembrie 2027 se aplică diminuarea cu o zi, în lipsa unei excepții legale.
+  source_claim_ids:
+  - clm.medical_leave.medical_one_day
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.medical_leave.one_day_exception.v1
+  canonical_rule_id: rule.medical_leave.one_day_exception
+  event_type_id: ro.life.medical_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-02-01'
+  effective_to: null
+  when:
+    op: eq
+    field: one_day_reduction_exception_applies
+    value: true
+  effects:
+  - type: emit_advice
+    tag: one_day_reduction_exception_to_be_documented
+    message_ro: Păstrează documentarea excepției de la diminuarea cu o zi.
+  source_claim_ids:
+  - clm.medical_leave.medical_one_day
+  override_rule_ids: []
+  status: active
+  reviewer_id: null

@@ -1,0 +1,430 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_DOCUMENTS_APOSTILLE
+event_type_id: life.documents_apostille
+status: draft
+rules:
+- id: rule.apostille.destination_eu
+  canonical_rule_id: documents_apostille.eu_no_apostille
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - eu
+  - ro
+  severity: critical
+  effective_from: '2019-02-16'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: destination_scope
+      value: eu
+    - op: in
+      field: document_subject
+      values:
+      - birth
+      - life
+      - death
+      - name
+      - marriage
+      - divorce
+      - filiation
+      - adoption
+      - domicile
+      - residence
+      - citizenship
+      - criminal_record
+  effects:
+  - type: exclude_step
+    step_id: obtain_apostille
+  - type: emit_advice
+    tag: eu_apostille_not_required_for_authenticity
+    message_ro: Pentru acest document public acoperit, între state UE nu se cere apostilă pentru autenticitate.
+  - type: emit_advice
+    tag: eu_multilingual_form_option
+    message_ro: Poți cere formularul standard multilingv pentru a reduce nevoia traducerii.
+  source_claim_ids:
+  - claim.apostille.eu_no_apostille
+  - claim.apostille.eu_covered_subjects
+  - claim.apostille.eu_multilingual_form
+  status: draft
+- id: rule.apostille.eu_effects
+  canonical_rule_id: documents_apostille.eu_effects_warning
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - eu
+  - ro
+  severity: critical
+  effective_from: '2019-02-16'
+  when:
+    op: eq
+    field: destination_scope
+    value: eu
+  effects:
+  - type: emit_warning
+    tag: authenticity_not_legal_effect
+    message_ro: Scutirea de apostilă nu garantează recunoașterea efectelor juridice în statul de destinație.
+  source_claim_ids:
+  - claim.apostille.eu_authenticity_only
+  status: draft
+- id: rule.apostille.hague
+  canonical_rule_id: documents_apostille.hague_route
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: destination_scope
+    value: hague
+  effects:
+  - type: include_step
+    step_id: determine_apostille_authority
+  - type: include_step
+    step_id: obtain_apostille
+  source_claim_ids:
+  - claim.apostille.prefecture_scope
+  - claim.apostille.three_authorities
+  status: draft
+- id: rule.apostille.non_hague
+  canonical_rule_id: documents_apostille.non_hague_superlegalization
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: destination_scope
+    value: non_hague
+  effects:
+  - type: exclude_step
+    step_id: obtain_apostille
+  - type: trigger_child_event
+    event_type_id: life.documents_superlegalization
+  - type: emit_warning
+    tag: superlegalization_route
+    message_ro: Verifică ruta de supralegalizare și eventualul tratat aplicabil.
+  source_claim_ids:
+  - claim.apostille.non_hague_superlegalization
+  status: draft
+- id: rule.apostille.unknown_destination
+  canonical_rule_id: documents_apostille.unknown_destination
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: destination_scope
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: destination_convention_unknown
+    message_ro: Nu se poate alege între apostilă, scutire și supralegalizare fără statul și regimul juridic de destinație.
+  source_claim_ids:
+  - claim.apostille.non_hague_superlegalization
+  status: draft
+  required_facts:
+  - destination_country
+  - convention_status_known
+- id: rule.apostille.prefecture_admin
+  canonical_rule_id: documents_apostille.prefecture_admin
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: document_category
+    value: administrative
+  effects:
+  - type: attach_channel
+    channel_id: ch.prefecture_apostille
+  - type: include_requirement
+    requirement_id: req.original_official_administrative_act
+  source_claim_ids:
+  - claim.apostille.prefecture_scope
+  status: draft
+- id: rule.apostille.judicial
+  canonical_rule_id: documents_apostille.judicial_authority
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: document_category
+    value: judicial
+  effects:
+  - type: attach_channel
+    channel_id: ch.competent_tribunal
+  - type: emit_advice
+    tag: tribunal_competence
+    message_ro: Documentele judiciare nu sunt apostilate de prefectură; verifică tribunalul competent.
+  source_claim_ids:
+  - claim.apostille.three_authorities
+  - claim.apostille.not_prefecture
+  status: draft
+- id: rule.apostille.notarial_private
+  canonical_rule_id: documents_apostille.notarial_private_authority
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: in
+    field: document_category
+    values:
+    - notarial
+    - private
+  effects:
+  - type: attach_channel
+    channel_id: ch.chamber_of_notaries
+  - type: emit_advice
+    tag: notary_chamber_competence
+    message_ro: Actele notariale/legalizările sunt în competența camerei notarilor, nu a prefecturii.
+  source_claim_ids:
+  - claim.apostille.three_authorities
+  - claim.apostille.not_prefecture
+  status: draft
+- id: rule.apostille.identity_passport
+  canonical_rule_id: documents_apostille.identity_passport_block
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: in
+    field: document_category
+    values:
+    - identity_document
+    - passport
+  effects:
+  - type: block
+    tag: identity_or_passport_not_apostilled_by_prefecture
+    message_ro: Actele de identitate și pașapoartele nu se apostilează la prefectură.
+  source_claim_ids:
+  - claim.apostille.not_prefecture
+  status: draft
+- id: rule.apostille.scan
+  canonical_rule_id: documents_apostille.scan_not_original
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: issuance_format
+    value: scan
+  effects:
+  - type: block
+    tag: scan_is_not_original
+    message_ro: O scanare nu înlocuiește originalul letric sau originalul electronic semnat digital.
+  source_claim_ids:
+  - claim.apostille.format_match
+  - claim.apostille.paper_docs
+  status: draft
+- id: rule.apostille.digital
+  canonical_rule_id: documents_apostille.digital_online
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: eq
+    field: issuance_format
+    value: digitally_signed_original
+  effects:
+  - type: attach_channel
+    channel_id: ch.hub_apostille_online
+  - type: include_requirement
+    requirement_id: req.validated_hub_account
+  - type: emit_advice
+    tag: digital_same_day_usually
+    message_ro: Pentru originalul electronic semnat digital, ruta HUB este de regulă finalizată în aceeași zi.
+  source_claim_ids:
+  - claim.apostille.digital_online
+  - claim.apostille.digital_delivery
+  status: draft
+- id: rule.apostille.digital_account
+  canonical_rule_id: documents_apostille.digital_account_gate
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2023-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: issuance_format
+      value: digitally_signed_original
+    - op: eq
+      field: hub_account_validated
+      value: false
+  effects:
+  - type: block
+    tag: validated_hub_account_required
+    message_ro: Validează contul HUB înainte de apostilarea online.
+  source_claim_ids:
+  - claim.apostille.digital_online
+  status: draft
+- id: rule.apostille.paper
+  canonical_rule_id: documents_apostille.paper_route
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: eq
+    field: issuance_format
+    value: paper_original
+  effects:
+  - type: include_requirement
+    requirement_id: req.original_official_act
+  - type: include_requirement
+    requirement_id: req.apostille_request_per_holder
+  source_claim_ids:
+  - claim.apostille.paper_docs
+  status: draft
+- id: rule.apostille.nonholder
+  canonical_rule_id: documents_apostille.nonholder
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: not_in
+    field: requester_role
+    values:
+    - holder
+    - legal_representative
+  effects:
+  - type: include_requirement
+    requirement_id: req.requester_identity
+  - type: include_requirement
+    requirement_id: req.relationship_or_authorization
+  source_claim_ids:
+  - claim.apostille.nonholder_docs
+  status: draft
+- id: rule.apostille.tm_competence
+  canonical_rule_id: documents_apostille.tm_competence
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_category
+      value: administrative
+    - op: eq
+      field: document_subject
+      value: other
+  effects:
+  - type: require_confirmation
+    tag: tm_territorial_competence
+    message_ro: Confirmă domiciliul titularului/rudei sau sediul emitentului în Timiș.
+  source_claim_ids:
+  - claim.apostille.tm_competence
+  status: draft
+- id: rule.apostille.tm_any_civil_criminal
+  canonical_rule_id: documents_apostille.tm_any_civil_criminal
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: in
+    field: document_subject
+    values:
+    - birth
+    - marriage
+    - death
+    - criminal_record
+  effects:
+  - type: attach_channel
+    channel_id: ch.any_prefecture_for_civil_or_criminal_record
+  source_claim_ids:
+  - claim.apostille.tm_any_criminal_civil
+  status: draft
+- id: rule.apostille.tm_eligible
+  canonical_rule_id: documents_apostille.tm_eligible_categories
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_category
+      value: administrative
+    - op: in
+      field: document_subject
+      values:
+      - birth
+      - marriage
+      - death
+      - name
+      - domicile
+      - citizenship
+      - criminal_record
+      - fiscal
+      - qualification
+      - studies
+      - other
+  effects:
+  - type: include_step
+    step_id: submit_to_prefecture_apostille_office
+  source_claim_ids:
+  - claim.apostille.eligible_admin_categories
+  status: draft
+- id: rule.apostille.fee
+  canonical_rule_id: documents_apostille.free
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2000-04-19'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: apostille_free
+    message_ro: Apostila administrativă la prefectură este gratuită.
+  source_claim_ids:
+  - claim.apostille.free
+  status: draft
+- id: rule.apostille.timing
+  canonical_rule_id: documents_apostille.timing
+  event_type_id: life.documents_apostille
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2026-03-16'
+  when:
+    op: eq
+    field: document_category
+    value: administrative
+  effects:
+  - type: emit_advice
+    tag: apostille_2h_8h_checks_may_extend
+    message_ro: HUB indică 2 ore mediu/8 ore maxim, dar verificările pot dura câteva zile.
+  source_claim_ids:
+  - claim.apostille.timing
+  status: draft

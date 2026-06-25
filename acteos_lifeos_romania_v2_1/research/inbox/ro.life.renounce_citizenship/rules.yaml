@@ -1,0 +1,490 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_RENOUNCE_CITIZENSHIP
+event_type_id: ro.life.renounce_citizenship
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- age
+- other_citizenship_status
+- criminal_status
+- debts_status
+- serious_reason_status
+- residence_location
+- minors_affected
+rules:
+- id: rule.ren.start
+  canonical_rule_id: renounce_citizenship.start
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: evaluate_renunciation_conditions
+  - type: emit_warning
+    tag: approval_not_automatic
+    message_ro: Renunțarea se aprobă numai pentru motive temeinice și dacă toate condițiile legale sunt dovedite.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.under18
+  canonical_rule_id: renounce_citizenship.under18
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lt
+    field: age
+    value: 18
+  effects:
+  - type: block
+    tag: renunciation_requires_adult
+    message_ro: Cererea proprie de renunțare presupune împlinirea vârstei de 18 ani.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.criminal_clear
+  canonical_rule_id: renounce_citizenship.criminal_clear
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age
+      value: 18
+    - op: eq
+      field: criminal_status
+      value: clear
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_criminal_condition
+  - type: emit_advice
+    tag: criminal_condition_clear
+    message_ro: Datele declarate nu indică impedimentul penal prevăzut de art. 27 lit. a); autoritățile vor verifica oficial.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.criminal_block
+  canonical_rule_id: renounce_citizenship.criminal_block
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: criminal_status
+    values:
+    - suspect_or_accused
+    - sentence_to_execute
+  effects:
+  - type: block
+    tag: criminal_impediment
+    message_ro: Calitatea de suspect/inculpat sau existența unei pedepse penale de executat împiedică aprobarea în condițiile
+      art. 27.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.criminal_unknown
+  canonical_rule_id: renounce_citizenship.criminal_unknown
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: criminal_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: criminal_status_confirm
+    message_ro: Confirmă situația penală prin documentele și verificările oficiale cerute de ANC.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.debts_ok
+  canonical_rule_id: renounce_citizenship.debts_ok
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: debts_status
+    values:
+    - none
+    - paid
+    - secured
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_debts_cleared_or_secured
+  - type: emit_advice
+    tag: debts_condition_possible
+    message_ro: Lipsa datoriilor, plata lor sau garanțiile corespunzătoare trebuie dovedite în forma cerută.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.debts_unresolved
+  canonical_rule_id: renounce_citizenship.debts_unresolved
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: debts_status
+    value: unresolved
+  effects:
+  - type: block
+    tag: debts_unresolved
+    message_ro: Datoriile urmărite și neachitate/negarantate împiedică îndeplinirea condiției art. 27 lit. b).
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.debts_unknown
+  canonical_rule_id: renounce_citizenship.debts_unknown
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: debts_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: debts_status_confirm
+    message_ro: Obține documentele oficiale privind debitele și eventualele garanții înainte de depunere.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.other_citizenship_ok
+  canonical_rule_id: renounce_citizenship.other_citizenship_ok
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: other_citizenship_status
+    values:
+    - acquired
+    - applied_with_assurance
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_other_citizenship_or_assurance
+  - type: emit_advice
+    tag: statelessness_guard_met
+    message_ro: Trebuie probată cetățenia străină dobândită sau asigurarea oficială că va fi dobândită.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.other_citizenship_none
+  canonical_rule_id: renounce_citizenship.other_citizenship_none
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: other_citizenship_status
+    value: none
+  effects:
+  - type: block
+    tag: risk_of_statelessness
+    message_ro: Fără altă cetățenie dobândită sau asigurată, condiția art. 27 lit. c) nu este îndeplinită.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.other_citizenship_unknown
+  canonical_rule_id: renounce_citizenship.other_citizenship_unknown
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: other_citizenship_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: other_citizenship_confirm
+    message_ro: Confirmă documentul oficial care dovedește cetățenia străină sau asigurarea dobândirii ei.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.reason_declared
+  canonical_rule_id: renounce_citizenship.reason_declared
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: serious_reason_status
+    value: declared
+  effects:
+  - type: include_requirement
+    requirement_id: req.statement_and_proof_serious_reasons
+  - type: emit_advice
+    tag: serious_reasons_to_be_assessed
+    message_ro: Motivele temeinice trebuie explicate și susținute; evaluarea aparține ANC.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.reason_missing
+  canonical_rule_id: renounce_citizenship.reason_missing
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: serious_reason_status
+    value: missing
+  effects:
+  - type: block
+    tag: serious_reasons_missing
+    message_ro: Cererea nu poate fi pregătită fără motive temeinice declarate și documentate.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.reason_unknown
+  canonical_rule_id: renounce_citizenship.reason_unknown
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: serious_reason_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: serious_reasons_confirm
+    message_ro: Clarifică motivele și probele înainte de a genera dosarul final.
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.eligible_prepare
+  canonical_rule_id: renounce_citizenship.eligible_prepare
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age
+      value: 18
+    - op: eq
+      field: criminal_status
+      value: clear
+    - op: in
+      field: debts_status
+      values:
+      - none
+      - paid
+      - secured
+    - op: in
+      field: other_citizenship_status
+      values:
+      - acquired
+      - applied_with_assurance
+    - op: eq
+      field: serious_reason_status
+      value: declared
+  effects:
+  - type: include_step
+    step_id: prepare_renunciation_application
+  - type: include_requirement
+    requirement_id: req.identity_and_citizenship_documents
+  - type: include_requirement
+    requirement_id: req.supporting_documents_art27
+  source_claim_ids:
+  - claim.ren.conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.file_in_ro
+  canonical_rule_id: renounce_citizenship.file_in_ro
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: residence_location
+    value: romania
+  effects:
+  - type: include_step
+    step_id: file_at_anc
+  - type: attach_channel
+    channel_id: ch.anc
+  source_claim_ids:
+  - claim.ren.filing_and_completion
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.file_abroad
+  canonical_rule_id: renounce_citizenship.file_abroad
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: residence_location
+    value: abroad
+  effects:
+  - type: include_step
+    step_id: file_at_romanian_mission_or_consulate
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  source_claim_ids:
+  - claim.ren.filing_and_completion
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.completion
+  canonical_rule_id: renounce_citizenship.completion
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_warning
+    tag: supplement_6m
+    message_ro: Documentele lipsă cerute de Comisie trebuie transmise în cel mult 6 luni, altfel cererea se respinge ca nesusținută.
+  source_claim_ids:
+  - claim.ren.filing_and_completion
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.minor_effects
+  canonical_rule_id: renounce_citizenship.minor_effects
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: minors_affected
+    value: true
+  effects:
+  - type: include_step
+    step_id: assess_minor_citizenship_effects
+  - type: require_confirmation
+    tag: minor_effects_case_specific
+    message_ro: Cetățenia minorului nu se pierde automat prin cererea unui părinte; verifică situația ambilor părinți, domiciliul
+      și plecarea în străinătate.
+  source_claim_ids:
+  - claim.ren.minor_effects
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.post_decision
+  canonical_rule_id: renounce_citizenship.post_decision
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: appeal_rejection_15d
+    message_ro: Ordinul de respingere poate fi atacat în 15 zile de la comunicare.
+  - type: emit_warning
+    tag: citizenship_lost_only_at_certificate
+    message_ro: Aprobarea ordinului nu produce încă pierderea; pierderea are loc la eliberarea adeverinței.
+  - type: emit_warning
+    tag: collect_certificate_6m
+    message_ro: Prezintă-te pentru adeverință în 6 luni de la comunicarea ordinului, altfel efectele ordinului încetează.
+  source_claim_ids:
+  - claim.ren.appeal
+  - claim.ren.loss_at_certificate
+  - claim.ren.certificate_six_months
+  status: in_review
+  legal_rank: lege
+- id: rule.ren.fee
+  canonical_rule_id: renounce_citizenship.fee
+  event_type_id: ro.life.renounce_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: renunciation_fee_current
+    message_ro: Legea prevede existența unei taxe, dar cuantumul și modalitatea de plată trebuie confirmate din sursa oficială
+      operațională curentă.
+  source_claim_ids:
+  - claim.ren.fee_exists
+  status: in_review
+  legal_rank: lege

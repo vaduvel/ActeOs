@@ -1,0 +1,814 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.retirement_age
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: bărbat — vârsta standard și 35 ani contributivi
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_old_age_pension_application
+    - submit_old_age_pension_application
+    requirements:
+    - req.annex3_old_age_application
+    emitted_tags:
+    - standard_retirement_conditions_met
+  id: ro.life.retirement_age.F01
+- title: bărbat — încă nu a atins vârsta standard
+  facts:
+    birth_date: '1962-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2027-06-01'
+    standard_age_reached: false
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: null
+    application_date: null
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - prepare_old_age_pension_application
+    emitted_tags:
+    - standard_age_not_reached
+  id: ro.life.retirement_age.F02
+- title: femeie — lipsește rezultatul anexei nr. 5
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    included_steps:
+    - lookup_annex5_retirement_schedule
+    emitted_tags:
+    - annex5_lookup_required
+    missing_facts:
+    - standard_retirement_date
+  id: ro.life.retirement_age.F03
+- title: femeie — data eșalonată din anexa nr. 5 este atinsă
+  facts:
+    birth_date: '1963-03-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-05-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_old_age_pension_application
+    emitted_tags:
+    - standard_retirement_conditions_met
+  id: ro.life.retirement_age.F04
+- title: stagiu contributiv sub 15 ani
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 14.75
+    full_contributory_stage_met: false
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - minimum_stage_not_met
+  id: ro.life.retirement_age.F05
+- title: exact 15 ani contributivi la vârsta standard
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 15
+    full_contributory_stage_met: false
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_old_age_pension_application
+    emitted_tags:
+    - standard_retirement_conditions_met
+  id: ro.life.retirement_age.F06
+- title: mamă cu un copil eligibil
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 1
+    eligible_children_count: 1
+    child_raising_condition_met: true
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - calculate_mother_age_reduction
+    requirements:
+    - req.children_birth_or_adoption_proof
+    - req.child_raising_declaration
+    emitted_tags:
+    - mother_reduction_applicable
+  id: ro.life.retirement_age.F07
+- title: mamă cu trei copii eligibili
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 3
+    eligible_children_count: 3
+    child_raising_condition_met: true
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - calculate_mother_age_reduction
+    emitted_tags:
+    - mother_reduction_applicable
+  id: ro.life.retirement_age.F08
+- title: mamă cu șapte copii eligibili
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 7
+    eligible_children_count: 7
+    child_raising_condition_met: true
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - calculate_mother_age_reduction
+    emitted_tags:
+    - mother_reduction_applicable
+  id: ro.life.retirement_age.F09
+- title: copil adoptat și crescut cel puțin 13 ani
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 1
+    eligible_children_count: 1
+    child_raising_condition_met: true
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+    proof_type: adoption_decision
+  expected:
+    status: resolved
+    included_steps:
+    - calculate_mother_age_reduction
+    requirements:
+    - req.children_birth_or_adoption_proof
+  id: ro.life.retirement_age.F10
+- title: copil existent, dar condiția de creștere nu este dovedită
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 1
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - calculate_mother_age_reduction
+    emitted_tags:
+    - mother_raising_condition_not_met
+  id: ro.life.retirement_age.F11
+- title: handicap grav — pragul de o treime este îndeplinit
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: severe
+    permanent_disability_certificate: true
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+    disability_stage_threshold_met: true
+  expected:
+    status: resolved
+    included_steps:
+    - evaluate_disability_age_reduction
+    requirements:
+    - req.permanent_disability_certificate
+    emitted_tags:
+    - disability_stage_threshold_check
+  id: ro.life.retirement_age.F12
+- title: handicap grav — pragul de stagiu nu este încă verificat
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: severe
+    permanent_disability_certificate: true
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+    disability_stage_threshold_met: false
+  expected:
+    status: resolved
+    included_steps:
+    - evaluate_disability_age_reduction
+    emitted_tags:
+    - disability_stage_threshold_check
+  id: ro.life.retirement_age.F13
+- title: handicap accentuat — verificare două treimi
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: accentuated
+    permanent_disability_certificate: true
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - evaluate_disability_age_reduction
+    emitted_tags:
+    - disability_stage_threshold_check
+  id: ro.life.retirement_age.F14
+- title: handicap mediu — necesar stagiul complet
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: medium
+    permanent_disability_certificate: true
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - evaluate_disability_age_reduction
+    emitted_tags:
+    - disability_stage_threshold_check
+  id: ro.life.retirement_age.F15
+- title: deficiență vizuală gravă cu pragul de stagiu îndeplinit
+  facts:
+    birth_date: '1980-01-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: false
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: severe_visual
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: true
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_severe_visual_old_age_pension
+    emitted_tags:
+    - severe_visual_age_independent
+    - standard_age_not_reached
+  id: ro.life.retirement_age.F16
+- title: certificat de handicap fără valabilitate permanentă
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: severe
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    requirements:
+    - req.permanent_disability_certificate
+    emitted_tags:
+    - permanent_disability_certificate_required
+  id: ro.life.retirement_age.F17
+- title: art. 56 — cu 5 ani înainte și 5 ani stagiu total suplimentar
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: false
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 5
+    years_before_standard: 5
+    article56_route_requested: true
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - evaluate_article56_old_age_pension
+    emitted_tags:
+    - article56_possible
+    - standard_age_not_reached
+  id: ro.life.retirement_age.F18
+- title: art. 56 solicitat împreună cu altă reducere
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: false
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 6
+    years_before_standard: 4
+    article56_route_requested: true
+    uses_other_age_reduction: true
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - article56_cannot_cumulate
+    - standard_age_not_reached
+  id: ro.life.retirement_age.F19
+- title: cumul de reduceri peste plafon și vârstă rezultată sub 52
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: female
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 7
+    eligible_children_count: 7
+    child_raising_condition_met: true
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 12
+    resulting_retirement_age: 51
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: true
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - mother_reduction_applicable
+    - reduction_cap_11_and_floor_52
+  id: ro.life.retirement_age.F20
+- title: continuarea activității până la 70 de ani — caz permis
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: true
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - request_annual_employer_agreement_to_continue
+    emitted_tags:
+    - continue_to_70_option_available
+  id: ro.life.retirement_age.F21
+- title: cerere depusă după 30 de zile
+  facts:
+    birth_date: '1961-06-01'
+    sex_for_annex5: male
+    standard_retirement_date: '2026-06-01'
+    standard_age_reached: true
+    contributory_years: 35
+    full_contributory_stage_met: true
+    extra_total_stage_years: 0
+    years_before_standard: 0
+    article56_route_requested: false
+    uses_other_age_reduction: false
+    children_count: 0
+    eligible_children_count: 0
+    child_raising_condition_met: false
+    disability_degree: none
+    permanent_disability_certificate: false
+    visual_stage_one_third_met: false
+    combined_reduction_years: 0
+    resulting_retirement_age: 65
+    wants_continue_to_70: false
+    met_conditions_before_2024: false
+    retired_before_2024: false
+    retirement_uses_reduced_age: false
+    post_retirement_other_contract: false
+    conditions_met_date: '2026-04-01'
+    application_date: '2026-06-25'
+    application_within_30_days: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - submit_old_age_pension_application
+    emitted_tags:
+    - rights_start_from_filing_when_late
+  id: ro.life.retirement_age.F22

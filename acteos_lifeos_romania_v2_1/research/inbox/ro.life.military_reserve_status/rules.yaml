@@ -1,0 +1,261 @@
+batch_id: batch18.military_reserve_status
+event_type_id: ro.life.military_reserve_status
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.military_reserve_status.become_rv
+  canonical_rule_id: canonical.military_reserve_status.become_rv
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: become_volunteer_reservist
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.military_enrollment
+  - type: include_step
+    step_id: step.start_volunteer_reservist_recruitment
+  - type: attach_channel
+    channel_id: channel.military_center_stable_domicile
+  - type: emit_advice
+    tag: child_military_enrollment
+    message_ro: Aplică traseul complet de recrutare.
+  source_claim_ids:
+  - b18.military_reserve_status.rv_entry
+  - b18.military_reserve_status.rv_limits
+  status: active
+- id: rule.b18.military_reserve_status.soldier_low
+  canonical_rule_id: canonical.military_reserve_status.soldier_low
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: become_volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: soldier_or_ranked
+    - op: lt
+      field: age
+      value: 18
+  effects:
+  - type: block
+    code: rv_soldier_age_below_18
+    message_ro: Sub limita minimă.
+  source_claim_ids:
+  - b18.military_reserve_status.rv_limits
+  status: active
+- id: rule.b18.military_reserve_status.soldier_high
+  canonical_rule_id: canonical.military_reserve_status.soldier_high
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: become_volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: soldier_or_ranked
+    - op: gt
+      field: age
+      value: 50
+  effects:
+  - type: block
+    code: rv_soldier_age_above_50
+    message_ro: Peste limita maximă.
+  source_claim_ids:
+  - b18.military_reserve_status.rv_limits
+  status: active
+- id: rule.b18.military_reserve_status.cadre_low
+  canonical_rule_id: canonical.military_reserve_status.cadre_low
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: become_volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: cadre
+    - op: lt
+      field: age
+      value: 18
+  effects:
+  - type: block
+    code: rv_cadre_age_below_18
+    message_ro: Sub limita minimă.
+  source_claim_ids:
+  - b18.military_reserve_status.rv_limits
+  status: active
+- id: rule.b18.military_reserve_status.cadre_high
+  canonical_rule_id: canonical.military_reserve_status.cadre_high
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: become_volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: cadre
+    - op: gt
+      field: age
+      value: 55
+  effects:
+  - type: block
+    code: rv_cadre_age_above_55
+    message_ro: Peste limita maximă.
+  source_claim_ids:
+  - b18.military_reserve_status.rv_limits
+  status: active
+- id: rule.b18.military_reserve_status.verify
+  canonical_rule_id: canonical.military_reserve_status.verify
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: verify_status
+  effects:
+  - type: include_step
+    step_id: step.request_confirmation_of_military_record
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  - type: require_confirmation
+    tag: reserve_status_document_and_checklist
+    message_ro: Confirmă tipul actului, dosarul și termenul.
+  source_claim_ids:
+  - b18.military_reserve_status.status_gap
+  status: in_review
+- id: rule.b18.military_reserve_status.update
+  canonical_rule_id: canonical.military_reserve_status.update
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: update_personal_data
+  effects:
+  - type: include_step
+    step_id: step.notify_military_center_of_personal_data_change
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  - type: require_confirmation
+    tag: reserve_data_update_checklist
+    message_ro: Confirmă documentele și termenul.
+  source_claim_ids:
+  - b18.military_reserve_status.status_gap
+  status: in_review
+- id: rule.b18.military_reserve_status.no_change
+  canonical_rule_id: canonical.military_reserve_status.no_change
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: update_personal_data
+    - op: eq
+      field: changed_data
+      value: false
+  effects:
+  - type: emit_advice
+    tag: no_change_identified
+    message_ro: Nu a fost indicată o schimbare.
+  source_claim_ids:
+  - b18.military_reserve_status.status_gap
+  status: in_review
+- id: rule.b18.military_reserve_status.reserve_id
+  canonical_rule_id: canonical.military_reserve_status.reserve_id
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: reserve_retired_id
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.military_certificate
+  - type: include_step
+    step_id: step.request_reserve_retired_id
+  - type: attach_channel
+    channel_id: channel.military_center_at_domicile
+  - type: emit_advice
+    tag: child_military_certificate
+    message_ro: Aplică traseul documentului militar.
+  source_claim_ids:
+  - b18.military_reserve_status.reserve_id
+  status: active
+- id: rule.b18.military_reserve_status.unknown
+  canonical_rule_id: canonical.military_reserve_status.unknown
+  event_type_id: ro.life.military_reserve_status
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: unknown
+  effects:
+  - type: include_step
+    step_id: step.identify_reserve_status_goal
+  - type: require_confirmation
+    tag: reserve_status_goal
+    message_ro: Alege între recrutare, verificare, actualizare și legitimație.
+  source_claim_ids:
+  - b18.military_reserve_status.status_gap
+  status: in_review

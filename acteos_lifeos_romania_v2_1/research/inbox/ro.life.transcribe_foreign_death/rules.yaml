@@ -1,0 +1,619 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_TRANSCRIBE_FOREIGN_DEATH
+event_type_id: ro.life.transcribe_foreign_death
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- deceased_romanian_status
+- foreign_event_registered
+- applicant_location
+- ever_domiciled_ro
+- citizenship_basis
+- document_format
+- issuing_country_group
+- timisoara_connection
+- birth_act_transcribed
+rules:
+- id: rule.tfd.start
+  canonical_rule_id: transcribe_foreign_death.start
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_foreign_death_transcription
+  - type: emit_warning
+    tag: transcription_requires_foreign_registration
+    message_ro: Mai întâi verifică dacă decesul a fost înregistrat în străinătate; altfel se aplică procedura de întocmire,
+      nu transcrierea.
+  source_claim_ids:
+  - claim.tfd.power_and_route
+  - claim.tfd.unregistered_death
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.not_romanian
+  canonical_rule_id: transcribe_foreign_death.not_romanian
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deceased_romanian_status
+    value: not_romanian
+  effects:
+  - type: block
+    tag: deceased_not_romanian
+    message_ro: Transcrierea art. 41 privește actele de stare civilă ale cetățenilor români.
+  source_claim_ids:
+  - claim.tfd.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.romanian_uncertain
+  canonical_rule_id: transcribe_foreign_death.romanian_uncertain
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deceased_romanian_status
+    value: uncertain
+  effects:
+  - type: block
+    tag: deceased_status_uncertain
+    message_ro: Cetățenia persoanei la data decesului trebuie clarificată înainte de stabilirea procedurii.
+  - type: require_confirmation
+    tag: prove_deceased_romanian_status
+    message_ro: Obține dovada oficială a cetățeniei române la data decesului.
+  source_claim_ids:
+  - claim.tfd.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.unregistered
+  canonical_rule_id: transcribe_foreign_death.unregistered
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - &id001
+      op: in
+      field: deceased_romanian_status
+      values:
+      - romanian_at_death
+      - acquired_or_reacquired
+    - op: eq
+      field: foreign_event_registered
+      value: false
+  effects:
+  - type: block
+    tag: death_not_registered_abroad
+    message_ro: Nu există un act străin de transcris; deschide procedura art. 39^2 pentru întocmirea actului de deces.
+  - type: include_step
+    step_id: open_foreign_death_first_registration
+  - type: require_confirmation
+    tag: art39_2_documents
+    message_ro: Confirmă certificatul medical, verificarea MAE și aprobările cerute de art. 39^2.
+  source_claim_ids:
+  - claim.tfd.unregistered_death
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.eligible
+  canonical_rule_id: transcribe_foreign_death.eligible
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_foreign_death_transcription
+  - type: include_requirement
+    requirement_id: req.foreign_death_certificate_or_extract_original
+  - type: include_requirement
+    requirement_id: req.proof_deceased_romanian_citizenship
+  - type: include_requirement
+    requirement_id: req.applicant_identity
+  source_claim_ids:
+  - claim.tfd.power_and_route
+  - claim.tfd.local_docs
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.deadline
+  canonical_rule_id: transcribe_foreign_death.deadline
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+  effects:
+  - type: emit_warning
+    tag: request_within_6m_normative
+    message_ro: Legea națională cere solicitarea în 6 luni de la înregistrarea decesului în străinătate sau de la dobândirea/redobândirea
+      cetățeniei.
+  source_claim_ids:
+  - claim.tfd.deadline_normative
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.route_ro_domicile
+  canonical_rule_id: transcribe_foreign_death.route_ro_domicile
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: eq
+      field: ever_domiciled_ro
+      value: true
+  effects:
+  - type: include_step
+    step_id: file_at_applicant_or_deceased_competent_uat
+  - type: attach_channel
+    channel_id: ch.local_civil_status
+  source_claim_ids:
+  - claim.tfd.power_and_route
+  - claim.tfd.local_docs
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.route_consular
+  canonical_rule_id: transcribe_foreign_death.route_consular
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: applicant_location
+      value: abroad
+    - op: neq
+      field: citizenship_basis
+      value: art10_11
+  effects:
+  - type: include_step
+    step_id: file_at_romanian_mission_or_consulate
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  source_claim_ids:
+  - claim.tfd.power_and_route
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.no_domicile_ordinary
+  canonical_rule_id: transcribe_foreign_death.no_domicile_ordinary
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: eq
+      field: ever_domiciled_ro
+      value: false
+    - op: neq
+      field: citizenship_basis
+      value: art10_11
+  effects:
+  - type: include_step
+    step_id: file_sector1_bucharest
+  - type: emit_advice
+    tag: sector1_60d
+    message_ro: Pentru persoana fără domiciliu anterior în România, alta decât art. 10/11, aplică ruta Sectorului 1 și termenul
+      legal de 60 de zile.
+  source_claim_ids:
+  - claim.tfd.no_domicile_routes
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.art10_11_ro
+  canonical_rule_id: transcribe_foreign_death.art10_11_ro
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_romanian_status
+      value: acquired_or_reacquired
+    - op: eq
+      field: citizenship_basis
+      value: art10_11
+    - op: eq
+      field: ever_domiciled_ro
+      value: false
+    - op: eq
+      field: applicant_location
+      value: romania
+  effects:
+  - type: include_step
+    step_id: file_bucharest_sector_or_county_seat
+  - type: emit_advice
+    tag: art10_11_ro_60d
+    message_ro: Ruta art. 10/11 fără domiciliu anterior se soluționează în țară prin autoritățile desemnate, în 60 de zile.
+  source_claim_ids:
+  - claim.tfd.no_domicile_routes
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.art10_11_abroad
+  canonical_rule_id: transcribe_foreign_death.art10_11_abroad
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_romanian_status
+      value: acquired_or_reacquired
+    - op: eq
+      field: citizenship_basis
+      value: art10_11
+    - op: eq
+      field: ever_domiciled_ro
+      value: false
+    - op: eq
+      field: applicant_location
+      value: abroad
+  effects:
+  - type: include_step
+    step_id: file_personally_at_competent_mission
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  - type: emit_advice
+    tag: art10_11_consular_90d
+    message_ro: Ruta consulară specială are termen legal de 90 de zile și cerere personală în fereastra legală de la jurământ.
+  source_claim_ids:
+  - claim.tfd.art10_11_consular
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.birth_missing
+  canonical_rule_id: transcribe_foreign_death.birth_missing
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: birth_act_transcribed
+      value: 'no'
+  effects:
+  - type: include_step
+    step_id: transcribe_birth_ex_officio_before_death
+  - type: emit_advice
+    tag: birth_before_death
+    message_ro: Ofițerul competent poate transcrie nașterea din oficiu și gratuit înaintea transcrierii decesului.
+  - type: trigger_child_event
+    event_type_id: ro.life.transcribe_foreign_birth
+  source_claim_ids:
+  - claim.tfd.birth_first
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.birth_unknown
+  canonical_rule_id: transcribe_foreign_death.birth_unknown
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: foreign_event_registered
+      value: true
+    - op: eq
+      field: birth_act_transcribed
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: birth_transcription_status_check
+    message_ro: Verifică existența actului românesc de naștere al persoanei decedate înainte de finalizarea dosarului.
+  source_claim_ids:
+  - claim.tfd.birth_first
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.standard_eu
+  canonical_rule_id: transcribe_foreign_death.standard_eu
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: eu
+  effects:
+  - type: emit_advice
+    tag: eu_no_apostille_local
+    message_ro: În checklistul Timișoara, actul UE este scutit de apostilă.
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  source_claim_ids:
+  - claim.tfd.local_eu_vienna
+  status: in_review
+- id: rule.tfd.standard_hague
+  canonical_rule_id: transcribe_foreign_death.standard_hague
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: hague_non_eu
+  effects:
+  - type: include_requirement
+    requirement_id: req.apostille
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  source_claim_ids:
+  - claim.tfd.local_docs
+  status: in_review
+- id: rule.tfd.standard_non_hague
+  canonical_rule_id: transcribe_foreign_death.standard_non_hague
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: non_hague
+  effects:
+  - type: include_requirement
+    requirement_id: req.supralegalisation
+  - type: include_requirement
+    requirement_id: req.authenticated_romanian_translation
+  source_claim_ids:
+  - claim.tfd.local_docs
+  status: in_review
+- id: rule.tfd.standard_unknown
+  canonical_rule_id: transcribe_foreign_death.standard_unknown
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: document_format
+      value: standard
+    - op: eq
+      field: issuing_country_group
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: document_formality_country_check
+    message_ro: Confirmă regimul UE/Haga și formalitatea exactă pentru statul emitent.
+  source_claim_ids:
+  - claim.tfd.local_docs
+  status: in_review
+- id: rule.tfd.vienna
+  canonical_rule_id: transcribe_foreign_death.vienna
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_format
+    value: multilingual_vienna
+  effects:
+  - type: emit_advice
+    tag: vienna_no_apostille_translation
+    message_ro: Extrasul multilingv eligibil este acceptat local fără apostilă și fără traducere.
+  source_claim_ids:
+  - claim.tfd.local_eu_vienna
+  status: in_review
+- id: rule.tfd.electronic
+  canonical_rule_id: transcribe_foreign_death.electronic
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_format
+    value: electronic
+  effects:
+  - type: require_confirmation
+    tag: electronic_document_acceptance
+    message_ro: Confirmă autenticitatea, verificarea și forma de prezentare acceptată pentru documentul electronic.
+  source_claim_ids:
+  - claim.tfd.local_docs
+  status: in_review
+- id: rule.tfd.incomplete
+  canonical_rule_id: transcribe_foreign_death.incomplete
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_format
+    value: incomplete
+  effects:
+  - type: include_requirement
+    requirement_id: req.additional_authentic_evidence_for_missing_fields
+  - type: require_confirmation
+    tag: missing_fields_evidence
+    message_ro: Identifică înscrisurile autentice necesare pentru rubricile lipsă.
+  source_claim_ids:
+  - claim.tfd.incomplete_fields
+  status: in_review
+  legal_rank: lege
+- id: rule.tfd.timisoara
+  canonical_rule_id: transcribe_foreign_death.timisoara
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: in
+      field: timisoara_connection
+      values:
+      - applicant_domicile
+      - deceased_last_domicile
+  effects:
+  - type: attach_channel
+    channel_id: ch.timisoara_death_transcription
+  - type: include_step
+    step_id: book_timisoara_authenticated_appointment
+  - type: include_requirement
+    requirement_id: req.deceased_civil_status_documents
+  - type: emit_advice
+    tag: timisoara_30d_no_fee
+    message_ro: Pagina locală indică 30 de zile și fără taxe; reconfirmă checklistul deoarece detaliile provin și din pagina
+      oficială arhivată.
+  - type: require_confirmation
+    tag: timisoara_local_recheck
+    message_ro: Verifică în portalul curent programarea și lista finală înainte de depunere.
+  source_claim_ids:
+  - claim.tfd.local_channel_timing_fee
+  - claim.tfd.current_death_portal
+  - claim.tfd.local_docs
+  status: in_review
+- id: rule.tfd.deadline_conflict
+  canonical_rule_id: transcribe_foreign_death.deadline_conflict
+  event_type_id: ro.life.transcribe_foreign_death
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_location
+      value: romania
+    - op: in
+      field: timisoara_connection
+      values:
+      - applicant_domicile
+      - deceased_last_domicile
+  effects:
+  - type: emit_warning
+    tag: deadline_anchor_conflict
+    message_ro: Legea actuală leagă termenul de înregistrarea străină/dobândirea cetățeniei, iar pagina locală de întoarcere/primirea
+      certificatului.
+  - type: require_confirmation
+    tag: deadline_anchor_authority_confirmation
+    message_ro: Aplică termenul legal conservator și cere clarificare locală pentru formularea nealiniată.
+  source_claim_ids:
+  - claim.tfd.deadline_normative
+  - claim.tfd.deadline_local
+  status: in_review
+  legal_rank: lege

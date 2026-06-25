@@ -1,0 +1,92 @@
+batch_id: R1_CHANGE_ELECTRICITY_HOLDER
+defaults:
+  event_type_id: life.change_electricity_holder
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: E01
+    desc: cumparare locuinta cu consum activ
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, included_steps: [change_electricity_holder], requirements: [req.valid_id, req.proof_of_space, req.meter_index], advice_tags: [switch_free] }
+  - id: E02
+    desc: chirias devine titular
+    facts: { reason: rent, has_active_supply: true, is_owner: false }
+    expect: { status: ok, requirements: [req.valid_id, req.proof_of_space, req.meter_index] }
+  - id: E03
+    desc: deces titular - preluare
+    facts: { reason: inheritance_death, has_active_supply: true, is_owner: true }
+    expect: { status: ok, requirements: [req.death_certificate], warnings_present: [death_takeover] }
+  - id: E04
+    desc: deces - certificat deces necesar
+    facts: { reason: inheritance_death, has_active_supply: true, is_owner: false }
+    expect: { status: ok, requirements: [req.death_certificate] }
+  - id: E05
+    desc: index contor mereu necesar
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, requirements: [req.meter_index] }
+  - id: E06
+    desc: gratuitate schimbare furnizor
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, advice_tags: [switch_free] }
+  - id: E07
+    desc: canal DEER Banat la Timisoara
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, channels: [ch.deer_banat] }
+  - id: E08
+    desc: alt judet - fara canal Banat
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.deer_banat] }
+  - id: E09
+    desc: termen 21 zile - advisory + in_review
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, advice_tags: [activation_21d], needs_confirmation: [activation_21d] }
+  - id: E10
+    desc: docs raman in_review
+    facts: { reason: rent, has_active_supply: true, is_owner: false }
+    expect: { status: ok, needs_confirmation: [base_docs] }
+  - id: E11
+    desc: fara consum activ - tot schimbare titular
+    facts: { reason: purchase, has_active_supply: false, is_owner: true }
+    expect: { status: ok, included_steps: [change_electricity_holder] }
+  - id: E12
+    desc: non-deces - fara certificat deces
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: E13
+    desc: chirias non-deces - fara certificat deces
+    facts: { reason: rent, has_active_supply: true, is_owner: false }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: E14
+    desc: lipseste reason
+    facts: { has_active_supply: true, is_owner: true }
+    expect: { status: needs_facts, missing_facts: [reason] }
+  - id: E15
+    desc: lipseste has_active_supply
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: needs_facts, missing_facts: [has_active_supply] }
+  - id: E16
+    desc: lipseste is_owner
+    facts: { reason: purchase, has_active_supply: true }
+    expect: { status: needs_facts, missing_facts: [is_owner] }
+  - id: E17
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [reason, has_active_supply, is_owner] }
+  - id: E18
+    desc: advisory piata libera prezent
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, advice_tags: [free_market] }
+  - id: E19
+    desc: deces + canal Banat
+    facts: { reason: inheritance_death, has_active_supply: true, is_owner: true }
+    expect: { status: ok, requirements: [req.death_certificate], channels: [ch.deer_banat] }
+  - id: E20
+    desc: proprietar cumparare - proof_of_space
+    facts: { reason: purchase, has_active_supply: true, is_owner: true }
+    expect: { status: ok, requirements: [req.proof_of_space] }
+  - id: E21
+    desc: chirias - advisory gratuitate + index
+    facts: { reason: rent, has_active_supply: true, is_owner: false }
+    expect: { status: ok, advice_tags: [switch_free], requirements: [req.meter_index] }

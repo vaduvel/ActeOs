@@ -1,0 +1,542 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.road_accident_admin
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: ACC01
+  desc: două vehicule, numai pagube, amiabilă
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - amicable_route_available
+    - no_alcohol_after_accident
+- id: ACC02
+  desc: o persoană rănită
+  facts:
+    injuries: 'yes'
+    death: false
+    dangerous_goods: false
+    material_damage_only: false
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_leave_or_alter_scene
+    channels:
+    - ch.acc.112
+- id: ACC03
+  desc: deces
+  facts:
+    injuries: 'no'
+    death: true
+    dangerous_goods: false
+    material_damage_only: false
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_leave_or_alter_scene
+- id: ACC04
+  desc: mărfuri periculoase
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: true
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_leave_or_alter_scene
+- id: ACC05
+  desc: nu se știe dacă există răniți
+  facts:
+    injuries: unknown
+    death: false
+    dangerous_goods: false
+    material_damage_only: false
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - treat_possible_injury_as_emergency
+- id: ACC06
+  desc: pagube materiale fără acord amiabil
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.police_report
+- id: ACC07
+  desc: trei vehicule și încercare amiabilă
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 3
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - amicable_not_for_vehicle_count
+- id: ACC08
+  desc: un singur vehicul și CASCO
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 1
+    amicable_agreement_possible: false
+    own_vehicle_only: true
+    casco_available: true
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - own_damage_casco_exception
+- id: ACC09
+  desc: un singur vehicul fără CASCO
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 1
+    amicable_agreement_possible: false
+    own_vehicle_only: true
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.police_report
+- id: ACC10
+  desc: avariere în afara accidentului, fără CASCO
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 0
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: other_damage
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.police_report
+- id: ACC11
+  desc: avariere în afara accidentului, cu CASCO
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 0
+    amicable_agreement_possible: false
+    own_vehicle_only: true
+    casco_available: true
+    event_context: other_damage
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - own_damage_casco_exception
+- id: ACC12
+  desc: au trecut 23 de ore
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 23
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    deadlines:
+    - 24_hours_from_event
+- id: ACC13
+  desc: au trecut exact 24 de ore
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 24
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    deadlines:
+    - 24_hours_from_event
+- id: ACC14
+  desc: au trecut peste 24 de ore
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 26
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    warnings:
+    - no_alcohol_after_accident
+- id: ACC15
+  desc: asigurător RCA deja notificat
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: true
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    included_steps:
+    - step.acc.obtain_repair_document
+- id: ACC16
+  desc: asigurător nenotificat în ziua 5 lucrătoare
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 5
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.rca_notice
+- id: ACC17
+  desc: asigurător nenotificat după ziua 5
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 6
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    warnings:
+    - rca_notice_deadline_passed
+- id: ACC18
+  desc: consum de alcool după accident
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: true
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - legal_assistance_alcohol_after_event
+- id: ACC19
+  desc: două vehicule, dar există vătămare
+  facts:
+    injuries: 'yes'
+    death: false
+    dangerous_goods: false
+    material_damage_only: false
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_leave_or_alter_scene
+- id: ACC20
+  desc: două vehicule, pagube, fără amiabilă
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    included_steps:
+    - step.acc.police_24h
+- id: ACC21
+  desc: patru vehicule, numai pagube
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 4
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.police_report
+- id: ACC22
+  desc: vehicul imposibil de mutat
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: false
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: false
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - no_alcohol_after_accident
+- id: ACC23
+  desc: amiabilă, notificarea RCA lipsește
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: false
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.rca_notice
+- id: ACC24
+  desc: dosar ajuns la etapa reparației
+  facts:
+    injuries: 'no'
+    death: false
+    dangerous_goods: false
+    material_damage_only: true
+    vehicles_count: 2
+    amicable_agreement_possible: true
+    own_vehicle_only: false
+    casco_available: false
+    event_context: road_accident
+    hours_since_event: 2
+    moved_to_safety: true
+    alcohol_consumed_after: false
+    rca_insurer_notified: true
+    working_days_since_event: 1
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.acc.repair_document

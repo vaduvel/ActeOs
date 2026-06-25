@@ -1,0 +1,285 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_REGISTER_PET
+event_alias: ro.life.register_pet
+event_type_id: life.register_pet
+status: research_inbox
+rules:
+- id: rule.pet.identify_species.rev1
+  canonical_rule_id: rule.pet.identify_species
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: identify_pet_registration_regime
+  source_claim_ids:
+  - claim.pet.recs_registry_scope
+  - claim.pet.non_dog_registry_gap
+  status: active
+  required_facts:
+  - species
+- id: rule.pet.dog_no_microchip.rev1
+  canonical_rule_id: rule.pet.dog_no_microchip
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: eq
+      field: dog_has_microchip
+      value: false
+  effects:
+  - type: include_step
+    step_id: choose_licensed_recs_veterinarian
+  - type: include_step
+    step_id: microchip_dog
+  - type: include_step
+    step_id: register_dog_in_recs
+  source_claim_ids:
+  - claim.pet.microchip_followed_by_recs
+  - claim.pet.recs_operated_by_vets
+  status: active
+  required_facts:
+  - species
+  - dog_has_microchip
+- id: rule.pet.dog_microchipped_not_recs.rev1
+  canonical_rule_id: rule.pet.dog_microchipped_not_recs
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: eq
+      field: dog_has_microchip
+      value: true
+    - op: eq
+      field: dog_registered_recs
+      value: false
+  effects:
+  - type: include_step
+    step_id: choose_licensed_recs_veterinarian
+  - type: include_step
+    step_id: register_dog_in_recs
+  source_claim_ids:
+  - claim.pet.recs_operated_by_vets
+  - claim.pet.microchip_followed_by_recs
+  status: active
+  required_facts:
+  - species
+  - dog_has_microchip
+  - dog_registered_recs
+- id: rule.pet.verify_registration.rev1
+  canonical_rule_id: rule.pet.verify_registration
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: eq
+      field: dog_has_microchip
+      value: true
+  effects:
+  - type: include_step
+    step_id: verify_dog_by_microchip_code
+  - type: attach_channel
+    step_id: verify_dog_by_microchip_code
+    channel_id: ch.rompetid.recs_lookup
+  source_claim_ids:
+  - claim.pet.registry_lookup
+  status: active
+  required_facts:
+  - species
+  - dog_has_microchip
+- id: rule.pet.change_event.rev1
+  canonical_rule_id: rule.pet.change_event
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: in
+      field: dog_event
+      values:
+      - sale
+      - purchase
+      - loss
+      - disappearance
+      - theft
+      - donation
+      - death
+  effects:
+  - type: include_step
+    step_id: notify_veterinarian_about_dog_event
+  - type: set_deadline
+    step_id: notify_veterinarian_about_dog_event
+    value:
+      type: relative_calendar_days
+      anchor_fact: dog_event_date
+      amount: 7
+  source_claim_ids:
+  - claim.pet.change_events_7d
+  status: active
+  required_facts:
+  - species
+  - dog_event
+  - dog_event_date
+- id: rule.pet.public_health_book.rev1
+  canonical_rule_id: rule.pet.public_health_book
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: eq
+      field: dog_goes_to_public_space
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: dog_health_book_on_person
+  source_claim_ids:
+  - claim.pet.health_book_public
+  status: active
+  required_facts:
+  - species
+  - dog_goes_to_public_space
+- id: rule.pet.unregistered_public.rev1
+  canonical_rule_id: rule.pet.unregistered_public
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: eq
+      field: dog_goes_to_public_space
+      value: true
+    - op: eq
+      field: dog_registered_recs
+      value: false
+  effects:
+  - type: emit_warning
+    tag: unregistered_dog_in_public_space
+    message_ro: Un câine neidentificat și neînregistrat aflat în spațiul public este tratat de regimul oficial ca fără stăpân.
+  source_claim_ids:
+  - claim.pet.unregistered_public_stray
+  status: active
+  required_facts:
+  - species
+  - dog_goes_to_public_space
+  - dog_registered_recs
+- id: rule.pet.vet_cost.rev1
+  canonical_rule_id: rule.pet.vet_cost
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: species
+    value: dog
+  effects:
+  - type: require_confirmation
+    tag: veterinary_fee_and_appointment
+    message_ro: Tariful și programarea se confirmă la cabinetul veterinar ales; nu există tarif național unic publicat pe pagina RECS.
+  source_claim_ids:
+  - claim.pet.vet_choice_and_cost
+  status: in_review
+  required_facts:
+  - species
+- id: rule.pet.timisoara_vet.rev1
+  canonical_rule_id: rule.pet.timisoara_vet
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: species
+      value: dog
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    step_id: choose_licensed_recs_veterinarian
+    channel_id: ch.rompetid.vet_directory_timisoara
+  source_claim_ids:
+  - claim.pet.timisoara_vet_filter
+  status: active
+  required_facts:
+  - species
+  - jurisdiction_id
+- id: rule.pet.non_dog.rev1
+  canonical_rule_id: rule.pet.non_dog
+  event_type_id: life.register_pet
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: neq
+    field: species
+    value: dog
+  effects:
+  - type: require_confirmation
+    tag: species_specific_registration_regime
+    message_ro: Nu importa regula RECS a câinilor. Confirmă regimul speciei la medicul veterinar și, dacă este cazul, la autoritatea competentă.
+  source_claim_ids:
+  - claim.pet.non_dog_registry_gap
+  status: in_review
+  required_facts:
+  - species

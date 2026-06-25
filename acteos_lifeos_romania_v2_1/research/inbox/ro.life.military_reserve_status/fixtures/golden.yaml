@@ -1,0 +1,298 @@
+batch_id: batch18.military_reserve_status
+event_type_id: ro.life.military_reserve_status
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.military_reserve_status.01
+  case_ro: Scop lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.military_reserve_status.02
+  case_ro: RV soldat 30
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: soldier_or_ranked
+    age: 30
+  expect:
+    status: resolved
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.03
+  case_ro: RV soldat 17
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: soldier_or_ranked
+    age: 17
+  expect:
+    status: blocked
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.04
+  case_ro: RV soldat 50
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: soldier_or_ranked
+    age: 50
+  expect:
+    status: resolved
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.05
+  case_ro: RV soldat 51
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: soldier_or_ranked
+    age: 51
+  expect:
+    status: blocked
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.06
+  case_ro: RV cadru 30
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: cadre
+    age: 30
+  expect:
+    status: resolved
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.07
+  case_ro: RV cadru 17
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: cadre
+    age: 17
+  expect:
+    status: blocked
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.08
+  case_ro: RV cadru 55
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: cadre
+    age: 55
+  expect:
+    status: resolved
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.09
+  case_ro: RV cadru 56
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: cadre
+    age: 56
+  expect:
+    status: blocked
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.10
+  case_ro: RV categorie lipsă
+  facts:
+    goal: become_volunteer_reservist
+    age: 35
+  expect:
+    status: resolved
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.11
+  case_ro: Verificare angajator
+  facts:
+    goal: verify_status
+    purpose: employment
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_confirmation_of_military_record
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_status_document_and_checklist
+- id: fx.military_reserve_status.12
+  case_ro: Verificare pensie
+  facts:
+    goal: verify_status
+    purpose: pension
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_confirmation_of_military_record
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_status_document_and_checklist
+- id: fx.military_reserve_status.13
+  case_ro: Verificare extern
+  facts:
+    goal: verify_status
+    purpose: foreign_authority
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_confirmation_of_military_record
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_status_document_and_checklist
+- id: fx.military_reserve_status.14
+  case_ro: Verificare generică
+  facts:
+    goal: verify_status
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.request_confirmation_of_military_record
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_status_document_and_checklist
+- id: fx.military_reserve_status.15
+  case_ro: Actualizare nume
+  facts:
+    goal: update_personal_data
+    changed_data: true
+    change_type: name
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.notify_military_center_of_personal_data_change
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_data_update_checklist
+- id: fx.military_reserve_status.16
+  case_ro: Actualizare domiciliu
+  facts:
+    goal: update_personal_data
+    changed_data: true
+    change_type: domicile
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.notify_military_center_of_personal_data_change
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_data_update_checklist
+- id: fx.military_reserve_status.17
+  case_ro: Actualizare CI
+  facts:
+    goal: update_personal_data
+    changed_data: true
+    change_type: identity_document
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.notify_military_center_of_personal_data_change
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_data_update_checklist
+- id: fx.military_reserve_status.18
+  case_ro: Fără schimbare
+  facts:
+    goal: update_personal_data
+    changed_data: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.notify_military_center_of_personal_data_change
+    channels:
+    - channel.military_center_at_domicile
+    advice_tags:
+    - no_change_identified
+    confirmations:
+    - reserve_data_update_checklist
+- id: fx.military_reserve_status.19
+  case_ro: Legitimație rezervist
+  facts:
+    goal: reserve_retired_id
+  expect:
+    status: resolved
+    included_steps:
+    - step.request_reserve_retired_id
+    channels:
+    - channel.military_center_at_domicile
+    advice_tags:
+    - child_military_certificate
+- id: fx.military_reserve_status.20
+  case_ro: Scop necunoscut
+  facts:
+    goal: unknown
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_reserve_status_goal
+    confirmations:
+    - reserve_status_goal
+- id: fx.military_reserve_status.21
+  case_ro: RV fără vârstă
+  facts:
+    goal: become_volunteer_reservist
+    rv_category: cadre
+  expect:
+    status: resolved
+    included_steps:
+    - step.start_volunteer_reservist_recruitment
+    channels:
+    - channel.military_center_stable_domicile
+    advice_tags:
+    - child_military_enrollment
+- id: fx.military_reserve_status.22
+  case_ro: Actualizare grad
+  facts:
+    goal: update_personal_data
+    changed_data: true
+    change_type: military_status
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.notify_military_center_of_personal_data_change
+    channels:
+    - channel.military_center_at_domicile
+    confirmations:
+    - reserve_data_update_checklist

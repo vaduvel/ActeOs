@@ -1,0 +1,252 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_DECLARE_RENTAL_INCOME
+event_type_id: ro.life.declare_rental_income
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- landlord_is_individual
+- contract_status
+- contract_signed
+- contract_attachment_zip_ready
+- c168_already_submitted
+- has_reportable_rental_income
+- tenant_type
+- withholding_at_source
+- tax_year
+rules:
+- id: rule.b13.rental.assess
+  canonical_rule_id: rental_income.assess
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: assess_rental_contract_and_tax_obligations
+  source_claim_ids:
+  - claim.b13.rental.c168_current
+  status: draft
+- id: rule.b13.rental.individual_false
+  canonical_rule_id: rental_income.person_scope
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: landlord_is_individual
+    value: false
+  effects:
+  - type: block
+    tag: event_scope_is_individual_landlord
+    message_ro: Acest eveniment este pentru persoana fizică; folosește ruta fiscal-contabilă a entității.
+  - type: emit_advice
+    tag: route_legal_entity_rental_to_business_tax
+    message_ro: Direcționează locatorul persoană juridică spre traseul firmei.
+  source_claim_ids:
+  - claim.b13.rental.locator_types
+  status: in_review
+- id: rule.b13.rental.contract_route
+  canonical_rule_id: rental_income.c168
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: landlord_is_individual
+      value: true
+    - op: in
+      field: contract_status
+      values:
+      - new
+      - modified
+      - terminated
+  effects:
+  - type: include_step
+    step_id: prepare_c168_rental_contract_request
+  - type: include_requirement
+    requirement_id: req.signed_rental_contract
+  - type: include_requirement
+    requirement_id: req.c168_contract_scan_zip
+  - type: attach_channel
+    channel_id: ch.anaf.c168_web
+  - type: require_confirmation
+    tag: confirm_c168_filing_deadline
+    message_ro: Confirmă termenul material aplicabil datei contractului/modificării/încetării.
+  source_claim_ids:
+  - claim.b13.rental.c168_current
+  - claim.b13.rental.attachment
+  - claim.b13.rental.deadline_unverified
+  status: in_review
+- id: rule.b13.rental.new_initial
+  canonical_rule_id: rental_income.c168.type
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: contract_status
+      value: new
+    - op: eq
+      field: c168_already_submitted
+      value: false
+  effects:
+  - type: emit_advice
+    tag: use_initial_c168_request
+    message_ro: Selectează cererea inițială pentru contractul neînregistrat.
+  source_claim_ids:
+  - claim.b13.rental.initial_rectifying
+  status: in_review
+- id: rule.b13.rental.rectifying
+  canonical_rule_id: rental_income.c168.type
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: contract_status
+      values:
+      - modified
+      - terminated
+    - op: eq
+      field: c168_already_submitted
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_rectifying_or_update_c168_request
+  - type: emit_advice
+    tag: use_c168_modification_or_termination_fields
+    message_ro: Folosește câmpul corespunzător modificării sau încetării și datele cererii anterioare.
+  source_claim_ids:
+  - claim.b13.rental.initial_rectifying
+  - claim.b13.rental.modification_termination
+  status: in_review
+- id: rule.b13.rental.unsigned
+  canonical_rule_id: rental_income.contract_signed
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: contract_signed
+    value: false
+  effects:
+  - type: block
+    tag: rental_contract_not_signed
+    message_ro: Nu încărca drept contract final un înscris nesemnat.
+  source_claim_ids:
+  - claim.b13.rental.attachment
+  status: in_review
+- id: rule.b13.rental.attachment_missing
+  canonical_rule_id: rental_income.attachment
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: contract_attachment_zip_ready
+    value: false
+  effects:
+  - type: block
+    tag: mandatory_c168_zip_missing
+    message_ro: Pregătește arhiva ZIP cu scanarea contractului.
+  source_claim_ids:
+  - claim.b13.rental.attachment
+  status: in_review
+- id: rule.b13.rental.year_old
+  canonical_rule_id: rental_income.form_year
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lt
+    field: tax_year
+    value: 2024
+  effects:
+  - type: block
+    tag: current_c168_structure_not_valid_for_year
+    message_ro: Nu aplica structura C168 2026 unui an anterior validării publicate.
+  - type: require_confirmation
+    tag: confirm_historical_rental_contract_form
+    message_ro: Caută formularul și regula istorică aplicabile anului.
+  source_claim_ids:
+  - claim.b13.rental.year_floor
+  status: in_review
+- id: rule.b13.rental.income
+  canonical_rule_id: rental_income.tax_return
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: has_reportable_rental_income
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.tax_return_individual
+  - type: include_step
+    step_id: assess_rental_income_in_individual_tax_return
+  source_claim_ids:
+  - claim.b13.rental.c168_current
+  status: in_review
+- id: rule.b13.rental.withholding
+  canonical_rule_id: rental_income.withholding
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: withholding_at_source
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_withholding_and_cass_reporting
+    message_ro: Verifică obligațiile rămase persoanei fizice, inclusiv eventuala raportare CASS.
+  source_claim_ids:
+  - claim.b13.rental.deadline_unverified
+  status: in_review
+- id: rule.b13.rental.tenant_unknown
+  canonical_rule_id: rental_income.tenant_type
+  event_type_id: ro.life.declare_rental_income
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: tenant_type
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_tenant_type_for_tax_treatment
+    message_ro: Confirmă dacă locatarul este persoană fizică sau juridică.
+  source_claim_ids:
+  - claim.b13.rental.c168_current
+  status: in_review

@@ -1,0 +1,572 @@
+batch_id: batch10.medical_leave
+defaults:
+  event_type_id: ro.life.medical_leave
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.ordinary.5
+  desc: Boală obișnuită, episod de 5 zile
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.ordinary.stage_5
+  desc: Boală obișnuită fără stagiu minim
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 5
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.no_stage_exception
+  desc: Categorie exceptată de la stagiu
+  facts:
+    leave_reason_class: statutory_no_stage_exception
+    insurance_months_last_12: 0
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - no_minimum_stage_for_verified_exception_categories
+    - temporary_one_day_reduction_2026_2027
+- id: fx.other_category
+  desc: Altă categorie legală de concediu medical
+  facts:
+    leave_reason_class: other_statutory_category
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - temporary_one_day_reduction_2026_2027
+    confirmations:
+    - confirm_category_specific_medical_leave_rules
+- id: fx.unknown_category
+  desc: Categoria nu este cunoscută
+  facts:
+    leave_reason_class: unknown
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - temporary_one_day_reduction_2026_2027
+    confirmations:
+    - confirm_medical_leave_category
+- id: fx.no_certificate
+  desc: Lipsește certificatul medical
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: false
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    requirements:
+    - medical_leave_certificate_from_treating_physician
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.late_delivery
+  desc: Certificatul nu a fost predat până în ziua 5
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: false
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    warnings:
+    - certificate_not_delivered_by_day5
+- id: fx.employer_pending
+  desc: Angajatorul nu a operat încă suspendarea
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: false
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    warnings:
+    - employer_reges_transmission_pending
+- id: fx.ordinary.8
+  desc: Boală obișnuită, 8 zile
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 8
+    cumulative_days_last_year: 8
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_65_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.ordinary.14
+  desc: Boală obișnuită, 14 zile
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 14
+    cumulative_days_last_year: 14
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_65_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.ordinary.15
+  desc: Boală obișnuită, exact 15 zile
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 15
+    cumulative_days_last_year: 15
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - temporary_one_day_reduction_2026_2027
+    confirmations:
+    - confirm_ordinary_illness_rate_for_day_15
+- id: fx.ordinary.16
+  desc: Boală obișnuită, 16 zile
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 16
+    cumulative_days_last_year: 16
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_75_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.day_91.no_approval
+  desc: Peste 90 de zile fără aviz expert
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 91
+    cumulative_days_last_year: 91
+    has_expert_approval_after_day90: false
+    one_day_reduction_exception_applies: false
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    requirements:
+    - medical_expert_approval_for_extension_after_day90
+    advice_tags:
+    - ordinary_illness_rate_75_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.day_91.approved
+  desc: Peste 90 de zile cu aviz expert
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 91
+    cumulative_days_last_year: 91
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_75_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.day_184
+  desc: Peste limita obișnuită de 183 de zile
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 184
+    cumulative_days_last_year: 184
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_75_percent
+    - temporary_one_day_reduction_2026_2027
+- id: fx.reduction_exception
+  desc: Excepție de la diminuarea cu o zi
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: true
+  expect:
+    status: resolved
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - one_day_reduction_exception_to_be_documented
+- id: fx.missing.leave_reason_class
+  desc: Lipsește faptul obligatoriu `leave_reason_class`
+  facts:
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - leave_reason_class
+- id: fx.missing.insurance_months_last_12
+  desc: Lipsește faptul obligatoriu `insurance_months_last_12`
+  facts:
+    leave_reason_class: ordinary_illness
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - insurance_months_last_12
+- id: fx.missing.has_medical_certificate
+  desc: Lipsește faptul obligatoriu `has_medical_certificate`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - has_medical_certificate
+- id: fx.missing.certificate_delivered_by_day5
+  desc: Lipsește faptul obligatoriu `certificate_delivered_by_day5`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - certificate_delivered_by_day5
+- id: fx.missing.employer_registered_certificate
+  desc: Lipsește faptul obligatoriu `employer_registered_certificate`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - employer_registered_certificate
+- id: fx.missing.episode_days
+  desc: Lipsește faptul obligatoriu `episode_days`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - episode_days
+- id: fx.missing.cumulative_days_last_year
+  desc: Lipsește faptul obligatoriu `cumulative_days_last_year`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    has_expert_approval_after_day90: true
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - cumulative_days_last_year
+- id: fx.missing.has_expert_approval_after_day90
+  desc: Lipsește faptul obligatoriu `has_expert_approval_after_day90`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    one_day_reduction_exception_applies: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    - temporary_one_day_reduction_2026_2027
+    missing_facts:
+    - has_expert_approval_after_day90
+- id: fx.missing.one_day_reduction_exception_applies
+  desc: Lipsește faptul obligatoriu `one_day_reduction_exception_applies`
+  facts:
+    leave_reason_class: ordinary_illness
+    insurance_months_last_12: 8
+    has_medical_certificate: true
+    certificate_delivered_by_day5: true
+    employer_registered_certificate: true
+    episode_days: 5
+    cumulative_days_last_year: 5
+    has_expert_approval_after_day90: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    advice_tags:
+    - ordinary_illness_rate_55_percent
+    missing_facts:
+    - one_day_reduction_exception_applies
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_medical_certificate
+    - deliver_certificate_to_employer
+    - employer_registers_medical_leave_in_reges
+    missing_facts:
+    - leave_reason_class
+    - insurance_months_last_12
+    - has_medical_certificate
+    - certificate_delivered_by_day5
+    - employer_registered_certificate
+    - episode_days
+    - cumulative_days_last_year
+    - has_expert_approval_after_day90
+    - one_day_reduction_exception_applies

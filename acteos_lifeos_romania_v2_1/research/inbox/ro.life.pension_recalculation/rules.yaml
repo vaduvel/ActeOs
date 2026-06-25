@@ -1,0 +1,365 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.pension_recalculation
+status: draft
+rules:
+- id: rule.recalc.require_request_basis
+  canonical_rule_id: pension_recalculation.request_basis
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: missing
+    field: recalculation_basis
+  effects:
+  - type: require_confirmation
+    tag: recalculation_basis_missing
+    message_ro: Precizați dacă există venituri/stagii nevalorificate, declarații rectificative sau stagiu după pensionare.
+  source_claim_ids:
+  - claim.recalc.request_unvalued_periods
+  status: draft
+  required_facts:
+  - recalculation_basis
+- id: rule.recalc.unsupported_request_basis
+  canonical_rule_id: pension_recalculation.unsupported_request_basis
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: not_in
+    field: recalculation_basis
+    values:
+    - unvalued_income
+    - unvalued_stage
+    - assimilated_period
+    - rectifying_declaration
+    - post_retirement_contributions
+  effects:
+  - type: require_confirmation
+    tag: recalculation_basis_not_supported
+    message_ro: Nu a fost identificat un temei de recalculare publicat; clarificați elementul nou ori folosiți traseul procedural
+      potrivit.
+  source_claim_ids:
+  - claim.recalc.request_unvalued_periods
+  status: draft
+  required_facts:
+  - recalculation_basis
+- id: rule.recalc.unvalued_periods
+  canonical_rule_id: pension_recalculation.unvalued_periods
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: in
+    field: recalculation_basis
+    values:
+    - unvalued_income
+    - unvalued_stage
+    - assimilated_period
+  effects:
+  - type: include_step
+    step_id: collect_unvalued_evidence
+  - type: include_step
+    step_id: prepare_recalculation_application
+  - type: emit_advice
+    tag: recalculation_unvalued_route
+    message_ro: Se pregătesc dovezile elementelor nevalorificate la stabilirea inițială.
+  source_claim_ids:
+  - claim.recalc.request_unvalued_periods
+  - claim.recalc.documents
+  status: draft
+- id: rule.recalc.rectifying_declaration
+  canonical_rule_id: pension_recalculation.rectifying_declaration
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: recalculation_basis
+    value: rectifying_declaration
+  effects:
+  - type: include_requirement
+    requirement_id: proof_of_rectifying_declaration
+  - type: include_step
+    step_id: prepare_recalculation_application
+  - type: emit_advice
+    tag: recalculation_rectification_route
+    message_ro: Declarația rectificativă trebuie identificată și legată de perioada modificată.
+  source_claim_ids:
+  - claim.recalc.rectifying_declarations
+  status: draft
+- id: rule.recalc.post_retirement_stage
+  canonical_rule_id: pension_recalculation.post_retirement_stage
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: recalculation_basis
+    value: post_retirement_contributions
+  effects:
+  - type: include_step
+    step_id: verify_annual_recalculation_limit
+  - type: emit_advice
+    tag: post_retirement_stage_route
+    message_ro: Stagiul după pensionare poate fi adăugat o singură dată în anul calendaristic.
+  source_claim_ids:
+  - claim.recalc.post_retirement_once_year
+  status: draft
+- id: rule.recalc.post_retirement_duplicate_year
+  canonical_rule_id: pension_recalculation.post_retirement_duplicate_year
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: recalculation_basis
+      value: post_retirement_contributions
+    - op: eq
+      field: already_requested_this_calendar_year
+      value: true
+  effects:
+  - type: block
+    code: ONCE_PER_CALENDAR_YEAR
+  - type: emit_warning
+    tag: annual_recalculation_limit_reached
+    message_ro: Pentru acest temei a fost deja depusă o cerere în anul calendaristic.
+  source_claim_ids:
+  - claim.recalc.post_retirement_once_year
+  status: draft
+- id: rule.recalc.documents_standard
+  canonical_rule_id: pension_recalculation.documents_standard
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: exists
+    field: recalculation_basis
+  effects:
+  - type: include_requirement
+    requirement_id: annex_16_application
+  - type: include_requirement
+    requirement_id: identity_document
+  - type: attach_channel
+    channel_id: ch.cnpp.online_forms
+  source_claim_ids:
+  - claim.recalc.documents
+  - claim.recalc.official_form
+  status: draft
+- id: rule.recalc.pre_2001_evidence
+  canonical_rule_id: pension_recalculation.pre_2001_evidence
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: period_after_2001_04_01
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: supporting_certificate_meeting_form_requirements
+  - type: emit_advice
+    tag: pre_2001_certificate_route
+    message_ro: Pentru perioada anterioară poate fi necesară adeverința în forma legală.
+  source_claim_ids:
+  - claim.recalc.documents
+  status: draft
+- id: rule.recalc.post_2001_database
+  canonical_rule_id: pension_recalculation.post_2001_database
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: period_after_2001_04_01
+      value: true
+    - op: eq
+      field: data_present_in_cnpp_database
+      value: true
+  effects:
+  - type: exclude_step
+    step_id: obtain_post_2001_stage_certificate
+  - type: emit_advice
+    tag: post_2001_no_certificate
+    message_ro: Pentru datele existente în baza CNPP nu se solicită adeverință de stagiu.
+  source_claim_ids:
+  - claim.recalc.no_certificates_after_2001
+  status: draft
+- id: rule.recalc.post_2001_data_missing
+  canonical_rule_id: pension_recalculation.post_2001_data_missing
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: period_after_2001_04_01
+      value: true
+    - op: eq
+      field: data_present_in_cnpp_database
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: post_2001_database_discrepancy
+    message_ro: Lipsa datelor din baza CNPP trebuie clarificată; nu se presupune automat că nu există stagiu.
+  source_claim_ids:
+  - claim.recalc.no_certificates_after_2001
+  status: draft
+- id: rule.recalc.effect_next_month
+  canonical_rule_id: pension_recalculation.effect_next_month
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: exists
+    field: application_date
+  effects:
+  - type: set_deadline
+    tag: recalculated_rights_next_month
+    value: first_day_of_month_after_application
+    message_ro: Drepturile recalculate încep din luna următoare cererii.
+  source_claim_ids:
+  - claim.recalc.effect_next_month
+  status: draft
+- id: rule.recalc.review_instead
+  canonical_rule_id: pension_recalculation.review_instead
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: issue_type
+    value: wrong_amount_or_payment
+  effects:
+  - type: exclude_step
+    step_id: prepare_recalculation_application
+  - type: include_step
+    step_id: prepare_pension_review_request
+  - type: emit_warning
+    tag: review_not_recalculation
+    message_ro: Situația descrisă indică revizuire, nu adăugarea unor elemente noi.
+  source_claim_ids:
+  - claim.recalc.review_distinct
+  status: draft
+- id: rule.recalc.review_limitation
+  canonical_rule_id: pension_recalculation.review_limitation
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: issue_type
+    value: wrong_amount_or_payment
+  effects:
+  - type: emit_advice
+    tag: review_three_year_limitation
+    message_ro: Diferențele sunt, în principiu, analizate în termenul general de 3 ani de la constatare.
+  source_claim_ids:
+  - claim.recalc.review_limitation
+  status: draft
+- id: rule.recalc.material_error_exception
+  canonical_rule_id: pension_recalculation.material_error_exception
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: material_or_calculation_error
+    value: true
+  effects:
+  - type: emit_advice
+    tag: material_error_limitation_exception
+    message_ro: Pentru sume neplătite din eroare materială sau de calcul există excepția publicată de CNPP.
+  source_claim_ids:
+  - claim.recalc.review_limitation
+  status: draft
+- id: rule.recalc.contest_decision
+  canonical_rule_id: pension_recalculation.contest_decision
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: wants_to_contest_decision
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.administrative_decision_contest
+  - type: set_deadline
+    tag: pension_decision_contest_45_days
+    value: 45_days_from_communication
+    message_ro: Decizia de pensie are termen special de 45 de zile pentru contestare în instanță.
+  source_claim_ids:
+  - claim.recalc.pension_decision_contest_45_days
+  status: draft
+- id: rule.recalc.timisoara_channel
+  canonical_rule_id: pension_recalculation.timisoara_channel
+  event_type_id: life.pension_recalculation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjp_timisoara.contact
+  - type: require_confirmation
+    tag: local_submission_channel_confirmation
+    message_ro: Confirmați canalul concret de depunere la CJP Timiș.
+  source_claim_ids:
+  - claim.recalc.cjp_timisoara_contact
+  status: draft

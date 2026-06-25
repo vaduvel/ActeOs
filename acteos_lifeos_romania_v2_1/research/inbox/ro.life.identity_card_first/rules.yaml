@@ -1,0 +1,342 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_IDENTITY_CARD_FIRST
+event_type_id: life.identity_card_first
+status: draft
+rules:
+- id: rule.idfirst.deadline_15d
+  canonical_rule_id: identity_card_first.deadline_15d
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age_years
+      value: 14
+    - op: exists
+      field: turned_14_at
+  effects:
+  - type: include_step
+    step_id: request_first_identity_card
+  - type: set_deadline
+    step_id: request_first_identity_card
+    value:
+      kind: relative_calendar_days
+      anchor: turned_14_at
+      days: 15
+  source_claim_ids:
+  - claim.id.first.deadline_14_15d
+  status: draft
+  authority_level: national_normative
+  legal_rank: OUG
+  required_facts:
+  - age_years
+  - turned_14_at
+- id: rule.idfirst.minor_accompaniment
+  canonical_rule_id: identity_card_first.minor_accompaniment
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-03-27'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age_years
+      value: 14
+    - op: lt
+      field: age_years
+      value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.parent_or_legal_representative_present
+  source_claim_ids:
+  - claim.id.first.minor_accompanied
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - age_years
+- id: rule.idfirst.docs_14_17
+  canonical_rule_id: identity_card_first.docs_14_17
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2021-03-10'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age_years
+      value: 14
+    - op: lt
+      field: age_years
+      value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.birth_certificate_original
+  - type: include_requirement
+    requirement_id: req.parent_identity_and_address_proof
+  - type: include_requirement
+    requirement_id: req.parental_status_documents_if_applicable
+  source_claim_ids:
+  - claim.id.first.docs_14
+  status: draft
+  authority_level: national_normative
+  legal_rank: HG
+- id: rule.idfirst.docs_after18
+  canonical_rule_id: identity_card_first.docs_after18
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2021-03-10'
+  when:
+    op: gte
+    field: age_years
+    value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.birth_certificate_original
+  - type: include_requirement
+    requirement_id: req.identity_confirmation_declaration
+  - type: include_requirement
+    requirement_id: req.proof_of_domicile
+  source_claim_ids:
+  - claim.id.first.docs_after18
+  status: draft
+  authority_level: national_normative
+  legal_rank: HG
+  required_facts:
+  - age_years
+- id: rule.idfirst.under14_cei
+  canonical_rule_id: identity_card_first.under14_cei
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-04-24'
+  when:
+    op: all
+    args:
+    - op: lt
+      field: age_years
+      value: 14
+    - op: eq
+      field: requested_document
+      value: cei
+  effects:
+  - type: include_step
+    step_id: request_optional_cei_for_child
+  - type: include_requirement
+    requirement_id: req.authorized_parent_or_representative
+  source_claim_ids:
+  - claim.id.first.cei_under14
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - age_years
+  - requested_document
+- id: rule.idfirst.under14_cis_block
+  canonical_rule_id: identity_card_first.under14_cis_block
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-04-24'
+  when:
+    op: all
+    args:
+    - op: lt
+      field: age_years
+      value: 14
+    - op: eq
+      field: requested_document
+      value: cis
+  effects:
+  - type: block
+    tag: cis_not_available_under_14
+    message_ro: Cartea de identitate simplă nu se eliberează înainte de 14 ani.
+  source_claim_ids:
+  - claim.id.first.cis_under14_block
+  status: draft
+  authority_level: national_operational
+- id: rule.idfirst.presence
+  canonical_rule_id: identity_card_first.physical_presence
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-04-24'
+  when:
+    op: eq
+    field: applicant_present
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.applicant_physical_presence
+  - type: block
+    tag: no_filing_by_proxy
+    message_ro: Cererea nu poate fi depusă prin procură specială dacă titularul lipsește.
+  source_claim_ids:
+  - claim.id.first.presence
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - applicant_present
+- id: rule.idfirst.cei_free_window
+  canonical_rule_id: identity_card_first.cei_free_until_2026_06_30
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-04-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: requested_document
+      value: cei
+    - op: gte
+      field: age_years
+      value: 14
+    - op: eq
+      field: is_first_cei
+      value: true
+    - op: date_before
+      field: request_date
+      value: '2026-07-01'
+  effects:
+  - type: emit_advice
+    tag: fee_zero
+    message_ro: Prima CEI este gratuită în această fereastră de finanțare.
+  source_claim_ids:
+  - claim.id.first.fees_2026
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - request_date
+  - requested_document
+  - age_years
+  - is_first_cei
+- id: rule.idfirst.cei_under14_fee
+  canonical_rule_id: identity_card_first.cei_under14_fee_70
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-04-24'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: requested_document
+      value: cei
+    - op: lt
+      field: age_years
+      value: 14
+  effects:
+  - type: emit_advice
+    tag: fee_70_ron
+    message_ro: Contravaloarea CEI pentru minorul sub 14 ani este 70 lei.
+  source_claim_ids:
+  - claim.id.first.fees_2026
+  status: draft
+  authority_level: national_operational
+- id: rule.idfirst.cis_fee
+  canonical_rule_id: identity_card_first.cis_fee_40
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-04-24'
+  when:
+    op: eq
+    field: requested_document
+    value: cis
+  effects:
+  - type: emit_advice
+    tag: fee_40_ron
+    message_ro: Contravaloarea CIS este 40 lei.
+  source_claim_ids:
+  - claim.id.first.fees_2026
+  status: draft
+  authority_level: national_operational
+- id: rule.idfirst.cei_any_spcep
+  canonical_rule_id: identity_card_first.cei_any_spcep
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-08-01'
+  when:
+    op: eq
+    field: requested_document
+    value: cei
+  effects:
+  - type: attach_channel
+    channel_id: ch.hub_cei_any_spcep
+  source_claim_ids:
+  - claim.id.first.channels
+  status: draft
+  authority_level: national_operational
+- id: rule.idfirst.cis_local
+  canonical_rule_id: identity_card_first.cis_local_spcep
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-04-24'
+  when:
+    op: eq
+    field: requested_document
+    value: cis
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcep_domicile
+  - type: emit_warning
+    tag: cis_local_only
+    message_ro: CIS se solicită la serviciul competent pentru domiciliu/reședință.
+  source_claim_ids:
+  - claim.id.first.channels
+  status: draft
+  authority_level: national_operational
+- id: rule.idfirst.delivery
+  canonical_rule_id: identity_card_first.delivery_windows
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2026-04-21'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: delivery_window
+    message_ro: HUB publică timpi medii/maximi diferiți pentru CEI și CIS; nu sunt deadline-uri garantate individual.
+  source_claim_ids:
+  - claim.id.first.delivery
+  status: draft
+  authority_level: national_operational
+- id: rule.idfirst.timisoara
+  canonical_rule_id: identity_card_first.timisoara_channel
+  event_type_id: life.identity_card_first
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: explanatory
+  effective_from: '2026-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dep_timisoara_mihai_eminescu_15
+  source_claim_ids:
+  - claim.id.first.timisoara_channel
+  status: draft
+  authority_level: uat

@@ -1,0 +1,409 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.school_transfer
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: TRF01
+  desc: transfer standard în vacanță
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: ready
+    included_steps:
+    - step.transfer.records
+- id: TRF02
+  desc: fără loc în clasă
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: false
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    isj_exception_approved: false
+  expect:
+    status: blocked
+    blocks:
+    - capacity_unavailable
+- id: TRF03
+  desc: fără loc, cu aprobare ISJ
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: false
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    isj_exception_approved: true
+  expect:
+    status: ready
+    warnings:
+    - isj_capacity_exception
+- id: TRF04
+  desc: schimbare profil
+  facts:
+    student.level: grade10
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: false
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: ready
+    requirements:
+    - req.transfer.difference_results
+- id: TRF05
+  desc: în timpul cursurilor fără excepție
+  facts:
+    student.level: middle
+    reference_date: '2026-10-20'
+    during_school_courses: true
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    exception_reason: none
+  expect:
+    status: blocked
+    blocks:
+    - in_year_without_exception
+- id: TRF06
+  desc: schimbare domiciliu în timpul cursurilor
+  facts:
+    student.level: middle
+    reference_date: '2026-10-20'
+    during_school_courses: true
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    exception_reason: domicile_change
+  expect:
+    status: ready
+    requirements:
+    - req.transfer.exception_proof
+- id: TRF07
+  desc: recomandare medicală
+  facts:
+    student.level: middle
+    reference_date: '2026-10-20'
+    during_school_courses: true
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    exception_reason: medical
+  expect:
+    status: ready
+    requirements:
+    - req.transfer.exception_proof
+- id: TRF08
+  desc: preșcolar în timpul anului
+  facts:
+    student.level: preschool
+    reference_date: '2026-10-20'
+    during_school_courses: true
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: ready
+    warnings:
+    - early_transfer_anytime
+- id: TRF09
+  desc: clasa IX, medie suficientă
+  facts:
+    student.level: grade9
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    admission_average_meets_threshold: true
+  expect:
+    status: ready
+- id: TRF10
+  desc: clasa IX, medie sub prag
+  facts:
+    student.level: grade9
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    admission_average_meets_threshold: false
+  expect:
+    status: blocked
+    blocks:
+    - grade9_average_below_threshold
+- id: TRF11
+  desc: lipsește acordul primitor
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: false
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - ca_decisions_missing
+    warnings:
+    - written_refusal
+- id: TRF12
+  desc: lipsește avizul unității de plecare
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: false
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - ca_decisions_missing
+- id: TRF13
+  desc: ambele decizii lipsesc
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: false
+    outgoing_ca_opinion: false
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - ca_decisions_missing
+- id: TRF14
+  desc: transfer aprobat, situație școlară
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: ready
+    deadlines:
+    - 5_working_days
+    - 10_working_days
+- id: TRF15
+  desc: procedură locală neverificată
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: false
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - institution_procedure_unverified
+- id: TRF16
+  desc: alt UAT
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.is
+    - ro.is.iasi
+- id: TRF17
+  desc: lipsește nivelul elevului
+  facts:
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - student.level
+- id: TRF18
+  desc: lipsește școala primitoare
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: null
+    institution_procedure_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - receiving_school_id
+- id: TRF19
+  desc: lipsește informația despre capacitate
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - receiving_capacity_available
+- id: TRF20
+  desc: lipsește data
+  facts:
+    student.level: middle
+    reference_date: null
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: TRF21
+  desc: dual cu schimbare de calificare
+  facts:
+    student.level: grade11
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: false
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    dual_program: true
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.transfer.difference_results
+    note: consultarea operatorului economic trebuie confirmată
+- id: TRF22
+  desc: refuz verbal numai
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: false
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    refusal_written: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - written_refusal
+- id: TRF23
+  desc: transfer în vacanța de vară cu profil schimbat
+  facts:
+    student.level: grade11
+    reference_date: '2026-08-10'
+    during_school_courses: false
+    same_track_profile: false
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+  expect:
+    status: ready
+    included_steps:
+    - step.transfer.difference_exams
+- id: TRF24
+  desc: cerere după aprobare, fișa nu a sosit
+  facts:
+    student.level: middle
+    reference_date: '2026-07-10'
+    during_school_courses: false
+    same_track_profile: true
+    receiving_capacity_available: true
+    receiving_ca_approved: true
+    outgoing_ca_opinion: true
+    receiving_school_id: school.tm.002
+    institution_procedure_verified: true
+    school_record_received: false
+  expect:
+    status: ready
+    included_steps:
+    - step.transfer.records
+    note: elevul participă ca audient până la primirea situației

@@ -1,0 +1,948 @@
+batch_id: B14_VEHICLE_REGISTRATION
+defaults:
+  alias_event_type_id: ro.life.vehicle_registration
+  event_type_id: life.vehicle_registration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VREG01
+  description: Transcriere uzată indigenă în termen
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG02
+  description: Transcriere cu plăcuțe transferate automat
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: true
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - previous_plates_not_deposited
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    obligations:
+      req.previous_plates_or_substitute: not_required_when_automatic_transfer_confirmed
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG03
+  description: Transcriere după expirarea termenului de 90 de zile
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-01-01'
+    plates_transfer_automatically: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    overdue_steps:
+    - complete_transcription_within_90_days
+    deadlines:
+      complete_transcription_within_90_days: '2026-04-01'
+- id: VREG04
+  description: Utilizatorul încearcă radierea înaintea transcrierii
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+    attempting_deregistration: true
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    warnings:
+    - domestic_transfer_does_not_require_deregistration
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG05
+  description: Vehicul nou cumpărat în România
+  facts:
+    registration_case: new_domestic
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: null
+    acquisition_date: null
+    plates_transfer_automatically: null
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_vehicle_at_local_tax_authority
+    - submit_new_domestic_registration
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: VREG06
+  description: Vehicul nou importat din UE, solicitant neînregistrat TVA
+  facts:
+    registration_case: new_imported
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: null
+    acquisition_date: null
+    plates_transfer_automatically: false
+    origin_region: eu
+    vat_registered: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_vehicle_at_local_tax_authority
+    - submit_new_imported_registration
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.intracommunity_vehicle_vat_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: VREG07
+  description: Vehicul nou importat din afara UE
+  facts:
+    registration_case: new_imported
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: null
+    acquisition_date: null
+    plates_transfer_automatically: false
+    origin_region: non_eu
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_vehicle_at_local_tax_authority
+    - submit_new_imported_registration
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.customs_clearance_and_import_tax_evidence
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - customs_document_set
+- id: VREG08
+  description: Vehicul uzat importat din UE
+  facts:
+    registration_case: used_imported
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: null
+    plates_transfer_automatically: false
+    origin_region: eu
+    vat_registered: true
+    foreign_registration_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_used_imported_registration
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: VREG09
+  description: Vehicul uzat importat fără acte străine
+  facts:
+    registration_case: used_imported
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: null
+    plates_transfer_automatically: false
+    origin_region: eu
+    vat_registered: true
+    foreign_registration_documents_available: false
+  expect:
+    status: blocked
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_used_imported_registration
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: VREG10
+  description: Transcriere online în Timiș
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: online
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG11
+  description: Înmatriculare nouă declarată online
+  facts:
+    registration_case: new_domestic
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: online
+    rca_valid: true
+    civ_valid: true
+    itp_valid: null
+    acquisition_date: null
+    plates_transfer_automatically: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_vehicle_at_local_tax_authority
+    - submit_new_domestic_registration
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - online_service_availability_for_case
+- id: VREG12
+  description: Act de proprietate neînregistrat fiscal
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: false
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: blocked
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG13
+  description: RCA nevalabilă
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: false
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: blocked
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG14
+  description: CIV nevalabilă
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: false
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: blocked
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG15
+  description: ITP nevalabilă la transcriere
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: false
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: blocked
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG16
+  description: Persoană juridică prin delegat
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: company_delegate
+    applicant_type: company
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG17
+  description: Plată în afara SNEP
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: false
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    - req.registration_and_plate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG18
+  description: Solicitant din Cluj
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: CJ
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    confirmations:
+    - local_channel_outside_pilot
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG19
+  description: Lipsește cazul de înmatriculare
+  facts:
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    requirements:
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - registration_case
+- id: VREG20
+  description: Lipsește județul
+  facts:
+    registration_case: ownership_transcription
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    missing_facts:
+    - applicant_county
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG21
+  description: Lipsește reprezentarea
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - representation_type
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'
+- id: VREG22
+  description: Transcriere prin avocat
+  facts:
+    registration_case: ownership_transcription
+    applicant_county: TM
+    representation_type: lawyer
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    acquisition_date: '2026-06-01'
+    plates_transfer_automatically: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_registration_case
+    - prepare_competent_service_application
+    - declare_acquisition_at_local_tax_authority
+    - submit_ownership_transcription
+    - complete_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner
+    - req.previous_plates_or_substitute
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      complete_transcription_within_90_days: '2026-08-30'

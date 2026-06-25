@@ -1,0 +1,358 @@
+batch_id: B09_PUBLIC_DOMAIN_OCCUPATION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.public_domain_occupation
+  event_alias: ro.life.public_domain_occupation
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: schelă, persoană fizică, Timișoara
+  facts: &id001
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - classify_public_domain_occupation
+    - select_timisoara_occupation_case
+    - upload_case_documents
+    - submit_occupation_request
+    confirmations:
+    - case_specific_occupation_documents
+    - current_occupation_charge
+    - occupation_processing_time
+  reference_date: '2026-06-25'
+- id: F02
+  desc: organizare de șantier
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: construction_site
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_timisoara_occupation_case
+  reference_date: '2026-06-25'
+- id: F03
+  desc: schelă și organizare de șantier
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold_and_construction_site
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_timisoara_occupation_case
+  reference_date: '2026-06-25'
+- id: F04
+  desc: tip de ocupare neacoperit de pagina verificată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: commercial_terrace
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - occupation_type_outside_portal_cases
+  reference_date: '2026-06-25'
+- id: F05
+  desc: persoană juridică
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: legal_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - classify_public_domain_occupation
+  reference_date: '2026-06-25'
+- id: F06
+  desc: fără autorizație de construire
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: false
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - case_specific_occupation_documents
+  reference_date: '2026-06-25'
+- id: F07
+  desc: zonă istorică/protejată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: true
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - case_specific_occupation_documents
+  reference_date: '2026-06-25'
+- id: F08
+  desc: plata solicitată, neachitată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: true
+    payment_completed: false
+  expect:
+    status: blocked
+    included_steps:
+    - pay_assessed_occupation_charge
+    blocks:
+    - agreement_waits_for_payment
+  reference_date: '2026-06-25'
+- id: F09
+  desc: plata efectuată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: true
+    payment_completed: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - download_public_domain_agreement
+  reference_date: '2026-06-25'
+- id: F10
+  desc: plata nu a fost încă solicitată
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    not_included:
+    - pay_assessed_occupation_charge
+    - download_public_domain_agreement
+  reference_date: '2026-06-25'
+- id: F11
+  desc: UAT Cluj
+  facts:
+    jurisdiction_id: ro.cj.cluj
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - other_uat_occupation_procedure
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F12
+  desc: lipsește jurisdicția
+  facts:
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+  reference_date: '2026-06-25'
+- id: F13
+  desc: lipsește tipul solicitantului
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_type
+  reference_date: '2026-06-25'
+- id: F14
+  desc: lipsește tipul ocupării
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - occupation_type
+  reference_date: '2026-06-25'
+- id: F15
+  desc: starea autorizației necunoscută
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_building_authorisation
+  reference_date: '2026-06-25'
+- id: F16
+  desc: statut zonă protejată necunoscut
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_historic_or_protected_area
+  reference_date: '2026-06-25'
+- id: F17
+  desc: perioadă de ocupare viitoare
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+    occupation_start: '2026-08-01'
+    occupation_end: '2026-08-10'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_occupation_request
+  reference_date: '2026-06-25'
+- id: F18
+  desc: perioadă deja începută
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+    occupation_start: '2026-06-20'
+    occupation_end: '2026-06-30'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - occupation_processing_time
+    note: Nu se inventează posibilitatea unei autorizări retroactive.
+  reference_date: '2026-06-25'
+- id: F19
+  desc: cerere cu durată lipsă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+    occupation_start: '2026-07-01'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - case_specific_occupation_documents
+  reference_date: '2026-06-25'
+- id: F20
+  desc: acord pretins fără dovada plății
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: true
+    payment_completed: false
+    agreement_received: true
+  expect:
+    status: blocked
+    blocks:
+    - agreement_waits_for_payment
+  reference_date: '2026-06-25'
+- id: F21
+  desc: ocupare în afara domeniului public
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+    is_public_domain: false
+  expect:
+    status: needs_confirmation
+    note: Trebuie reclasificat; pagina analizată privește domeniul public.
+  reference_date: '2026-06-25'
+- id: F22
+  desc: ocupare în alt stat
+  facts:
+    jurisdiction_id: it.mi.milano
+    applicant_type: natural_person
+    occupation_type: scaffold
+    has_building_authorisation: true
+    is_historic_or_protected_area: false
+    payment_requested_after_review: false
+    payment_completed: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - other_uat_occupation_procedure
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - it
+  - it.mi
+  - it.mi.milano

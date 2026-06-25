@@ -1,0 +1,484 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_BOUGHT_NEW_VEHICLE
+alias_event_type_id: ro.life.bought_new_vehicle
+event_type_id: life.bought_new_vehicle
+status: draft
+required_facts:
+- applicant_type
+- applicant_county
+- representation_type
+- ownership_document_registered_local_tax
+rules:
+- id: rule.bought_new_vehicle.base.route
+  canonical_rule_id: bought_new_vehicle.base.route
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: declare_vehicle_at_local_tax_authority
+  - type: include_step
+    step_id: prepare_new_vehicle_registration_file
+  - type: include_step
+    step_id: submit_registration_application
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.valid_rca_copy_owner_name
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.bought_new_vehicle.competent_service
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.new.authenticity_exempt
+  canonical_rule_id: bought_new_vehicle.new.authenticity_exempt
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: new_vehicle_authenticity_exempt
+    message_ro: Vehiculul nou este exceptat de la certificatul de autenticitate pentru prima înmatriculare în România.
+  source_claim_ids:
+  - claim.bought_new_vehicle.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.bought_new_vehicle.local_tax.atlas_timis
+  canonical_rule_id: bought_new_vehicle.local_tax.atlas_timis
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: tax_locality
+      value: timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.dfmt_atlas
+  - type: emit_advice
+    tag: dfmt_atlas_current_channel
+    message_ro: În Timișoara, declararea fiscală a vehiculului este direcționată momentan către platforma Atlas.
+  source_claim_ids:
+  - claim.bought_new_vehicle.dfmt_vehicle_declaration
+  status: draft
+- id: rule.bought_new_vehicle.fiscal.registered
+  canonical_rule_id: bought_new_vehicle.fiscal.registered
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: ownership_document_registered_local_tax
+    value: true
+  effects:
+  - type: emit_advice
+    tag: ownership_document_fiscally_registered
+    message_ro: Actul de proprietate trebuie să figureze în evidențele organului fiscal local înaintea depunerii
+      dosarului.
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  - claim.bought_new_vehicle.buyer_fiscal_2026
+  status: draft
+- id: rule.bought_new_vehicle.fiscal.not_registered
+  canonical_rule_id: bought_new_vehicle.fiscal.not_registered
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: ownership_document_registered_local_tax
+    value: false
+  effects:
+  - type: block
+    code: ownership_not_registered_local_tax
+    message_ro: Înregistrarea fiscală a actului de proprietate nu este confirmată; dosarul nu trebuie prezentat
+      ca pregătit pentru înmatriculare.
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.fiscal.timis_counter_no_extra_doc
+  canonical_rule_id: bought_new_vehicle.fiscal.timis_counter_no_extra_doc
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: counter
+    - op: eq
+      field: ownership_document_registered_local_tax
+      value: true
+  effects:
+  - type: emit_advice
+    tag: timis_counter_fiscal_document_rule
+    message_ro: În Timiș, pentru înmatriculare la ghișeu, actul de proprietate înregistrat fiscal poate evita depunerea
+      unui certificat fiscal separat, conform clarificării din 2026.
+  source_claim_ids:
+  - claim.bought_new_vehicle.timis_fiscal_2026
+  status: draft
+- id: rule.bought_new_vehicle.leasing.document
+  canonical_rule_id: bought_new_vehicle.leasing.document
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: acquisition_form
+    value: leasing
+  effects:
+  - type: include_requirement
+    requirement_id: req.lease_contract_extract_with_required_data
+  - type: include_requirement
+    requirement_id: req.local_tax_declaration_for_mandated_holder
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.payment.fees
+  canonical_rule_id: bought_new_vehicle.payment.fees
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: registration_certificate_fee_49
+    message_ro: Contravaloarea publicată a certificatului de înmatriculare este 49 lei.
+  - type: emit_advice
+    tag: standard_plate_a_pair_fee_52
+    message_ro: Pentru o pereche de plăcuțe tip A este publicată valoarea de 52 lei.
+  source_claim_ids:
+  - claim.bought_new_vehicle.fee_certificate
+  - claim.bought_new_vehicle.fee_plate_a_pair
+  status: draft
+- id: rule.bought_new_vehicle.plate.preferential
+  canonical_rule_id: bought_new_vehicle.plate.preferential
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_choice
+    value: preferential
+  effects:
+  - type: emit_advice
+    tag: preferential_combination_fee_45
+    message_ro: Combinația preferențială are valoarea publicată de 45 lei, la care se adaugă plăcuțele.
+  - type: include_requirement
+    requirement_id: req.preferential_combination_payment
+  source_claim_ids:
+  - claim.bought_new_vehicle.fee_preferential
+  status: draft
+- id: rule.bought_new_vehicle.plate.type_b
+  canonical_rule_id: bought_new_vehicle.plate.type_b
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_type
+    value: B
+  effects:
+  - type: emit_advice
+    tag: plate_type_b_fee_27
+    message_ro: Valoarea publicată pentru o plăcuță tip B este 27 lei.
+  source_claim_ids:
+  - claim.bought_new_vehicle.fee_plate_b
+  status: draft
+- id: rule.bought_new_vehicle.plate.type_c
+  canonical_rule_id: bought_new_vehicle.plate.type_c
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_type
+    value: C
+  effects:
+  - type: emit_advice
+    tag: plate_type_c_fee_22
+    message_ro: Valoarea publicată pentru o plăcuță tip C este 22 lei.
+  source_claim_ids:
+  - claim.bought_new_vehicle.fee_plate_c
+  status: draft
+- id: rule.bought_new_vehicle.rca.invalid
+  canonical_rule_id: bought_new_vehicle.rca.invalid
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: rca_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_rca
+    message_ro: RCA valabilă pe numele proprietarului este o condiție a dosarului.
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.civ.invalid
+  canonical_rule_id: bought_new_vehicle.civ.invalid
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: civ_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_civ
+    message_ro: CIV valabilă este o condiție a înmatriculării.
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.wrong.route
+  canonical_rule_id: bought_new_vehicle.wrong.route
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: vehicle_is_new
+    value: false
+  effects:
+  - type: block
+    code: not_a_new_vehicle
+    message_ro: Acest traseu este numai pentru vehicul nou cumpărat în România; selectează ruta pentru vehicul uzat/transcriere
+      ori import.
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.circulation.before_registration
+  canonical_rule_id: bought_new_vehicle.circulation.before_registration
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: circulation_before_registration
+    value: true
+  effects:
+  - type: emit_warning
+    tag: must_register_before_circulation
+    message_ro: Vehiculul supus înmatriculării trebuie înmatriculat înainte de punerea în circulație; pentru deplasare
+      anterioară verifică ruta autorizației provizorii.
+  - type: trigger_child_event
+    event_type_id: life.temporary_vehicle_authorisation
+  source_claim_ids:
+  - claim.bought_new_vehicle.registration_before_circulation
+  status: draft
+- id: rule.bought_new_vehicle.identity.individual
+  canonical_rule_id: bought_new_vehicle.identity.individual
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.bought_new_vehicle.representation_forms
+  status: draft
+- id: rule.bought_new_vehicle.identity.company
+  canonical_rule_id: bought_new_vehicle.identity.company
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.bought_new_vehicle.representation_forms
+  status: draft
+- id: rule.bought_new_vehicle.representation.lawyer
+  canonical_rule_id: bought_new_vehicle.representation.lawyer
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.bought_new_vehicle.representation_forms
+  status: draft
+- id: rule.bought_new_vehicle.representation.authorized_individual
+  canonical_rule_id: bought_new_vehicle.representation.authorized_individual
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.bought_new_vehicle.representation_forms
+  status: draft
+- id: rule.bought_new_vehicle.representation.company_delegate
+  canonical_rule_id: bought_new_vehicle.representation.company_delegate
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.bought_new_vehicle.representation_forms
+  status: draft
+- id: rule.bought_new_vehicle.payment.proof
+  canonical_rule_id: bought_new_vehicle.payment.proof
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.registration_and_plate_payment_proof
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.payment.snep
+  canonical_rule_id: bought_new_vehicle.payment.snep
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: true
+  effects:
+  - type: emit_advice
+    tag: snep_payment_proof_exception
+    message_ro: Dovada plății nu se depune atunci când plata este identificată prin SNEP, potrivit procedurii publicate.
+  source_claim_ids:
+  - claim.bought_new_vehicle.new_domestic_docs
+  status: draft
+- id: rule.bought_new_vehicle.channel.timis
+  canonical_rule_id: bought_new_vehicle.channel.timis
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_verified_channel
+    message_ro: Pentru pilotul Timiș este publicat canalul SPCRPCIV Timiș și legătura DGPCI pentru programare/informare.
+  source_claim_ids:
+  - claim.bought_new_vehicle.timis_contact
+  status: draft
+- id: rule.bought_new_vehicle.channel.other_county
+  canonical_rule_id: bought_new_vehicle.channel.other_county
+  event_type_id: life.bought_new_vehicle
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și particularitățile locale pentru înmatriculare în județul competent.
+  source_claim_ids:
+  - claim.bought_new_vehicle.competent_service
+  status: draft

@@ -1,0 +1,307 @@
+batch_id: B03_PARENTAL_AUTHORITY_CHANGE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.parental_authority_change
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: P01
+  desc: Copil sub 14 ani, ambii părinți, acord
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - request_child_cei_under14
+    requirements:
+    - req.child_birth_certificate
+    - req.requesting_adult_identity_document
+    - req.both_parents_request_or_consent
+    channels:
+    - ch.mai.cei
+- id: P02
+  desc: Nu se solicită CEI
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    request_child_cei: false
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - no_child_cei_action_requested
+    included_steps: []
+- id: P03
+  desc: Copil de 14 ani
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 14
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - request_identity_document_age14plus
+    advice_tags:
+    - use_age14plus_identity_route
+    channels:
+    - ch.mai.cei
+- id: P04
+  desc: Părinte supraviețuitor
+  facts:
+    authority_basis: surviving_parent
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.other_parent_death_certificate
+- id: P05
+  desc: Autoritate exclusivă prin hotărâre definitivă
+  facts:
+    authority_basis: sole_final_judgment
+    court_document_final: true
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.final_parental_authority_judgment
+- id: P06
+  desc: Autoritate exclusivă invocată fără document final
+  facts:
+    authority_basis: sole_final_judgment
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: blocked
+- id: P07
+  desc: Hotărâre definitivă privind încredințarea/custodia
+  facts:
+    authority_basis: custody_final_judgment
+    court_document_final: true
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.final_parental_authority_judgment
+- id: P08
+  desc: Ordonanță președințială utilizabilă
+  facts:
+    authority_basis: presidential_order
+    court_document_final: true
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.presidential_order_express_cei_authorization
+    needs_confirmation:
+    - confirm_presidential_order_express_clause
+- id: P09
+  desc: Ordonanță președințială neconfirmată ca utilizabilă
+  facts:
+    authority_basis: presidential_order
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: blocked
+- id: P10
+  desc: Părinți în dezacord fără hotărâre
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: blocked
+    requirements:
+    - req.final_court_judgment_resolving_parental_disagreement
+    warnings_present:
+    - parental_disagreement_requires_final_judgment
+- id: P11
+  desc: Dezacord rezolvat prin hotărâre definitivă
+  facts:
+    authority_basis: joint_parents
+    court_document_final: true
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.final_court_judgment_resolving_parental_disagreement
+- id: P12
+  desc: Temei nemapat
+  facts:
+    authority_basis: other
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_parental_authority_basis
+- id: P13
+  desc: Domiciliu în alt UAT, canal CEI național
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels:
+    - ch.mai.cei
+- id: P14
+  desc: Copil de 13 ani rămâne pe ruta sub 14
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 13
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - request_child_cei_under14
+- id: P15
+  desc: Limita exactă de 14 ani schimbă ruta
+  facts:
+    authority_basis: surviving_parent
+    court_document_final: false
+    child_age: 14
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - request_identity_document_age14plus
+    requirements_absent:
+    - req.other_parent_death_certificate
+- id: P16
+  desc: Lipsește faptul obligatoriu authority_basis
+  facts:
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - authority_basis
+- id: P17
+  desc: Lipsește faptul obligatoriu court_document_final
+  facts:
+    authority_basis: joint_parents
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - court_document_final
+- id: P18
+  desc: Lipsește faptul obligatoriu child_age
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    request_child_cei: true
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - child_age
+- id: P19
+  desc: Lipsește faptul obligatoriu request_child_cei
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    parents_disagree: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_child_cei
+- id: P20
+  desc: Lipsește faptul obligatoriu parents_disagree
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - parents_disagree
+- id: P21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    authority_basis: joint_parents
+    court_document_final: false
+    child_age: 8
+    request_child_cei: true
+    parents_disagree: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: P22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - authority_basis
+    - court_document_final
+    - child_age
+    - request_child_cei
+    - parents_disagree
+    - territory_id

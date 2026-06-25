@@ -1,0 +1,397 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.pension_recalculation
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: venit nevalorificat înainte de pensionare
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - collect_unvalued_evidence
+    - prepare_recalculation_application
+    requirements:
+    - annex_16_application
+    - identity_document
+    - supporting_certificate_meeting_form_requirements
+    emitted_tags:
+    - recalculation_unvalued_route
+    - pre_2001_certificate_route
+  id: ro.life.pension_recalculation.F01
+- title: stagiu nevalorificat
+  facts:
+    recalculation_basis: unvalued_stage
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - collect_unvalued_evidence
+    emitted_tags:
+    - recalculation_unvalued_route
+  id: ro.life.pension_recalculation.F02
+- title: perioadă asimilată nevalorificată
+  facts:
+    recalculation_basis: assimilated_period
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - collect_unvalued_evidence
+    emitted_tags:
+    - recalculation_unvalued_route
+  id: ro.life.pension_recalculation.F03
+- title: declarație rectificativă
+  facts:
+    recalculation_basis: rectifying_declaration
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - proof_of_rectifying_declaration
+    emitted_tags:
+    - recalculation_rectification_route
+  id: ro.life.pension_recalculation.F04
+- title: stagiu după pensionare prima cerere din an
+  facts:
+    recalculation_basis: post_retirement_contributions
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - verify_annual_recalculation_limit
+    emitted_tags:
+    - post_retirement_stage_route
+  id: ro.life.pension_recalculation.F05
+- title: stagiu după pensionare a doua cerere în același an
+  facts:
+    recalculation_basis: post_retirement_contributions
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: true
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - annual_recalculation_limit_reached
+  id: ro.life.pension_recalculation.F06
+- title: perioadă anterioară lui 1 aprilie 2001
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - supporting_certificate_meeting_form_requirements
+    emitted_tags:
+    - pre_2001_certificate_route
+  id: ro.life.pension_recalculation.F07
+- title: perioadă după 1 aprilie 2001 prezentă în baza CNPP
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: true
+    data_present_in_cnpp_database: true
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - obtain_post_2001_stage_certificate
+    emitted_tags:
+    - post_2001_no_certificate
+  id: ro.life.pension_recalculation.F08
+- title: perioadă după 2001 absentă din baza CNPP
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: true
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - post_2001_database_discrepancy
+  id: ro.life.pension_recalculation.F09
+- title: cerere înregistrată pe 25 iunie
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - recalculated_rights_next_month
+  id: ro.life.pension_recalculation.F10
+- title: diferență între suma plătită și suma legală
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: wrong_amount_or_payment
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_pension_review_request
+    included_steps_absent:
+    - prepare_recalculation_application
+    emitted_tags:
+    - review_not_recalculation
+    - review_three_year_limitation
+  id: ro.life.pension_recalculation.F11
+- title: eroare materială de redactare
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: wrong_amount_or_payment
+    material_or_calculation_error: true
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - review_not_recalculation
+    - material_error_limitation_exception
+  id: ro.life.pension_recalculation.F12
+- title: eroare de calcul
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: wrong_amount_or_payment
+    material_or_calculation_error: true
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - material_error_limitation_exception
+  id: ro.life.pension_recalculation.F13
+- title: spor permanent nevalorificat
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - supporting_certificate_meeting_form_requirements
+    emitted_tags:
+    - recalculation_unvalued_route
+  id: ro.life.pension_recalculation.F14
+- title: grupă de muncă nevalorificată
+  facts:
+    recalculation_basis: unvalued_stage
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - collect_unvalued_evidence
+    emitted_tags:
+    - pre_2001_certificate_route
+  id: ro.life.pension_recalculation.F15
+- title: adeverință fără condiții de formă confirmate
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    requirements:
+    - supporting_certificate_meeting_form_requirements
+    emitted_tags:
+    - recalculation_unvalued_route
+  id: ro.life.pension_recalculation.F16
+- title: contestă decizia de recalculare
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - pension_decision_contest_45_days
+  id: ro.life.pension_recalculation.F17
+- title: nu are element nou, doar vrea majorare generică
+  facts:
+    recalculation_basis: none
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - recalculation_basis_not_supported
+  id: ro.life.pension_recalculation.F18
+- title: cerere pentru pensie anticipată, nu recalculare
+  facts:
+    recalculation_basis: early_retirement
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+  id: ro.life.pension_recalculation.F19
+- title: domiciliu Timișoara
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - local_submission_channel_confirmation
+  id: ro.life.pension_recalculation.F20
+- title: domiciliu în alt județ
+  facts:
+    recalculation_basis: unvalued_income
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.bv.brasov
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_recalculation_application
+    included_steps_absent:
+    - ch.cjp_timisoara.contact
+  id: ro.life.pension_recalculation.F21
+- title: lipsește temeiul cererii
+  facts:
+    period_after_2001_04_01: false
+    data_present_in_cnpp_database: false
+    already_requested_this_calendar_year: false
+    issue_type: new_evidence
+    material_or_calculation_error: false
+    application_date: '2026-06-25'
+    wants_to_contest_decision: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - recalculation_basis_missing
+    missing_facts:
+    - recalculation_basis
+  id: ro.life.pension_recalculation.F22

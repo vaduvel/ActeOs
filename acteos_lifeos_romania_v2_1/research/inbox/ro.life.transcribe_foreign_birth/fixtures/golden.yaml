@@ -1,0 +1,742 @@
+batch_id: B02_TRANSCRIBE_FOREIGN_BIRTH
+defaults:
+  event_type_id: ro.life.transcribe_foreign_birth
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.tfb.001
+  desc: Copil român, naștere înregistrată în UE, domiciliu Timișoara.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.002
+  desc: Persoana nu este cetățean român.
+  facts:
+    subject_romanian_status: not_romanian
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: blocked
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.parent_or_legal_representative_application
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - transcription_not_recognition
+    channels:
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.003
+  desc: Cetățenia română este incertă.
+  facts:
+    subject_romanian_status: uncertain
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: blocked
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.parent_or_legal_representative_application
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - transcription_not_recognition
+    channels:
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - prove_romanian_status
+    - timisoara_archived_page_recheck
+- id: fx.tfb.004
+  desc: Nașterea nu a fost înregistrată la autoritatea străină.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: false
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: blocked
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.parent_or_legal_representative_application
+    advice_tags:
+    - eu_no_apostille_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - transcription_not_recognition
+    channels:
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.005
+  desc: Depunere din străinătate pentru cetățean român de la naștere.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: abroad
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_birth_transcription
+    - file_at_romanian_mission_or_consulate
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - eu_no_apostille_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.romanian_mission
+- id: fx.tfb.006
+  desc: Adult fără domiciliu anterior în România, rută obișnuită Sector 1.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: false
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    subject_age: 30
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_birth_transcription
+    - file_sector1_bucharest
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.proof_romanian_citizenship
+    - req.subject_application_assisted_as_applicable
+    advice_tags:
+    - eu_no_apostille_local
+    - minor_14_plus_local
+    - sector1_60d
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_not_recognition
+- id: fx.tfb.007
+  desc: Art. 10/11 fără domiciliu anterior, depunere în România.
+  facts:
+    subject_romanian_status: acquired_or_reacquired
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: false
+    citizenship_basis: art10_11
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    subject_age: 30
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_birth_transcription
+    - file_bucharest_sector_or_county_seat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.proof_romanian_citizenship
+    - req.subject_application_assisted_as_applicable
+    advice_tags:
+    - art10_11_ro_60d
+    - eu_no_apostille_local
+    - minor_14_plus_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_not_recognition
+- id: fx.tfb.008
+  desc: Art. 10/11 fără domiciliu anterior, depunere consulară.
+  facts:
+    subject_romanian_status: acquired_or_reacquired
+    foreign_event_registered: true
+    applicant_location: abroad
+    ever_domiciled_ro: false
+    citizenship_basis: art10_11
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    subject_age: 30
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_birth_transcription
+    - file_personally_at_competent_mission
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.proof_romanian_citizenship
+    - req.subject_application_assisted_as_applicable
+    advice_tags:
+    - art10_11_consular_90d
+    - eu_no_apostille_local
+    - minor_14_plus_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.romanian_mission
+- id: fx.tfb.009
+  desc: Document standard din stat parte la Convenția Apostilei, non-UE.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: hague_non_eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.apostille
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.010
+  desc: Document standard din stat non-Haga.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: non_hague
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    - req.supralegalisation
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.011
+  desc: Statul emitent nu este clasificat.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: unknown
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - document_formality_country_check
+    - timisoara_archived_page_recheck
+- id: fx.tfb.012
+  desc: Extras multilingv eligibil Convenția de la Viena.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: multilingual_vienna
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    - vienna_no_apostille_translation
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.013
+  desc: Document electronic străin.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: electronic
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - electronic_document_acceptance
+    - timisoara_archived_page_recheck
+- id: fx.tfb.014
+  desc: Document cu rubrici lipsă.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: incomplete
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.additional_authentic_evidence_for_missing_fields
+    - req.foreign_birth_certificate_or_extract_original
+    - req.parent_or_legal_representative_application
+    - req.proof_romanian_citizenship
+    advice_tags:
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - missing_fields_evidence
+    - timisoara_archived_page_recheck
+- id: fx.tfb.015
+  desc: Minor de 14 ani, depunere în nume propriu asistat.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 14
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.proof_romanian_citizenship
+    - req.subject_application_assisted_as_applicable
+    advice_tags:
+    - eu_no_apostille_local
+    - minor_14_plus_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.016
+  desc: Persoană cu ultimul domiciliu în Timișoara.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: last_domicile
+    subject_age: 30
+  expect:
+    status: ok
+    included_steps:
+    - book_timisoara_online_appointment
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.proof_romanian_citizenship
+    - req.subject_application_assisted_as_applicable
+    advice_tags:
+    - eu_no_apostille_local
+    - minor_14_plus_local
+    - timisoara_30d_no_fee
+    warnings_present:
+    - deadline_anchor_conflict
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    - ch.timisoara_civil_status
+    needs_confirmation:
+    - deadline_anchor_authority_confirmation
+    - timisoara_archived_page_recheck
+- id: fx.tfb.017
+  desc: Depunere în alt UAT; canalul Timișoara nu apare.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: none
+    subject_age: 30
+  expect:
+    status: ok
+    included_steps:
+    - classify_foreign_birth_transcription
+    - file_at_domicile_or_last_domicile_uat
+    - prepare_foreign_birth_transcription
+    requirements:
+    - req.authenticated_romanian_translation
+    - req.foreign_birth_certificate_or_extract_original
+    - req.proof_romanian_citizenship
+    - req.subject_application_assisted_as_applicable
+    advice_tags:
+    - eu_no_apostille_local
+    - minor_14_plus_local
+    warnings_present:
+    - request_within_6m_normative
+    - transcription_not_recognition
+    channels:
+    - ch.local_civil_status
+    channels_absent:
+    - ch.timisoara_civil_status
+- id: fx.tfb.018
+  desc: Lipsește faptul obligatoriu `subject_romanian_status`.
+  facts:
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - subject_romanian_status
+- id: fx.tfb.019
+  desc: Lipsește faptul obligatoriu `foreign_event_registered`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - foreign_event_registered
+- id: fx.tfb.020
+  desc: Lipsește faptul obligatoriu `applicant_location`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_location
+- id: fx.tfb.021
+  desc: Lipsește faptul obligatoriu `ever_domiciled_ro`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - ever_domiciled_ro
+- id: fx.tfb.022
+  desc: Lipsește faptul obligatoriu `citizenship_basis`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizenship_basis
+- id: fx.tfb.023
+  desc: Lipsește faptul obligatoriu `document_format`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    issuing_country_group: eu
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_format
+- id: fx.tfb.024
+  desc: Lipsește faptul obligatoriu `issuing_country_group`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    timisoara_connection: domicile
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issuing_country_group
+- id: fx.tfb.025
+  desc: Lipsește faptul obligatoriu `timisoara_connection`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    subject_age: 10
+  expect:
+    status: needs_facts
+    missing_facts:
+    - timisoara_connection
+- id: fx.tfb.026
+  desc: Lipsește faptul obligatoriu `subject_age`.
+  facts:
+    subject_romanian_status: romanian_at_birth
+    foreign_event_registered: true
+    applicant_location: romania
+    ever_domiciled_ro: true
+    citizenship_basis: birth
+    document_format: standard
+    issuing_country_group: eu
+    timisoara_connection: domicile
+  expect:
+    status: needs_facts
+    missing_facts:
+    - subject_age
+- id: fx.tfb.027
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - subject_romanian_status
+    - foreign_event_registered
+    - applicant_location
+    - ever_domiciled_ro
+    - citizenship_basis
+    - document_format
+    - issuing_country_group
+    - timisoara_connection
+    - subject_age

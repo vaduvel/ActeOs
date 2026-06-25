@@ -1,0 +1,445 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.vehicle_leasing_end
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VLE01
+  desc: final de leasing, dosar pregătit la ghișeu
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    included_steps:
+    - step.vle.submit_transcription
+- id: VLE02
+  desc: flux online cu certificat fiscal
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: online
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.vle.tax_certificate_online
+    channels:
+    - ch.vle.dgpci
+- id: VLE03
+  desc: flux online fără certificat fiscal
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: online
+    tax_clearance_certificate_available: false
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - online_fiscal_certificate_missing
+- id: VLE04
+  desc: documentul nu este încă în evidența fiscală
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: false
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - local_tax_registration_missing
+- id: VLE05
+  desc: finanțatorul nu a predat actul final
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: false
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - lessor_final_documents_unverified
+- id: VLE06
+  desc: ITP expirat și utilizare pe drum public
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: expired
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_itp_invalid
+- id: VLE07
+  desc: ITP anulat
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: cancelled
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_itp_invalid
+- id: VLE08
+  desc: RCA expirată
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: expired
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_rca_invalid
+- id: VLE09
+  desc: ITP necunoscut
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: unknown
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_itp_rca_before_driving
+- id: VLE10
+  desc: RCA necunoscută
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: unknown
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_itp_rca_before_driving
+- id: VLE11
+  desc: carte electronică de identitate
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - eid_no_separate_domicile_certificate
+- id: VLE12
+  desc: alt UAT decât Timișoara
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Lugoj
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_local_fiscal_route
+- id: VLE13
+  desc: ziua dobândirii
+  facts:
+    acquisition_date: '2026-06-25'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    deadlines:
+    - 90_calendar_days_from_acquisition
+- id: VLE14
+  desc: ziua 89 de la dobândire
+  facts:
+    acquisition_date: '2026-03-28'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - transcription_deadline_90_days
+- id: VLE15
+  desc: ziua 90 de la dobândire
+  facts:
+    acquisition_date: '2026-03-27'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - transcription_deadline_90_days
+- id: VLE16
+  desc: după termenul de 90 de zile
+  facts:
+    acquisition_date: '2026-03-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    warnings:
+    - transcription_deadline_90_days
+- id: VLE17
+  desc: nu intenționează să circule, dar ITP expirat
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: expired
+    plans_public_road_use: false
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - itp_invalid_keep_off_public_road
+- id: VLE18
+  desc: nu intenționează să circule, RCA expirată
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: expired
+    itp_status: valid
+    plans_public_road_use: false
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_invalid_keep_off_public_road
+- id: VLE19
+  desc: online înainte de 4 martie 2026
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: online
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-03-03'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_local_fiscal_route
+- id: VLE20
+  desc: la ghișeu cu document fiscal înregistrat
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.vle.timis_appointment
+- id: VLE21
+  desc: bon de ordine în Timiș
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    included_steps:
+    - step.vle.book_timis
+- id: VLE22
+  desc: RCA și ITP valide, fără folosire imediată
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: false
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    included_steps:
+    - step.vle.submit_transcription
+- id: VLE23
+  desc: două incertitudini tehnice
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: in_person
+    tax_clearance_certificate_available: true
+    target_uat: Timișoara
+    rca_status: unknown
+    itp_status: unknown
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_itp_rca_before_driving
+- id: VLE24
+  desc: alt UAT și flux online
+  facts:
+    acquisition_date: '2026-05-01'
+    final_leasing_document_received: true
+    ownership_document_registered_local_tax: true
+    submission_channel: online
+    tax_clearance_certificate_available: true
+    target_uat: Arad
+    rca_status: valid
+    itp_status: valid
+    plans_public_road_use: true
+    electronic_id: false
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_local_fiscal_route

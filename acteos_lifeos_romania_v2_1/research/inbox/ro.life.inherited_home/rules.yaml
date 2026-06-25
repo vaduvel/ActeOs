@@ -1,0 +1,396 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_INHERITED_HOME
+event_alias: ro.life.inherited_home
+event_type_id: life.inherited_home
+status: research_inbox
+rules:
+- id: rule.inherited_home.option_pre_2011
+  canonical_rule_id: inherited_home.succession.option_pre_2011
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '1864-12-01'
+  when:
+    op: date_before
+    field: death_date
+    value: '2011-10-01'
+  effects:
+  - type: include_step
+    step_id: confirm_successoral_option_status
+  - type: set_deadline
+    step_id: confirm_successoral_option_status
+    value:
+      kind: relative_calendar_months
+      months: 6
+      anchor: death_date
+  - type: emit_warning
+    tag: successoral_option_6m
+    message_ro: Pentru decesul anterior datei de 1 octombrie 2011, verifică acceptarea moștenirii în fereastra de 6 luni indicată de UNNPR; aceasta
+      nu este un termen de finalizare a întregii succesiuni.
+  source_claim_ids:
+  - claim.inheritance.pre_2011_option_6m
+  status: draft
+  authority_level: institution
+  required_facts:
+  - death_date
+- id: rule.inherited_home.option_post_2011
+  canonical_rule_id: inherited_home.succession.option_post_2011
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-02'
+  when:
+    op: date_after
+    field: death_date
+    value: '2011-10-01'
+  effects:
+  - type: include_step
+    step_id: confirm_successoral_option_status
+  - type: set_deadline
+    step_id: confirm_successoral_option_status
+    value:
+      kind: relative_calendar_years
+      years: 1
+      anchor: death_date
+  - type: emit_warning
+    tag: successoral_option_1y
+    message_ro: Pentru decesul ulterior datei de 1 octombrie 2011, verifică acceptarea moștenirii în fereastra de un an indicată de UNNPR; aceasta
+      nu este un termen de finalizare a întregii succesiuni.
+  source_claim_ids:
+  - claim.inheritance.post_2011_option_1y
+  status: draft
+  authority_level: institution
+  required_facts:
+  - death_date
+- id: rule.inherited_home.option_boundary
+  canonical_rule_id: inherited_home.succession.option_boundary
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: eq
+    field: death_date
+    value: '2011-10-01'
+  effects:
+  - type: include_step
+    step_id: confirm_successoral_option_status
+  - type: set_freshness_state
+    step_id: confirm_successoral_option_status
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: succession_boundary_2011_10_01
+    message_ro: Pentru un deces la 1 octombrie 2011, confirmă norma tranzitorie direct din Codul civil și legea de punere în aplicare; pagina
+      UNNPR verificată lasă această frontieră neacoperită textual.
+  source_claim_ids:
+  - claim.inheritance.boundary_2011_10_01
+  status: in_review
+  authority_level: institution
+  required_facts:
+  - death_date
+- id: rule.inherited_home.open_ro_last_domicile
+  canonical_rule_id: inherited_home.succession.open_ro_last_domicile
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_last_domicile_country
+      value: ro
+    - op: eq
+      field: requester_has_legitimate_interest
+      value: true
+  effects:
+  - type: include_step
+    step_id: open_notarial_succession
+  - type: include_requirement
+    requirement_id: req.death_certificate
+  - type: include_requirement
+    requirement_id: req.heirs_civil_status_documents
+  - type: include_requirement
+    requirement_id: req.property_title_documents
+  - type: include_requirement
+    requirement_id: req.local_and_state_tax_certificates
+  - type: include_requirement
+    requirement_id: req.two_witnesses
+  - type: emit_advice
+    tag: last_domicile_competence
+    message_ro: Pornește de la un notar competent raportat la ultimul domiciliu al defunctului.
+  source_claim_ids:
+  - claim.inheritance.last_domicile_competence
+  - claim.inheritance.core_documents
+  - claim.inheritance.who_can_open
+  status: draft
+  required_facts:
+  - deceased_last_domicile_country
+  - deceased_last_domicile_uat
+  - requester_has_legitimate_interest
+- id: rule.inherited_home.no_legitimate_interest
+  canonical_rule_id: inherited_home.succession.no_legitimate_interest
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: eq
+    field: requester_has_legitimate_interest
+    value: false
+  effects:
+  - type: block
+    tag: succession_interest_not_established
+    message_ro: Nu deschide automat procedura până când un notar confirmă că solicitantul justifică interesul cerut de lege.
+  - type: require_confirmation
+    tag: legitimate_interest
+    message_ro: Confirmă la notar calitatea de succesibil, creditor sau alt interes legitim.
+  source_claim_ids:
+  - claim.inheritance.who_can_open
+  status: in_review
+  required_facts:
+  - requester_has_legitimate_interest
+- id: rule.inherited_home.foreign_last_domicile
+  canonical_rule_id: inherited_home.succession.foreign_last_domicile
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: neq
+    field: deceased_last_domicile_country
+    value: ro
+  effects:
+  - type: include_step
+    step_id: confirm_cross_border_succession_competence
+  - type: set_freshness_state
+    step_id: confirm_cross_border_succession_competence
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: cross_border_competence
+    message_ro: Ultimul domiciliu este în străinătate; confirmă legea aplicabilă și competența notarială înainte de depunere. Regula națională
+      simplă nu se aplică automat.
+  source_claim_ids:
+  - claim.inheritance.last_domicile_competence
+  status: in_review
+  required_facts:
+  - deceased_last_domicile_country
+- id: rule.inherited_home.transcribe_foreign_death
+  canonical_rule_id: inherited_home.civil_status.transcribe_foreign_death
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: deceased_is_romanian
+      value: true
+    - op: eq
+      field: death_certificate_issued_abroad
+      value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.transcribe_foreign_death
+  - type: emit_warning
+    tag: foreign_death_transcription
+    message_ro: Transcrie certificatul de deces străin înaintea procedurii succesorale notariale din România.
+  source_claim_ids:
+  - claim.inheritance.foreign_death_transcription
+  status: draft
+  required_facts:
+  - deceased_is_romanian
+  - death_certificate_issued_abroad
+- id: rule.inherited_home.proxy
+  canonical_rule_id: inherited_home.succession.proxy
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2011-10-01'
+  when:
+    op: eq
+    field: successor_attends_personally
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.authentic_succession_power_of_attorney
+  source_claim_ids:
+  - claim.inheritance.proxy
+  status: draft
+  required_facts:
+  - successor_attends_personally
+- id: rule.inherited_home.will
+  canonical_rule_id: inherited_home.succession.will
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2011-10-01'
+  when:
+    op: eq
+    field: has_will
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.will
+  source_claim_ids:
+  - claim.inheritance.will
+  status: draft
+  required_facts:
+  - has_will
+- id: rule.inherited_home.tax_within_2y
+  canonical_rule_id: inherited_home.tax.within_2y
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_completed
+      value: true
+    - op: eq
+      field: completion_within_2_years
+      value: true
+  effects:
+  - type: emit_advice
+    tag: succession_tax_exemption_2y
+    message_ro: Potrivit îndrumării UNNPR, succesiunea dezbătută în 2 ani de la deces beneficiază de scutirea fiscală indicată; notarul confirmă
+      aplicarea exactă.
+  source_claim_ids:
+  - claim.inheritance.tax_within_2y
+  status: in_review
+- id: rule.inherited_home.tax_after_2y
+  canonical_rule_id: inherited_home.tax.after_2y
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2011-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_completed
+      value: true
+    - op: eq
+      field: completion_within_2_years
+      value: false
+    - op: eq
+      field: includes_real_estate
+      value: true
+  effects:
+  - type: include_step
+    step_id: pay_succession_transfer_tax_at_notary
+  - type: emit_warning
+    tag: succession_tax_1pct
+    message_ro: Îndrumarea UNNPR indică un impozit de 1% din valoarea imobilelor când succesiunea este dezbătută după 2 ani; confirmă baza și
+      cuantumul la notar.
+  source_claim_ids:
+  - claim.inheritance.tax_after_2y_1pct
+  - claim.inheritance.tax_paid_notary
+  status: in_review
+- id: rule.inherited_home.cnp_timisoara
+  canonical_rule_id: inherited_home.succession.cnp_timisoara
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deceased_last_domicile_uat
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    step_id: open_notarial_succession
+    channel_id: ch.cnp_timisoara
+  source_claim_ids:
+  - claim.inheritance.cnp_timisoara_channel
+  status: draft
+  authority_level: institution
+- id: rule.inherited_home.local_tax_tm
+  canonical_rule_id: inherited_home.local_tax.timisoara
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: includes_real_estate
+      value: true
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: succession_completed
+      value: true
+  effects:
+  - type: include_step
+    step_id: declare_inherited_home_for_local_tax
+  - type: attach_channel
+    step_id: declare_inherited_home_for_local_tax
+    channel_id: ch.dfmt.atlas.home_declaration
+  - type: set_freshness_state
+    step_id: declare_inherited_home_for_local_tax
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: tm_inheritance_tax_deadline
+    message_ro: Canalul Atlas este confirmat, dar termenul și lista exactă de documente pentru moștenire trebuie confirmate la DFMT înainte de
+      depunere.
+  source_claim_ids:
+  - claim.inheritance.tm_local_tax_channel
+  status: in_review
+- id: rule.inherited_home.association_new_owner
+  canonical_rule_id: inherited_home.association.new_owner
+  event_type_id: life.inherited_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_condominium
+      value: true
+    - op: eq
+      field: succession_completed
+      value: true
+  effects:
+  - type: include_step
+    step_id: notify_association_after_inheritance
+  - type: set_deadline
+    step_id: notify_association_after_inheritance
+    value:
+      kind: relative_business_days
+      days: 10
+      anchor: ownership_effective_date
+  - type: set_freshness_state
+    step_id: notify_association_after_inheritance
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: inheritance_ownership_anchor
+    message_ro: Legea cere noului proprietar datele proprietății și de contact în 10 zile lucrătoare de la transfer; pentru moștenire confirmă
+      data juridică folosită drept ancoră.
+  source_claim_ids:
+  - claim.association.new_owner_10wd
+  status: in_review
+  required_facts:
+  - is_condominium
+  - succession_completed
+  - ownership_effective_date

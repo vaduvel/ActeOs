@@ -1,0 +1,140 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_MOVED_HOME
+event_type_id: life.moved
+status: draft
+rules:
+  - id: rule.moved.ci_new_doc_15d
+    canonical_rule_id: moved.identity_card.deadline
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2005-07-20'
+    when:
+      op: all
+      args:
+        - { op: eq, field: change_type, value: domiciliu }
+        - { op: in, field: id_card_type, values: [buletin, ci_simpla] }
+    effects:
+      - { type: include_step, step_id: update_identity_card }
+      - { type: set_deadline, step_id: update_identity_card, value: { kind: relative_calendar_days, days: 15, anchor: move_date } }
+      - { type: include_requirement, requirement_id: req.id_card_old }
+      - { type: include_requirement, requirement_id: req.birth_certificate }
+      - { type: include_requirement, requirement_id: req.address_proof }
+      - { type: emit_warning, message_ro: 'Ai 15 zile de la mutare sa soliciti noul act de identitate. Nerespectarea se sanctioneaza contraventional (40-80 lei).' }
+    source_claim_ids: [claim.ci.deadline_15d, claim.ci.docs, claim.ci.sanction_40_80]
+    status: draft
+  - id: rule.moved.ci_marriage_doc
+    canonical_rule_id: moved.identity_card.marriage_cert
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-07-01'
+    when:
+      op: all
+      args:
+        - { op: eq, field: change_type, value: domiciliu }
+        - { op: in, field: id_card_type, values: [buletin, ci_simpla] }
+        - { op: eq, field: is_married, value: true }
+    effects:
+      - { type: include_requirement, requirement_id: req.marriage_certificate }
+    source_claim_ids: [claim.ci.docs]
+    status: draft
+  - id: rule.moved.ci_minor_children
+    canonical_rule_id: moved.identity_card.minor_birth_cert
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-07-01'
+    when:
+      op: all
+      args:
+        - { op: eq, field: change_type, value: domiciliu }
+        - { op: eq, field: has_minor_children_moving, value: true }
+        - { op: eq, field: minor_children_under_14, value: true }
+    effects:
+      - { type: include_requirement, requirement_id: req.children_birth_certificates }
+    source_claim_ids: [claim.ci.docs]
+    status: draft
+  - id: rule.moved.ci_host_consent
+    canonical_rule_id: moved.identity_card.host_consent
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-07-01'
+    when:
+      op: all
+      args:
+        - { op: eq, field: change_type, value: domiciliu }
+        - { op: eq, field: new_address_relation, value: host_consent }
+    effects:
+      - { type: include_requirement, requirement_id: req.host_consent }
+    source_claim_ids: [claim.ci.proof_address_cf30]
+    status: draft
+  - id: rule.moved.cei_no_new_doc
+    canonical_rule_id: moved.identity_card.cei_exception
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2025-03-20'
+    when:
+      op: all
+      args:
+        - { op: eq, field: change_type, value: domiciliu }
+        - { op: eq, field: id_card_type, value: cei }
+    effects:
+      - { type: set_requirement_obligation, requirement_id: update_identity_card, value: not_applicable }
+      - { type: require_confirmation, message_ro: 'La cartea electronica de identitate (CEI) schimbarea adresei se poate face fara un act nou. Confirma procedura curenta la DEP inainte de a renunta la actualizare.' }
+    source_claim_ids: [claim.cei.address_change_no_new_doc]
+    override_rule_ids: [rule.moved.ci_new_doc_15d]
+    status: draft
+  - id: rule.moved.timisoara_channel
+    canonical_rule_id: moved.identity_card.channel_tm
+    event_type_id: life.moved
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: operational
+    effective_from: '2025-04-24'
+    when:
+      op: eq
+      field: change_type
+      value: domiciliu
+    effects:
+      - { type: attach_channel, step_id: update_identity_card, channel_id: ch.dep_timisoara }
+    source_claim_ids: [claim.timisoara.dep_channel]
+    status: draft
+  - id: rule.moved.vehicle_address_update
+    canonical_rule_id: moved.vehicle.address_update
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2005-07-20'
+    when:
+      op: all
+      args:
+        - { op: eq, field: change_type, value: domiciliu }
+        - { op: eq, field: owns_vehicle, value: true }
+    effects:
+      - { type: include_step, step_id: update_vehicle_registration }
+      - { type: set_freshness_state, step_id: update_vehicle_registration, value: needs_confirmation }
+      - { type: require_confirmation, message_ro: 'Daca detii vehicul, certificatul de inmatriculare trebuie actualizat la noua adresa la DRPCIV. Termenul legal exact este in curs de confirmare din sursa oficiala.' }
+    source_claim_ids: [claim.veh.address_update_exists]
+    status: in_review
+  - id: rule.moved.residence_visa
+    canonical_rule_id: moved.residence.visa
+    event_type_id: life.moved
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2005-07-20'
+    when:
+      op: eq
+      field: change_type
+      value: resedinta
+    effects:
+      - { type: include_step, step_id: register_residence_visa }
+      - { type: set_freshness_state, step_id: register_residence_visa, value: needs_confirmation }
+      - { type: require_confirmation, message_ro: 'Pentru resedinta (flotant) se solicita viza de resedinta la DEP. Documentele si valabilitatea se confirma din sursa oficiala.' }
+    source_claim_ids: [claim.ci.proof_address_cf30]
+    status: in_review

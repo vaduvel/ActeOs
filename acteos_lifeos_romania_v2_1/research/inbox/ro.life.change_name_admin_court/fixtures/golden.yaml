@@ -1,0 +1,661 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.change_name_admin_court
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: NAM01
+  desc: adult român cu dosar complet
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - timisoara_current_procedure_must_be_reconfirmed
+    - conflicting_local_60_vs_national_30_days
+- id: NAM02
+  desc: motiv insuficient documentat
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: false
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - serious_ground_and_evidence_missing
+- id: NAM03
+  desc: statut de cetățenie în afara rutei
+  facts:
+    applicant_age: 30
+    citizenship_status: other
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - administrative_name_change_scope_not_verified
+- id: NAM04
+  desc: solicitant de 13 ani
+  facts:
+    applicant_age: 13
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - timisoara_current_procedure_must_be_reconfirmed
+- id: NAM05
+  desc: minor de 14 ani cu semnătură
+  facts:
+    applicant_age: 14
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    requirements:
+    - req.name.criminal_record
+    - req.name.minor_signature
+- id: NAM06
+  desc: minor de 14 ani fără semnătură
+  facts:
+    applicant_age: 14
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: false
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - minor_14_signature_missing
+- id: NAM07
+  desc: tutore depune pentru minor
+  facts:
+    applicant_age: 10
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: true
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    requirements:
+    - req.name.court_approval
+- id: NAM08
+  desc: părinții nu se înțeleg
+  facts:
+    applicant_age: 10
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: false
+    parents_agree: false
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - court_decision_required_for_parent_disagreement
+- id: NAM09
+  desc: un singur părinte cu acord
+  facts:
+    applicant_age: 10
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: true
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    requirements:
+    - req.name.other_parent_consent
+- id: NAM10
+  desc: un singur părinte fără acord/excepție
+  facts:
+    applicant_age: 10
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: true
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: true
+    other_parent_consent_available: false
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - other_parent_consent_or_exception_missing
+- id: NAM11
+  desc: extrasul MO lipsește
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: false
+    mo_extract_age_days: null
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - official_gazette_extract_missing
+- id: NAM12
+  desc: extras MO exact 365 zile
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 365
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - timisoara_current_procedure_must_be_reconfirmed
+- id: NAM13
+  desc: extras MO de 366 zile
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 366
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - official_gazette_extract_older_than_one_year
+- id: NAM14
+  desc: termen opoziții neexpirat
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: false
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - opposition_window_not_elapsed
+- id: NAM15
+  desc: opoziție formulată
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: true
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - opposition_requires_case_review
+- id: NAM16
+  desc: dosar final incomplet
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: false
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - stage2_documents_complete
+- id: NAM17
+  desc: dispoziție admisă în ziua 89
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: approved
+    days_since_approval_notice: 89
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    warnings:
+    - confirm_approved_disposition_within_90_days
+- id: NAM18
+  desc: dispoziție admisă în ziua 90
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: approved
+    days_since_approval_notice: 90
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    warnings:
+    - confirm_approved_disposition_within_90_days
+- id: NAM19
+  desc: dispoziție admisă după 91 zile
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: approved
+    days_since_approval_notice: 91
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - approval_confirmation_90_days_passed
+- id: NAM20
+  desc: dispoziție respinsă
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: rejected
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    warnings:
+    - rejection_may_be_challenged
+- id: NAM21
+  desc: domiciliu Lugoj
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Lugoj
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_local_name_change_route
+- id: NAM22
+  desc: fără domiciliu anterior în România
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: NONE
+    ever_had_ro_domicile: false
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_local_name_change_route
+- id: NAM23
+  desc: adult de 14 ani exact
+  facts:
+    applicant_age: 14
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    requirements:
+    - req.name.criminal_record
+- id: NAM24
+  desc: programare locală lipsă
+  facts:
+    applicant_age: 30
+    citizenship_status: romanian
+    domicile_uat: Timișoara
+    ever_had_ro_domicile: true
+    serious_ground_documented: true
+    is_minor: false
+    filed_by_tutor: false
+    parents_agree: true
+    one_parent_application: false
+    other_parent_consent_available: true
+    minor_signed_if_14plus: true
+    mo_extract_published: true
+    mo_extract_age_days: 45
+    opposition_period_elapsed: true
+    opposition_received: false
+    stage2_documents_complete: true
+    disposition_result: pending
+    days_since_approval_notice: 0
+    appointment_booked: false
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - timisoara_current_procedure_must_be_reconfirmed

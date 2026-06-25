@@ -1,0 +1,293 @@
+batch_id: B06_HEALTH_INSURANCE_STATUS
+defaults:
+  alias_event_type_id: ro.life.health_insurance_status
+  event_type_id: life.health_insurance_status
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: HIS01
+  description: Verificare online — asigurat
+  facts:
+    can_use_online_check: true
+    status_result: insured
+  expect:
+    status: resolved
+    included_steps:
+    - check_insurance_status_in_siui
+    channels:
+    - ch.siui_insured_status
+    advice:
+    - use_current_siui_address
+    - portal_reports_insured
+- id: HIS02
+  description: Verificare online — neasigurat
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - check_insurance_status_in_siui
+    - identify_insurance_category_or_correction_route
+    confirmations:
+    - insurance_category_and_supporting_documents
+- id: HIS03
+  description: Portal indisponibil
+  facts:
+    can_use_online_check: true
+    status_result: portal_unavailable
+  expect:
+    status: resolved
+    included_steps:
+    - check_insurance_status_in_siui
+    - retry_or_contact_territorial_cas
+    warnings:
+    - portal_unavailability_not_uninsured
+- id: HIS04
+  description: Nu poate folosi portalul
+  facts:
+    can_use_online_check: false
+    status_result: unknown
+    county: TM
+    needs_cas_contact: true
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.cas_tm
+    confirmations:
+    - assisted_status_check_or_cas_route
+- id: HIS05
+  description: Neasigurat, fără venituri eligibile D212
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: no_employment_or_taxable_income
+    d212_submission_date: '2026-06-25'
+    d212_period_state: active
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - review_and_submit_current_d212_if_eligible
+    deadlines:
+    - d212_insurance_period
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - current_d212_contribution_and_form
+- id: HIS06
+  description: D212 depus acum 10 luni
+  facts:
+    can_use_online_check: true
+    status_result: insured
+    insurance_category: no_employment_or_taxable_income
+    d212_submission_date: '2025-08-25'
+  expect:
+    status: resolved
+    advice:
+    - portal_reports_insured
+- id: HIS07
+  description: D212 depus acum 13 luni, portal neasigurat
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: no_employment_or_taxable_income
+    d212_submission_date: '2025-05-20'
+    d212_period_state: elapsed
+  expect:
+    status: needs_confirmation
+    warnings:
+    - d212_12_month_period_elapsed
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - current_d212_contribution_and_form
+- id: HIS08
+  description: Student 20 ani, zi, neasigurat
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: student_18_26
+    age: 20
+    education_form: day
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_student_insurance_documents_to_cas
+    requirements:
+    - req.valid_identity_document_copy
+    - req.valid_student_or_pupil_document_endorsed_by_school
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - student_income_conditions_current
+- id: HIS09
+  description: Student 26 ani, zi
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: student_18_26
+    age: 26
+    education_form: day
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.valid_identity_document_copy
+    - req.valid_student_or_pupil_document_endorsed_by_school
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - student_income_conditions_current
+- id: HIS10
+  description: Student 27 ani
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: student_18_26
+    age: 27
+    education_form: day
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - alternative_insurance_category
+- id: HIS11
+  description: Student 22 ani, frecvență redusă
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: student_18_26
+    age: 22
+    education_form: part_time
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - alternative_insurance_category
+- id: HIS12
+  description: Elev 17 ani
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: student_18_26
+    age: 17
+    education_form: day
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - alternative_insurance_category
+- id: HIS13
+  description: Student fără document avizat
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: student_18_26
+    age: 21
+    education_form: day
+    student_document_available: false
+  expect:
+    status: needs_confirmation
+    missing_requirements:
+    - req.valid_student_or_pupil_document_endorsed_by_school
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - student_income_conditions_current
+- id: HIS14
+  description: Asigurat, cardul nu a fost emis
+  facts:
+    can_use_online_check: true
+    status_result: insured
+    card_issued: false
+  expect:
+    status: resolved
+    advice:
+    - portal_reports_insured
+    - no_replacement_certificate_needed_if_never_issued
+- id: HIS15
+  description: Asigurat, dar furnizorul spune neasigurat
+  facts:
+    can_use_online_check: true
+    status_result: insured
+    provider_result: not_insured
+  expect:
+    status: needs_confirmation
+    warnings:
+    - status_discrepancy
+    confirmations:
+    - cas_correction_or_provider_recheck
+- id: HIS16
+  description: Portal neasigurat imediat după angajare
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    insurance_category: employee
+    employment_started_recently: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - employer_declaration_and_cas_update
+- id: HIS17
+  description: Timiș, nevoie contact CAS
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    county: TM
+    needs_cas_contact: true
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.cas_tm
+    advice:
+    - cas_tm_contact
+    confirmations:
+    - insurance_category_and_supporting_documents
+- id: HIS18
+  description: Alt județ, nevoie contact CAS
+  facts:
+    can_use_online_check: true
+    status_result: not_insured
+    county: CJ
+    needs_cas_contact: true
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - insurance_category_and_supporting_documents
+    - territorial_cas_contact
+- id: HIS19
+  description: Captură veche de portal
+  facts:
+    can_use_online_check: true
+    status_result: insured
+    result_date: '2025-01-01'
+    status_result_freshness: stale
+  expect:
+    status: resolved
+    warnings:
+    - stale_status_result_recheck_now
+- id: HIS20
+  description: Lipsește rezultatul
+  facts:
+    can_use_online_check: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - status_result
+- id: HIS21
+  description: Lipsește posibilitatea de verificare
+  facts:
+    status_result: unknown
+  expect:
+    status: needs_facts
+    missing_facts:
+    - can_use_online_check
+- id: HIS22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - can_use_online_check
+    - status_result

@@ -1,0 +1,308 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_PAY_LOCAL_TAXES
+event_type_id: ro.life.pay_local_taxes
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- territory_id
+- tax_year
+- tax_type
+- payment_stage
+- amount_verified_in_current_assessment
+- payment_channel
+- claims_early_payment_bonus
+rules:
+- id: rule.b13.localtax.timisoara_base
+  canonical_rule_id: local_tax.timisoara.base
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+    - op: eq
+      field: tax_year
+      value: 2026
+    - op: in
+      field: tax_type
+      values:
+      - building
+      - land
+      - vehicle
+      - multiple
+  effects:
+  - type: include_step
+    step_id: verify_current_timisoara_local_tax_assessment
+  - type: emit_advice
+    tag: timisoara_two_installments_march_september
+    message_ro: Pentru clădiri, terenuri și vehicule, pagina publică rate la 31 martie și 30 septembrie.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  - claim.b13.localtax.land_due
+  - claim.b13.localtax.vehicle_due
+  status: in_review
+- id: rule.b13.localtax.before_march
+  canonical_rule_id: local_tax.payment_stage.before_march
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+    - op: eq
+      field: payment_stage
+      value: before_march_31
+    - op: in
+      field: tax_type
+      values:
+      - building
+      - land
+      - vehicle
+      - multiple
+  effects:
+  - type: include_step
+    step_id: pay_first_local_tax_installment_or_verified_full_year
+  - type: emit_advice
+    tag: first_installment_due_march_31
+    message_ro: Prima rată este publicată cu scadența 31 martie inclusiv.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  - claim.b13.localtax.land_due
+  - claim.b13.localtax.vehicle_due
+  status: in_review
+- id: rule.b13.localtax.between
+  canonical_rule_id: local_tax.payment_stage.between
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+    - op: eq
+      field: payment_stage
+      value: between_installments
+    - op: in
+      field: tax_type
+      values:
+      - building
+      - land
+      - vehicle
+      - multiple
+  effects:
+  - type: include_step
+    step_id: pay_outstanding_first_installment_and_plan_second
+  - type: emit_warning
+    tag: first_local_tax_installment_may_be_overdue
+    message_ro: Scadența de 31 martie a trecut; verifică soldul și accesoriile din evidența fiscală.
+  - type: emit_advice
+    tag: second_installment_due_september_30
+    message_ro: A doua rată este publicată cu scadența 30 septembrie inclusiv.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  - claim.b13.localtax.land_due
+  - claim.b13.localtax.vehicle_due
+  status: in_review
+- id: rule.b13.localtax.on_september
+  canonical_rule_id: local_tax.payment_stage.september_30
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+    - op: eq
+      field: payment_stage
+      value: on_september_30
+    - op: in
+      field: tax_type
+      values:
+      - building
+      - land
+      - vehicle
+      - multiple
+  effects:
+  - type: include_step
+    step_id: pay_remaining_local_tax_by_september_30
+  - type: emit_warning
+    tag: second_local_tax_installment_due_today
+    message_ro: 30 septembrie este ultima zi publicată pentru a doua rată.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  - claim.b13.localtax.land_due
+  - claim.b13.localtax.vehicle_due
+  status: in_review
+- id: rule.b13.localtax.after_september
+  canonical_rule_id: local_tax.payment_stage.after_september
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+    - op: eq
+      field: payment_stage
+      value: after_september_30
+    - op: in
+      field: tax_type
+      values:
+      - building
+      - land
+      - vehicle
+      - multiple
+  effects:
+  - type: include_step
+    step_id: pay_overdue_local_tax_balance
+  - type: emit_warning
+    tag: local_tax_installment_deadlines_passed
+    message_ro: Ambele termene publicate au trecut; verifică soldul și accesoriile actuale.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  - claim.b13.localtax.land_due
+  - claim.b13.localtax.vehicle_due
+  status: in_review
+- id: rule.b13.localtax.amount_unverified
+  canonical_rule_id: local_tax.amount
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: amount_verified_in_current_assessment
+    value: false
+  effects:
+  - type: block
+    tag: local_tax_amount_not_verified
+    message_ro: Nu plăti pe baza unei sume istorice sau estimate.
+  - type: include_requirement
+    requirement_id: req.current_local_tax_assessment_or_live_balance
+  source_claim_ids:
+  - claim.b13.localtax.year_2026_unverified
+  status: in_review
+- id: rule.b13.localtax.bonus_conflict
+  canonical_rule_id: local_tax.early_payment_bonus
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: claims_early_payment_bonus
+    value: true
+  effects:
+  - type: flag_conflict
+    tag: timisoara_bonus_source_is_from_2021
+    blocked_effect: apply_early_payment_bonus
+    message_ro: Pagina termenelor citează o bonificație pentru 2021, nu pentru 2026.
+  - type: require_confirmation
+    tag: confirm_timisoara_2026_bonus
+    message_ro: Verifică hotărârea locală și pagina oficială 2026 înainte de aplicarea bonificației.
+  source_claim_ids:
+  - claim.b13.localtax.bonus_2021_expired
+  - claim.b13.localtax.year_2026_unverified
+  status: in_review
+- id: rule.b13.localtax.other_year
+  canonical_rule_id: local_tax.tax_year
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: tax_year
+    value: 2026
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_tax_rules_for_selected_year
+    message_ro: Folosește termenele, cuantumurile și bonificațiile anului selectat.
+  source_claim_ids:
+  - claim.b13.localtax.year_2026_unverified
+  status: in_review
+- id: rule.b13.localtax.other_uat
+  canonical_rule_id: local_tax.other_uat
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: territory_id
+    value: RO-TM-TIMISOARA
+  effects:
+  - type: require_confirmation
+    tag: confirm_other_uat_local_tax_procedure
+    message_ro: Verifică soldul, termenele, bonificația și canalul UAT competent.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Operaționalizarea locală din acest batch este pilotată pentru Timișoara.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  status: in_review
+- id: rule.b13.localtax.other_type
+  canonical_rule_id: local_tax.tax_type
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: tax_type
+    value: other
+  effects:
+  - type: require_confirmation
+    tag: confirm_special_local_tax_deadline
+    message_ro: Taxele de publicitate, concesiune sau alte taxe pot avea alte termene.
+  source_claim_ids:
+  - claim.b13.localtax.building_due
+  status: in_review
+- id: rule.b13.localtax.channel
+  canonical_rule_id: local_tax.payment_channel
+  event_type_id: ro.life.pay_local_taxes
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: payment_channel
+    values:
+    - online
+    - bank
+    - cash
+  effects:
+  - type: require_confirmation
+    tag: confirm_timisoara_payment_channel_and_account
+    message_ro: Verifică metoda, contul și beneficiarul în pagina oficială sau soldul fiscal curent.
+  source_claim_ids:
+  - claim.b13.localtax.payment_methods_unverified
+  status: in_review

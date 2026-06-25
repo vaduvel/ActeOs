@@ -1,0 +1,384 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_PUBLIC_INFORMATION_REQUEST
+event_alias: ro.life.public_information_request
+event_type_id: life.public_information_request
+status: research_inbox
+rules:
+- id: rule.info.classify.rev1
+  canonical_rule_id: rule.info.classify
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_request_as_public_information
+  source_claim_ids:
+  - claim.info.any_person
+  - claim.info.not_petition_or_service
+  status: active
+  required_facts:
+  - target_authority
+  - request_is_public_information
+- id: rule.info.not_info.rev1
+  canonical_rule_id: rule.info.not_info
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: request_is_public_information
+    value: false
+  effects:
+  - type: exclude_step
+    step_id: submit_law_544_request
+  - type: emit_advice
+    tag: reclassify_as_petition_service_or_authorisation
+    message_ro: Solicitarea trebuie redirecționată către procedura sa proprie, nu termenul Legii 544.
+  source_claim_ids:
+  - claim.info.not_petition_or_service
+  status: active
+  required_facts:
+  - request_is_public_information
+  legal_rank: Lege
+- id: rule.info.written_requirements.rev1
+  canonical_rule_id: rule.info.written_requirements
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_is_public_information
+      value: true
+    - op: eq
+      field: submission_mode
+      value: written
+  effects:
+  - type: include_step
+    step_id: prepare_written_information_request
+  - type: include_requirement
+    requirement_id: target_authority
+  - type: include_requirement
+    requirement_id: identifiable_information_description
+  - type: include_requirement
+    requirement_id: requester_name
+  - type: include_requirement
+    requirement_id: requester_signature
+  - type: include_requirement
+    requirement_id: response_address
+  source_claim_ids:
+  - claim.info.written_fields
+  status: active
+  required_facts:
+  - submission_mode
+  - target_authority
+  - identifiable_information_description
+  - requester_name
+  - requester_signature_present
+  - response_address
+  legal_rank: Lege
+- id: rule.info.electronic.rev1
+  canonical_rule_id: rule.info.electronic
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: submission_mode
+    value: electronic
+  effects:
+  - type: include_step
+    step_id: submit_information_request_electronically
+  - type: attach_channel
+    step_id: submit_information_request_electronically
+    channel_id: ch.authority.public_information_email_or_portal
+  source_claim_ids:
+  - claim.info.electronic
+  status: active
+  required_facts:
+  - submission_mode
+  legal_rank: Lege
+- id: rule.info.verbal.rev1
+  canonical_rule_id: rule.info.verbal
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: submission_mode
+    value: verbal
+  effects:
+  - type: include_step
+    step_id: ask_information_verbally
+  source_claim_ids:
+  - claim.info.verbal_redirect
+  status: active
+  required_facts:
+  - submission_mode
+  legal_rank: Lege
+- id: rule.info.verbal_unavailable.rev1
+  canonical_rule_id: rule.info.verbal_unavailable
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_mode
+      value: verbal
+    - op: eq
+      field: information_available_on_spot
+      value: false
+  effects:
+  - type: include_step
+    step_id: submit_law_544_request_in_writing
+  source_claim_ids:
+  - claim.info.verbal_redirect
+  status: active
+  required_facts:
+  - submission_mode
+  - information_available_on_spot
+  legal_rank: Lege
+- id: rule.info.response_deadline.rev1
+  canonical_rule_id: rule.info.response_deadline
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: request_registered
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: receive_standard_response
+    value:
+      type: relative_calendar_days
+      anchor_fact: registration_date
+      amount: 10
+  - type: emit_advice
+    tag: possible_extension_to_30_days
+    message_ro: Pentru dificultate, complexitate, volum sau urgență, termenul poate ajunge la 30 de zile dacă ești înștiințat în primele 10 zile.
+  source_claim_ids:
+  - claim.info.deadline_10_30
+  status: active
+  required_facts:
+  - request_registered
+  - registration_date
+  legal_rank: Lege
+- id: rule.info.extension.rev1
+  canonical_rule_id: rule.info.extension
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: extension_notice_received_within_10_days
+    value: true
+  effects:
+  - type: include_step
+    step_id: receive_extended_response
+  - type: set_deadline
+    step_id: receive_extended_response
+    value:
+      type: relative_calendar_days
+      anchor_fact: registration_date
+      amount: 30
+  source_claim_ids:
+  - claim.info.deadline_10_30
+  status: active
+  required_facts:
+  - extension_notice_received_within_10_days
+  - registration_date
+  legal_rank: Lege
+- id: rule.info.refusal.rev1
+  canonical_rule_id: rule.info.refusal
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: authority_refuses
+    value: true
+  effects:
+  - type: include_step
+    step_id: receive_reasoned_refusal
+  - type: set_deadline
+    step_id: receive_reasoned_refusal
+    value:
+      type: relative_calendar_days
+      anchor_fact: registration_date
+      amount: 5
+  source_claim_ids:
+  - claim.info.refusal_5d
+  status: active
+  required_facts:
+  - authority_refuses
+  - registration_date
+  legal_rank: Lege
+- id: rule.info.copies.rev1
+  canonical_rule_id: rule.info.copies
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: requests_document_copies
+    value: true
+  effects:
+  - type: emit_warning
+    tag: copying_cost_may_apply
+    message_ro: Costul legal al copierii poate reveni solicitantului.
+  source_claim_ids:
+  - claim.info.copy_cost
+  status: active
+  required_facts:
+  - requests_document_copies
+  legal_rank: Lege
+- id: rule.info.exemptions.rev1
+  canonical_rule_id: rule.info.exemptions
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: may_contain_exempt_information
+    value: true
+  effects:
+  - type: emit_warning
+    tag: information_may_be_legally_exempt
+    message_ro: Autoritatea poate invoca numai excepțiile legale aplicabile și trebuie motivat refuzul.
+  source_claim_ids:
+  - claim.info.exemptions
+  - claim.info.refusal_5d
+  status: active
+  required_facts:
+  - may_contain_exempt_information
+  legal_rank: Lege
+- id: rule.info.admin_complaint.rev1
+  canonical_rule_id: rule.info.admin_complaint
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: wants_administrative_complaint
+    value: true
+  effects:
+  - type: include_step
+    step_id: submit_administrative_complaint_to_authority_head
+  - type: set_deadline
+    step_id: submit_administrative_complaint_to_authority_head
+    value:
+      type: relative_calendar_days
+      anchor_fact: awareness_of_refusal_date
+      amount: 30
+  - type: set_deadline
+    step_id: receive_administrative_complaint_response
+    value:
+      type: relative_calendar_days
+      anchor_fact: administrative_complaint_submission_date
+      amount: 15
+  source_claim_ids:
+  - claim.info.admin_complaint
+  status: active
+  required_facts:
+  - wants_administrative_complaint
+  - awareness_of_refusal_date
+  - administrative_complaint_submission_date
+  legal_rank: Lege
+- id: rule.info.court.rev1
+  canonical_rule_id: rule.info.court
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: wants_court_complaint
+    value: true
+  effects:
+  - type: include_step
+    step_id: submit_court_complaint
+  - type: set_deadline
+    step_id: submit_court_complaint
+    value:
+      type: relative_calendar_days
+      anchor_fact: law_544_response_deadline_expiry_date
+      amount: 30
+  - type: emit_advice
+    tag: court_complaint_stamp_duty_exempt
+    message_ro: Plângerea și calea de atac sunt scutite de taxă de timbru.
+  source_claim_ids:
+  - claim.info.court_complaint
+  status: active
+  required_facts:
+  - wants_court_complaint
+  - law_544_response_deadline_expiry_date
+  legal_rank: Lege
+- id: rule.info.timisoara_channel.rev1
+  canonical_rule_id: rule.info.timisoara_channel
+  event_type_id: life.public_information_request
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: target_authority
+    value: pmt
+  effects:
+  - type: attach_channel
+    step_id: submit_information_request_electronically
+    channel_id: ch.pmt.legea_544
+  - type: emit_advice
+    tag: pmt_has_request_and_complaint_models
+    message_ro: Primăria publică formularul de cerere și modelele de reclamație.
+  source_claim_ids:
+  - claim.tm.info.channel_models
+  status: active
+  required_facts:
+  - target_authority

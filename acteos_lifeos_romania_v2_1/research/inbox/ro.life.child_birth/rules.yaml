@@ -1,0 +1,199 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.child_birth
+status: draft
+rules:
+- id: rule.child_birth.domestic_live_registration
+  canonical_rule_id: child_birth.trigger.birth_registration
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: birth_country
+      value: ro
+    - op: eq
+      field: birth_outcome
+      value: live_alive
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.birth_registration
+  - type: emit_warning
+    tag: birth_registration_30d
+    message_ro: Declară nașterea în 30 de zile de la data nașterii.
+  source_claim_ids:
+  - claim.child_birth.live_registration_30d
+  status: draft
+  required_facts:
+  - birth_country
+  - birth_outcome
+  - birth_date
+- id: rule.child_birth.stillborn_registration
+  canonical_rule_id: child_birth.trigger.stillborn_registration
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: eq
+    field: birth_outcome
+    value: stillborn
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.birth_registration
+  - type: emit_warning
+    tag: stillborn_registration_3d
+    message_ro: Pentru copilul născut mort, declararea are termen de 3 zile.
+  - type: exclude_step
+    step_id: assess_child_allowance
+  - type: exclude_step
+    step_id: assess_parental_leave
+  source_claim_ids:
+  - claim.child_birth.stillborn_registration_3d
+  status: draft
+- id: rule.child_birth.liveborn_death
+  canonical_rule_id: child_birth.trigger.liveborn_death_registration
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-03-29'
+  when:
+    op: eq
+    field: birth_outcome
+    value: live_died_within_30d
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.birth_registration
+  - type: trigger_child_event
+    event_type_id: life.family_death
+  - type: emit_warning
+    tag: liveborn_death_24h
+    message_ro: Declararea nașterii se face în 24 de ore de la deces.
+  source_claim_ids:
+  - claim.child_birth.liveborn_death_24h
+  status: draft
+- id: rule.child_birth.after_registration_allowance
+  canonical_rule_id: child_birth.trigger.child_allowance
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '1993-10-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: birth_outcome
+      value: live_alive
+    - op: eq
+      field: birth_registered
+      value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.child_allowance
+  source_claim_ids:
+  - claim.child_birth.allowance_entitlement
+  status: draft
+- id: rule.child_birth.father_worker_paternity
+  canonical_rule_id: child_birth.trigger.paternity_leave
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2022-08-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: birth_outcome
+      value: live_alive
+    - op: eq
+      field: father_is_worker
+      value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.paternity_leave
+  source_claim_ids:
+  - claim.child_birth.paternity_10d
+  status: draft
+- id: rule.child_birth.mother_insured_maternity
+  canonical_rule_id: child_birth.trigger.maternity_leave
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2006-01-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: birth_outcome
+      values:
+      - live_alive
+      - stillborn
+      - live_died_within_30d
+    - op: eq
+      field: mother_insured_for_maternity
+      value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.maternity_leave
+  source_claim_ids:
+  - claim.child_birth.maternity_126d
+  status: draft
+- id: rule.child_birth.ccc_intent
+  canonical_rule_id: child_birth.trigger.parental_leave
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2011-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: birth_outcome
+      value: live_alive
+    - op: eq
+      field: wants_parental_leave
+      value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.parental_leave_benefit
+  source_claim_ids:
+  - claim.child_birth.ccc_eligibility
+  status: draft
+- id: rule.child_birth.foreign_route
+  canonical_rule_id: child_birth.trigger.foreign_birth_route
+  event_type_id: life.child_birth
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-03-29'
+  when:
+    op: neq
+    field: birth_country
+    value: ro
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.transcribe_foreign_birth
+  - type: require_confirmation
+    tag: foreign_birth_route
+    message_ro: Pentru nașterea produsă în străinătate, traseul depinde de înregistrarea consulară sau transcrierea certificatului străin.
+  source_claim_ids:
+  - claim.child_birth.foreign_registration
+  status: in_review

@@ -1,0 +1,358 @@
+batch_id: B02_CONSULAR_SERVICE
+defaults:
+  event_type_id: ro.life.consular_service
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.cs.001
+  desc: Cetățean român cere pașaport la misiune în UE.
+  facts:
+    service_category: passport_travel
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_passport_consular_route
+    advice_tags:
+    - passport_at_mission
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_passports
+- id: fx.cs.002
+  desc: Operațiune de stare civilă la consulat.
+  facts:
+    service_category: civil_status
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_civil_status_consular_route
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_civil_status
+    needs_confirmation:
+    - civil_status_event_type
+- id: fx.cs.003
+  desc: Cerere de cetățenie art. 10 la misiune.
+  facts:
+    service_category: citizenship
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: art10
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - submit_citizenship_application_at_mission
+    advice_tags:
+    - citizenship_mission_basis
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_citizenship
+- id: fx.cs.004
+  desc: Cerere de cetățenie art. 11 la misiune.
+  facts:
+    service_category: citizenship
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: art11
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - submit_citizenship_application_at_mission
+    advice_tags:
+    - citizenship_mission_basis
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_citizenship
+- id: fx.cs.005
+  desc: Cerere de cetățenie art. 8^1 la misiune.
+  facts:
+    service_category: citizenship
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: art8_1
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - submit_citizenship_application_at_mission
+    advice_tags:
+    - citizenship_mission_basis
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_citizenship
+- id: fx.cs.006
+  desc: Cerere de cetățenie cu temei necunoscut.
+  facts:
+    service_category: citizenship
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: unknown
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - confirm_citizenship_submission_authority
+    warnings_present:
+    - consular_catalogue_not_assumed
+    needs_confirmation:
+    - citizenship_consular_eligibility
+- id: fx.cs.007
+  desc: Renunțare la cetățenie din străinătate.
+  facts:
+    service_category: renunciation
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_renunciation_consular_route
+    advice_tags:
+    - renunciation_at_mission
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_citizenship
+- id: fx.cs.008
+  desc: Documente pierdute într-un stat UE.
+  facts:
+    service_category: emergency_lost_docs
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_lost_documents_emergency_route
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_emergency
+- id: fx.cs.009
+  desc: Documente pierdute în afara UE, cu misiune română.
+  facts:
+    service_category: emergency_lost_docs
+    applicant_status: romanian_citizen
+    current_region: outside_eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_lost_documents_emergency_route
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.romanian_mission_emergency
+- id: fx.cs.010
+  desc: Documente pierdute în afara UE, fără misiune română.
+  facts:
+    service_category: emergency_lost_docs
+    applicant_status: romanian_citizen
+    current_region: outside_eu
+    romanian_mission_available: false
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_lost_documents_emergency_route
+    - request_other_eu_consular_protection
+    advice_tags:
+    - eu_unrepresented_protection
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.other_eu_mission
+    - ch.romanian_mission_emergency
+- id: fx.cs.011
+  desc: Serviciu notarial sau de legalizare.
+  facts:
+    service_category: notarial_legalisation
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - confirm_specific_consular_notarial_service
+    warnings_present:
+    - consular_catalogue_not_assumed
+    needs_confirmation:
+    - notarial_service_catalogue
+- id: fx.cs.012
+  desc: Solicitare de viză de către cetățean străin.
+  facts:
+    service_category: visa
+    applicant_status: foreign_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_visa_specific_route
+    advice_tags:
+    - official_evisa_portal
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.evisa_mae
+    needs_confirmation:
+    - visa_portal_and_mission
+- id: fx.cs.013
+  desc: Alt serviciu consular.
+  facts:
+    service_category: other
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - identify_exact_consular_service
+    warnings_present:
+    - consular_catalogue_not_assumed
+    needs_confirmation:
+    - other_consular_service
+- id: fx.cs.014
+  desc: Cetățean străin solicită serviciu notarial român.
+  facts:
+    service_category: notarial_legalisation
+    applicant_status: foreign_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - confirm_specific_consular_notarial_service
+    warnings_present:
+    - consular_catalogue_not_assumed
+    - eligibility_depends_on_service
+    needs_confirmation:
+    - foreign_applicant_service_eligibility
+    - notarial_service_catalogue
+- id: fx.cs.015
+  desc: Statut dual sau incert, urgență în stat terț nereprezentat.
+  facts:
+    service_category: emergency_lost_docs
+    applicant_status: dual_or_uncertain
+    current_region: outside_eu
+    romanian_mission_available: false
+    legal_basis: not_applicable
+  expect:
+    status: ok
+    included_steps:
+    - classify_consular_request
+    - open_lost_documents_emergency_route
+    - request_other_eu_consular_protection
+    advice_tags:
+    - eu_unrepresented_protection
+    warnings_present:
+    - consular_catalogue_not_assumed
+    channels:
+    - ch.other_eu_mission
+    - ch.romanian_mission_emergency
+- id: fx.cs.016
+  desc: Lipsește faptul obligatoriu `service_category`.
+  facts:
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - service_category
+- id: fx.cs.017
+  desc: Lipsește faptul obligatoriu `applicant_status`.
+  facts:
+    service_category: passport_travel
+    current_region: eu
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_status
+- id: fx.cs.018
+  desc: Lipsește faptul obligatoriu `current_region`.
+  facts:
+    service_category: passport_travel
+    applicant_status: romanian_citizen
+    romanian_mission_available: true
+    legal_basis: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - current_region
+- id: fx.cs.019
+  desc: Lipsește faptul obligatoriu `romanian_mission_available`.
+  facts:
+    service_category: passport_travel
+    applicant_status: romanian_citizen
+    current_region: eu
+    legal_basis: not_applicable
+  expect:
+    status: needs_facts
+    missing_facts:
+    - romanian_mission_available
+- id: fx.cs.020
+  desc: Lipsește faptul obligatoriu `legal_basis`.
+  facts:
+    service_category: passport_travel
+    applicant_status: romanian_citizen
+    current_region: eu
+    romanian_mission_available: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - legal_basis
+- id: fx.cs.021
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - service_category
+    - applicant_status
+    - current_region
+    - romanian_mission_available
+    - legal_basis

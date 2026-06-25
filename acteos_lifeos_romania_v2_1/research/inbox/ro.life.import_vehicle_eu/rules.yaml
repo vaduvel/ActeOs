@@ -1,0 +1,529 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_IMPORT_VEHICLE_EU
+alias_event_type_id: ro.life.import_vehicle_eu
+event_type_id: life.import_vehicle_eu
+status: draft
+required_facts:
+- vehicle_condition
+- vat_registered
+- applicant_county
+- representation_type
+- applicant_type
+- rar_applicant_matches_acquirer
+- ownership_document_registered_local_tax
+rules:
+- id: rule.import_vehicle_eu.base.route
+  canonical_rule_id: import_vehicle_eu.base.route
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_vehicle_for_eu_vat
+  - type: include_step
+    step_id: obtain_rar_civ_and_required_checks
+  - type: include_step
+    step_id: declare_vehicle_at_local_tax_authority
+  - type: include_step
+    step_id: submit_imported_vehicle_registration
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.valid_rca_copy_owner_name
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: attach_channel
+    channel_id: ch.rar_booking
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.import_vehicle_eu.competent_service
+  - claim.import_vehicle_eu.eligibility_auth_itp_rca_civ
+  - claim.import_vehicle_eu.new_imported_docs
+  - claim.import_vehicle_eu.used_imported_docs
+  status: draft
+- id: rule.import_vehicle_eu.eu.no_customs
+  canonical_rule_id: import_vehicle_eu.eu.no_customs
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: eu_import_no_customs_duty
+    message_ro: Pentru vehiculul cumpărat din alt stat UE nu se aplică taxă vamală la aducerea în România.
+  source_claim_ids:
+  - claim.import_vehicle_eu.eu_no_customs_duty
+  status: draft
+- id: rule.import_vehicle_eu.condition.new
+  canonical_rule_id: import_vehicle_eu.condition.new
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: vehicle_condition
+    value: new
+  effects:
+  - type: emit_advice
+    tag: new_vehicle_authenticity_exempt
+    message_ro: Vehiculul nou este exceptat de la certificatul de autenticitate pentru prima înmatriculare.
+  - type: include_requirement
+    requirement_id: req.new_imported_vehicle_ownership_document
+  source_claim_ids:
+  - claim.import_vehicle_eu.new_imported_docs
+  - claim.import_vehicle_eu.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.import_vehicle_eu.condition.used
+  canonical_rule_id: import_vehicle_eu.condition.used
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: vehicle_condition
+    value: used
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_registration_documents_original
+  - type: include_requirement
+    requirement_id: req.foreign_registration_plates
+  - type: include_requirement
+    requirement_id: req.valid_itp
+  - type: include_requirement
+    requirement_id: req.valid_authenticity_certificate
+  - type: include_requirement
+    requirement_id: req.intracommunity_acquisition_documents_for_rar
+  source_claim_ids:
+  - claim.import_vehicle_eu.used_imported_docs
+  - claim.import_vehicle_eu.eligibility_auth_itp_rca_civ
+  - claim.import_vehicle_eu.rar_eu_acquirer
+  status: draft
+- id: rule.import_vehicle_eu.vat.not_registered
+  canonical_rule_id: import_vehicle_eu.vat.not_registered
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: vat_registered
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.intracommunity_vehicle_vat_certificate
+  source_claim_ids:
+  - claim.import_vehicle_eu.vat_certificate_intracommunity
+  status: draft
+- id: rule.import_vehicle_eu.vat.classification
+  canonical_rule_id: import_vehicle_eu.vat.classification
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: eu_vat_classification_consistent
+    value: false
+  effects:
+  - type: emit_warning
+    tag: eu_vat_classification_mismatch
+    message_ro: Pragurile de 6.000 km și 6 luni nu corespund categoriei declarate; clasificarea TVA trebuie reverificată.
+  - type: require_confirmation
+    tag: eu_vat_classification
+    message_ro: Confirmă dacă vehiculul este nou sau utilizat în sens TVA înainte de stabilirea obligației fiscale.
+  source_claim_ids:
+  - claim.import_vehicle_eu.eu_new_used_vat_definition
+  status: draft
+- id: rule.import_vehicle_eu.rar.acquirer_match
+  canonical_rule_id: import_vehicle_eu.rar.acquirer_match
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: rar_applicant_matches_acquirer
+    value: false
+  effects:
+  - type: block
+    code: rar_applicant_not_intracommunity_acquirer
+    message_ro: RAR publică eliberarea CIV pentru vehiculul utilizat din UE numai achizitorului intracomunitar indicat
+      în actele de achiziție sau împuternicitului legal.
+  source_claim_ids:
+  - claim.import_vehicle_eu.rar_eu_acquirer
+  status: draft
+- id: rule.import_vehicle_eu.rar.anaf_suspension
+  canonical_rule_id: import_vehicle_eu.rar.anaf_suspension
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: anaf_civ_suspension
+    value: true
+  effects:
+  - type: emit_warning
+    tag: rar_anaf_suspension_up_to_5_days
+    message_ro: ANAF poate suspenda eliberarea CIV pentru cel mult 5 zile în cadrul verificării documentelor de
+      achiziție.
+  source_claim_ids:
+  - claim.import_vehicle_eu.rar_anaf_suspension
+  status: draft
+- id: rule.import_vehicle_eu.fiscal.not_registered
+  canonical_rule_id: import_vehicle_eu.fiscal.not_registered
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: ownership_document_registered_local_tax
+    value: false
+  effects:
+  - type: block
+    code: ownership_not_registered_local_tax
+    message_ro: Actul de proprietate trebuie înregistrat la organul fiscal local înaintea înmatriculării.
+  source_claim_ids:
+  - claim.import_vehicle_eu.new_imported_docs
+  - claim.import_vehicle_eu.used_imported_docs
+  status: draft
+- id: rule.import_vehicle_eu.rca.invalid
+  canonical_rule_id: import_vehicle_eu.rca.invalid
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: rca_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_rca
+    message_ro: RCA valabilă pe numele proprietarului este necesară.
+  source_claim_ids:
+  - claim.import_vehicle_eu.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.import_vehicle_eu.civ.invalid
+  canonical_rule_id: import_vehicle_eu.civ.invalid
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: civ_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_civ
+    message_ro: CIV valabilă este necesară.
+  source_claim_ids:
+  - claim.import_vehicle_eu.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.import_vehicle_eu.itp.invalid_used
+  canonical_rule_id: import_vehicle_eu.itp.invalid_used
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_condition
+      value: used
+    - op: eq
+      field: itp_valid
+      value: false
+  effects:
+  - type: block
+    code: invalid_itp
+    message_ro: Vehiculul utilizat trebuie să aibă ITP valabil pentru înmatriculare.
+  source_claim_ids:
+  - claim.import_vehicle_eu.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.import_vehicle_eu.foreign_docs.missing
+  canonical_rule_id: import_vehicle_eu.foreign_docs.missing
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_condition
+      value: used
+    - op: eq
+      field: foreign_registration_documents_available
+      value: false
+  effects:
+  - type: block
+    code: missing_foreign_registration_documents
+    message_ro: Pentru vehiculul uzat importat sunt cerute documentele străine de înmatriculare și plăcuțele, în
+      condițiile publicate.
+  source_claim_ids:
+  - claim.import_vehicle_eu.used_imported_docs
+  status: draft
+- id: rule.import_vehicle_eu.translation.scope
+  canonical_rule_id: import_vehicle_eu.translation.scope
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: foreign_documents_need_translation
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: foreign_document_translation_requirements
+    message_ro: Confirmă documentele care trebuie traduse și forma traducerii la RAR/DGPCI; sursele analizate nu
+      publică o regulă unică pentru toate actele.
+  source_claim_ids:
+  - claim.import_vehicle_eu.used_imported_docs
+  status: draft
+- id: rule.import_vehicle_eu.timis.fiscal_counter
+  canonical_rule_id: import_vehicle_eu.timis.fiscal_counter
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: counter
+    - op: eq
+      field: ownership_document_registered_local_tax
+      value: true
+  effects:
+  - type: emit_advice
+    tag: timis_counter_fiscal_document_rule
+    message_ro: În Timiș, actul de proprietate înregistrat fiscal poate evita depunerea unui certificat fiscal separat
+      la ghișeu pentru înmatriculare.
+  source_claim_ids:
+  - claim.import_vehicle_eu.timis_fiscal_2026
+  status: draft
+- id: rule.import_vehicle_eu.timis.dfmt
+  canonical_rule_id: import_vehicle_eu.timis.dfmt
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: tax_locality
+      value: timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.dfmt_atlas
+  - type: emit_advice
+    tag: dfmt_import_case_selection
+    message_ro: DFMT separă în fluxul local vehiculele dobândite în UE de cele dobândite în afara UE și direcționează
+      depunerea către Atlas.
+  source_claim_ids:
+  - claim.import_vehicle_eu.dfmt_vehicle_declaration
+  status: draft
+- id: rule.import_vehicle_eu.identity.individual
+  canonical_rule_id: import_vehicle_eu.identity.individual
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.import_vehicle_eu.representation_forms
+  status: draft
+- id: rule.import_vehicle_eu.identity.company
+  canonical_rule_id: import_vehicle_eu.identity.company
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.import_vehicle_eu.representation_forms
+  status: draft
+- id: rule.import_vehicle_eu.representation.lawyer
+  canonical_rule_id: import_vehicle_eu.representation.lawyer
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.import_vehicle_eu.representation_forms
+  status: draft
+- id: rule.import_vehicle_eu.representation.authorized_individual
+  canonical_rule_id: import_vehicle_eu.representation.authorized_individual
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.import_vehicle_eu.representation_forms
+  status: draft
+- id: rule.import_vehicle_eu.representation.company_delegate
+  canonical_rule_id: import_vehicle_eu.representation.company_delegate
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.import_vehicle_eu.representation_forms
+  status: draft
+- id: rule.import_vehicle_eu.payment.proof
+  canonical_rule_id: import_vehicle_eu.payment.proof
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.registration_and_plate_payment_proof
+  source_claim_ids:
+  - claim.import_vehicle_eu.new_imported_docs
+  status: draft
+- id: rule.import_vehicle_eu.payment.snep
+  canonical_rule_id: import_vehicle_eu.payment.snep
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: true
+  effects:
+  - type: emit_advice
+    tag: snep_payment_proof_exception
+    message_ro: Dovada plății nu se depune atunci când plata este identificată prin SNEP, potrivit procedurii publicate.
+  source_claim_ids:
+  - claim.import_vehicle_eu.new_imported_docs
+  status: draft
+- id: rule.import_vehicle_eu.channel.timis
+  canonical_rule_id: import_vehicle_eu.channel.timis
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_verified_channel
+    message_ro: Pentru pilotul Timiș este publicat canalul SPCRPCIV Timiș și legătura DGPCI pentru programare/informare.
+  source_claim_ids:
+  - claim.import_vehicle_eu.timis_contact
+  status: draft
+- id: rule.import_vehicle_eu.channel.other_county
+  canonical_rule_id: import_vehicle_eu.channel.other_county
+  event_type_id: life.import_vehicle_eu
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și particularitățile locale pentru înmatricularea vehiculului importat
+      din UE în județul competent.
+  source_claim_ids:
+  - claim.import_vehicle_eu.competent_service
+  status: draft

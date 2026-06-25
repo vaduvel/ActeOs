@@ -1,0 +1,321 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.vehicle_itp_due
+status: draft
+rules:
+- id: rule.itp.base
+  canonical_rule_id: itp.base
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.itp.check_date
+  - type: include_step
+    step_id: step.itp.identify_period
+  - type: include_step
+    step_id: step.itp.book_station
+  - type: include_step
+    step_id: step.itp.complete
+  - type: include_requirement
+    requirement_id: req.itp.vehicle_category
+  - type: include_requirement
+    requirement_id: req.itp.authorized_station
+  - type: attach_channel
+    channel_id: ch.itp.verify
+  source_claim_ids:
+  - claim.itp.required
+  - claim.itp.authorized_station
+  - claim.itp.date_source
+  status: draft
+- id: rule.itp.six_months
+  canonical_rule_id: itp.six_months
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: in
+    field: vehicle_use
+    values:
+    - taxi
+    - rental
+    - ride_hailing
+    - passenger_over_8
+  effects:
+  - type: emit_advice
+    tag: itp_period_6_months
+    message_ro: Periodicitatea indicată de RNTR 1 este de 6 luni.
+  source_claim_ids:
+  - claim.itp.six_months
+  status: draft
+- id: rule.itp.one_year
+  canonical_rule_id: itp.one_year
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: in
+    field: vehicle_use
+    values:
+    - goods_le_3_5
+    - goods_gt_3_5
+    - ambulance
+    - driving_school
+  effects:
+  - type: emit_advice
+    tag: itp_period_1_year
+    message_ro: Periodicitatea indicată de RNTR 1 este anuală pentru această categorie, cu verificarea excepțiilor tehnice.
+  source_claim_ids:
+  - claim.itp.one_year
+  status: draft
+- id: rule.itp.two_years
+  canonical_rule_id: itp.two_years
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: in
+    field: vehicle_use
+    values:
+    - motorcycle
+    - trailer_le_3_5
+  effects:
+  - type: emit_advice
+    tag: itp_period_2_years
+    message_ro: Periodicitatea indicată de RNTR 1 este de 2 ani.
+  source_claim_ids:
+  - claim.itp.two_years
+  status: draft
+- id: rule.itp.private_under12
+  canonical_rule_id: itp.private_under12
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_use
+      value: private_passenger
+    - op: lt
+      field: vehicle_age_years
+      value: 12
+  effects:
+  - type: emit_advice
+    tag: itp_private_2_years
+    message_ro: Pentru autoturismul privat sub 12 ani, periodicitatea obișnuită este de 2 ani, după prima ITP.
+  source_claim_ids:
+  - claim.itp.two_years
+  status: draft
+- id: rule.itp.private_12plus
+  canonical_rule_id: itp.private_12plus
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_use
+      value: private_passenger
+    - op: gte
+      field: vehicle_age_years
+      value: 12
+  effects:
+  - type: emit_warning
+    tag: itp_private_annual_12plus
+    message_ro: La cel puțin 12 ani vechime, autoturismul are ITP anual, dacă nu este vehicul istoric.
+  source_claim_ids:
+  - claim.itp.passenger_12_years
+  status: draft
+- id: rule.itp.historic
+  canonical_rule_id: itp.historic
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: vehicle_use
+    value: historic
+  effects:
+  - type: require_confirmation
+    tag: historic_vehicle_itp_rule
+    message_ro: Confirmă regimul ITP al vehiculului istoric din RNTR 1 și atestarea sa.
+  source_claim_ids:
+  - claim.itp.passenger_12_years
+  status: draft
+- id: rule.itp.first_new_passenger
+  canonical_rule_id: itp.first_new_passenger
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_use
+      value: private_passenger
+    - op: eq
+      field: first_itp
+      value: true
+  effects:
+  - type: emit_advice
+    tag: first_itp_passenger_3_years
+    message_ro: Prima ITP a autoturismului nou este la 3 ani.
+  source_claim_ids:
+  - claim.itp.first_new_passenger
+  status: draft
+- id: rule.itp.first_motorhome
+  canonical_rule_id: itp.first_motorhome
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_use
+      value: motorhome
+    - op: eq
+      field: first_itp
+      value: true
+  effects:
+  - type: emit_advice
+    tag: first_itp_motorhome_4_years
+    message_ro: Prima ITP a autorulotei eligibile este la 4 ani.
+  source_claim_ids:
+  - claim.itp.first_motorhome
+  status: draft
+- id: rule.itp.expired
+  canonical_rule_id: itp.expired
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: itp_status
+      values:
+      - expired
+      - cancelled
+    - op: eq
+      field: plans_public_road_use
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.itp.stop_road_use
+  - type: include_requirement
+    requirement_id: req.itp.valid_status
+  - type: block
+    tag: do_not_drive_without_valid_itp
+    message_ro: Nu circula pe drum public până când ITP este valabilă.
+  source_claim_ids:
+  - claim.itp.no_road_expired
+  status: draft
+- id: rule.itp.expired_no_road_use
+  canonical_rule_id: itp.expired_no_road_use
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: itp_status
+      values:
+      - expired
+      - cancelled
+    - op: eq
+      field: plans_public_road_use
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.itp.stop_road_use
+  - type: emit_warning
+    tag: itp_invalid_keep_vehicle_off_public_road
+    message_ro: Păstrează vehiculul în afara drumului public până la o ITP valabilă.
+  source_claim_ids:
+  - claim.itp.no_road_expired
+  status: draft
+- id: rule.itp.unknown
+  canonical_rule_id: itp.unknown
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: itp_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: verify_itp_status
+    message_ro: Verifică valabilitatea în act sau în serviciul RAR înainte de circulație.
+  source_claim_ids:
+  - claim.itp.date_source
+  status: draft
+- id: rule.itp.due_soon
+  canonical_rule_id: itp.due_soon
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: itp_status
+    value: due_soon
+  effects:
+  - type: emit_warning
+    tag: itp_due_soon
+    message_ro: Programează inspecția înainte de data exactă de expirare.
+  source_claim_ids:
+  - claim.itp.date_source
+  status: draft
+- id: rule.itp.other_category
+  canonical_rule_id: itp.other_category
+  event_type_id: life.vehicle_itp_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: vehicle_use
+    value: other
+  effects:
+  - type: require_confirmation
+    tag: verify_itp_period_other_category
+    message_ro: Categoria nu este suficientă pentru calcul; consultă RNTR 1 sau RAR.
+  source_claim_ids:
+  - claim.itp.six_months
+  - claim.itp.one_year
+  - claim.itp.two_years
+  status: draft

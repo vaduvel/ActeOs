@@ -1,0 +1,264 @@
+batch_id: B12_OPEN_SRL
+defaults:
+  event_type_id: life.open_srl
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: SRL cu asociat unic, capital 500 lei, depunere la ghișeu
+  facts:
+    founders_count: 1
+    subscribed_capital_ron: 500
+    real_estate_in_kind_contribution: false
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    filing_channel: counter
+    beneficial_owner_data_in_constitutive_act: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_srl_constitution
+    - file_srl_registration
+    requirements:
+    - req.onrc_name_reservation
+    - req.onrc_annex_2a
+    - req.srl_constitutive_act
+    - req.onrc_annex_4
+- id: F02
+  desc: SRL cu doi asociați și capital 1.000 lei
+  facts:
+    founders_count: 2
+    subscribed_capital_ron: 1000
+    real_estate_in_kind_contribution: false
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    beneficial_owner_data_in_constitutive_act: true
+  expect:
+    status: resolved
+- id: F03
+  desc: capital social de 499 lei
+  facts:
+    founders_count: 1
+    subscribed_capital_ron: 499
+    real_estate_in_kind_contribution: false
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+  expect:
+    status: blocked
+    blocks:
+    - minimum_capital_not_met
+- id: F04
+  desc: aport în natură constând într-un imobil
+  facts:
+    founders_count: 2
+    subscribed_capital_ron: 5000
+    real_estate_in_kind_contribution: true
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.authentic_constitutive_act
+    confirmations:
+    - notarial_authentication_required
+- id: F05
+  desc: act constitutiv semnat, depunere în ziua a 15-a
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: associate
+    beneficial_owner_data_in_constitutive_act: true
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F06
+  desc: act constitutiv vechi de 16 zile
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: associate
+    beneficial_owner_data_in_constitutive_act: true
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F07
+  desc: sediu social în locuință, fără activitate
+  facts:
+    subscribed_capital_ron: 500
+    registered_office_is_dwelling: true
+    activity_at_registered_office: false
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+  expect:
+    status: resolved
+    requirements:
+    - req.no_activity_at_registered_office_declaration
+    advice:
+    - association_approval_not_required
+- id: F08
+  desc: sediu social în locuință cu activitate
+  facts:
+    subscribed_capital_ron: 500
+    registered_office_is_dwelling: true
+    activity_at_registered_office: true
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+  expect:
+    status: needs_confirmation
+    missing_facts:
+    - condominium_change_or_activity_formalities
+- id: F09
+  desc: beneficiarul real este inclus în actul constitutiv
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    beneficial_owner_data_in_constitutive_act: true
+  expect:
+    status: resolved
+- id: F10
+  desc: beneficiarul real nu este inclus în act
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    beneficial_owner_data_in_constitutive_act: false
+  expect:
+    status: resolved
+    requirements:
+    - req.beneficial_owner_declaration
+- id: F11
+  desc: depunere online cu QES
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+    channels:
+    - ch.onrc_online_portal
+- id: F12
+  desc: depunere online fără QES
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F13
+  desc: cererea este semnată de avocat
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F14
+  desc: cererea este semnată de mandatar autentic
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: authenticated_proxy
+  expect:
+    status: resolved
+- id: F15
+  desc: contabil fără mandat semnează cererea
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_filing_actor
+- id: F16
+  desc: societate înregistrată, 30% capital vărsat, începe operațiunile
+  facts:
+    company_registered: true
+    capital_paid_percent: 30
+    intends_to_start_operations: true
+    registration_date: '2026-06-01'
+    subscribed_capital_ron: 500
+    filing_actor: associate
+  expect:
+    status: resolved
+- id: F17
+  desc: societate înregistrată, doar 20% vărsat, vrea să opereze
+  facts:
+    company_registered: true
+    capital_paid_percent: 20
+    intends_to_start_operations: true
+    registration_date: '2026-06-01'
+    subscribed_capital_ron: 500
+    filing_actor: associate
+  expect:
+    status: blocked
+    blocks:
+    - capital_payment_before_operations
+- id: F18
+  desc: societate înregistrată, 20% vărsat, nu operează încă
+  facts:
+    company_registered: true
+    capital_paid_percent: 20
+    intends_to_start_operations: false
+    registration_date: '2026-06-01'
+    subscribed_capital_ron: 500
+    filing_actor: associate
+  expect:
+    status: resolved
+    included_steps:
+    - pay_initial_share_capital
+    deadline_months: 3
+- id: F19
+  desc: cerere ONRC admisă, nota de publicare trebuie achitată
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    onrc_application_status: admitted
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - pay_monitorul_oficial_publication_tariff
+    confirmations:
+    - confirm_publication_tariff_note
+- id: F20
+  desc: activitate comercială în Timișoara
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_applicable: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_timisoara_commercial_agreement
+    confirmations:
+    - confirm_current_local_fee_and_documents
+- id: F21
+  desc: dosar incomplet și completări cerute de registrator
+  facts:
+    subscribed_capital_ron: 500
+    constitutive_act_date: '2026-06-20'
+    filing_actor: associate
+    registrar_requested_remediation: true
+  expect:
+    status: resolved
+    advice:
+    - remediation_up_to_15_days

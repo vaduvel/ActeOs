@@ -1,0 +1,330 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_BENEFICIAL_OWNER_UPDATE
+event_type_id: ro.life.beneficial_owner_update
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- beneficial_owner_changed
+- days_since_change
+- high_risk_shareholding_chain
+- annual_statements_approved
+- days_since_annual_approval
+- identification_and_control_data_complete
+- submission_channel
+- qualified_signature_available
+- representative_used
+rules:
+- id: rule.b13.bo.assess
+  canonical_rule_id: beneficial_owner.assess
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: assess_beneficial_owner_filing_trigger
+  source_claim_ids:
+  - claim.b13.bo.change_obligation
+  - claim.b13.bo.annual_scope
+  status: draft
+- id: rule.b13.bo.change
+  canonical_rule_id: beneficial_owner.change.file
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: beneficial_owner_changed
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_and_file_beneficial_owner_change
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_declaration
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_identification_and_control_data
+  source_claim_ids:
+  - claim.b13.bo.change_obligation
+  - claim.b13.bo.data_fields
+  status: in_review
+- id: rule.b13.bo.change_in_time
+  canonical_rule_id: beneficial_owner.change.deadline
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficial_owner_changed
+      value: true
+    - op: lte
+      field: days_since_change
+      value: 15
+  effects:
+  - type: emit_advice
+    tag: beneficial_owner_change_within_15_days
+    message_ro: Schimbarea este în fereastra legală de 15 zile.
+  source_claim_ids:
+  - claim.b13.bo.change_deadline
+  status: draft
+- id: rule.b13.bo.change_late
+  canonical_rule_id: beneficial_owner.change.deadline
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficial_owner_changed
+      value: true
+    - op: gt
+      field: days_since_change
+      value: 15
+  effects:
+  - type: emit_warning
+    tag: beneficial_owner_change_overdue
+    message_ro: Termenul de 15 zile este depășit.
+  - type: emit_warning
+    tag: beneficial_owner_nonfiling_fine_5000_10000
+    message_ro: Legea prevede amendă de la 5.000 la 10.000 lei pentru nedepunere.
+  source_claim_ids:
+  - claim.b13.bo.change_deadline
+  - claim.b13.bo.fine
+  status: in_review
+- id: rule.b13.bo.annual_applicable
+  canonical_rule_id: beneficial_owner.annual.scope
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: high_risk_shareholding_chain
+      value: true
+    - op: eq
+      field: annual_statements_approved
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_and_file_annual_beneficial_owner_declaration
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_declaration
+  source_claim_ids:
+  - claim.b13.bo.annual_scope
+  status: in_review
+- id: rule.b13.bo.annual_in_time
+  canonical_rule_id: beneficial_owner.annual.deadline
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: high_risk_shareholding_chain
+      value: true
+    - op: eq
+      field: annual_statements_approved
+      value: true
+    - op: lte
+      field: days_since_annual_approval
+      value: 15
+  effects:
+  - type: emit_advice
+    tag: annual_beneficial_owner_within_15_days
+    message_ro: Declarația anuală specială este în fereastra de 15 zile.
+  source_claim_ids:
+  - claim.b13.bo.annual_deadline
+  status: draft
+- id: rule.b13.bo.annual_late
+  canonical_rule_id: beneficial_owner.annual.deadline
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: high_risk_shareholding_chain
+      value: true
+    - op: eq
+      field: annual_statements_approved
+      value: true
+    - op: gt
+      field: days_since_annual_approval
+      value: 15
+  effects:
+  - type: emit_warning
+    tag: annual_beneficial_owner_overdue
+    message_ro: Fereastra de 15 zile de la aprobarea situațiilor financiare este depășită.
+  - type: emit_warning
+    tag: beneficial_owner_nonfiling_fine_5000_10000
+    message_ro: Nedepunerea poate atrage amenda prevăzută de art. 57.
+  source_claim_ids:
+  - claim.b13.bo.annual_deadline
+  - claim.b13.bo.fine
+  status: in_review
+- id: rule.b13.bo.no_annual_general
+  canonical_rule_id: beneficial_owner.annual.scope
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficial_owner_changed
+      value: false
+    - op: eq
+      field: high_risk_shareholding_chain
+      value: false
+  effects:
+  - type: emit_advice
+    tag: no_general_annual_declaration_trigger_identified
+    message_ro: Nu a fost identificat triggerul anual special din art. 56 alin. (1^3).
+  source_claim_ids:
+  - claim.b13.bo.annual_scope
+  status: draft
+- id: rule.b13.bo.data_incomplete
+  canonical_rule_id: beneficial_owner.data.completeness
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: identification_and_control_data_complete
+    value: false
+  effects:
+  - type: block
+    tag: beneficial_owner_data_incomplete
+    message_ro: Completează datele de identificare și modalitatea de control înainte de depunere.
+  - type: include_requirement
+    requirement_id: req.complete_beneficial_owner_identification_and_control_data
+  source_claim_ids:
+  - claim.b13.bo.data_fields
+  status: in_review
+- id: rule.b13.bo.electronic
+  canonical_rule_id: beneficial_owner.channel.electronic
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: electronic
+    - op: eq
+      field: qualified_signature_available
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc.beneficial_owner_electronic
+  source_claim_ids:
+  - claim.b13.bo.channels
+  status: in_review
+- id: rule.b13.bo.electronic_no_signature
+  canonical_rule_id: beneficial_owner.channel.electronic
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: electronic
+    - op: eq
+      field: qualified_signature_available
+      value: false
+  effects:
+  - type: block
+    tag: electronic_signature_missing
+    message_ro: Ruta electronică nu este pregătită fără semnarea cerută.
+  - type: emit_advice
+    tag: choose_counter_or_post_for_bo
+    message_ro: Alege ghișeul ori poșta/curierul sau pregătește semnarea electronică.
+  source_claim_ids:
+  - claim.b13.bo.channels
+  status: in_review
+- id: rule.b13.bo.counter
+  canonical_rule_id: beneficial_owner.channel.counter
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: submission_channel
+    value: counter
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc.beneficial_owner_counter
+  source_claim_ids:
+  - claim.b13.bo.channels
+  status: in_review
+- id: rule.b13.bo.post
+  canonical_rule_id: beneficial_owner.channel.post
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: submission_channel
+    value: post_courier
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc.beneficial_owner_post_courier
+  source_claim_ids:
+  - claim.b13.bo.channels
+  status: in_review
+- id: rule.b13.bo.representative
+  canonical_rule_id: beneficial_owner.representative
+  event_type_id: ro.life.beneficial_owner_update
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representative_used
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.representation_form_with_certified_date_or_authorized_form
+  - type: require_confirmation
+    tag: confirm_representative_document_form
+    message_ro: Confirmă forma reprezentării și data certă/notarul/avocatul aplicabil.
+  source_claim_ids:
+  - claim.b13.bo.channels
+  status: in_review

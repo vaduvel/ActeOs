@@ -1,0 +1,805 @@
+batch_id: batch08.demolition_permit
+defaults:
+  event_type_id: ro.life.demolition_permit
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.total.complete
+  desc: Demolare totală, dosar complet
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.partial.complete
+  desc: Demolare parțială
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: partial
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.decommission.complete
+  desc: Dezafectare
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: decommission
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.disassembly.complete
+  desc: Dezmembrare
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: disassembly
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.combined
+  desc: Demolare urmată de construcție nouă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: true
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - single_combined_authorisation
+    - only_building_fee_for_combined_case
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.protected
+  desc: Demolare în zonă protejată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: true
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    requirements:
+    - specific_heritage_and_protected_area_approvals
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    - protected_demolition_special_route
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.incomplete
+  desc: Dosar incomplet
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - incomplete_notice_5_working_days
+    - supplement_window_max_3_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.other_uat
+  desc: Demolare în alt UAT
+  facts:
+    jurisdiction_id: ro.bv.brasov
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    - identify_authorising_local_authority
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - verified_with_local_gap
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_local_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+- id: fx.no_right
+  desc: Lipsește dreptul real
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: false
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    requirements:
+    - proof_of_title_or_real_right
+    advice_tags:
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    overridden_rules:
+    - rule.demolition_permit.complete_file.v1
+- id: fx.no_dt
+  desc: Lipsește DT pentru desființare
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: false
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    requirements:
+    - technical_documentation_for_demolition
+    advice_tags:
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    overridden_rules:
+    - rule.demolition_permit.complete_file.v1
+- id: fx.no_approvals
+  desc: Lipsesc avizele
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: false
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    requirements:
+    - approvals_and_agreements_from_urbanism_certificate
+    advice_tags:
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    overridden_rules:
+    - rule.demolition_permit.complete_file.v1
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.demolition_scope
+  desc: Lipsește faptul obligatoriu demolition_scope
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - demolition_scope
+- id: fx.missing.replacement_building_planned
+  desc: Lipsește faptul obligatoriu replacement_building_planned
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - replacement_building_planned
+- id: fx.missing.has_real_right
+  desc: Lipsește faptul obligatoriu has_real_right
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - has_real_right
+- id: fx.missing.has_urbanism_certificate
+  desc: Lipsește faptul obligatoriu has_urbanism_certificate
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - has_urbanism_certificate
+- id: fx.missing.cadastral_evidence_requirement_satisfied
+  desc: Lipsește faptul obligatoriu cadastral_evidence_requirement_satisfied
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - cadastral_evidence_requirement_satisfied
+- id: fx.missing.has_dt
+  desc: Lipsește faptul obligatoriu has_dt
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - has_dt
+- id: fx.missing.approvals_requirement_satisfied
+  desc: Lipsește faptul obligatoriu approvals_requirement_satisfied
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - approvals_requirement_satisfied
+- id: fx.missing.environmental_requirement_satisfied
+  desc: Lipsește faptul obligatoriu environmental_requirement_satisfied
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - environmental_requirement_satisfied
+- id: fx.missing.has_fee_proof
+  desc: Lipsește faptul obligatoriu has_fee_proof
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - has_fee_proof
+- id: fx.missing.protected_area
+  desc: Lipsește faptul obligatoriu protected_area
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - demolition_decision_max_30_calendar_days
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - protected_area
+- id: fx.missing.application_complete
+  desc: Lipsește faptul obligatoriu application_complete
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    demolition_scope: total
+    replacement_building_planned: false
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_demolition_technical_documentation
+    - pay_authorisation_fee
+    - submit_demolition_permit_file
+    - receive_demolition_permit
+    advice_tags:
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_demolish_before_permit
+    confirmations:
+    - confirm_current_timisoara_demolition_submission_channel
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - application_complete
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    confirmations:
+    - confirm_current_local_demolition_fee_amount
+    missing_facts:
+    - jurisdiction_id
+    - demolition_scope
+    - replacement_building_planned
+    - has_real_right
+    - has_urbanism_certificate
+    - cadastral_evidence_requirement_satisfied
+    - has_dt
+    - approvals_requirement_satisfied
+    - environmental_requirement_satisfied
+    - has_fee_proof
+    - protected_area
+    - application_complete

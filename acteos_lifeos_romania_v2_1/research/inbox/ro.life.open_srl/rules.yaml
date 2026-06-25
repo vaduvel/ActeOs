@@ -1,0 +1,419 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_OPEN_SRL
+event_type_id: life.open_srl
+status: draft
+rules:
+- id: rule.open_srl.constitutive_act
+  canonical_rule_id: open_srl.constitutive_act
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '1990-12-17'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_srl_constitution
+  - type: include_requirement
+    requirement_id: req.srl_constitutive_act
+  source_claim_ids:
+  - claim.biz.open_srl.constitution_form
+  - claim.biz.open_srl.constitutive_content
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.open_srl.real_estate_authentic_form
+  canonical_rule_id: open_srl.real_estate_authentic_form
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '1990-12-17'
+  when:
+    op: eq
+    field: real_estate_in_kind_contribution
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.authentic_constitutive_act
+  - type: require_confirmation
+    tag: notarial_authentication_required
+    message_ro: Aportul imobiliar cere verificarea formei autentice a actului constitutiv.
+  source_claim_ids:
+  - claim.biz.open_srl.authentic_real_estate
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - real_estate_in_kind_contribution
+  legal_rank: Lege
+- id: rule.open_srl.minimum_capital
+  canonical_rule_id: open_srl.minimum_capital
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-12-18'
+  when:
+    op: lt
+    field: subscribed_capital_ron
+    value: 500
+  effects:
+  - type: block
+    tag: minimum_capital_not_met
+    message_ro: Capitalul social subscris este sub minimul de 500 lei aplicabil unui SRL nou.
+  source_claim_ids:
+  - claim.biz.open_srl.min_capital_500
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - subscribed_capital_ron
+- id: rule.open_srl.capital_before_operations
+  canonical_rule_id: open_srl.capital_before_operations
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: company_registered
+      value: true
+    - op: lt
+      field: capital_paid_percent
+      value: 30
+    - op: eq
+      field: intends_to_start_operations
+      value: true
+  effects:
+  - type: block
+    tag: capital_payment_before_operations
+    message_ro: Înaintea operațiunilor trebuie vărsat cel puțin 30% din capitalul subscris.
+  source_claim_ids:
+  - claim.biz.open_srl.capital_payment
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - company_registered
+  - capital_paid_percent
+  - intends_to_start_operations
+  legal_rank: Lege
+- id: rule.open_srl.capital_three_month_deadline
+  canonical_rule_id: open_srl.capital_three_month_deadline
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: company_registered
+      value: true
+    - op: lt
+      field: capital_paid_percent
+      value: 30
+    - op: exists
+      field: registration_date
+  effects:
+  - type: set_deadline
+    step_id: pay_initial_share_capital
+    value:
+      kind: relative_calendar_months
+      anchor: registration_date
+      months: 3
+  - type: include_step
+    step_id: pay_initial_share_capital
+  source_claim_ids:
+  - claim.biz.open_srl.capital_payment
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - company_registered
+  - capital_paid_percent
+  - registration_date
+  legal_rank: Lege
+- id: rule.open_srl.forms_bundle
+  canonical_rule_id: open_srl.forms_bundle
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.onrc_name_reservation
+  - type: include_requirement
+    requirement_id: req.onrc_annex_2a
+  - type: include_requirement
+    requirement_id: req.srl_constitutive_act
+  - type: include_requirement
+    requirement_id: req.onrc_annex_4
+  source_claim_ids:
+  - claim.biz.open_srl.forms
+  status: draft
+  authority_level: national_operational
+- id: rule.open_srl.home_no_activity
+  canonical_rule_id: open_srl.home_no_activity
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2020-11-05'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registered_office_is_dwelling
+      value: true
+    - op: eq
+      field: activity_at_registered_office
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.no_activity_at_registered_office_declaration
+  - type: emit_advice
+    tag: association_approval_not_required
+    message_ro: Pentru sediul-locuință fără activitate, avizul de schimbare a destinației nu este necesar.
+  source_claim_ids:
+  - claim.biz.open_srl.no_activity_home
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - registered_office_is_dwelling
+  - activity_at_registered_office
+  legal_rank: Lege
+- id: rule.open_srl.file_within_15_days
+  canonical_rule_id: open_srl.file_within_15_days
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: exists
+    field: constitutive_act_date
+  effects:
+  - type: set_deadline
+    step_id: file_srl_registration
+    value:
+      kind: relative_calendar_days
+      anchor: constitutive_act_date
+      days: 15
+  - type: include_step
+    step_id: file_srl_registration
+  source_claim_ids:
+  - claim.biz.open_srl.filing_deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - constitutive_act_date
+  legal_rank: Lege
+- id: rule.open_srl.signer
+  canonical_rule_id: open_srl.signer
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+    - associate
+  effects:
+  - type: block
+    tag: unauthorized_filing_actor
+    message_ro: Semnatarul indicat nu se află între categoriile prevăzute pentru înmatriculare.
+  source_claim_ids:
+  - claim.biz.open_srl.filing_actor
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.open_srl.online_qes
+  canonical_rule_id: open_srl.online_qes
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Depunerea electronică necesită semnătură electronică calificată sau un canal alternativ.
+  source_claim_ids:
+  - claim.biz.open_srl.channel
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.open_srl.channels
+  canonical_rule_id: open_srl.channels
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc_counter_any_office
+  - type: attach_channel
+    channel_id: ch.onrc_post_courier
+  - type: attach_channel
+    channel_id: ch.onrc_online_portal
+  source_claim_ids:
+  - claim.biz.open_srl.channel
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.open_srl.beneficial_owner
+  canonical_rule_id: open_srl.beneficial_owner
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2019-07-21'
+  when:
+    op: eq
+    field: beneficial_owner_data_in_constitutive_act
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_declaration
+  source_claim_ids:
+  - claim.biz.open_srl.beneficial_owner
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - beneficial_owner_data_in_constitutive_act
+  legal_rank: Lege
+- id: rule.open_srl.processing
+  canonical_rule_id: open_srl.processing
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: registrar_one_working_day
+    message_ro: Termenul legal presupune un dosar complet.
+  - type: emit_advice
+    tag: remediation_up_to_15_days
+    message_ro: Completările dispuse de registrator au propriul termen.
+  source_claim_ids:
+  - claim.biz.open_srl.processing
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.open_srl.publication_tariff_after_admission
+  canonical_rule_id: open_srl.publication_tariff_after_admission
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-04-30'
+  when:
+    op: eq
+    field: onrc_application_status
+    value: admitted
+  effects:
+  - type: include_step
+    step_id: pay_monitorul_oficial_publication_tariff
+  - type: require_confirmation
+    tag: confirm_publication_tariff_note
+    message_ro: Achită suma din nota de calcul emisă după admitere; nu folosi o valoare memorată.
+  source_claim_ids:
+  - claim.biz.open_srl.publication_tariff
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - onrc_application_status
+- id: rule.open_srl.timisoara_commerce
+  canonical_rule_id: open_srl.timisoara_commerce
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_applicable
+      value: true
+  effects:
+  - type: include_step
+    step_id: obtain_timisoara_commercial_agreement
+  - type: require_confirmation
+    tag: confirm_current_local_fee_and_documents
+    message_ro: Detaliile locale se preiau din serviciul dinamic al Primăriei Timișoara.
+  source_claim_ids:
+  - claim.biz.open_srl.local_commerce
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_applicable
+- id: rule.open_srl.home_with_activity_check
+  canonical_rule_id: open_srl.home_with_activity_check
+  event_type_id: life.open_srl
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2017-01-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registered_office_is_dwelling
+      value: true
+    - op: eq
+      field: activity_at_registered_office
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: condominium_change_or_activity_formalities
+    message_ro: Excepția pentru sediul social fără activitate nu se aplică. Verifică formalitățile cerute de folosirea efectivă
+      a locuinței.
+  source_claim_ids:
+  - claim.biz.open_srl.no_activity_home
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - registered_office_is_dwelling
+  - activity_at_registered_office
+  - condominium_change_or_activity_formalities
+  legal_rank: Lege

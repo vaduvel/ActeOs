@@ -3,127 +3,188 @@ batch_id: R1_ID_CARD_LOST_STOLEN
 event_type_id: life.id_card_lost_stolen
 status: draft
 rules:
-  - id: rule.lost.request_15d
-    canonical_rule_id: id_card_lost_stolen.request_15d
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    authority_level: national_normative
-    severity: critical
-    effective_from: '2005-07-20'
-    when: { op: const, value: true }
-    effects:
-      - { type: include_step, step_id: request_new_identity_card }
-      - { type: set_deadline, step_id: request_new_identity_card, value: { kind: relative_days, anchor: event_date, days: 15 } }
-      - { type: include_requirement, requirement_id: req.anexa11 }
-      - { type: include_requirement, requirement_id: req.civil_status_certificates }
-      - { type: include_requirement, requirement_id: req.proof_of_address }
-    source_claim_ids: [claim.lost.request_15d, claim.lost.docs_art57, claim.lost.anexa11]
-    status: draft
-  - id: rule.lost.police_24h
-    canonical_rule_id: id_card_lost_stolen.police_report_24h
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    authority_level: institution
-    severity: critical
-    effective_from: '2021-04-01'
-    when:
-      op: eq
-      field: loss_type
-      value: stolen
-    effects:
-      - { type: include_step, step_id: report_theft_police }
-      - { type: set_deadline, step_id: report_theft_police, value: { kind: relative_hours, anchor: event_date, hours: 24 } }
-    source_claim_ids: [claim.lost.police_24h]
-    status: draft
-  - id: rule.lost.spclep_announce
-    canonical_rule_id: id_card_lost_stolen.spclep_announce
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    authority_level: institution
-    severity: operational
-    effective_from: '2021-04-01'
-    when:
-      op: in
-      field: loss_type
-      values: [lost, destroyed]
-    effects:
-      - { type: emit_warning, message_ro: 'Pierderea/distrugerea se anunta direct la SPCLEP de la domiciliu/resedinta, fara reclamatie la politie.' }
-    source_claim_ids: [claim.lost.spclep_announce]
-    status: draft
-  - id: rule.lost.photo_doc_if_no_rnep
-    canonical_rule_id: id_card_lost_stolen.photo_doc_if_no_rnep
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    authority_level: institution
-    severity: operational
-    effective_from: '2021-04-01'
-    when:
-      op: eq
-      field: facial_image_in_rnep
-      value: false
-    effects:
-      - { type: include_requirement, requirement_id: req.recent_photo_document }
-      - { type: emit_warning, message_ro: 'Daca imaginea ta nu e in R.N.E.P., adu un document oficial cu fotografie recenta (permis sau pasaport).' }
-    source_claim_ids: [claim.lost.photo_doc_if_no_rnep]
-    status: draft
-  - id: rule.lost.host_consent
-    canonical_rule_id: id_card_lost_stolen.host_consent
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    authority_level: national_normative
-    severity: operational
-    effective_from: '2021-04-01'
-    when:
-      op: eq
-      field: new_address_relation
-      value: host_consent
-    effects:
-      - { type: include_requirement, requirement_id: req.host_consent_declaration }
-    source_claim_ids: [claim.lost.docs_art57]
-    status: draft
-  - id: rule.lost.null_by_law
-    canonical_rule_id: id_card_lost_stolen.null_by_law
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    severity: explanatory
-    effective_from: '2005-07-20'
-    when: { op: const, value: true }
-    effects:
-      - { type: emit_warning, message_ro: 'Actul declarat pierdut/furat/distrus este nul de drept si nu mai poate fi folosit.' }
-    source_claim_ids: [claim.lost.null_by_law]
-    status: draft
-  - id: rule.lost.return_if_found_48h
-    canonical_rule_id: id_card_lost_stolen.return_if_found_48h
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    severity: explanatory
-    effective_from: '2005-07-20'
-    when: { op: const, value: true }
-    effects:
-      - { type: emit_warning, message_ro: 'Daca gasesti ulterior actul declarat, il predai in 48 de ore la SPCLEP unde ai declarat evenimentul.' }
-    source_claim_ids: [claim.lost.return_if_found_48h]
-    status: draft
-  - id: rule.lost.sanction_conflict
-    canonical_rule_id: id_card_lost_stolen.sanction_conflict
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro]
-    severity: critical
-    effective_from: '2005-07-20'
-    when: { op: const, value: true }
-    effects:
-      - { type: block, message_ro: 'Nu se afiseaza un cuantum unic de amenda pana la rezolvarea conflictului de surse (500-1000 vs 40-80 lei).' }
-      - { type: require_confirmation, message_ro: 'Confirma cuantumul curent al sanctiunii din sursa normativa.' }
-    source_claim_ids: [claim.lost.sanction_500_1000, claim.exp.sanction_40_80]
-    status: in_review
-  - id: rule.lost.timisoara_channel
-    canonical_rule_id: id_card_lost_stolen.timisoara_channel
-    event_type_id: life.id_card_lost_stolen
-    jurisdiction_ids: [ro.tm.timisoara]
-    authority_level: institution
-    severity: explanatory
-    effective_from: '2025-04-24'
-    when: { op: const, value: true }
-    effects:
-      - { type: attach_channel, channel_id: ch.dep_timisoara }
-    source_claim_ids: [claim.lost.request_15d]
-    status: draft
+- id: rule.lost.request_15d
+  canonical_rule_id: id_card_lost_stolen.request_15d
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_new_identity_card
+  - type: set_deadline
+    step_id: request_new_identity_card
+    value:
+      kind: relative_days
+      anchor: event_date
+      days: 15
+  - type: include_requirement
+    requirement_id: req.anexa11
+  - type: include_requirement
+    requirement_id: req.civil_status_certificates
+  - type: include_requirement
+    requirement_id: req.proof_of_address
+  source_claim_ids:
+  - claim.lost.request_15d
+  - claim.lost.docs_art57
+  - claim.lost.anexa11
+  status: draft
+- id: rule.lost.police_24h
+  canonical_rule_id: id_card_lost_stolen.police_report_24h
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  effective_from: '2021-04-01'
+  when:
+    op: eq
+    field: loss_type
+    value: stolen
+  effects:
+  - type: include_step
+    step_id: report_theft_police
+  - type: set_deadline
+    step_id: report_theft_police
+    value:
+      kind: relative_hours
+      anchor: event_date
+      hours: 24
+  source_claim_ids:
+  - claim.lost.police_24h
+  status: draft
+- id: rule.lost.spclep_announce
+  canonical_rule_id: id_card_lost_stolen.spclep_announce
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2021-04-01'
+  when:
+    op: in
+    field: loss_type
+    values:
+    - lost
+    - destroyed
+  effects:
+  - type: emit_warning
+    message_ro: Pierderea/distrugerea se anunta direct la SPCLEP de la domiciliu/resedinta,
+      fara reclamatie la politie.
+  source_claim_ids:
+  - claim.lost.spclep_announce
+  status: draft
+- id: rule.lost.photo_doc_if_no_rnep
+  canonical_rule_id: id_card_lost_stolen.photo_doc_if_no_rnep
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2021-04-01'
+  when:
+    op: eq
+    field: facial_image_in_rnep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.recent_photo_document
+  - type: emit_warning
+    message_ro: Daca imaginea ta nu e in R.N.E.P., adu un document oficial cu fotografie
+      recenta (permis sau pasaport).
+  source_claim_ids:
+  - claim.lost.photo_doc_if_no_rnep
+  status: draft
+- id: rule.lost.host_consent
+  canonical_rule_id: id_card_lost_stolen.host_consent
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2021-04-01'
+  when:
+    op: eq
+    field: new_address_relation
+    value: host_consent
+  effects:
+  - type: include_requirement
+    requirement_id: req.host_consent_declaration
+  source_claim_ids:
+  - claim.lost.docs_art57
+  status: draft
+- id: rule.lost.null_by_law
+  canonical_rule_id: id_card_lost_stolen.null_by_law
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2005-07-20'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: Actul declarat pierdut/furat/distrus este nul de drept si nu mai poate
+      fi folosit.
+  source_claim_ids:
+  - claim.lost.null_by_law
+  status: draft
+- id: rule.lost.return_if_found_48h
+  canonical_rule_id: id_card_lost_stolen.return_if_found_48h
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2005-07-20'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: Daca gasesti ulterior actul declarat, il predai in 48 de ore la SPCLEP
+      unde ai declarat evenimentul.
+  source_claim_ids:
+  - claim.lost.return_if_found_48h
+  status: draft
+- id: rule.lost.sanction_conflict
+  canonical_rule_id: id_card_lost_stolen.sanction_conflict
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: block
+    message_ro: Nu se afiseaza un cuantum unic de amenda pana la rezolvarea conflictului
+      de surse (500-1000 vs 40-80 lei).
+  - type: require_confirmation
+    message_ro: Confirma cuantumul curent al sanctiunii din sursa normativa.
+  source_claim_ids:
+  - claim.lost.sanction_500_1000
+  status: in_review
+- id: rule.lost.timisoara_channel
+  canonical_rule_id: id_card_lost_stolen.timisoara_channel
+  event_type_id: life.id_card_lost_stolen
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: explanatory
+  effective_from: '2025-04-24'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dep_timisoara
+  source_claim_ids:
+  - claim.lost.request_15d
+  status: draft

@@ -1,0 +1,639 @@
+batch_id: batch10.return_to_ro_work
+defaults:
+  event_type_id: ro.life.return_to_ro_work
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.eu.offer
+  desc: Revenire din UE cu ofertă în România
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.no_offer
+  desc: Revenire fără ofertă de muncă
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: false
+    plans_immediate_employment: false
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - register_for_employment_services_in_ro
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_by_domicile_or_residence
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.offer.not_immediate
+  desc: Există ofertă, dar începerea nu este imediată
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: false
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.regulated.ready
+  desc: Profesie reglementată cu recunoaștere
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: true
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.regulated.missing
+  desc: Profesie reglementată fără recunoaștere
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: true
+    qualification_recognition_ready: false
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    requirements:
+    - professional_qualification_recognition_in_romania
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.eu.periods
+  desc: Valorificarea perioadelor din UE
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.non_eu.periods
+  desc: Valorificarea perioadelor din afara UE
+  facts:
+    returning_from_scope: non_eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    confirmations:
+    - confirm_non_eu_period_coordination
+- id: fx.no_foreign_docs
+  desc: Lipsesc documentele din străinătate
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: false
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    requirements:
+    - foreign_employment_and_insurance_documents
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    confirmations:
+    - confirm_exact_foreign_period_documents
+- id: fx.no_period_need
+  desc: Nu sunt necesare perioadele externe
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: false
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    channels:
+    - ajofm_timis_eures_and_european_forms
+- id: fx.tax.unreviewed
+  desc: Rezidența fiscală la sosire nu este analizată
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: false
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    - review_z015_tax_residence_arrival_applicability
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    - z015_is_arrival_tax_residence_form
+- id: fx.no_form_support
+  desc: Nu este necesar sprijin pentru formulare
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+- id: fx.other_county
+  desc: Revenire într-un alt județ
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.b.bucharest
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_or_eures_by_domicile
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    confirmations:
+    - confirm_local_eures_or_forms_contact
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.b
+  - ro.b.bucharest
+- id: fx.non_eu.no_docs
+  desc: Revenire non-UE fără documente
+  facts:
+    returning_from_scope: non_eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: false
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    requirements:
+    - foreign_employment_and_insurance_documents
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    confirmations:
+    - confirm_non_eu_period_coordination
+    - confirm_exact_foreign_period_documents
+- id: fx.missing.returning_from_scope
+  desc: Lipsește faptul obligatoriu `returning_from_scope`
+  facts:
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    missing_facts:
+    - returning_from_scope
+- id: fx.missing.has_ro_job_offer
+  desc: Lipsește faptul obligatoriu `has_ro_job_offer`
+  facts:
+    returning_from_scope: eu
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - has_ro_job_offer
+- id: fx.missing.plans_immediate_employment
+  desc: Lipsește faptul obligatoriu `plans_immediate_employment`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - plans_immediate_employment
+- id: fx.missing.profession_regulated_in_ro
+  desc: Lipsește faptul obligatoriu `profession_regulated_in_ro`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - profession_regulated_in_ro
+- id: fx.missing.qualification_recognition_ready
+  desc: Lipsește faptul obligatoriu `qualification_recognition_ready`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - qualification_recognition_ready
+- id: fx.missing.needs_foreign_periods_for_benefits
+  desc: Lipsește faptul obligatoriu `needs_foreign_periods_for_benefits`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    missing_facts:
+    - needs_foreign_periods_for_benefits
+- id: fx.missing.has_foreign_employment_documents
+  desc: Lipsește faptul obligatoriu `has_foreign_employment_documents`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - has_foreign_employment_documents
+- id: fx.missing.tax_residence_review_done
+  desc: Lipsește faptul obligatoriu `tax_residence_review_done`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    needs_european_form_support: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - tax_residence_review_done
+- id: fx.missing.needs_european_form_support
+  desc: Lipsește faptul obligatoriu `needs_european_form_support`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - needs_european_form_support
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu `jurisdiction_id`
+  facts:
+    returning_from_scope: eu
+    has_ro_job_offer: true
+    plans_immediate_employment: true
+    profession_regulated_in_ro: false
+    qualification_recognition_ready: true
+    needs_foreign_periods_for_benefits: true
+    has_foreign_employment_documents: true
+    tax_residence_review_done: true
+    needs_european_form_support: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    - prepare_ro_employment_start
+    - request_relevant_european_form_or_period_confirmation
+    advice_tags:
+    - eu_periods_must_be_taken_into_account
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_foreign_employment_and_insurance_documents
+    - review_professional_qualification_in_ro
+    - review_tax_residence_arrival
+    - choose_job_start_or_jobseeker_route
+    missing_facts:
+    - returning_from_scope
+    - has_ro_job_offer
+    - plans_immediate_employment
+    - profession_regulated_in_ro
+    - qualification_recognition_ready
+    - needs_foreign_periods_for_benefits
+    - has_foreign_employment_documents
+    - tax_residence_review_done
+    - needs_european_form_support
+    - jurisdiction_id

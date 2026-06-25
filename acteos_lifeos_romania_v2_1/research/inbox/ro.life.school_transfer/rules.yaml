@@ -1,0 +1,331 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.school_transfer
+status: draft
+rules:
+- id: rule.transfer.required_facts
+  canonical_rule_id: transfer.required_facts
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  required_facts:
+  - student.level
+  - reference_date
+  - during_school_courses
+  - same_track_profile
+  - receiving_capacity_available
+  - receiving_ca_approved
+  - outgoing_ca_opinion
+  - receiving_school_id
+  - institution_procedure_verified
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.transfer.verify_rules
+  source_claim_ids:
+  - claim.transfer.right_framework
+  status: draft
+- id: rule.transfer.capacity_available
+  canonical_rule_id: transfer.capacity_available
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: eq
+    field: receiving_capacity_available
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.transfer.submit_request
+  source_claim_ids:
+  - claim.transfer.capacity
+  status: draft
+- id: rule.transfer.capacity_block
+  canonical_rule_id: transfer.capacity_block
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: receiving_capacity_available
+      value: false
+    - op: neq
+      field: isj_exception_approved
+      value: true
+  effects:
+  - type: block
+    tag: capacity_unavailable
+    message_ro: Nu există loc în efectivul legal și nu este confirmată o aprobare excepțională a inspectoratului.
+  source_claim_ids:
+  - claim.transfer.capacity
+  status: draft
+- id: rule.transfer.capacity_exception
+  canonical_rule_id: transfer.capacity_exception
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: receiving_capacity_available
+      value: false
+    - op: eq
+      field: isj_exception_approved
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.transfer.submit_request
+  - type: emit_warning
+    tag: isj_capacity_exception
+    message_ro: Folosește numai aprobarea scrisă a inspectoratului; excepția este limitată de ROFUIP.
+  source_claim_ids:
+  - claim.transfer.capacity
+  status: draft
+- id: rule.transfer.differences
+  canonical_rule_id: transfer.differences
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: eq
+    field: same_track_profile
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.transfer.difference_exams
+  - type: include_requirement
+    requirement_id: req.transfer.difference_results
+  source_claim_ids:
+  - claim.transfer.difference_exams
+  status: draft
+- id: rule.transfer.during_courses_no_exception
+  canonical_rule_id: transfer.during_courses_no_exception
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: during_school_courses
+      value: true
+    - op: eq
+      field: exception_reason
+      value: none
+    - op: not_in
+      field: student.level
+      values:
+      - antepreschool
+      - preschool
+  effects:
+  - type: block
+    tag: in_year_without_exception
+    message_ro: În timpul cursurilor, transferul este excepțional; lipsește un motiv oficial aplicabil.
+  source_claim_ids:
+  - claim.transfer.timing
+  - claim.transfer.in_year_exceptions
+  status: draft
+- id: rule.transfer.during_courses_exception
+  canonical_rule_id: transfer.during_courses_exception
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: during_school_courses
+      value: true
+    - op: in
+      field: exception_reason
+      values:
+      - domicile_change
+      - medical
+      - violence_protection
+      - other_official
+  effects:
+  - type: include_requirement
+    requirement_id: req.transfer.exception_proof
+  - type: include_step
+    step_id: step.transfer.submit_request
+  source_claim_ids:
+  - claim.transfer.in_year_exceptions
+  status: draft
+- id: rule.transfer.early_anytime
+  canonical_rule_id: transfer.early_anytime
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: in
+      field: student.level
+      values:
+      - antepreschool
+      - preschool
+    - op: eq
+      field: receiving_capacity_available
+      value: true
+  effects:
+  - type: emit_advice
+    tag: early_transfer_anytime
+    message_ro: La antepreșcolar/preșcolar, transferul poate fi cerut oricând în cursul anului, în limita locurilor și a interesului
+      copilului.
+  source_claim_ids:
+  - claim.transfer.timing
+  status: draft
+- id: rule.transfer.grade9_threshold
+  canonical_rule_id: transfer.grade9_threshold
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: student.level
+      value: grade9
+    - op: eq
+      field: same_track_profile
+      value: true
+    - op: eq
+      field: admission_average_meets_threshold
+      value: false
+  effects:
+  - type: block
+    tag: grade9_average_below_threshold
+    message_ro: Media de admitere este sub media ultimului admis la specializarea solicitată.
+  source_claim_ids:
+  - claim.transfer.grade9
+  status: draft
+- id: rule.transfer.approvals_missing
+  canonical_rule_id: transfer.approvals_missing
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: receiving_ca_approved
+      value: false
+    - op: eq
+      field: outgoing_ca_opinion
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.transfer.obtain_decisions
+  - type: require_confirmation
+    tag: ca_decisions_missing
+    message_ro: Transferul nu este final până la acordul unității primitoare și avizul consultativ al unității de plecare.
+  source_claim_ids:
+  - claim.transfer.approvals
+  status: draft
+- id: rule.transfer.refusal
+  canonical_rule_id: transfer.refusal
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-08-12'
+  when:
+    op: eq
+    field: receiving_ca_approved
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.transfer.request_written_refusal
+  - type: emit_advice
+    tag: written_refusal
+    message_ro: Solicită motivarea scrisă a refuzului.
+  source_claim_ids:
+  - claim.transfer.approvals
+  status: draft
+- id: rule.transfer.approved_records
+  canonical_rule_id: transfer.approved_records
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-08-12'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: receiving_ca_approved
+      value: true
+    - op: eq
+      field: outgoing_ca_opinion
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.transfer.records
+  - type: set_deadline
+    step_id: step.transfer.records
+    value:
+      request_within_working_days: 5
+      send_within_working_days_after_request: 10
+  source_claim_ids:
+  - claim.transfer.records
+  status: draft
+- id: rule.transfer.local_procedure_gap
+  canonical_rule_id: transfer.local_procedure_gap
+  event_type_id: life.school_transfer
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: institution
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: institution_procedure_verified
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.transfer.local_documents
+  - type: require_confirmation
+    tag: institution_procedure_unverified
+    message_ro: Confirmă regulamentul, calendarul CA și lista de acte ale școlii primitoare; nu inventa un dosar național
+      unic.
+  source_claim_ids:
+  - claim.transfer.institution_procedure
+  status: in_review

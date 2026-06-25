@@ -1,0 +1,309 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.contest_fine
+status: draft
+rules:
+- id: rule.fine.require_process_verbal
+  canonical_rule_id: contest_fine.process_verbal
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: neq
+    field: has_contravention_process_verbal
+    value: true
+  effects:
+  - type: block
+    code: NO_CONTRAVENTION_PROCESS_VERBAL
+  - type: require_confirmation
+    tag: process_verbal_required
+    message_ro: Trebuie identificat procesul-verbal contravențional; o simplă înștiințare sau creanță poate avea altă procedură.
+  source_claim_ids:
+  - claim.fine.process_verbal_15_days
+  status: draft
+- id: rule.fine.require_communication_anchor
+  canonical_rule_id: contest_fine.communication_anchor
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: communication_date
+    - op: missing
+      field: days_since_communication
+  effects:
+  - type: require_confirmation
+    tag: fine_deadline_anchor_missing
+    message_ro: Termenul se calculează de la înmânarea sau comunicarea procesului-verbal.
+  source_claim_ids:
+  - claim.fine.process_verbal_15_days
+  status: draft
+  required_facts:
+  - communication_date
+  - days_since_communication
+- id: rule.fine.within_15_days
+  canonical_rule_id: contest_fine.within_15_days
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_contravention_process_verbal
+      value: true
+    - op: lte
+      field: days_since_communication
+      value: 15
+  effects:
+  - type: include_step
+    step_id: prepare_contravention_complaint
+  - type: set_deadline
+    tag: contravention_complaint_15_days
+    value: 15_days_from_handover_or_communication
+    message_ro: Plângerea trebuie depusă în termenul special de 15 zile.
+  source_claim_ids:
+  - claim.fine.process_verbal_15_days
+  status: draft
+- id: rule.fine.after_15_days
+  canonical_rule_id: contest_fine.after_15_days
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_contravention_process_verbal
+      value: true
+    - op: gt
+      field: days_since_communication
+      value: 15
+  effects:
+  - type: block
+    code: CONTRAVENTION_COMPLAINT_DEADLINE_APPEARS_EXPIRED
+  - type: emit_warning
+    tag: contravention_deadline_expired
+    message_ro: Termenul de 15 zile apare depășit; este necesară analiză juridică individuală a comunicării și eventualelor
+      incidente.
+  source_claim_ids:
+  - claim.fine.process_verbal_15_days
+  status: draft
+- id: rule.fine.choose_venue_offense
+  canonical_rule_id: contest_fine.venue_offense
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: chosen_venue_basis
+    value: offense_place
+  effects:
+  - type: include_step
+    step_id: identify_district_court_for_offense_place
+  - type: emit_advice
+    tag: alternative_venue_offense_place
+    message_ro: Poate fi aleasă judecătoria locului săvârșirii contravenției.
+  source_claim_ids:
+  - claim.fine.alternative_venue
+  status: draft
+- id: rule.fine.choose_venue_domicile
+  canonical_rule_id: contest_fine.venue_domicile
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: chosen_venue_basis
+    value: contravenient_domicile_or_seat
+  effects:
+  - type: include_step
+    step_id: identify_district_court_for_domicile
+  - type: emit_advice
+    tag: alternative_venue_domicile
+    message_ro: Poate fi aleasă judecătoria domiciliului sau sediului contravenientului.
+  source_claim_ids:
+  - claim.fine.alternative_venue
+  status: draft
+- id: rule.fine.special_law_check
+  canonical_rule_id: contest_fine.special_law_check
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: neq
+    field: special_statute_checked
+    value: true
+  effects:
+  - type: include_step
+    step_id: verify_special_contravention_statute
+  - type: require_confirmation
+    tag: special_statute_check_required
+    message_ro: Verificați actul special indicat în procesul-verbal înainte de fixarea definitivă a procedurii.
+  source_claim_ids:
+  - claim.fine.special_law_gate
+  - claim.fine.pv_must_state_appeal
+  status: draft
+- id: rule.fine.contravenient_suspension
+  canonical_rule_id: contest_fine.contravenient_suspension
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: complainant_role
+      value: contravenient
+    - op: eq
+      field: complaint_filed
+      value: true
+  effects:
+  - type: emit_advice
+    tag: complaint_suspends_execution
+    message_ro: Plângerea contravenientului suspendă executarea potrivit cadrului general.
+  source_claim_ids:
+  - claim.fine.suspension
+  status: draft
+- id: rule.fine.third_party_damages
+  canonical_rule_id: contest_fine.third_party_damages
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: complainant_role
+    value: injured_third_party
+  effects:
+  - type: include_step
+    step_id: limit_complaint_to_damages
+  - type: emit_warning
+    tag: third_party_only_damages
+    message_ro: Partea vătămată poate contesta numai despăgubirea.
+  source_claim_ids:
+  - claim.fine.third_party_scope
+  - claim.fine.suspension
+  status: draft
+- id: rule.fine.third_party_confiscation
+  canonical_rule_id: contest_fine.third_party_confiscation
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: complainant_role
+    value: confiscated_goods_owner
+  effects:
+  - type: include_step
+    step_id: limit_complaint_to_confiscation
+  - type: emit_warning
+    tag: owner_only_confiscation
+    message_ro: Proprietarul terț poate contesta numai măsura confiscării.
+  source_claim_ids:
+  - claim.fine.third_party_scope
+  - claim.fine.suspension
+  status: draft
+- id: rule.fine.court_fee
+  canonical_rule_id: contest_fine.court_fee
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: has_contravention_process_verbal
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: court_fee_20_lei
+  - type: emit_advice
+    tag: contravention_court_fee_20_lei
+    message_ro: Taxa judiciară de timbru publicată este 20 lei.
+  source_claim_ids:
+  - claim.fine.court_fee_20
+  status: draft
+- id: rule.fine.prepare_evidence
+  canonical_rule_id: contest_fine.prepare_evidence
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_contravention_process_verbal
+      value: true
+    - op: lte
+      field: days_since_communication
+      value: 15
+  effects:
+  - type: include_step
+    step_id: prepare_evidence
+  - type: include_requirement
+    requirement_id: copy_of_process_verbal
+  - type: include_requirement
+    requirement_id: identity_or_company_documents
+  - type: include_requirement
+    requirement_id: supporting_evidence
+  - type: include_step
+    step_id: state_legality_and_merits_arguments
+  source_claim_ids:
+  - claim.fine.court_review_and_appeal
+  status: draft
+- id: rule.fine.pv_missing_appeal_info
+  canonical_rule_id: contest_fine.pv_missing_appeal_info
+  event_type_id: life.contest_fine
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: pv_contains_appeal_term_and_court
+    value: false
+  effects:
+  - type: emit_warning
+    tag: process_verbal_missing_appeal_information
+    message_ro: Procesul-verbal ar trebui să indice termenul și instanța; lipsa trebuie consemnată și analizată, fără a presupune
+      automat nulitatea.
+  source_claim_ids:
+  - claim.fine.pv_must_state_appeal
+  status: draft

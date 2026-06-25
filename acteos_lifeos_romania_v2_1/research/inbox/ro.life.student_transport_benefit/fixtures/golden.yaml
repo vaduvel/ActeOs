@@ -1,0 +1,393 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.student_transport_benefit
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: TRB01
+  desc: student, tren domiciliu-universitate în 2026
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: ready
+    requirements:
+    - req.transport.route_proof
+- id: TRB02
+  desc: student, tren pe altă rută în 2026
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: other_route
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - 2026_roadrail_route_not_eligible
+- id: TRB03
+  desc: student, transport local în orașul universității
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: local
+    reference_date: '2026-06-25'
+    route_relation: institution_city_local
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: ready
+- id: TRB04
+  desc: student, transport local în alt oraș
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: local
+    reference_date: '2026-06-25'
+    route_relation: other_route
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - 2026_local_route_not_eligible
+- id: TRB05
+  desc: student la distanță
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: distance
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - student_not_fulltime
+- id: TRB06
+  desc: student 29 ani
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 29
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: ready
+- id: TRB07
+  desc: student exact 30 ani
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 30
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - student_age_30
+- id: TRB08
+  desc: instituție neacreditată
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: false
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - institution_not_eligible
+- id: TRB09
+  desc: lipsește dovada statutului
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: false
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - status_proof_missing
+- id: TRB10
+  desc: procedură locală neverificată
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: false
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - local_process_unverified
+- id: TRB11
+  desc: după 2026
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2027-01-02'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - post_2026_rule_unverified
+- id: TRB12
+  desc: elev transport public
+  facts:
+    beneficiary_type: pupil
+    institution_authorized_or_accredited: true
+    study_mode: preuniversity
+    beneficiary_age: 15
+    transport_mode: road
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: ready
+    requirements:
+    - req.transport.status_proof
+- id: TRB13
+  desc: elev cazat la internat
+  facts:
+    beneficiary_type: pupil
+    institution_authorized_or_accredited: true
+    study_mode: preuniversity
+    beneficiary_age: 16
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+    boarding_or_hosted: true
+  expect:
+    status: ready
+    requirements:
+    - req.transport.boarding_proof
+    warnings:
+    - four_round_trips
+- id: TRB14
+  desc: elev fără serviciu public
+  facts:
+    beneficiary_type: pupil
+    institution_authorized_or_accredited: true
+    study_mode: preuniversity
+    beneficiary_age: 12
+    transport_mode: lump_sum
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+    public_transport_service_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - county_lump_sum_amount
+- id: TRB15
+  desc: elev cu serviciu public
+  facts:
+    beneficiary_type: pupil
+    institution_authorized_or_accredited: true
+    study_mode: preuniversity
+    beneficiary_age: 12
+    transport_mode: road
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+    public_transport_service_available: true
+  expect:
+    status: ready
+- id: TRB16
+  desc: elev, carnet nevizat
+  facts:
+    beneficiary_type: pupil
+    institution_authorized_or_accredited: true
+    study_mode: preuniversity
+    beneficiary_age: 12
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: false
+    local_process_verified: true
+  expect:
+    status: blocked
+    blocks:
+    - status_proof_missing
+- id: TRB17
+  desc: alt județ, sumă forfetară
+  facts:
+    beneficiary_type: pupil
+    institution_authorized_or_accredited: true
+    study_mode: preuniversity
+    beneficiary_age: 12
+    transport_mode: lump_sum
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+    public_transport_service_available: false
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.cj
+- id: TRB18
+  desc: lipsă tip beneficiar
+  facts:
+    beneficiary_type: null
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - beneficiary_type
+- id: TRB19
+  desc: lipsă tip transport
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: null
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - transport_mode
+- id: TRB20
+  desc: lipsă relație traseu
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: null
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - route_relation
+- id: TRB21
+  desc: lipsă vârstă
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    transport_mode: rail
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - beneficiary_age
+- id: TRB22
+  desc: lipsă data
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: rail
+    reference_date: null
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: TRB23
+  desc: student transport naval în 2026
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: naval
+    reference_date: '2026-06-25'
+    route_relation: domicile_to_institution
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: needs_confirmation
+    note: verifică metodologia operațională și întinderea derogării
+- id: TRB24
+  desc: student metrou în localitatea instituției
+  facts:
+    beneficiary_type: university_student
+    institution_authorized_or_accredited: true
+    study_mode: full_time
+    beneficiary_age: 22
+    transport_mode: metro
+    reference_date: '2026-06-25'
+    route_relation: institution_city_local
+    proof_of_status_available: true
+    local_process_verified: true
+  expect:
+    status: ready

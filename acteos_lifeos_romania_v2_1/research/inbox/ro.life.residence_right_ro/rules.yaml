@@ -1,0 +1,471 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_RESIDENCE_RIGHT_RO
+event_type_id: ro.life.residence_right_ro
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- citizen_group
+- request_stage
+- residence_purpose
+- current_status_valid
+- cross_border_worker
+- timis_residence
+rules:
+- id: rule.rrro.romanian_not_applicable
+  canonical_rule_id: residence_right_ro.romanian_not_applicable
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: citizen_group
+    value: romanian
+  effects:
+  - type: block
+    tag: romanian_not_foreigner_residence
+    message_ro: Cetățeanul român nu solicită drept de ședere în România în baza OUG 194/2002.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.eu_route
+  canonical_rule_id: residence_right_ro.eu_route
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: citizen_group
+    value: eu_see_ch
+  effects:
+  - type: include_step
+    step_id: route_to_eu_residence_registration
+  - type: trigger_child_event
+    event_type_id: ro.life.residence_registration_eu
+  - type: emit_warning
+    tag: use_eu_regime
+    message_ro: Cetățenii UE/SEE/Elveția au regim distinct de resortisanții statelor terțe.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.first_entry
+  canonical_rule_id: residence_right_ro.first_entry
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: first_entry
+  effects:
+  - type: include_step
+    step_id: confirm_visa_or_entry_route
+  - type: require_confirmation
+    tag: first_entry_specific_route
+    message_ro: Prima intrare și viza de lungă ședere au reguli proprii după scop; nu sunt echivalente cu prelungirea șederii.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.extension_start
+  canonical_rule_id: residence_right_ro.extension_start
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+  effects:
+  - type: include_step
+    step_id: apply_personally_for_temporary_extension
+  - type: emit_advice
+    tag: file_30_days_before_expiry
+    message_ro: Depune personal la IGI cu cel puțin 30 de zile înainte de expirare.
+  source_claim_ids:
+  - claim.rrro.file_30_before
+  status: in_review
+- id: rule.rrro.extension_general_docs
+  canonical_rule_id: residence_right_ro.extension_general_docs
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: current_status_valid
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_travel_document
+  - type: include_requirement
+    requirement_id: req.health_insurance
+  - type: include_requirement
+    requirement_id: req.fee_payment_evidence
+  - type: include_requirement
+    requirement_id: req.purpose_specific_documents
+  - type: emit_advice
+    tag: same_purpose_or_legal_exception
+    message_ro: Confirmă menținerea scopului șederii sau excepția legală aplicabilă.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.housing
+  canonical_rule_id: residence_right_ro.housing
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: cross_border_worker
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_housing_and_actual_residence_evidence
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.cross_border
+  canonical_rule_id: residence_right_ro.cross_border
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: cross_border_worker
+      value: true
+  effects:
+  - type: emit_advice
+    tag: cross_border_housing_exception
+    message_ro: Textul legal exceptează lucrătorul transfrontalier de la dovada spațiului locativ pentru această condiție.
+  source_claim_ids:
+  - claim.rrro.cross_border_exception
+  status: in_review
+- id: rule.rrro.purpose_work
+  canonical_rule_id: residence_right_ro.purpose_work
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: residence_purpose
+      value: work
+  effects:
+  - type: include_step
+    step_id: apply_work_extension_specific_requirements
+  - type: require_confirmation
+    tag: work_checklist_current
+    message_ro: Confirmă actele speciale și taxele actuale pentru scopul muncă.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.purpose_studies
+  canonical_rule_id: residence_right_ro.purpose_studies
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: residence_purpose
+      value: studies
+  effects:
+  - type: include_step
+    step_id: apply_study_extension_specific_requirements
+  - type: require_confirmation
+    tag: study_checklist_current
+    message_ro: Confirmă actele speciale și mijloacele cerute pentru studii.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.purpose_family
+  canonical_rule_id: residence_right_ro.purpose_family
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: residence_purpose
+      value: family
+  effects:
+  - type: include_step
+    step_id: apply_family_extension_specific_requirements
+  - type: require_confirmation
+    tag: family_checklist_current
+    message_ro: Confirmă categoria sponsorului, relația și actele speciale.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.purpose_commercial_other
+  canonical_rule_id: residence_right_ro.purpose_commercial_other
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: in
+      field: residence_purpose
+      values:
+      - commercial
+      - other
+  effects:
+  - type: include_step
+    step_id: confirm_purpose_specific_extension
+  - type: require_confirmation
+    tag: purpose_specific_route
+    message_ro: Scopul comercial sau alt scop are condiții speciale care trebuie verificate în capitolul aplicabil și pe pagina
+      IGI curentă.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.expired_or_invalid
+  canonical_rule_id: residence_right_ro.expired_or_invalid
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: current_status_valid
+      value: false
+  effects:
+  - type: block
+    tag: status_not_valid_at_filing
+    message_ro: Nu presupune că o cerere tardivă menține dreptul de ședere.
+  - type: require_confirmation
+    tag: urgent_igi_legal_assessment
+    message_ro: Solicită imediat instrucțiuni IGI sau consultanță juridică privind situația de ședere.
+  source_claim_ids:
+  - claim.rrro.status_maintained
+  status: in_review
+- id: rule.rrro.decision
+  canonical_rule_id: residence_right_ro.decision
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+  effects:
+  - type: emit_advice
+    tag: decision_30_plus_checks
+    message_ro: Termenul de bază este 30 de zile; verificările pot prelungi termenul în limitele legale publicate.
+  source_claim_ids:
+  - claim.rrro.decision_terms
+  status: in_review
+- id: rule.rrro.supplement
+  canonical_rule_id: residence_right_ro.supplement
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+  effects:
+  - type: emit_warning
+    tag: supplement_deadline_max_30
+    message_ro: Dacă IGI cere completări, respectă termenul comunicat, de cel mult 30 de zile; soluționarea se suspendă.
+  source_claim_ids:
+  - claim.rrro.supplement
+  status: in_review
+- id: rule.rrro.status_maintained
+  canonical_rule_id: residence_right_ro.status_maintained
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: eq
+      field: request_stage
+      value: temporary_extension
+    - op: eq
+      field: current_status_valid
+      value: true
+  effects:
+  - type: emit_advice
+    tag: legal_status_maintained_until_decision
+    message_ro: Dreptul de ședere se menține până la soluționare dacă șederea era legală la depunere.
+  source_claim_ids:
+  - claim.rrro.status_maintained
+  status: in_review
+- id: rule.rrro.other_stages
+  canonical_rule_id: residence_right_ro.other_stages
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: citizen_group
+      value: third_country
+    - op: in
+      field: request_stage
+      values:
+      - long_term
+      - family_card
+      - protection_or_special
+  effects:
+  - type: include_step
+    step_id: open_stage_specific_residence_route
+  - type: require_confirmation
+    tag: stage_specific_rules
+    message_ro: Dreptul pe termen lung, cartea de familie și regimurile de protecție/speciale au condiții proprii și nu sunt
+      rezolvate prin regulile prelungirii temporare.
+  source_claim_ids:
+  - claim.rrro.general_conditions
+  status: in_review
+- id: rule.rrro.timis
+  canonical_rule_id: residence_right_ro.timis
+  event_type_id: ro.life.residence_right_ro
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: timis_residence
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.igi_timis
+  - type: emit_advice
+    tag: timis_territorial_service
+    message_ro: Pentru reședința din Timiș, folosește serviciul teritorial IGI Timiș și verifică programarea live.
+  source_claim_ids:
+  - claim.rrro.timis_channel
+  status: in_review

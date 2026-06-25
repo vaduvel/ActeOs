@@ -1,0 +1,433 @@
+batch_id: B02_RESIDENCE_REGISTRATION_EU
+defaults:
+  event_type_id: ro.life.residence_registration_eu
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.rreu.001
+  desc: Cetățean UE angajat, ședere peste trei luni, domiciliu în Timiș.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.employment_or_worker_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    - worker_branch
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.002
+  desc: Cetățean UE cu ședere de până la trei luni.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: false
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    advice_tags:
+    - eu_residence_up_to_3_months
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.003
+  desc: Cetățean român introdus greșit în flux.
+  facts:
+    citizen_group: romanian
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: blocked
+    advice_tags:
+    - timis_igi_channel
+    warnings_present:
+    - choose_identity_or_domicile_route
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.004
+  desc: Cetățean UE cu activitate independentă.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: self_employed
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.self_employment_activity_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - self_employed_exact_documents
+- id: fx.rreu.005
+  desc: Cetățean UE cu mijloace proprii și asigurare.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: means
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.health_insurance
+    - req.means_of_support
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - means_and_insurance
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.006
+  desc: Student UE.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: studies
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.accredited_study_enrolment
+    - req.health_insurance
+    - req.means_declaration_or_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.007
+  desc: Membru de familie al unui cetățean UE.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: eu_family
+    family_member_citizenship: eu_see_ch
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.family_relationship_document
+    - req.sponsor_eu_residence_basis_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - family_member_exact_status
+- id: fx.rreu.008
+  desc: Cetățean UE membru de familie al unui cetățean român.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: romanian_family
+    family_member_citizenship: eu_see_ch
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.family_relationship_document
+    - req.health_insurance
+    - req.romanian_family_member_id
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.009
+  desc: Voluntar UE.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: volunteer
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.activity_specific_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - activity_specific_checklist
+- id: fx.rreu.010
+  desc: Activitate religioasă.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: religious
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.activity_specific_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - activity_specific_checklist
+- id: fx.rreu.011
+  desc: Bază de rezidență neclasificată.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: other
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: blocked
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - classify_residence_basis
+- id: fx.rreu.012
+  desc: Membru de familie non-UE al cetățeanului UE.
+  facts:
+    citizen_group: non_eu_family_member
+    stay_over_3_months: true
+    residence_basis: eu_family
+    family_member_citizenship: non_eu
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_non_eu_family_residence_card
+    requirements:
+    - req.valid_passport
+    advice_tags:
+    - timis_igi_channel
+    channels:
+    - ch.igi_timis
+    needs_confirmation:
+    - non_eu_family_card_checklist
+- id: fx.rreu.013
+  desc: Cerere într-un alt județ, fără canalul Timiș.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: false
+    continuous_legal_residence_years: 0
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.employment_or_worker_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - worker_branch
+    channels_absent:
+    - ch.igi_timis
+- id: fx.rreu.014
+  desc: Rezidență legală continuă de cinci ani.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 5
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    - assess_permanent_eu_residence
+    requirements:
+    - req.employment_or_worker_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - permanent_after_5_years
+    - timis_igi_channel
+    - worker_branch
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.015
+  desc: Rezidență de patru ani și unsprezece luni, fără ramura permanentă.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 4
+  expect:
+    status: ok
+    included_steps:
+    - apply_for_eu_registration_certificate
+    requirements:
+    - req.employment_or_worker_evidence
+    - req.valid_national_id_or_passport
+    advice_tags:
+    - apply_within_3_months_of_entry
+    - certificate_immediate_if_complete
+    - timis_igi_channel
+    - worker_branch
+    channels:
+    - ch.igi_timis
+- id: fx.rreu.016
+  desc: Lipsește faptul obligatoriu `citizen_group`.
+  facts:
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizen_group
+- id: fx.rreu.017
+  desc: Lipsește faptul obligatoriu `stay_over_3_months`.
+  facts:
+    citizen_group: eu_see_ch
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: needs_facts
+    missing_facts:
+    - stay_over_3_months
+- id: fx.rreu.018
+  desc: Lipsește faptul obligatoriu `residence_basis`.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    family_member_citizenship: not_applicable
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: needs_facts
+    missing_facts:
+    - residence_basis
+- id: fx.rreu.019
+  desc: Lipsește faptul obligatoriu `family_member_citizenship`.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    timis_residence: true
+    continuous_legal_residence_years: 0
+  expect:
+    status: needs_facts
+    missing_facts:
+    - family_member_citizenship
+- id: fx.rreu.020
+  desc: Lipsește faptul obligatoriu `timis_residence`.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    continuous_legal_residence_years: 0
+  expect:
+    status: needs_facts
+    missing_facts:
+    - timis_residence
+- id: fx.rreu.021
+  desc: Lipsește faptul obligatoriu `continuous_legal_residence_years`.
+  facts:
+    citizen_group: eu_see_ch
+    stay_over_3_months: true
+    residence_basis: employment
+    family_member_citizenship: not_applicable
+    timis_residence: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - continuous_legal_residence_years
+- id: fx.rreu.022
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizen_group
+    - stay_over_3_months
+    - residence_basis
+    - family_member_citizenship
+    - timis_residence
+    - continuous_legal_residence_years

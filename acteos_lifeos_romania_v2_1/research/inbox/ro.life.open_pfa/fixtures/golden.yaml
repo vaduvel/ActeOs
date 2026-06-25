@@ -1,0 +1,294 @@
+batch_id: B12_OPEN_PFA
+defaults:
+  event_type_id: life.open_pfa
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA standard, patru clase CAEN, dosar la ghișeu
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 4
+    filing_actor: applicant
+    filing_channel: counter
+    starts_activity_before_registration: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_pfa_registration
+    requirements:
+    - req.onrc_annex_2b
+    - req.onrc_annex_4
+    channels:
+    - ch.onrc_counter_any_office
+- id: F02
+  desc: solicitant fără capacitate deplină de exercițiu
+  facts:
+    applicant_has_full_capacity: false
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    filing_actor: applicant
+  expect:
+    status: blocked
+    blocks:
+    - full_capacity_required
+- id: F03
+  desc: sediul profesional este în afara României
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: false
+    has_use_right_document: true
+    caen_class_count: 1
+    filing_actor: applicant
+  expect:
+    status: blocked
+    blocks:
+    - professional_seat_ro_required
+- id: F04
+  desc: lipsește dovada dreptului de folosință
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: false
+    caen_class_count: 1
+    filing_actor: applicant
+  expect:
+    status: blocked
+    blocks:
+    - seat_use_right_missing
+    requirements:
+    - req.professional_seat_use_right_document
+- id: F05
+  desc: sediu în locuință fără activitate la adresă
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    seat_is_dwelling: true
+    activity_at_professional_seat: false
+    caen_class_count: 2
+    filing_actor: applicant
+  expect:
+    status: resolved
+    requirements:
+    - req.no_activity_at_professional_seat_declaration
+    advice:
+    - association_formalities_not_required
+- id: F06
+  desc: sediu în locuință cu activitate efectivă
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    seat_is_dwelling: true
+    activity_at_professional_seat: true
+    caen_class_count: 2
+    filing_actor: applicant
+  expect:
+    status: needs_confirmation
+    missing_facts:
+    - condominium_change_or_activity_formalities
+- id: F07
+  desc: exact cinci clase CAEN
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 5
+    filing_actor: applicant
+  expect:
+    status: resolved
+- id: F08
+  desc: șase clase CAEN
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 6
+    filing_actor: applicant
+  expect:
+    status: blocked
+    blocks:
+    - pfa_caen_limit_exceeded
+- id: F09
+  desc: activitate reglementată cu dovadă de calificare
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    special_qualification_required: true
+    qualification_proof_available: true
+    filing_actor: applicant
+  expect:
+    status: resolved
+- id: F10
+  desc: activitate reglementată fără dovadă de calificare
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    special_qualification_required: true
+    qualification_proof_available: false
+    filing_actor: applicant
+  expect:
+    status: blocked
+    blocks:
+    - qualification_proof_missing
+    requirements:
+    - req.professional_qualification_or_experience_proof
+- id: F11
+  desc: aviz sectorial necesar și încă neobținut, fără pornire imediată
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    special_permit_required: true
+    special_permit_obtained: false
+    intends_to_start_now: false
+    filing_actor: applicant
+  expect:
+    status: resolved
+    requirements:
+    - req.onrc_annex_2b
+- id: F12
+  desc: aviz sectorial necesar, dar activitatea ar începe acum
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    special_permit_required: true
+    special_permit_obtained: false
+    intends_to_start_now: true
+    filing_actor: applicant
+  expect:
+    status: blocked
+    blocks:
+    - special_permit_missing
+    requirements:
+    - req.special_sector_permit
+- id: F13
+  desc: depunere online cu semnătură calificată
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: applicant
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+    channels:
+    - ch.onrc_online_portal
+- id: F14
+  desc: depunere online fără semnătură calificată
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: applicant
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F15
+  desc: cererea este semnată de avocat
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F16
+  desc: cererea este semnată de mandatar cu procură autentică
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: authenticated_proxy
+  expect:
+    status: resolved
+- id: F17
+  desc: contabilul semnează doar în virtutea profesiei
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_filing_actor
+- id: F18
+  desc: utilizatorul vrea să înceapă activitatea înainte de înregistrare
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: applicant
+    starts_activity_before_registration: true
+  expect:
+    status: blocked
+    blocks:
+    - pfa_not_registered
+- id: F19
+  desc: activitate comercială locală în Timișoara
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    filing_actor: applicant
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_applicable: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_timisoara_commercial_agreement
+    confirmations:
+    - confirm_current_local_fee_and_documents
+- id: F20
+  desc: serviciu profesional fără acord comercial local identificat
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 1
+    filing_actor: applicant
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_applicable: false
+  expect:
+    status: resolved
+- id: F21
+  desc: dosar incomplet și termen de remediere comunicat
+  facts:
+    applicant_has_full_capacity: true
+    professional_seat_in_ro: true
+    has_use_right_document: true
+    caen_class_count: 2
+    filing_actor: applicant
+    registrar_requested_remediation: true
+  expect:
+    status: resolved
+    advice:
+    - remediation_up_to_15_days

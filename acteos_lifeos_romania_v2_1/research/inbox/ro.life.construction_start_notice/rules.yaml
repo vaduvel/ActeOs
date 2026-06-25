@@ -1,0 +1,388 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.construction_start_notice
+event_type_id: ro.life.construction_start_notice
+required_facts:
+- jurisdiction_id
+- permit_exists
+- permit_valid
+- start_date_known
+- issuer_notified
+- isc_notified
+- tax_regularization_applicable
+- tax_regularization_done
+- representative_used
+- power_of_attorney_available
+status: draft
+rules:
+- id: rule.start_notice.no_permit.v1
+  canonical_rule_id: rule.start_notice.no_permit
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: eq
+    field: permit_exists
+    value: false
+  effects:
+  - type: block
+    code: no_building_permit
+    message_ro: Lucrările nu pot începe fără autorizație.
+  - type: emit_warning
+    tag: do_not_start_works
+    message_ro: Nu începe lucrările.
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.invalid_permit.v1
+  canonical_rule_id: rule.start_notice.invalid_permit
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: permit_exists
+      value: true
+    - op: eq
+      field: permit_valid
+      value: false
+  effects:
+  - type: block
+    code: permit_not_valid
+    message_ro: Lucrările nu pot începe în baza unei autorizații nevalabile.
+  - type: emit_warning
+    tag: verify_extension_or_new_permit
+    message_ro: Verifică prelungirea ori necesitatea unei noi autorizații.
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.base.v1
+  canonical_rule_id: rule.start_notice.base
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when: &id001
+    op: all
+    args:
+    - op: eq
+      field: permit_exists
+      value: true
+    - op: eq
+      field: permit_valid
+      value: true
+  effects:
+  - type: include_step
+    step_id: record_actual_start_date
+  - type: include_step
+    step_id: verify_issuer_and_isc_notifications
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.date_missing.v1
+  canonical_rule_id: rule.start_notice.date_missing
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: start_date_known
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: actual_construction_start_date
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.issuer_missing_timisoara.v1
+  canonical_rule_id: rule.start_notice.issuer_missing_timisoara
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: issuer_notified
+      value: false
+  effects:
+  - type: include_step
+    step_id: submit_start_notice_to_timisoara
+  - type: include_requirement
+    requirement_id: standard_start_notice
+  - type: include_requirement
+    requirement_id: building_permit_copy
+  - type: include_requirement
+    requirement_id: identity_document
+  - type: attach_channel
+    channel_id: pmt_construction_start_notice_online
+  source_claim_ids:
+  - clm.construction_start.pmt.start_service
+  - clm.construction_start.law50.notice_duty
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.issuer_missing_other_uat.v1
+  canonical_rule_id: rule.start_notice.issuer_missing_other_uat
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: issuer_notified
+      value: false
+  effects:
+  - type: include_step
+    step_id: identify_issuer_notice_channel
+  - type: require_confirmation
+    tag: confirm_local_issuer_start_notice_channel
+    message_ro: Canalul emitentului trebuie confirmat la UAT-ul care a emis autorizația.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Canalul verificat în acest batch este cel al Timișoarei.
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  - clm.construction_start.pmt.start_service
+  status: in_review
+  reviewer_id: null
+- id: rule.start_notice.isc_missing.v1
+  canonical_rule_id: rule.start_notice.isc_missing
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: isc_notified
+      value: false
+  effects:
+  - type: include_step
+    step_id: submit_start_notice_to_territorial_isc
+  - type: require_confirmation
+    tag: confirm_current_isc_start_notice_channel
+    message_ro: Canalul actual al inspectoratului teritorial trebuie confirmat separat; notificarea emitentului nu îl înlocuiește.
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  status: in_review
+  reviewer_id: null
+- id: rule.start_notice.tax_regularization.timisoara.v1
+  canonical_rule_id: rule.start_notice.tax_regularization.timisoara
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: tax_regularization_applicable
+      value: true
+    - op: eq
+      field: tax_regularization_done
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: authorisation_fee_regularization_proof_if_applicable
+  source_claim_ids:
+  - clm.construction_start.pmt.start_service
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.tax_regularization.other_uat.v1
+  canonical_rule_id: rule.start_notice.tax_regularization.other_uat
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: tax_regularization_applicable
+      value: true
+    - op: eq
+      field: tax_regularization_done
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_start_tax_regularization
+    message_ro: Cerința și dovada regularizării trebuie confirmate la emitentul autorizației.
+  source_claim_ids:
+  - clm.construction_start.pmt.start_service
+  status: in_review
+  reviewer_id: null
+- id: rule.start_notice.power_of_attorney.timisoara.v1
+  canonical_rule_id: rule.start_notice.power_of_attorney.timisoara
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: representative_used
+      value: true
+    - op: eq
+      field: power_of_attorney_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: power_of_attorney
+  source_claim_ids:
+  - clm.construction_start.pmt.start_service
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.omission_warning.v1
+  canonical_rule_id: rule.start_notice.omission_warning
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: any
+      args:
+      - op: eq
+        field: issuer_notified
+        value: false
+      - op: eq
+        field: isc_notified
+        value: false
+  effects:
+  - type: emit_warning
+    tag: start_notice_omission_affects_duration
+    message_ro: Omiterea notificării afectează calculul duratei de execuție.
+  - type: emit_warning
+    tag: start_notice_omission_contravention
+    message_ro: Neanunțarea datei începerii este contravenție.
+  source_claim_ids:
+  - clm.construction_start.law50.omission_effects
+  - clm.construction_start.law50.contravention
+  status: active
+  reviewer_id: null
+- id: rule.start_notice.completed.v1
+  canonical_rule_id: rule.start_notice.completed
+  event_type_id: ro.life.construction_start_notice
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: explanatory
+  effective_from: '2026-03-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - *id001
+    - op: eq
+      field: start_date_known
+      value: true
+    - op: eq
+      field: issuer_notified
+      value: true
+    - op: eq
+      field: isc_notified
+      value: true
+  effects:
+  - type: emit_advice
+    tag: both_start_notices_completed
+    message_ro: Notificările către emitent și inspectoratul teritorial sunt declarate ca efectuate.
+  source_claim_ids:
+  - clm.construction_start.law50.notice_duty
+  status: active
+  reviewer_id: null

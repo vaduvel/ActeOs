@@ -1,0 +1,558 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.life_insurance_claim
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: insurer_id
+  type: enum
+  label: La ce asigurător este polița?
+  reason: Procedura și documentele sunt specifice contractului.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - nn
+  - allianz
+  - groupama
+  - other
+  - unknown
+- id: event_type
+  type: enum
+  label: Ce eveniment vrei să notifici?
+  reason: Formularul și actele depind de eveniment.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - death
+  - invalidity
+  - serious_illness
+  - hospitalization
+  - surgery
+  - other
+- id: claimant_role
+  type: enum
+  label: În ce calitate depui?
+  reason: Asiguratul, beneficiarul sau reprezentantul pot avea documente diferite.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - insured
+  - beneficiary
+  - heir
+  - representative
+  - other
+- id: event_date
+  type: date
+  label: Când s-a produs evenimentul?
+  reason: Termenul contractual poate curge de la eveniment, externare sau diagnostic.
+  sensitive: true
+  required_for_resolution: true
+- id: discharge_date
+  type: date
+  label: Când a avut loc externarea?
+  reason: Pentru fluxul NN de spitalizare termenul publicat se raportează la externare/intervenție.
+  sensitive: true
+  required_for_resolution: false
+- id: policy_number_known
+  type: boolean
+  label: Ai numărul poliței?
+  reason: Ajută asigurătorul să identifice contractul.
+  sensitive: false
+  required_for_resolution: true
+- id: beneficiary_known
+  type: boolean
+  label: Este cunoscut beneficiarul?
+  reason: În caz de deces, calitatea trebuie dovedită conform contractului.
+  sensitive: true
+  required_for_resolution: false
+- id: iban_available
+  type: boolean
+  label: Ai IBAN pentru plată?
+  reason: Unii furnizori îl cer în pregătirea dosarului.
+  sensitive: true
+  required_for_resolution: false
+- id: event_documents_available
+  type: boolean
+  label: Ai documentele medicale/civile ale evenimentului?
+  reason: Sunt necesare evaluării.
+  sensitive: false
+  required_for_resolution: true
+gates:
+- id: gate.provider_unknown
+  priority: 100
+  when: insurer_id in [other,unknown]
+  effect: needs_confirmation
+  code: POLICY_CONDITIONS_REQUIRED
+  message: Nu există un termen sau dosar universal pentru toate asigurările de viață.
+  recovery_actions:
+  - Identifică asigurătorul și polița.
+  - Verifică condițiile contractuale în vigoare.
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_death_invalidity_soon
+  - claim.life_insurance_claim.allianz_death_docs
+  - claim.life_insurance_claim.groupama_preparation
+- id: gate.nn_hospital_window
+  priority: 90
+  when: insurer_id == nn and event_type in [hospitalization,surgery] and more than 72 hours since discharge/intervention
+  effect: needs_confirmation
+  code: NN_72H_WINDOW_MAY_BE_EXCEEDED
+  message: Termenul operațional publicat de NN poate fi depășit.
+  recovery_actions:
+  - Notifică imediat și cere confirmarea acceptării.
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_hospital_72h
+- id: gate.missing_policy
+  priority: 80
+  when: policy_number_known == false
+  effect: warn
+  code: POLICY_NUMBER_MISSING
+  message: Poți începe contactul, dar identificarea dosarului poate necesita date suplimentare.
+  recovery_actions:
+  - Caută polița, extrasul sau corespondența asigurătorului.
+  source_claim_ids:
+  - claim.life_insurance_claim.groupama_preparation
+- id: gate.docs_missing
+  priority: 70
+  when: event_documents_available == false
+  effect: needs_confirmation
+  code: EVENT_DOCUMENTS_MISSING
+  message: Dosarul nu poate fi evaluat complet fără documentele evenimentului cerute de contract.
+  recovery_actions:
+  - Solicită certificatele/rapoartele medicale sau civile aplicabile.
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+  - claim.life_insurance_claim.allianz_death_docs
+  - claim.life_insurance_claim.groupama_preparation
+steps:
+- id: step.identify_policy
+  title: Identifică polița și calitatea ta
+  instruction: Găsește asigurătorul, numărul poliței și calitatea de asigurat/beneficiar/reprezentant.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Asigurătorul și polița sunt identificate sau ai suficiente date pentru căutarea contractului.
+  recovery_actions:
+  - Contactează asigurătorul cu datele persoanei asigurate.
+  official_channel_ids:
+  - channel.nn_claim
+  - channel.allianz_life_claim
+  - channel.groupama_life_claim
+  source_claim_ids:
+  - claim.life_insurance_claim.groupama_preparation
+  - claim.life_insurance_claim.allianz_death_docs
+- id: step.notify_event
+  title: Notifică evenimentul
+  instruction: Folosește canalul oficial și formularul aferent evenimentului.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.identify_policy
+  deadline:
+    kind: none
+  completion_evidence: Ai număr de dosar sau confirmarea scrisă a notificării.
+  recovery_actions:
+  - Dacă nu primești confirmare, contactează call center-ul oficial.
+  official_channel_ids:
+  - channel.nn_claim
+  - channel.allianz_life_claim
+  - channel.groupama_life_claim
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_death_invalidity_soon
+  - claim.life_insurance_claim.nn_hospital_72h
+  - claim.life_insurance_claim.allianz_death_channels
+  - claim.life_insurance_claim.groupama_phone
+- id: step.prepare_documents
+  title: Completează formularul și documentele
+  instruction: Încarcă formularul și documentele medicale/civile cerute pentru evenimentul și contractul concret.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.notify_event
+  deadline:
+    kind: none
+  completion_evidence: Asigurătorul confirmă primirea și comunică dacă dosarul este complet.
+  recovery_actions:
+  - Răspunde solicitărilor suplimentare prin canalul oficial.
+  official_channel_ids:
+  - channel.nn_claim
+  - channel.allianz_life_claim
+  - channel.groupama_life_claim
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+  - claim.life_insurance_claim.allianz_death_docs
+  - claim.life_insurance_claim.groupama_preparation
+- id: step.track_decision
+  title: Urmărește evaluarea și plata
+  instruction: Verifică statusul, decizia și modalitatea de virare a indemnizației.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.prepare_documents
+  deadline:
+    kind: none
+  completion_evidence: Ai decizia oficială și plata sau motivarea refuzului.
+  recovery_actions:
+  - Folosește procedura de reclamații/contestații a asigurătorului.
+  official_channel_ids:
+  - channel.nn_claim
+  - channel.allianz_life_claim
+  - channel.groupama_life_claim
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+  - claim.life_insurance_claim.groupama_preparation
+requirements:
+- id: req.policy_reference
+  title: Polița sau datele contractului
+  description: Numărul poliței și datele persoanei asigurate.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - original
+  - copy
+  - electronic
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - field_present
+  - names_consistent
+  source_claim_ids:
+  - claim.life_insurance_claim.groupama_preparation
+  - claim.life_insurance_claim.allianz_death_docs
+- id: req.claimant_identity
+  title: Actul de identitate al solicitantului
+  description: Copie/act pentru identificarea persoanei care depune.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - copy
+  - original
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - not_expired
+  - names_consistent
+  source_claim_ids:
+  - claim.life_insurance_claim.groupama_preparation
+  - claim.life_insurance_claim.allianz_death_docs
+- id: req.event_form
+  title: Formularul asigurătorului
+  description: Formularul specific tipului de eveniment.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  - original
+  - copy
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - correct_document_type
+  - field_present
+  - has_signature
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+- id: req.death_certificate
+  title: Certificatul de deces
+  description: Necesar pentru solicitarea indemnizației în caz de deces.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: event_type
+    value: death
+  accepted_forms:
+  - original
+  - copy
+  - certified_copy
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - names_consistent
+  - date_within_window
+  source_claim_ids:
+  - claim.life_insurance_claim.allianz_death_docs
+- id: req.medical_documents
+  title: Documente medicale ale evenimentului
+  description: Rapoarte, externare, diagnostic sau alte acte prevăzute de formular/contract.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: in
+    field: event_type
+    values:
+    - invalidity
+    - serious_illness
+    - hospitalization
+    - surgery
+  accepted_forms:
+  - original
+  - copy
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - names_consistent
+  - date_within_window
+  - has_signature
+  - has_stamp
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+  - claim.life_insurance_claim.groupama_preparation
+- id: req.iban
+  title: IBAN pentru indemnizație
+  description: Contul indicat pentru plata indemnizației, dacă este solicitat.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: iban_available
+    value: true
+  accepted_forms:
+  - electronic
+  - copy
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - names_consistent
+  - user_confirmed
+  source_claim_ids:
+  - claim.life_insurance_claim.groupama_preparation
+official_channels:
+- id: channel.nn_claim
+  type: email
+  label: NN — EvenimenteAsigurate@nn.ro
+  url: mailto:EvenimenteAsigurate@nn.ro
+  integration_status: DEEP_LINK
+  official_domain: nn.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_death_invalidity_soon
+  - claim.life_insurance_claim.nn_hospital_72h
+  - claim.life_insurance_claim.nn_form_and_docs
+- id: channel.allianz_life_claim
+  type: phone
+  label: Allianz-Țiriac — 021 201 91 80
+  url: tel:+40212019180
+  integration_status: DEEP_LINK
+  official_domain: allianztiriac.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.life_insurance_claim.allianz_death_channels
+  - claim.life_insurance_claim.allianz_death_docs
+- id: channel.groupama_life_claim
+  type: phone
+  label: Groupama — 0374 110 110
+  url: tel:+40374110110
+  integration_status: DEEP_LINK
+  official_domain: groupama.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.life_insurance_claim.groupama_preparation
+  - claim.life_insurance_claim.groupama_phone
+rules:
+- id: rule.life_insurance_claim.nn_hospital_deadline.r1
+  canonical_rule_id: rule.life_insurance_claim.nn_hospital_deadline
+  event_type_id: ro.life.life_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:nn
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: insurer_id
+      value: nn
+    - op: in
+      field: event_type
+      values:
+      - hospitalization
+      - surgery
+  effects:
+  - type: set_deadline
+    step_id: step.notify_event
+    value:
+      hours: 72
+      anchor: discharge_or_surgery_date
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_hospital_72h
+  status: draft
+  reviewer_id: null
+- id: rule.life_insurance_claim.nn_death_invalidity.r1
+  canonical_rule_id: rule.life_insurance_claim.nn_death_invalidity
+  event_type_id: ro.life.life_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:nn
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: insurer_id
+      value: nn
+    - op: in
+      field: event_type
+      values:
+      - death
+      - invalidity
+      - serious_illness
+  effects:
+  - type: emit_warning
+    message_ro: Notifică evenimentul cât mai curând și folosește formularul corespunzător.
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_death_invalidity_soon
+  - claim.life_insurance_claim.nn_form_and_docs
+  status: draft
+  reviewer_id: null
+- id: rule.life_insurance_claim.death_docs.r1
+  canonical_rule_id: rule.life_insurance_claim.death_docs
+  event_type_id: ro.life.life_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: event_type
+    value: death
+  effects:
+  - type: include_requirement
+    requirement_id: req.death_certificate
+  source_claim_ids:
+  - claim.life_insurance_claim.allianz_death_docs
+  status: draft
+  reviewer_id: null
+- id: rule.life_insurance_claim.medical_docs.r1
+  canonical_rule_id: rule.life_insurance_claim.medical_docs
+  event_type_id: ro.life.life_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: event_type
+    values:
+    - invalidity
+    - serious_illness
+    - hospitalization
+    - surgery
+  effects:
+  - type: include_requirement
+    requirement_id: req.medical_documents
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+  - claim.life_insurance_claim.groupama_preparation
+  status: draft
+  reviewer_id: null
+- id: rule.life_insurance_claim.unknown_provider.r1
+  canonical_rule_id: rule.life_insurance_claim.unknown_provider
+  event_type_id: ro.life.life_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: insurer_id
+    values:
+    - other
+    - unknown
+  effects:
+  - type: require_confirmation
+    message_ro: Condițiile poliței trebuie confirmate înainte de a prezenta un termen sau o listă finală de acte.
+  source_claim_ids:
+  - claim.life_insurance_claim.nn_form_and_docs
+  - claim.life_insurance_claim.allianz_death_docs
+  - claim.life_insurance_claim.groupama_preparation
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

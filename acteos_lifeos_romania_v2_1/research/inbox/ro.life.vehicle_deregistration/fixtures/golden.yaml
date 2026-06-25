@@ -1,0 +1,825 @@
+batch_id: B14_VEHICLE_DEREGISTRATION
+defaults:
+  alias_event_type_id: ro.life.vehicle_deregistration
+  event_type_id: life.vehicle_deregistration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VDER01
+  description: Radiere pentru casare, proprietar
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER02
+  description: Radiere pentru depozitare legală
+  facts:
+    deregistration_reason: lawful_storage
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.proof_of_lawfully_held_storage_space
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER03
+  description: Radiere pentru export definitiv
+  facts:
+    deregistration_reason: permanent_export
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.proof_of_permanent_export
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER04
+  description: Radiere după furt declarat
+  facts:
+    deregistration_reason: stolen
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.competent_authority_vehicle_theft_proof
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER05
+  description: Tentativă de radiere pentru vânzare în România
+  facts:
+    deregistration_reason: domestic_transfer
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: blocked
+    included_steps:
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    warnings:
+    - domestic_transfer_does_not_require_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER06
+  description: Motiv de radiere neclasificat
+  facts:
+    deregistration_reason: other
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    confirmations:
+    - deregistration_ground_eligibility
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER07
+  description: Cerere formulată de moștenitor legal
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: legal_heir
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - legal_heir_may_request_deregistration
+    - timis_verified_channel
+    confirmations:
+    - proof_of_legal_heir_capacity
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER08
+  description: Solicitantul nu este în ultimul certificat
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner_not_on_last_certificate
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.ownership_document_registered_local_tax
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER09
+  description: Vehicul de peste 30 de ani cu declarație
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 35
+    uses_sworn_statement: true
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.sworn_statement_dismantled_or_permanently_withdrawn
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - over_30_year_vehicle_statement_route
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER10
+  description: Obligații fiscale locale neachitate
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: false
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER11
+  description: Termen fiscal post-radiere încă deschis
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER12
+  description: Declarația fiscală post-radiere este întârziată
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-04-01'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    overdue_steps:
+    - declare_deregistration_to_local_tax_authority
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-05-01'
+- id: VDER13
+  description: Radiere online în Timiș
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: online
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_online_deregistration_fiscal_certificate
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER14
+  description: Radiere din oficiu declarată
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: ex_officio
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - ex_officio_fiscal_exception
+    - timis_verified_channel
+    confirmations:
+    - ex_officio_route
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER15
+  description: Persoană juridică prin delegat
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: company
+    representation_type: company_delegate
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER16
+  description: Depunere prin avocat
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: lawyer
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER17
+  description: Solicitant din alt județ
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: BH
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.bh
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - owner_may_request_deregistration
+    confirmations:
+    - local_channel_outside_pilot
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER18
+  description: Lipsește motivul radierii
+  facts:
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: needs_facts
+    included_steps:
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    missing_facts:
+    - deregistration_reason
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER19
+  description: Lipsește rolul solicitantului
+  facts:
+    deregistration_reason: scrapped
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_verified_channel
+    missing_facts:
+    - applicant_role
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER20
+  description: Lipsește modul de depunere
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    missing_facts:
+    - submission_mode
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER21
+  description: Vehicul vechi fără utilizarea declarației speciale
+  facts:
+    deregistration_reason: scrapped
+    applicant_role: owner
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 40
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.scrapping_dismantling_or_specialised_unit_evidence
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - owner_may_request_deregistration
+    - timis_verified_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VDER22
+  description: Radiere pentru furt, moștenitor legal
+  facts:
+    deregistration_reason: stolen
+    applicant_role: legal_heir
+    applicant_county: TM
+    submission_mode: counter
+    applicant_type: individual
+    representation_type: self
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    vehicle_age_years: 12
+    uses_sworn_statement: false
+    deregistration_mode: on_request
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_vehicle_deregistration_file
+    - submit_deregistration_to_registering_authority
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_loss_retention_theft_proof
+    - req.valid_identity_or_entity_documents
+    - req.proof_of_deregistration_ground
+    - req.competent_authority_vehicle_theft_proof
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - legal_heir_may_request_deregistration
+    - timis_verified_channel
+    confirmations:
+    - proof_of_legal_heir_capacity
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'

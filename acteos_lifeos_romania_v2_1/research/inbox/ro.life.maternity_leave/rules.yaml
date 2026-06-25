@@ -1,0 +1,213 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.maternity_leave
+status: draft
+rules:
+- id: rule.maternity.stage_eligible
+  canonical_rule_id: maternity_leave.eligibility.stage
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: gte
+    field: insured_months_last_12
+    value: 6
+  effects:
+  - type: include_step
+    step_id: obtain_maternity_medical_certificates
+  - type: include_step
+    step_id: submit_certificates_for_payment
+  source_claim_ids:
+  - claim.maternity.insured_scope
+  - claim.maternity.contribution_6_of_12
+  status: draft
+  required_facts:
+  - insured_months_last_12
+  - birth_or_due_date
+- id: rule.maternity.stage_not_met
+  canonical_rule_id: maternity_leave.block.stage
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: lt
+    field: insured_months_last_12
+    value: 6
+  effects:
+  - type: block
+    tag: maternity_stage_under_6_months
+    message_ro: Stagiul declarat este sub 6 luni; verifică perioadele asimilate și excepțiile înainte de concluzie.
+  source_claim_ids:
+  - claim.maternity.contribution_6_of_12
+  status: draft
+- id: rule.maternity.duration
+  canonical_rule_id: maternity_leave.duration.126
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: gte
+    field: insured_months_last_12
+    value: 6
+  effects:
+  - type: set_deadline
+    step_id: maternity_total_duration
+    value:
+      kind: duration_calendar_days
+      days: 126
+  - type: emit_advice
+    tag: maternity_126_days
+    message_ro: Durata totală este 126 de zile calendaristice.
+  source_claim_ids:
+  - claim.maternity.duration_126
+  status: draft
+- id: rule.maternity.postnatal_minimum
+  canonical_rule_id: maternity_leave.minimum.postnatal42
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: exists
+    field: actual_birth_date
+  effects:
+  - type: set_deadline
+    step_id: mandatory_postnatal_leave
+    value:
+      kind: duration_calendar_days
+      days: 42
+      anchor: actual_birth_date
+  - type: emit_warning
+    tag: postnatal_minimum_42
+    message_ro: Cel puțin 42 de zile după naștere sunt obligatorii.
+  source_claim_ids:
+  - claim.maternity.split_63_min42
+  status: draft
+- id: rule.maternity.amount
+  canonical_rule_id: maternity_leave.amount.85_percent
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: gte
+    field: insured_months_last_12
+    value: 6
+  effects:
+  - type: emit_advice
+    tag: maternity_amount_85
+    message_ro: Indemnizația brută este 85% din baza de calcul legală.
+  source_claim_ids:
+  - claim.maternity.amount_85
+  - claim.maternity.payment_source
+  status: draft
+- id: rule.maternity.submit_by_fifth
+  canonical_rule_id: maternity_leave.certificate.deadline
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: eq
+    field: medical_certificate_issued
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.maternity_medical_certificate
+  - type: set_deadline
+    step_id: submit_certificates_for_payment
+    value:
+      kind: day_of_next_month
+      day: 5
+      anchor: certificate_month
+  - type: emit_warning
+    tag: medical_certificate_by_fifth
+    message_ro: Predă certificatul cel târziu până la 5 a lunii următoare.
+  source_claim_ids:
+  - claim.maternity.certificate_payment_document
+  status: draft
+- id: rule.maternity.stillbirth_death
+  canonical_rule_id: maternity_leave.continue.stillbirth_or_death
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: in
+    field: birth_outcome
+    values:
+    - stillborn
+    - child_died_during_puerperium
+  effects:
+  - type: emit_advice
+    tag: maternity_full_duration_after_loss
+    message_ro: Indemnizația de maternitate se acordă pe întreaga durată legală.
+  source_claim_ids:
+  - claim.maternity.stillbirth_or_child_death
+  status: draft
+- id: rule.maternity.disabled_sixth_month
+  canonical_rule_id: maternity_leave.disabled.early_start
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2006-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: mother_has_disability
+      value: true
+    - op: gte
+      field: pregnancy_month
+      value: 6
+  effects:
+  - type: emit_advice
+    tag: disabled_maternity_from_month6
+    message_ro: Poți solicita concediul pentru sarcină începând cu luna a șasea.
+  source_claim_ids:
+  - claim.maternity.disabled_from_sixth_month
+  status: draft
+- id: rule.maternity.lost_insurance
+  canonical_rule_id: maternity_leave.exception.lost_insurance
+  event_type_id: life.maternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2006-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: lost_insured_status_non_attributable
+      value: true
+    - op: lte
+      field: months_between_loss_and_birth
+      value: 9
+  effects:
+  - type: include_step
+    step_id: prove_non_attributable_loss_of_insurance
+  - type: include_requirement
+    requirement_id: req.official_loss_of_insurance_documents
+  source_claim_ids:
+  - claim.maternity.loss_insurance_9_months
+  status: draft

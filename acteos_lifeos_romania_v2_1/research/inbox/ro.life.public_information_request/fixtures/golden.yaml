@@ -1,0 +1,529 @@
+batch_id: B09_PUBLIC_INFORMATION_REQUEST
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.public_information_request
+  event_alias: ro.life.public_information_request
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: cerere scrisă completă către PMT
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    included_steps:
+    - classify_request_as_public_information
+    - prepare_written_information_request
+    advice:
+    - possible_extension_to_30_days
+    - pmt_has_request_and_complaint_models
+  reference_date: '2026-06-25'
+- id: F02
+  desc: cerere electronică
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: electronic
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    included_steps:
+    - submit_information_request_electronically
+  reference_date: '2026-06-25'
+- id: F03
+  desc: cerere verbală, informație disponibilă
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: verbal
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+    information_available_on_spot: true
+  expect:
+    status: resolved
+    included_steps:
+    - ask_information_verbally
+  reference_date: '2026-06-25'
+- id: F04
+  desc: cerere verbală, informație indisponibilă
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: verbal
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+    information_available_on_spot: false
+  expect:
+    status: resolved
+    included_steps:
+    - ask_information_verbally
+    - submit_law_544_request_in_writing
+  reference_date: '2026-06-25'
+- id: F05
+  desc: solicitare de autorizație, nu informație
+  facts:
+    target_authority: pmt
+    request_is_public_information: false
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    not_included:
+    - submit_law_544_request
+    advice:
+    - reclassify_as_petition_service_or_authorisation
+  reference_date: '2026-06-25'
+- id: F06
+  desc: lipsește autoritatea
+  facts:
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - target_authority
+  reference_date: '2026-06-25'
+- id: F07
+  desc: informația nu este identificabilă
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - identifiable_information_description
+  reference_date: '2026-06-25'
+- id: F08
+  desc: lipsește numele
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requester_name
+  reference_date: '2026-06-25'
+- id: F09
+  desc: lipsește semnătura
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: false
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requester_signature_present
+  reference_date: '2026-06-25'
+- id: F10
+  desc: lipsește adresa de răspuns
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - response_address
+  reference_date: '2026-06-25'
+- id: F11
+  desc: notificare de extindere în 10 zile
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: true
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    included_steps:
+    - receive_extended_response
+  reference_date: '2026-06-25'
+- id: F12
+  desc: refuz explicit
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: true
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    included_steps:
+    - receive_reasoned_refusal
+  reference_date: '2026-06-25'
+- id: F13
+  desc: solicită copii de documente
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: true
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    warnings:
+    - copying_cost_may_apply
+  reference_date: '2026-06-25'
+- id: F14
+  desc: informații posibil exceptate
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: true
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    warnings:
+    - information_may_be_legally_exempt
+  reference_date: '2026-06-25'
+- id: F15
+  desc: reclamație administrativă
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: true
+    wants_court_complaint: false
+    awareness_of_refusal_date: '2026-06-20'
+    administrative_complaint_submission_date: '2026-06-25'
+  expect:
+    status: resolved
+    included_steps:
+    - submit_administrative_complaint_to_authority_head
+  reference_date: '2026-06-25'
+- id: F16
+  desc: reclamație administrativă fără data luării la cunoștință
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: true
+    wants_court_complaint: false
+    administrative_complaint_submission_date: '2026-06-25'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - awareness_of_refusal_date
+  reference_date: '2026-06-25'
+- id: F17
+  desc: plângere la tribunal
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: true
+    law_544_response_deadline_expiry_date: '2026-07-25'
+  expect:
+    status: resolved
+    included_steps:
+    - submit_court_complaint
+    advice:
+    - court_complaint_stamp_duty_exempt
+  reference_date: '2026-06-25'
+- id: F18
+  desc: plângere la tribunal fără data expirării
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - law_544_response_deadline_expiry_date
+  reference_date: '2026-06-25'
+- id: F19
+  desc: cerere neregistrată
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: false
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    not_included:
+    - receive_standard_response
+  reference_date: '2026-06-25'
+- id: F20
+  desc: înregistrare fără dată
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - registration_date
+  reference_date: '2026-06-25'
+- id: F21
+  desc: autoritate centrală, nu PMT
+  facts:
+    target_authority: anaf
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: contractele de achiziții pentru proiectul X
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: false
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    not_included:
+    - pmt_has_request_and_complaint_models
+  reference_date: '2026-06-25'
+- id: F22
+  desc: cerere de date personale despre terț
+  facts:
+    target_authority: pmt
+    request_is_public_information: true
+    submission_mode: written
+    identifiable_information_description: date personale complete despre o persoană
+    requester_name: Ion Popescu
+    requester_signature_present: true
+    response_address: email@example.ro
+    request_registered: true
+    registration_date: '2026-06-25'
+    extension_notice_received_within_10_days: false
+    authority_refuses: false
+    requests_document_copies: false
+    may_contain_exempt_information: true
+    wants_administrative_complaint: false
+    wants_court_complaint: false
+  expect:
+    status: resolved
+    warnings:
+    - information_may_be_legally_exempt
+  reference_date: '2026-06-25'

@@ -1,0 +1,442 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.university_admission
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: UNI01
+  desc: licență, diplomă bac, regulament verificat
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+    requirements:
+    - req.uni.entry_diploma
+- id: UNI02
+  desc: licență fără diploma de acces
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: false
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: blocked
+    blocks:
+    - entry_diploma_missing
+- id: UNI03
+  desc: master cu diplomă de licență
+  facts:
+    cycle: master
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+- id: UNI04
+  desc: doctorat cu 300 ECTS
+  facts:
+    cycle: doctorate
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+    cumulative_ects: 300
+  expect:
+    status: ready
+- id: UNI05
+  desc: doctorat cu 299 ECTS
+  facts:
+    cycle: doctorate
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+    cumulative_ects: 299
+  expect:
+    status: blocked
+    blocks:
+    - doctorate_ects_below_300
+- id: UNI06
+  desc: cetățean UE
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: eu_eea_swiss
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+    warnings:
+    - eu_equal_conditions
+- id: UNI07
+  desc: cetățean stat terț
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: third_country
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - third_country_route
+- id: UNI08
+  desc: al treilea program simultan
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 3
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: blocked
+    blocks:
+    - more_than_two_programs
+- id: UNI09
+  desc: exact două programe simultan
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 2
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+- id: UNI10
+  desc: solicită buget, nu a folosit bugetul
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: budget
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+    requirements:
+    - req.uni.original_budget
+- id: UNI11
+  desc: solicită al doilea buget în același ciclu
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: budget
+    already_budget_funded_same_cycle: true
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: blocked
+    blocks:
+    - budget_already_used
+- id: UNI12
+  desc: înscriere online permisă de regulament
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+- id: UNI13
+  desc: online, regulament neverificat
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: false
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - institution_rules_unverified
+    - online_allowed_by_institution
+- id: UNI14
+  desc: program UVT
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+    channels:
+    - ch.uni.uvt
+- id: UNI15
+  desc: program UPT
+  facts:
+    cycle: bachelor
+    selected_institution_id: upt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: ready
+    channels:
+    - ch.uni.upt
+- id: UNI16
+  desc: după 30 septembrie
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-10-01'
+  expect:
+    status: blocked
+    blocks:
+    - ordinary_admission_closed
+- id: UNI17
+  desc: exact 30 septembrie
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-09-30'
+  expect:
+    status: ready
+- id: UNI18
+  desc: lipsă instituție
+  facts:
+    cycle: bachelor
+    selected_institution_id: null
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - selected_institution_id
+- id: UNI19
+  desc: lipsă program
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: null
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - selected_program_id
+- id: UNI20
+  desc: lipsă ciclu
+  facts:
+    cycle: null
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - cycle
+- id: UNI21
+  desc: lipsă tip finanțare
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: null
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - requested_funding
+- id: UNI22
+  desc: lipsă data de referință
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: null
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: UNI23
+  desc: studii din străinătate, atestat neconfirmat
+  facts:
+    cycle: bachelor
+    selected_institution_id: uvt
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+    foreign_diploma: true
+    recognition_document_available: false
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.uni.recognition
+    confirmations:
+    - recognition_document_unverified
+- id: UNI24
+  desc: altă universitate din România
+  facts:
+    cycle: bachelor
+    selected_institution_id: uaic
+    selected_program_id: uvt.info
+    entry_diploma_available: true
+    citizenship_category: romanian
+    requested_funding: fee
+    already_budget_funded_same_cycle: false
+    simultaneous_program_count_after_enrollment: 1
+    institution_rules_verified: true
+    online_submission_requested: true
+    reference_date: '2026-07-10'
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.is

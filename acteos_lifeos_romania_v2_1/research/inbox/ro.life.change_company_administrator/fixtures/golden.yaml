@@ -1,0 +1,413 @@
+batch_id: B12_CHANGE_COMPANY_ADMINISTRATOR
+defaults:
+  event_type_id: life.change_company_administrator
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: asociat unic înlocuiește administratorul cu decizie scrisă
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_administrator_change
+    - file_administrator_change_mention
+    - prepare_updated_constitutive_act
+    requirements:
+    - req.sole_associate_written_decision
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F02
+  desc: asociat unic fără decizie scrisă
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 1
+    decision_recorded_in_writing: false
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - sole_associate_written_decision_missing
+- id: F03
+  desc: mai mulți asociați cu hotărâre validă
+  facts:
+    entity_type: srl
+    administrator_change_type: appoint
+    associates_count: 3
+    decision_valid_under_articles: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: jointly
+    constitutive_act_is_modified: true
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    requirements:
+    - req.shareholders_resolution
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F04
+  desc: mai mulți asociați fără verificarea majorității
+  facts:
+    entity_type: srl
+    administrator_change_type: appoint
+    associates_count: 3
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: jointly
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - decision_validity_under_articles_required
+- id: F05
+  desc: hotărâre nevalidă conform actului constitutiv
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 2
+    decision_valid_under_articles: false
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - decision_invalid_under_articles
+- id: F06
+  desc: numire cu date de identificare incomplete
+  facts:
+    entity_type: srl
+    administrator_change_type: appoint
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: false
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - new_administrator_identity_data_missing
+- id: F07
+  desc: numire fără durata mandatului
+  facts:
+    entity_type: srl
+    administrator_change_type: appoint
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: false
+    powers_defined: true
+    representation_mode: separately
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - administrator_mandate_term_missing
+- id: F08
+  desc: numire fără puteri definite
+  facts:
+    entity_type: srl
+    administrator_change_type: appoint
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: false
+    representation_mode: separately
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - administrator_powers_or_representation_missing
+- id: F09
+  desc: numire fără mod de reprezentare
+  facts:
+    entity_type: srl
+    administrator_change_type: appoint
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - administrator_powers_or_representation_missing
+- id: F10
+  desc: revocare cu alt administrator rămas
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 2
+    decision_valid_under_articles: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F11
+  desc: revocare care lasă societatea fără administrator
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 0
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - no_administrator_remaining
+    warnings:
+    - statutory_body_dissolution_risk
+- id: F12
+  desc: schimbarea puterilor administratorului
+  facts:
+    entity_type: srl
+    administrator_change_type: change_powers
+    associates_count: 1
+    decision_recorded_in_writing: true
+    powers_defined: true
+    representation_mode: jointly
+    constitutive_act_is_modified: true
+    resulting_admin_count: 2
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F13
+  desc: prelungirea mandatului cu durată definită
+  facts:
+    entity_type: srl
+    administrator_change_type: renew_term
+    associates_count: 1
+    decision_recorded_in_writing: true
+    mandate_term_defined: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F14
+  desc: actul constitutiv afectat este necunoscut
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - constitutive_act_update_required_check
+- id: F15
+  desc: depunere în ziua 15
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F16
+  desc: depunere după 16 zile
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F17
+  desc: reprezentant legal cu putere valabilă la depunere
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+    signer_authority_valid_on_filing_date: true
+    constitutive_act_is_modified: true
+  expect:
+    status: resolved
+- id: F18
+  desc: fost administrator fără putere la depunere
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+    signer_authority_valid_on_filing_date: false
+  expect:
+    status: blocked
+    blocks:
+    - signer_authority_not_valid_on_filing_date
+- id: F19
+  desc: depunere prin avocat
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    resulting_admin_count: 1
+    filing_actor: lawyer
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - constitutive_act_update_required_check
+- id: F20
+  desc: depunere prin contabil fără procură
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    resulting_admin_count: 1
+    filing_actor: accountant
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F21
+  desc: online cu semnătură calificată
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+- id: F22
+  desc: online fără semnătură calificată
+  facts:
+    entity_type: srl
+    administrator_change_type: revoke
+    associates_count: 1
+    decision_recorded_in_writing: true
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F23
+  desc: schimbarea administratorului modifică și beneficiarul real
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+    beneficial_owner_identity_or_control_changes: true
+    beneficial_owner_change_date: '2026-06-20'
+  expect:
+    status: resolved
+    included_steps:
+    - update_beneficial_owner_data
+    requirements:
+    - req.beneficial_owner_change_declaration
+- id: F24
+  desc: schimbarea administratorului nu modifică beneficiarul real
+  facts:
+    entity_type: srl
+    administrator_change_type: replace
+    associates_count: 1
+    decision_recorded_in_writing: true
+    new_admin_identity_data_complete: true
+    mandate_term_defined: true
+    powers_defined: true
+    representation_mode: separately
+    constitutive_act_is_modified: true
+    resulting_admin_count: 1
+    filing_actor: legal_representative
+    beneficial_owner_identity_or_control_changes: false
+  expect:
+    status: resolved
+    advice:
+    - administrator_change_does_not_automatically_change_bo
+- id: F25
+  desc: PFA introdus eronat pe traseul administratorului
+  facts:
+    entity_type: pfa
+    administrator_change_type: replace
+  expect:
+    status: blocked
+    blocks:
+    - administrator_change_route_not_supported

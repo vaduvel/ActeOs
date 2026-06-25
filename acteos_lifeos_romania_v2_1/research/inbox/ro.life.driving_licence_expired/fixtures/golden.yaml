@@ -1,0 +1,311 @@
+batch_id: B01_DRIVING_LICENCE_EXPIRED
+defaults:
+  event_type_id: life.driving_licence_expired
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: E01
+  desc: permis expirat, fișă medicală, ghișeu
+  facts:
+    licence_expiry_date: '2026-06-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+    has_old_licence: true
+    has_identity_document: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_licence_new_validity
+    warnings:
+    - licence_expired
+    requirements:
+    - req.payment_89_ron
+    confirmations:
+    - exact_dossier_pending
+- id: E02
+  desc: expiră astăzi
+  facts:
+    licence_expiry_date: '2026-06-25'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    warnings_absent:
+    - licence_expired
+    confirmations:
+    - exact_dossier_pending
+- id: E03
+  desc: expiră peste 30 zile
+  facts:
+    licence_expiry_date: '2026-07-25'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    advice:
+    - renew_anytime
+- id: E04
+  desc: permis expirat fără fișă medicală în Timiș
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: false
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - medical_document_required_for_extension
+    - exact_dossier_pending
+- id: E05
+  desc: permis încă valabil fără fișă, nu cere extindere
+  facts:
+    licence_expiry_date: '2027-01-01'
+    request_date: '2026-06-25'
+    wants_new_validity: false
+    medical_document_present: false
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - exact_dossier_pending
+    advice:
+    - renew_anytime
+- id: E06
+  desc: transmitere pe e-mail
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: email
+    applicant_has_cei: false
+  expect:
+    status: blocked
+    blocks:
+    - email_not_supported_for_new_validity
+- id: E07
+  desc: orice SPCRPCIV, alt județ
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.any_spcrpciv
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: E08
+  desc: taxa plătită online
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    payment_status: paid_online
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    advice:
+    - fee_89_ron
+- id: E09
+  desc: taxa neplătită
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    payment_status: unpaid
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    requirements:
+    - req.payment_89_ron
+- id: E10
+  desc: titular CEI în Timiș
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: true
+    address_certificate: false
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - obtain_address_certificate
+    advice:
+    - address_checked_at_counter
+- id: E11
+  desc: titular CI clasică
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    excluded_steps_absent:
+    - obtain_address_certificate
+- id: E12
+  desc: pilot Timișoara și conflict program
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.spcrpciv_timisoara_demetriade_1
+    confirmations:
+    - timisoara_schedule_conflict
+- id: E13
+  desc: persoană împuternicită
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_route: proxy
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - exact_proxy_documents_pending
+    - exact_dossier_pending
+- id: E14
+  desc: permis vechi lipsă
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    has_old_licence: false
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - may_need_duplicate_route
+    confirmations:
+    - exact_dossier_pending
+- id: E15
+  desc: fără act de identitate
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    has_identity_document: false
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - valid_identity_document
+- id: E16
+  desc: livrare publicată
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_confirmation
+    advice:
+    - delivery_5_to_14
+- id: E17
+  desc: lipsește data expirării
+  facts:
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - licence_expiry_date
+- id: E18
+  desc: lipsește opțiunea de valabilitate
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - wants_new_validity
+- id: E19
+  desc: lipsește canalul
+  facts:
+    licence_expiry_date: '2026-05-01'
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    applicant_has_cei: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_channel
+- id: E20
+  desc: data expirării invalidă
+  facts:
+    licence_expiry_date: not-a-date
+    request_date: '2026-06-25'
+    wants_new_validity: true
+    medical_document_present: true
+    request_channel: counter
+    applicant_has_cei: false
+  expect:
+    status: blocked
+    errors:
+    - invalid_date
+- id: E21
+  desc: toate faptele lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - licence_expiry_date
+    - request_date
+    - wants_new_validity
+    - medical_document_present
+    - request_channel
+    - applicant_has_cei

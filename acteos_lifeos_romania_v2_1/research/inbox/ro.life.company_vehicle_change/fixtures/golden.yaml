@@ -1,0 +1,511 @@
+batch_id: B13_COMPANY_VEHICLE_CHANGE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.company_vehicle_change
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: CV01
+  desc: Vehicul cumpărat în România, transcriere în termen
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+- id: CV02
+  desc: Transcriere exact în ziua 90
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 90
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+- id: CV03
+  desc: Transcriere în ziua 91
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 91
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    - remedy_overdue_vehicle_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+    warnings_present:
+    - vehicle_transcription_deadline_exceeded
+    - vehicle_registration_suspended_by_law
+- id: CV04
+  desc: Firma vinde vehiculul
+  facts:
+    change_type: sale
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_sale_to_local_tax_authority
+    - obtain_vehicle_sale_fiscal_certificate_if_required
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+- id: CV05
+  desc: Schimbare denumire firmă în certificatul vehiculului
+  facts:
+    change_type: company_name_change
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - request_vehicle_certificate_data_change
+    channels:
+    - ch.timis.vehicle_certificate_change_appointment
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+- id: CV06
+  desc: Schimbare adresă firmă în certificatul vehiculului
+  facts:
+    change_type: company_address_change
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - request_vehicle_certificate_data_change
+    channels:
+    - ch.timis.vehicle_certificate_change_appointment
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+- id: CV07
+  desc: Vehicul la final de leasing
+  facts:
+    change_type: end_leasing
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - select_company_vehicle_special_case
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+    needs_confirmation:
+    - confirm_case_specific_vehicle_documents
+- id: CV08
+  desc: Vehicul importat din UE
+  facts:
+    change_type: import_eu
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - select_company_vehicle_special_case
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+    needs_confirmation:
+    - confirm_case_specific_vehicle_documents
+- id: CV09
+  desc: Transcriere online fără certificat fiscal
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: online
+    fiscal_clearance_available: false
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: blocked
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    requirements:
+    - req.local_fiscal_clearance_certificate
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - online_transcription_or_radiation_needs_fiscal_certificate
+- id: CV10
+  desc: Transcriere online cu certificat fiscal
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: online
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    requirements:
+    - req.local_fiscal_clearance_certificate
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - online_transcription_or_radiation_needs_fiscal_certificate
+- id: CV11
+  desc: Ghișeu și actul de proprietate este înregistrat fiscal
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+- id: CV12
+  desc: Operațiune prin împuternicit
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: true
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    requirements:
+    - req.company_vehicle_power_of_attorney
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+- id: CV13
+  desc: Alt UAT decât Timișoara
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-CJ-CLUJ-NAPOCA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: ok
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    needs_confirmation:
+    - confirm_local_vehicle_tax_channel
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+- id: CV14
+  desc: Lipsește faptul obligatoriu change_type
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+    missing_facts:
+    - change_type
+- id: CV15
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    change_type: acquisition_ro_registered
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - counter_uses_registered_ownership_document
+    missing_facts:
+    - territory_id
+- id: CV16
+  desc: Lipsește faptul obligatoriu days_since_acquisition
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+    missing_facts:
+    - days_since_acquisition
+- id: CV17
+  desc: Lipsește faptul obligatoriu tax_record_updated
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    missing_facts:
+    - tax_record_updated
+- id: CV18
+  desc: Lipsește faptul obligatoriu submission_channel
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    fiscal_clearance_available: true
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    missing_facts:
+    - submission_channel
+- id: CV19
+  desc: Lipsește faptul obligatoriu fiscal_clearance_available
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    representative_used: false
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+    missing_facts:
+    - fiscal_clearance_available
+- id: CV20
+  desc: Lipsește faptul obligatoriu representative_used
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    documents_case_selected: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+    missing_facts:
+    - representative_used
+- id: CV21
+  desc: Lipsește faptul obligatoriu documents_case_selected
+  facts:
+    change_type: acquisition_ro_registered
+    territory_id: RO-TM-TIMISOARA
+    days_since_acquisition: 30
+    tax_record_updated: true
+    submission_channel: counter
+    fiscal_clearance_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    - declare_company_vehicle_to_local_tax_authority
+    - request_vehicle_ownership_transcription
+    channels:
+    - ch.timisoara.atlas_vehicle_tax
+    advice_tags:
+    - vehicle_transcription_within_90_days
+    - timisoara_current_service_redirects_to_atlas
+    - counter_uses_registered_ownership_document
+    missing_facts:
+    - documents_case_selected
+- id: CV22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_company_vehicle_change_route
+    missing_facts:
+    - change_type
+    - territory_id
+    - days_since_acquisition
+    - tax_record_updated
+    - submission_channel
+    - fiscal_clearance_available
+    - representative_used
+    - documents_case_selected

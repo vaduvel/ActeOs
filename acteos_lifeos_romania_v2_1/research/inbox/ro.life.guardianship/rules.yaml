@@ -1,0 +1,304 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_GUARDIANSHIP
+event_type_id: ro.life.guardianship
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- protected_person_type
+- court_judgment_final
+- territory_id
+- guardian_married
+- protected_person_age
+- online_submission
+rules:
+- id: rule.b03.guardianship.no_final_judgment
+  canonical_rule_id: guardianship.obtain_judgment
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: court_judgment_final
+    value: false
+  effects:
+  - type: include_step
+    step_id: obtain_guardianship_or_protection_judgment
+  - type: require_confirmation
+    tag: confirm_guardianship_court_route
+    message_ro: Confirmă instanța, cererea, probele și măsura de ocrotire adecvată înainte de depunere.
+  source_claim_ids:
+  - claim.b03.guardianship.civil_code_current
+  status: in_review
+- id: rule.b03.guardianship.minor_final
+  canonical_rule_id: guardianship.record_minor
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: minor
+    - op: eq
+      field: court_judgment_final
+      value: true
+  effects:
+  - type: include_step
+    step_id: register_minor_guardianship_with_tutelary_authority
+  - type: include_requirement
+    requirement_id: req.final_guardianship_judgment
+  - type: include_requirement
+    requirement_id: req.minor_birth_certificate
+  - type: include_requirement
+    requirement_id: req.minor_medical_and_school_documents
+  - type: include_requirement
+    requirement_id: req.parent_status_documents
+  - type: include_requirement
+    requirement_id: req.guardian_identity_and_civil_status_documents
+  - type: include_requirement
+    requirement_id: req.guardian_medical_income_criminal_integrity_documents
+  source_claim_ids:
+  - claim.b03.guardianship.minor_record
+  - claim.b03.guardianship.guardian_documents
+  status: draft
+  authority_level: institution
+- id: rule.b03.guardianship.minor_14_id
+  canonical_rule_id: guardianship.minor_id_14
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: minor
+    - op: eq
+      field: court_judgment_final
+      value: true
+    - op: gte
+      field: protected_person_age
+      value: 14
+  effects:
+  - type: include_requirement
+    requirement_id: req.minor_identity_document
+  source_claim_ids:
+  - claim.b03.guardianship.minor_id_14
+  status: draft
+- id: rule.b03.guardianship.adult_final
+  canonical_rule_id: guardianship.record_adult
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: adult
+    - op: eq
+      field: court_judgment_final
+      value: true
+  effects:
+  - type: include_step
+    step_id: register_legally_protected_adult
+  - type: include_requirement
+    requirement_id: req.final_protection_judgment
+  - type: include_requirement
+    requirement_id: req.protected_adult_identity_and_birth_documents
+  - type: include_requirement
+    requirement_id: req.protected_adult_medical_income_property_documents
+  - type: include_requirement
+    requirement_id: req.guardian_identity_and_civil_status_documents
+  - type: include_requirement
+    requirement_id: req.guardian_medical_income_criminal_integrity_documents
+  source_claim_ids:
+  - claim.b03.guardianship.adult_record
+  - claim.b03.guardianship.guardian_documents
+  status: draft
+  authority_level: institution
+- id: rule.b03.guardianship.spouse_consent
+  canonical_rule_id: guardianship.guardian_spouse_consent
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: court_judgment_final
+      value: true
+    - op: eq
+      field: guardian_married
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.guardian_spouse_consent
+  source_claim_ids:
+  - claim.b03.guardianship.guardian_documents
+  status: draft
+- id: rule.b03.guardianship.online_minor
+  canonical_rule_id: guardianship.channel.online_minor
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: minor
+    - op: eq
+      field: court_judgment_final
+      value: true
+    - op: eq
+      field: online_submission
+      value: true
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: register_minor_guardianship_with_tutelary_authority
+    channel_id: ch.timisoara.guardianship_online
+  source_claim_ids:
+  - claim.b03.guardianship.online_channel
+  status: draft
+- id: rule.b03.guardianship.counter_minor
+  canonical_rule_id: guardianship.channel.counter_minor
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: minor
+    - op: eq
+      field: court_judgment_final
+      value: true
+    - op: eq
+      field: online_submission
+      value: false
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: register_minor_guardianship_with_tutelary_authority
+    channel_id: ch.timisoara.guardianship_counter
+  source_claim_ids:
+  - claim.b03.guardianship.minor_record
+  status: draft
+- id: rule.b03.guardianship.online_adult
+  canonical_rule_id: guardianship.channel.online_adult
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: adult
+    - op: eq
+      field: court_judgment_final
+      value: true
+    - op: eq
+      field: online_submission
+      value: true
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: register_legally_protected_adult
+    channel_id: ch.timisoara.protected_adult_online
+  source_claim_ids:
+  - claim.b03.guardianship.adult_record
+  status: draft
+- id: rule.b03.guardianship.counter_adult
+  canonical_rule_id: guardianship.channel.counter_adult
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: protected_person_type
+      value: adult
+    - op: eq
+      field: court_judgment_final
+      value: true
+    - op: eq
+      field: online_submission
+      value: false
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: register_legally_protected_adult
+    channel_id: ch.timisoara.protected_adult_counter
+  source_claim_ids:
+  - claim.b03.guardianship.adult_record
+  status: draft
+- id: rule.b03.guardianship.other_uat
+  canonical_rule_id: guardianship.channel.other_uat
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: territory_id
+    value: RO-TM-TIMISOARA
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_tutelary_authority
+    message_ro: Confirmă autoritatea tutelară competentă și dosarul local; lista Timișoara nu se generalizează.
+  source_claim_ids:
+  - claim.b03.guardianship.civil_code_current
+  status: in_review
+- id: rule.b03.guardianship.unknown_type
+  canonical_rule_id: guardianship.protected_person_type_unknown
+  event_type_id: ro.life.guardianship
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: not_in
+    field: protected_person_type
+    values:
+    - minor
+    - adult
+  effects:
+  - type: require_confirmation
+    tag: confirm_protected_person_type
+    message_ro: Clarifică dacă procedura privește un minor sau un adult ocrotit legal.
+  source_claim_ids:
+  - claim.b03.guardianship.civil_code_current
+  status: in_review

@@ -1,0 +1,226 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_BOUGHT_HOME
+event_alias: ro.life.bought_home
+event_type_id: life.bought_home
+status: research_inbox
+rules:
+- id: rule.bought.notary
+  canonical_rule_id: bought.transfer.notary
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: is_real_estate
+    value: true
+  effects:
+  - type: include_step
+    step_id: complete_authentic_notarial_transfer
+  - type: emit_warning
+    tag: authentic_form
+    message_ro: Transferul dreptului asupra imobilului se încheie prin act autentic notarial.
+  source_claim_ids:
+  - claim.notary.immovable_authentic
+  status: draft
+- id: rule.bought.energy_original
+  canonical_rule_id: bought.energy.original
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2010-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_real_estate
+      value: true
+    - op: eq
+      field: received_energy_certificate_original
+      value: false
+  effects:
+  - type: include_step
+    step_id: obtain_energy_certificate_original
+  - type: emit_warning
+    tag: energy_original_missing
+    message_ro: La vânzare, vânzătorul transmite certificatul energetic în original noului proprietar.
+  source_claim_ids:
+  - claim.energy.original_to_buyer
+  - claim.energy.copy_before_contract
+  status: draft
+- id: rule.bought.association_10wd
+  canonical_rule_id: bought.association.new_owner
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: eq
+    field: is_condominium
+    value: true
+  effects:
+  - type: include_step
+    step_id: notify_association_as_new_owner
+  - type: set_deadline
+    step_id: notify_association_as_new_owner
+    value:
+      kind: relative_working_days
+      days: 10
+      anchor: transfer_date
+  - type: include_requirement
+    requirement_id: req.property_information
+  - type: include_requirement
+    requirement_id: req.owner_contact_details
+  - type: emit_warning
+    tag: association_new_owner_10wd
+    message_ro: Comunică asociației informațiile proprietății și datele de contact în 10 zile lucrătoare de la transfer.
+  source_claim_ids:
+  - claim.association.new_owner_10wd
+  status: draft
+- id: rule.bought.debts_accepted
+  canonical_rule_id: bought.association.debts_accepted
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: seller_debts_exist
+      value: true
+    - op: eq
+      field: buyer_expressly_accepts_debts
+      value: true
+  effects:
+  - type: emit_warning
+    tag: buyer_accepts_association_debts
+    message_ro: Actul trebuie să consemneze expres preluarea integrală a datoriilor către asociație și utilități; verifică soldul înainte de semnare.
+  source_claim_ids:
+  - claim.association.debt_takeover
+  status: draft
+- id: rule.bought.debts_not_accepted
+  canonical_rule_id: bought.association.debts_not_accepted
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: seller_debts_exist
+      value: true
+    - op: eq
+      field: buyer_expressly_accepts_debts
+      value: false
+    - op: eq
+      field: is_condominium
+      value: true
+  effects:
+  - type: block
+    tag: unresolved_association_debts
+    message_ro: 'Nu trata tranzacția ca pregătită pentru autentificare: datoriile trebuie stinse sau preluate expres în condițiile legii.'
+  source_claim_ids:
+  - claim.association.debt_takeover
+  - claim.association.seller_dues
+  status: draft
+- id: rule.bought.local_tax_tm
+  canonical_rule_id: bought.local_tax.timisoara
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: is_real_estate
+      value: true
+  effects:
+  - type: include_step
+    step_id: declare_home_for_local_tax
+  - type: attach_channel
+    step_id: declare_home_for_local_tax
+    channel_id: ch.dfmt.atlas.home_declaration
+  - type: set_freshness_state
+    step_id: declare_home_for_local_tax
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: local_tax_deadline_docs
+    message_ro: Canalul Atlas este verificat; termenul și documentele exacte trebuie confirmate înainte de calcularea scadenței.
+  source_claim_ids:
+  - claim.tm.buy_declare_channel
+  - claim.tm.buy_deadline_gap
+  status: in_review
+  authority_level: uat
+- id: rule.bought.local_tax_other
+  canonical_rule_id: bought.local_tax.other_uat
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: is_real_estate
+      value: true
+  effects:
+  - type: include_step
+    step_id: declare_home_for_local_tax
+  - type: set_freshness_state
+    step_id: declare_home_for_local_tax
+    value: verified_with_local_gap
+  - type: require_confirmation
+    tag: other_uat_local_tax
+    message_ro: Obligația locală trebuie verificată la organul fiscal al UAT-ului imobilului; canalul Timișoara nu se reutilizează.
+  source_claim_ids:
+  - claim.tm.buy_deadline_gap
+  status: in_review
+- id: rule.bought.identity
+  canonical_rule_id: bought.identity.domicile
+  event_type_id: life.bought_home
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2005-07-20'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: moves_in
+      value: true
+    - op: eq
+      field: changes_domicile
+      value: true
+  effects:
+  - type: include_step
+    step_id: update_identity_for_new_domicile
+  - type: set_deadline
+    step_id: update_identity_for_new_domicile
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: move_date
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.address_proof
+  source_claim_ids:
+  - claim.identity.domicile_new_id_15d
+  - claim.identity.address_proof
+  status: draft

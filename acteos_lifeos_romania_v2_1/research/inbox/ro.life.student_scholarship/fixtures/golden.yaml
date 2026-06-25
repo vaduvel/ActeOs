@@ -1,0 +1,488 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.student_scholarship
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: SCH01
+  desc: social, student eligibil sub 26
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    warnings:
+    - family_income_method
+- id: SCH02
+  desc: instituție privată
+  facts:
+    institution_sector: private
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - private_institution_rules
+- id: SCH03
+  desc: formă fără frecvență
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: distance
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: blocked
+    blocks:
+    - social_requires_fulltime
+- id: SCH04
+  desc: loc cu taxă
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: fee
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: blocked
+    blocks:
+    - social_requires_budget_place
+- id: SCH05
+  desc: 34 ani
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 34
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    warnings:
+    - personal_income_method
+- id: SCH06
+  desc: exact 35 ani
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 35
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: blocked
+    blocks:
+    - social_age_limit
+- id: SCH07
+  desc: nepromovat
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: false
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: blocked
+    blocks:
+    - not_promoted
+- id: SCH08
+  desc: categorie medicală
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: medical
+    income_below_threshold: false
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    requirements:
+    - req.sch.category_documents
+    warnings:
+    - medical_income_exception
+- id: SCH09
+  desc: venit peste prag
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: false
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: blocked
+    blocks:
+    - income_above_threshold
+- id: SCH10
+  desc: orfan, venit sub prag
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: orphan
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    requirements:
+    - req.sch.category_documents
+- id: SCH11
+  desc: familie monoparentală
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: single_parent
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+- id: SCH12
+  desc: plasament
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: placement
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+- id: SCH13
+  desc: venit zero declarat
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: true
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    requirements:
+    - req.sch.social_inquiry
+- id: SCH14
+  desc: părinte în străinătate
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: true
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    requirements:
+    - req.sch.social_inquiry
+- id: SCH15
+  desc: student 25 ani
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 25
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    warnings:
+    - family_income_method
+- id: SCH16
+  desc: student 26 ani
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 26
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: ready
+    warnings:
+    - personal_income_method
+- id: SCH17
+  desc: metodologie universitate neverificată
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: false
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - institution_method_unverified
+    - amount_2026_27_unverified
+- id: SCH18
+  desc: cuantum 2026-2027 neverificat
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - amount_2026_27_unverified
+- id: SCH19
+  desc: bursă de performanță
+  facts:
+    institution_sector: state
+    scholarship_type: performance
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_confirmation
+    note: criteriile instituționale trebuie verificate
+- id: SCH20
+  desc: bursă doctorală
+  facts:
+    institution_sector: state
+    scholarship_type: doctoral
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_confirmation
+    note: cuantumul și condițiile specifice nu sunt modelate aici
+- id: SCH21
+  desc: lipsă tip bursă
+  facts:
+    institution_sector: state
+    scholarship_type: null
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_facts
+    missing_facts:
+    - scholarship_type
+- id: SCH22
+  desc: lipsă vârstă
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_facts
+    missing_facts:
+    - student_age
+- id: SCH23
+  desc: lipsă promovabilitate
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: needs_facts
+    missing_facts:
+    - promoted
+- id: SCH24
+  desc: altă universitate/UAT
+  facts:
+    institution_sector: state
+    scholarship_type: social
+    study_mode: full_time
+    funding_place: budget
+    student_age: 21
+    promoted: true
+    social_category: income
+    income_below_threshold: true
+    no_family_income: false
+    parent_abroad: false
+    institution_method_verified: true
+    reference_date: '2026-10-01'
+    academic_year: 2026-2027
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.b

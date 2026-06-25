@@ -1,0 +1,742 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.bank_card_change
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.bank_card_change.01.ing_expiry_window
+  purpose: ING în fereastra de reînnoire
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Opțiunea trebuie confirmată în Home'Bank.
+- id: fx.bank_card_change.02.ing_expiry_option_missing
+  purpose: ING, opțiunea nu apare
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - PROVIDER_REISSUE_RULES_REQUIRED
+    confidence: verified
+    notes: Contact emitent; nu presupune reînnoire.
+- id: fx.bank_card_change.03.ing_expiry_month_started
+  purpose: ING, luna expirării a început
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: false
+      expiry_month: '2026-06-01'
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Fereastra declarată de inițiere poate fi închisă.
+- id: fx.bank_card_change.04.ing_damaged
+  purpose: ING card deteriorat
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: damaged
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Emiterea unui card nou din Home'Bank este documentată.
+- id: fx.bank_card_change.05.ing_name_ready
+  purpose: ING schimbare nume cu act nou
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: name_change
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_reason
+    - step.update_profile
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    - req.new_identity_document
+    warning_codes: []
+    confidence: verified
+    notes: Actualizare profil înainte de emitere.
+- id: fx.bank_card_change.06.ing_name_no_id
+  purpose: ING schimbare nume fără act nou
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: name_change
+      can_access_banking_app: true
+      new_identity_document_ready: false
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.identify_reason
+    - step.update_profile
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    - req.new_identity_document
+    warning_codes:
+    - UPDATE_IDENTITY_FIRST
+    confidence: verified
+    notes: Actul nou este prerechizit.
+- id: fx.bank_card_change.07.ing_address_old
+  purpose: ING adresă veche
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: false
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Actualizează/verifică adresa înainte de emitere.
+- id: fx.bank_card_change.08.bcr_expiry
+  purpose: BCR card în apropierea expirării
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Notificare/livrare conform paginii BCR.
+- id: fx.bank_card_change.09.bcr_no_app
+  purpose: BCR fără acces la aplicație
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      change_reason: expiry
+      can_access_banking_app: false
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Trebuie folosit canalul alternativ BCR.
+- id: fx.bank_card_change.10.bcr_address_old
+  purpose: BCR adresă de livrare neactualizată
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: false
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Adresa trebuie confirmată.
+- id: fx.bank_card_change.11.cec_expiry
+  purpose: CEC card care expiră
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: cec
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Pagina trebuie recapturată înainte de activare.
+- id: fx.bank_card_change.12.cec_damaged
+  purpose: CEC card deteriorat
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: cec
+      change_reason: damaged
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - PROVIDER_REISSUE_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Sursa cercetată acoperă expirarea, nu toate motivele de reemitere.
+- id: fx.bank_card_change.13.other_expiry
+  purpose: Alt emitent, expirare
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: other
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - PROVIDER_REISSUE_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Provider necartografiat.
+- id: fx.bank_card_change.14.unknown_provider
+  purpose: Emitent necunoscut
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: unknown
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - PROVIDER_REISSUE_RULES_REQUIRED
+    confidence: verified
+    notes: Selectează emitentul.
+- id: fx.bank_card_change.15.lost_redirect
+  purpose: Card pierdut
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: lost_or_stolen
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.identify_reason
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - USE_LOST_STOLEN_FLOW
+    confidence: verified
+    notes: Redirect la fluxul urgent.
+- id: fx.bank_card_change.16.stolen_redirect
+  purpose: Card furat
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      change_reason: lost_or_stolen
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.identify_reason
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - USE_LOST_STOLEN_FLOW
+    confidence: verified
+    notes: Redirect la fluxul urgent.
+- id: fx.bank_card_change.17.compromised
+  purpose: Date compromise
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: compromised
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - BLOCK_BEFORE_REISSUE
+    confidence: verified_with_local_gap
+    notes: Blocarea este prioritară; apoi reemitere.
+- id: fx.bank_card_change.18.product_change
+  purpose: Schimbare produs/card
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: product_change
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes:
+    - PROVIDER_REISSUE_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Condițiile comerciale nu sunt universale.
+- id: fx.bank_card_change.19.unknown_reason
+  purpose: Motiv necunoscut
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      change_reason: unknown
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Trebuie clarificat motivul.
+- id: fx.bank_card_change.20.expired_already
+  purpose: Card deja expirat
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: cec
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: false
+      expiry_month: '2026-05-01'
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Confirmă fluxul de reemitere post-expirare.
+- id: fx.bank_card_change.21.ing_virtual
+  purpose: Card virtual ING
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+      card_form: virtual
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Regula de reînnoire automată depinde de folosirea în ultimele 12 luni; factul nu este în schema R1.
+- id: fx.bank_card_change.22.ing_not_collected
+  purpose: Card reînnoit neridicat
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: expiry
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+      delivery_status: not_collected
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Poate fi necesară o nouă emitere; confirmă starea în Home'Bank.
+- id: fx.bank_card_change.23.name_other_provider
+  purpose: Schimbare nume la alt emitent
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: other
+      change_reason: name_change
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_reason
+    - step.update_profile
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    - req.new_identity_document
+    warning_codes:
+    - PROVIDER_REISSUE_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Principiul ING nu se generalizează automat altor bănci.
+- id: fx.bank_card_change.24.missing_reason
+  purpose: Motiv lipsă
+  input:
+    event_type_id: ro.life.bank_card_change
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      change_reason: unknown
+      can_access_banking_app: true
+      new_identity_document_ready: true
+      delivery_address_current: true
+      renewal_option_visible: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_reason
+    - step.request_card
+    - step.receive_activate
+    requirement_ids:
+    - req.current_card_data
+    warning_codes: []
+    confidence: verified
+    notes: Intentul nu poate fi rezolvat fără motiv.

@@ -1,0 +1,911 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.account_recovery_gov
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.account_recovery_gov.01.roeid_change_known
+  purpose: ROeID schimbare parolă cunoscută
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: roeid
+      issue_type: change_password
+      current_password_known: true
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids: []
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.02.roeid_forgot
+  purpose: ROeID parolă uitată
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: roeid
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.roeid_reenrolment_kit
+    warning_codes:
+    - ROEID_REENROLMENT_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.03.roeid_change_email
+  purpose: ROeID schimbare e-mail
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: roeid
+      issue_type: change_email
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.roeid_reenrolment_kit
+    warning_codes:
+    - ROEID_REENROLMENT_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.04.roeid_changed_phone
+  purpose: ROeID telefon nou
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: roeid
+      issue_type: changed_phone
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: false
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.roeid_reenrolment_kit
+    warning_codes:
+    - ROEID_REENROLMENT_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.05.roeid_no_push
+  purpose: ROeID nu primește push
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: roeid
+      issue_type: no_push
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids: []
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.06.ghiseul_forgot_password
+  purpose: Ghișeul.ro parolă uitată
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: ghiseul
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.07.ghiseul_forgot_username
+  purpose: Ghișeul.ro utilizator uitat
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: ghiseul
+      issue_type: forgot_username
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.08.ghiseul_no_email
+  purpose: Ghișeul.ro fără acces la e-mail
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: ghiseul
+      issue_type: lost_email_access
+      current_password_known: false
+      registered_email_access: false
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes:
+    - GHISEUL_REGISTERED_EMAIL_UNAVAILABLE
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.09.ghiseul_no_message
+  purpose: Ghișeul.ro mesaj absent
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: ghiseul
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes:
+    - RESET_MESSAGE_NOT_RECEIVED
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.10.anaf_forgot_password
+  purpose: SPV parolă uitată
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.11.anaf_forgot_username
+  purpose: SPV utilizator uitat
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: forgot_username
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.12.anaf_no_cnp
+  purpose: SPV fără CNP
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: false
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes:
+    - ANAF_RECOVERY_INPUTS_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.13.anaf_no_email
+  purpose: SPV fără e-mail asociat
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: false
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.registered_email
+    - req.cnp
+    warning_codes:
+    - ANAF_RECOVERY_INPUTS_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.14.anaf_change_email
+  purpose: SPV schimbare e-mail
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: change_email
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.anaf_current_credentials
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.15.anaf_change_email_no_answer
+  purpose: SPV schimbare e-mail fără răspuns siguranță
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: change_email
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: false
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.anaf_current_credentials
+    warning_codes:
+    - ANAF_EMAIL_CHANGE_INPUTS_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.16.anaf_change_email_no_password
+  purpose: SPV schimbare e-mail fără parolă
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: anaf_spv
+      issue_type: change_email
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.anaf_current_credentials
+    warning_codes:
+    - ANAF_EMAIL_CHANGE_INPUTS_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.17.hub_email_reset
+  purpose: Hub MAI reset prin e-mail
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: hub_mai
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: false
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.hub_validated_contact
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.18.hub_sms_reset
+  purpose: Hub MAI reset prin SMS
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: hub_mai
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: false
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.hub_validated_contact
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.19.hub_no_contact
+  purpose: Hub MAI fără contact validat
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: hub_mai
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: false
+      registered_phone_access: false
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.hub_validated_contact
+    warning_codes:
+    - HUB_MAI_VALIDATED_CONTACT_UNAVAILABLE
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.20.hub_no_message
+  purpose: Hub MAI cod neprimit
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: hub_mai
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids:
+    - req.hub_validated_contact
+    warning_codes:
+    - RESET_MESSAGE_NOT_RECEIVED
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.21.unknown_platform
+  purpose: Platformă necunoscută
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: unknown
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids: []
+    warning_codes:
+    - PLATFORM_RECOVERY_UNMAPPED
+    confidence: verified
+    notes: ''
+- id: fx.account_recovery_gov.22.other_platform
+  purpose: Alt cont public
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: other
+      issue_type: forgot_password
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids: []
+    warning_codes:
+    - PLATFORM_RECOVERY_UNMAPPED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.account_recovery_gov.23.phishing_link
+  purpose: Link primit fără cerere
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: unknown
+      issue_type: unknown
+      current_password_known: false
+      registered_email_access: true
+      registered_phone_access: true
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids: []
+    warning_codes:
+    - PLATFORM_RECOVERY_UNMAPPED
+    confidence: verified_with_local_gap
+    notes: Nu se accesează linkul; se pornește din domeniul oficial.
+- id: fx.account_recovery_gov.24.all_contacts_lost
+  purpose: E-mail și telefon pierdute
+  input:
+    event_type_id: ro.life.account_recovery_gov
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      platform_id: unknown
+      issue_type: lost_email_access
+      current_password_known: false
+      registered_email_access: false
+      registered_phone_access: false
+      cnp_available: true
+      username_known: true
+      security_answer_known: true
+      new_email_available: true
+      roeid_old_phone_available: true
+      reset_message_received: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_platform
+    - step.prepare_recovery_data
+    - step.run_official_recovery
+    - step.set_new_credentials
+    - step.secure_account
+    requirement_ids: []
+    warning_codes:
+    - PLATFORM_RECOVERY_UNMAPPED
+    confidence: verified
+    notes: ''

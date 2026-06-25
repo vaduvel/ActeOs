@@ -1,0 +1,337 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_DIPLOMA_DUPLICATE
+alias_event_type_id: ro.life.diploma_duplicate
+event_type_id: life.diploma_duplicate
+status: draft
+rules:
+- id: rule.diploma.required_facts
+  canonical_rule_id: diploma.required_facts
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_core_facts
+    message_ro: Precizează nivelul de învățământ și motivul duplicatului.
+  source_claim_ids:
+  - claim.diploma.preuniv.original_or_duplicate
+  - claim.diploma.higher.free_duplicate
+  status: draft
+  required_facts:
+  - education_level
+  - duplicate_reason
+- id: rule.diploma.preuniv.route
+  canonical_rule_id: diploma.preuniv.route
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: education_level
+    value: preuniversity
+  effects:
+  - type: include_step
+    step_id: identify_issuing_school_or_archive_holder
+  - type: include_step
+    step_id: submit_duplicate_request
+  source_claim_ids:
+  - claim.diploma.preuniv.original_or_duplicate
+  status: draft
+- id: rule.diploma.preuniv.loss_documents
+  canonical_rule_id: diploma.preuniv.loss_documents
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: in
+      field: duplicate_reason
+      values:
+      - lost
+      - stolen
+      - destroyed
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_or_consular_declaration
+  - type: include_requirement
+    requirement_id: req.monitorul_oficial_part_iii_proof
+  - type: include_requirement
+    requirement_id: req.notarized_birth_or_marriage_certificate_copy
+  - type: include_requirement
+    requirement_id: req.two_color_photos_3x4
+  - type: include_requirement
+    requirement_id: req.isj_board_written_approval
+  source_claim_ids:
+  - claim.diploma.preuniv.notarial_declaration
+  - claim.diploma.preuniv.official_gazette
+  - claim.diploma.preuniv.civil_status_and_photos
+  - claim.diploma.preuniv.isj_approval
+  status: draft
+- id: rule.diploma.preuniv.damage_error
+  canonical_rule_id: diploma.preuniv.damage_error
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: in
+      field: duplicate_reason
+      values:
+      - damaged
+      - issuer_error
+  effects:
+  - type: include_requirement
+    requirement_id: req.written_request
+  - type: include_step
+    step_id: issuer_reconstructs_from_archive
+  source_claim_ids:
+  - claim.diploma.preuniv.damage_or_issuer_error
+  status: draft
+- id: rule.diploma.preuniv.archives
+  canonical_rule_id: diploma.preuniv.archives
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: eq
+      field: archive_location
+      value: national_archives
+  effects:
+  - type: include_step
+    step_id: obtain_archives_supporting_documents
+  - type: include_step
+    step_id: submit_to_school_inspectorate
+  - type: emit_advice
+    tag: isj_designates_issuer
+    message_ro: Inspectoratul școlar nominalizează unitatea care va emite duplicatul.
+  source_claim_ids:
+  - claim.diploma.preuniv.archives_route
+  status: draft
+- id: rule.diploma.preuniv.deadline
+  canonical_rule_id: diploma.preuniv.deadline
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: exists
+      field: approval_date
+  effects:
+  - type: set_deadline
+    code: duplicate_issue_after_approval
+    value:
+      max_days: 30
+      start_fact: approval_date
+    message_ro: Până la 30 de zile de la aprobarea cererii.
+  source_claim_ids:
+  - claim.diploma.preuniv.deadline_30_days
+  status: draft
+- id: rule.diploma.preuniv.proxy
+  canonical_rule_id: diploma.preuniv.proxy
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: eq
+      field: pickup_by
+      value: proxy
+  effects:
+  - type: emit_advice
+    tag: proxy_allowed
+    message_ro: Duplicatul poate fi ridicat de împuternicit.
+  - type: require_confirmation
+    tag: proxy_document_form
+    message_ro: Confirmă la emitent forma actuală a împuternicirii.
+  source_claim_ids:
+  - claim.diploma.preuniv.holder_or_proxy
+  status: draft
+- id: rule.diploma.preuniv.name_change
+  canonical_rule_id: diploma.preuniv.name_change
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: eq
+      field: name_changed_after_original
+      value: true
+  effects:
+  - type: emit_warning
+    tag: original_name_rule
+    message_ro: Duplicatul păstrează, în principiu, numele din original; excepția verificată este hotărârea judecătorească
+      definitivă.
+  - type: require_confirmation
+    tag: final_court_judgment
+    message_ro: Confirmă dacă există o hotărâre judecătorească definitivă aplicabilă.
+  source_claim_ids:
+  - claim.diploma.preuniv.name_after_issue
+  status: draft
+- id: rule.diploma.higher.route
+  canonical_rule_id: diploma.higher.route
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: education_level
+    value: higher_education
+  effects:
+  - type: include_step
+    step_id: contact_accredited_issuing_higher_education_institution
+  - type: emit_advice
+    tag: issuance_free
+    message_ro: Emiterea actului de studii în original sau duplicat este declarată gratuită de minister.
+  - type: require_confirmation
+    tag: institution_specific_procedure
+    message_ro: Lista exactă de acte și termenul se confirmă la instituția emitentă.
+  source_claim_ids:
+  - claim.diploma.higher.accredited_issuer
+  - claim.diploma.higher.free_duplicate
+  status: draft
+- id: rule.diploma.higher.fee_claim
+  canonical_rule_id: diploma.higher.fee_claim
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: higher_education
+    - op: eq
+      field: institution_requests_issuance_fee
+      value: true
+  effects:
+  - type: emit_warning
+    tag: unverified_higher_fee
+    message_ro: Sursa ministerială indică eliberare gratuită; cere temeiul scris al oricărei taxe.
+  - type: require_confirmation
+    tag: fee_legal_basis
+    message_ro: Nu afișa taxa până la confirmarea temeiului oficial al instituției.
+  source_claim_ids:
+  - claim.diploma.higher.free_duplicate
+  status: draft
+- id: rule.diploma.archive_holder_unknown
+  canonical_rule_id: diploma.archive_holder_unknown
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: eq
+      field: issuing_school_exists
+      value: false
+    - op: eq
+      field: archive_location
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: archive_holder
+    message_ro: Confirmă instituția care deține arhiva școlară înainte de depunere.
+  source_claim_ids:
+  - claim.diploma.preuniv.archives_route
+  status: draft
+- id: rule.diploma.archive_destroyed_or_lost
+  canonical_rule_id: diploma.archive_destroyed_or_lost
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: eq
+      field: archive_location
+      value: destroyed_or_lost
+  effects:
+  - type: require_confirmation
+    tag: school_record_reconstitution_procedure
+    message_ro: Confirmă procedura oficială de reconstituire atunci când arhiva necesară este pierdută sau distrusă.
+  source_claim_ids:
+  - claim.diploma.preuniv.archives_route
+  status: draft
+- id: rule.diploma.tm_isj_channel_gap
+  canonical_rule_id: diploma.tm_isj_channel_gap
+  event_type_id: life.diploma_duplicate
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: education_level
+      value: preuniversity
+    - op: eq
+      field: county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: isj_timisoara_submission_channel
+    message_ro: Confirmă canalul, programul și datele de contact ale inspectoratului competent din Timiș.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.diploma.preuniv.isj_approval
+  status: draft

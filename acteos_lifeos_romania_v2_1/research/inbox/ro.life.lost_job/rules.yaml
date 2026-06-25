@@ -1,0 +1,426 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.lost_job
+event_type_id: ro.life.lost_job
+required_facts:
+- termination_reason_class
+- termination_form
+- has_written_termination_document
+- document_states_reason
+- document_states_contest_deadline_and_court
+- received_history_proof
+- wants_unemployment_benefit
+- filing_window
+- wants_to_challenge
+- has_unused_leave
+- unused_leave_compensated
+- reges_record_checked
+status: draft
+rules:
+- id: rule.lost_job.route.v1
+  canonical_rule_id: rule.lost_job.route
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: collect_termination_document
+  - type: include_step
+    step_id: obtain_employment_history_proof
+  - type: include_step
+    step_id: verify_termination_in_reges
+  - type: include_step
+    step_id: assess_unemployment_route
+  source_claim_ids:
+  - clm.lost_job.termination_decision
+  - clm.lost_job.history_employer
+  - clm.lost_job.history_extract
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.missing_termination_document.v1
+  canonical_rule_id: rule.lost_job.missing_termination_document
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: has_written_termination_document
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: written_termination_document
+  source_claim_ids:
+  - clm.lost_job.termination_decision
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.dismissal_missing_reason.v1
+  canonical_rule_id: rule.lost_job.dismissal_missing_reason
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: termination_form
+      value: dismissal
+    - op: eq
+      field: document_states_reason
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: dismissal_decision_with_reasons
+  - type: emit_warning
+    tag: dismissal_decision_missing_reasons
+    message_ro: Verifică legalitatea și completitudinea deciziei de concediere.
+  source_claim_ids:
+  - clm.lost_job.termination_decision
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.dismissal_missing_contest_info.v1
+  canonical_rule_id: rule.lost_job.dismissal_missing_contest_info
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: termination_form
+      value: dismissal
+    - op: eq
+      field: document_states_contest_deadline_and_court
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: dismissal_decision_with_contest_deadline_and_court
+  - type: emit_warning
+    tag: contest_information_missing
+    message_ro: Termenul și instanța trebuie verificate fără întârziere.
+  source_claim_ids:
+  - clm.lost_job.termination_decision
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.missing_history.v1
+  canonical_rule_id: rule.lost_job.missing_history
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: received_history_proof
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: employment_activity_and_seniority_document
+  - type: include_step
+    step_id: request_history_document_or_reges_extract
+  source_claim_ids:
+  - clm.lost_job.history_employer
+  - clm.lost_job.history_extract
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.benefit_nonimputable.v1
+  canonical_rule_id: rule.lost_job.benefit_nonimputable
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_unemployment_benefit
+      value: true
+    - op: eq
+      field: termination_reason_class
+      value: non_imputable_confirmed
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.unemployment_benefit
+  - type: include_step
+    step_id: prepare_unemployment_benefit_application
+  source_claim_ids:
+  - clm.lost_job.unemp_reason
+  - clm.lost_job.unemp_conditions
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.benefit_imputable.v1
+  canonical_rule_id: rule.lost_job.benefit_imputable
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_unemployment_benefit
+      value: true
+    - op: eq
+      field: termination_reason_class
+      value: imputable_confirmed
+  effects:
+  - type: emit_warning
+    tag: unemployment_benefit_nonimputable_condition_not_met
+    message_ro: Indemnizația pentru persoane provenite din muncă cere o încetare din motive neimputabile.
+  source_claim_ids:
+  - clm.lost_job.unemp_reason
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.benefit_unknown.v1
+  canonical_rule_id: rule.lost_job.benefit_unknown
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_unemployment_benefit
+      value: true
+    - op: eq
+      field: termination_reason_class
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_termination_reason_for_unemployment
+    message_ro: Încadrarea motivului încetării trebuie verificată din documentul oficial.
+  source_claim_ids:
+  - clm.lost_job.unemp_reason
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.lost_job.benefit_first_10_days.v1
+  canonical_rule_id: rule.lost_job.benefit_first_10_days
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_unemployment_benefit
+      value: true
+    - op: eq
+      field: filing_window
+      value: within_first_10_days
+  effects:
+  - type: emit_advice
+    tag: file_within_10_days_for_start_from_termination
+    message_ro: Depunerea în primele 10 zile poate păstra data începerii dreptului la data încetării.
+  source_claim_ids:
+  - clm.lost_job.unemp_timing
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.benefit_after_10_before_12_months.v1
+  canonical_rule_id: rule.lost_job.benefit_after_10_before_12_months
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_unemployment_benefit
+      value: true
+    - op: eq
+      field: filing_window
+      value: after_10_days_within_12_months
+  effects:
+  - type: emit_advice
+    tag: benefit_starts_from_application_date
+    message_ro: După primele 10 zile, dar în termenul de 12 luni, dreptul începe de la data cererii.
+  source_claim_ids:
+  - clm.lost_job.unemp_timing
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.benefit_after_12_months.v1
+  canonical_rule_id: rule.lost_job.benefit_after_12_months
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_unemployment_benefit
+      value: true
+    - op: eq
+      field: filing_window
+      value: after_12_months
+  effects:
+  - type: block
+    code: unemployment_application_forfeiture_window_exceeded
+    message_ro: Termenul de 12 luni pentru solicitare este depășit conform sursei operative verificate.
+  source_claim_ids:
+  - clm.lost_job.unemp_timing
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.challenge.v1
+  canonical_rule_id: rule.lost_job.challenge
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: wants_to_challenge
+    value: true
+  effects:
+  - type: include_step
+    step_id: verify_contest_deadline_and_competent_court
+  - type: emit_warning
+    tag: act_immediately_on_contest_deadline
+    message_ro: Folosește termenul și instanța înscrise în decizie și solicită asistență juridică la nevoie.
+  source_claim_ids:
+  - clm.lost_job.termination_decision
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.unused_leave_not_compensated.v1
+  canonical_rule_id: rule.lost_job.unused_leave_not_compensated
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_unused_leave
+      value: true
+    - op: eq
+      field: unused_leave_compensated
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: cash_compensation_for_unused_annual_leave_at_termination
+  source_claim_ids:
+  - clm.lost_job.unused_leave
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.lost_job.reges_not_checked.v1
+  canonical_rule_id: rule.lost_job.reges_not_checked
+  event_type_id: ro.life.lost_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: reges_record_checked
+    value: false
+  effects:
+  - type: include_step
+    step_id: download_reges_extract_and_verify_termination
+  source_claim_ids:
+  - clm.lost_job.history_extract
+  override_rule_ids: []
+  status: active
+  reviewer_id: null

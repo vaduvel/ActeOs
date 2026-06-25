@@ -1,0 +1,476 @@
+batch_id: batch10.started_job
+defaults:
+  event_type_id: ro.life.started_job
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.ready.romanian
+  desc: Angajare standard, toate condițiile pregătite
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: resolved
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+- id: fx.ready.third_country
+  desc: Lucrător din stat terț cu dreptul de muncă verificat
+  facts:
+    worker_citizenship_scope: third_country
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: resolved
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    advice_tags:
+    - third_country_work_authorisation_or_exemption_verified
+    - foreign_worker_medical_by_start_date
+- id: fx.no_cim
+  desc: Lipsește contractul scris
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: false
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - written_employment_contract_before_start
+- id: fx.no_reges
+  desc: Contractul nu a fost transmis înainte de începere
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: false
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - reges_transmission_before_start
+- id: fx.no_copy
+  desc: Salariatul nu a primit exemplarul contractului
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: false
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: resolved
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - employee_copy_of_signed_cim
+    warnings:
+    - request_contract_copy_before_start
+- id: fx.no_medical
+  desc: Lipsește aptitudinea medicală
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: false
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - occupational_medical_aptitude
+- id: fx.no_ssm
+  desc: Instruirea SSM nu este finalizată
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: false
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - ssm_induction_and_instruction
+- id: fx.third_country.no_right
+  desc: Lucrător din stat terț fără drept de muncă pregătit
+  facts:
+    worker_citizenship_scope: third_country
+    third_country_work_right_ready: false
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - employment_authorisation_or_documented_exemption
+- id: fx.multiple_missing
+  desc: Contract, REGES și aptitudine lipsă
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: false
+    cim_transmitted_before_start: false
+    received_cim_copy_before_start: true
+    has_medical_aptitude: false
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - written_employment_contract_before_start
+    - reges_transmission_before_start
+    - occupational_medical_aptitude
+- id: fx.copy_and_ssm_missing
+  desc: Lipsesc copia CIM și instruirea SSM
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: false
+    has_medical_aptitude: true
+    ssm_induction_completed: false
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - employee_copy_of_signed_cim
+    - ssm_induction_and_instruction
+    warnings:
+    - request_contract_copy_before_start
+- id: fx.third_country.no_medical
+  desc: Lucrător din stat terț fără aptitudine medicală
+  facts:
+    worker_citizenship_scope: third_country
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: false
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - occupational_medical_aptitude
+    advice_tags:
+    - third_country_work_authorisation_or_exemption_verified
+    - foreign_worker_medical_by_start_date
+- id: fx.third_country.no_right_no_cim
+  desc: Lucrător din stat terț fără drept pregătit și fără CIM
+  facts:
+    worker_citizenship_scope: third_country
+    third_country_work_right_ready: false
+    has_written_cim: false
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - written_employment_contract_before_start
+    - employment_authorisation_or_documented_exemption
+- id: fx.romanian.irrelevant_right_false
+  desc: Cetățean român/UE; câmpul de aviz străin nu influențează ruta
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: false
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: resolved
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+- id: fx.no_copy_no_medical
+  desc: Lipsesc copia contractului și aptitudinea medicală
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: false
+    has_medical_aptitude: false
+    ssm_induction_completed: true
+  expect:
+    status: blocked
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    requirements:
+    - employee_copy_of_signed_cim
+    - occupational_medical_aptitude
+    warnings:
+    - request_contract_copy_before_start
+- id: fx.missing.worker_citizenship_scope
+  desc: Lipsește faptul obligatoriu `worker_citizenship_scope`
+  facts:
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - worker_citizenship_scope
+- id: fx.missing.third_country_work_right_ready
+  desc: Lipsește faptul obligatoriu `third_country_work_right_ready`
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - third_country_work_right_ready
+- id: fx.missing.has_written_cim
+  desc: Lipsește faptul obligatoriu `has_written_cim`
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - has_written_cim
+- id: fx.missing.cim_transmitted_before_start
+  desc: Lipsește faptul obligatoriu `cim_transmitted_before_start`
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - cim_transmitted_before_start
+- id: fx.missing.received_cim_copy_before_start
+  desc: Lipsește faptul obligatoriu `received_cim_copy_before_start`
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    has_medical_aptitude: true
+    ssm_induction_completed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - received_cim_copy_before_start
+- id: fx.missing.has_medical_aptitude
+  desc: Lipsește faptul obligatoriu `has_medical_aptitude`
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    ssm_induction_completed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - has_medical_aptitude
+- id: fx.missing.ssm_induction_completed
+  desc: Lipsește faptul obligatoriu `ssm_induction_completed`
+  facts:
+    worker_citizenship_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_written_cim: true
+    cim_transmitted_before_start: true
+    received_cim_copy_before_start: true
+    has_medical_aptitude: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - ssm_induction_completed
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - review_employment_offer_and_terms
+    - sign_written_employment_contract
+    - complete_occupational_health_check
+    - verify_reges_transmission
+    - receive_employee_contract_copy
+    - complete_ssm_induction
+    missing_facts:
+    - worker_citizenship_scope
+    - third_country_work_right_ready
+    - has_written_cim
+    - cim_transmitted_before_start
+    - received_cim_copy_before_start
+    - has_medical_aptitude
+    - ssm_induction_completed

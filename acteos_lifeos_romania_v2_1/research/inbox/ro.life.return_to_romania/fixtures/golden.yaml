@@ -1,0 +1,343 @@
+batch_id: B07_RETURN_TO_ROMANIA
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.return_to_romania
+  event_alias: ro.life.return_to_romania
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: român CRDS, revine și reface domiciliul
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - replace_passport_for_domicile_ro_status
+    - establish_domicile_and_update_identity
+- id: F02
+  desc: român cu domiciliu deja în România
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_ro
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    not_included:
+    - replace_passport_for_domicile_ro_status
+    included_steps:
+    - establish_domicile_and_update_identity
+- id: F03
+  desc: nu reface domiciliul, stă 16 zile/lună
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 16
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - register_residence
+    not_included:
+    - establish_domicile_and_update_identity
+- id: F04
+  desc: nu reface domiciliul, exact 15 zile/lună
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 15
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    not_included:
+    - register_residence
+- id: F05
+  desc: nerezident 184 zile
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2025-12-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 184
+    day_183_date: '2026-05-30'
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - submit_z015
+    - establish_domicile_and_update_identity
+    - replace_passport_for_domicile_ro_status
+- id: F06
+  desc: nerezident 183 zile
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 0
+    move_date: '2025-12-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 183
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    not_included:
+    - submit_z015
+- id: F07
+  desc: nerezident 200 zile, excepție diplomatică
+  facts:
+    is_romanian_citizen: false
+    prior_domicile_status: unknown
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 0
+    move_date: '2025-12-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 200
+    arrival_tax_exception: diplomatic_consular
+  expect:
+    status: resolved
+    excluded_steps:
+    - submit_z015
+- id: F08
+  desc: resident fiscal la sosire
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 200
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    not_included:
+    - submit_z015
+    advice:
+    - tax_residence_not_automatic
+- id: F09
+  desc: ziua 183 lipsește la prag depășit
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 0
+    move_date: '2025-12-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 184
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - day_183_date
+- id: F10
+  desc: lipsește move_date pentru domiciliu
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - move_date
+- id: F11
+  desc: prior domicile status necunoscut
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: unknown
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - establish_domicile_and_update_identity
+    not_included:
+    - replace_passport_for_domicile_ro_status
+- id: F12
+  desc: non-român, eveniment etichetat greșit pentru domiciliu
+  facts:
+    is_romanian_citizen: false
+    prior_domicile_status: unknown
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 10
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    not_included:
+    - establish_domicile_and_update_identity
+    note: routează către moved_from_abroad_to_ro / IGI
+- id: F13
+  desc: revenire în Timișoara
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    jurisdiction: ro.tm.timisoara
+- id: F14
+  desc: revenire în alt UAT
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.tm.local
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.is
+  - ro.is.iasi
+- id: F15
+  desc: domiciliu + Z015 întârziat
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2025-11-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 230
+    day_183_date: '2026-03-01'
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    warnings:
+    - identity_overdue
+    - z015_overdue
+- id: F16
+  desc: residence days invalid 32
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 32
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - lives_at_secondary_address_days_per_month
+- id: F17
+  desc: restores_domicile invalid null
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - restores_domicile_in_ro
+- id: F18
+  desc: fiscal status unknown
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: unknown
+    days_present_in_rolling_12m: 184
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - fiscal_status_on_arrival
+- id: F19
+  desc: excepție angajat stat străin
+  facts:
+    is_romanian_citizen: false
+    prior_domicile_status: unknown
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 0
+    move_date: '2026-01-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 190
+    arrival_tax_exception: foreign_state_employee
+  expect:
+    status: resolved
+    excluded_steps:
+    - submit_z015
+- id: F20
+  desc: excepție familie
+  facts:
+    is_romanian_citizen: false
+    prior_domicile_status: unknown
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 0
+    move_date: '2026-01-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 190
+    arrival_tax_exception: family_of_exception
+  expect:
+    status: resolved
+    excluded_steps:
+    - submit_z015
+- id: F21
+  desc: reference date înainte de ghidul 2025
+  facts:
+    is_romanian_citizen: true
+    prior_domicile_status: domicile_abroad
+    restores_domicile_in_ro: false
+    lives_at_secondary_address_days_per_month: 0
+    move_date: '2024-01-01'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 184
+    day_183_date: '2024-07-01'
+    arrival_tax_exception: none
+  expect:
+    status: no_active_ruleset
+    note: este necesar ruleset istoric
+  reference_date: '2024-07-02'
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_romanian_citizen
+    - restores_domicile_in_ro
+    - fiscal_status_on_arrival

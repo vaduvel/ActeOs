@@ -1,0 +1,270 @@
+batch_id: B12_RESUME_BUSINESS
+defaults:
+  event_type_id: life.resume_business
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA reia după 12 luni
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    suspension_elapsed_months: 12
+    activities_still_registered_authorized: true
+    seat_use_right_still_valid: true
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+    included_steps:
+    - file_pfa_resume_mention
+- id: F02
+  desc: SRL reia după 36 luni
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 36
+    activities_still_registered_authorized: true
+    seat_use_right_still_valid: true
+    resume_decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_srl_resume
+    - file_srl_resume_mention
+- id: F03
+  desc: tip entitate lipsă
+  facts:
+    currently_suspended: true
+    suspension_elapsed_months: 12
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F04
+  desc: afacerea nu este suspendată
+  facts:
+    entity_type: srl
+    currently_suspended: false
+    suspension_elapsed_months: 0
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - business_not_suspended
+- id: F05
+  desc: data suspendării lipsește
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    filing_actor: pfa_holder
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - suspension_elapsed_required
+- id: F06
+  desc: PFA după 37 luni
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    suspension_elapsed_months: 37
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - three_year_limit_exceeded
+    confirmations:
+    - verify_current_registry_status
+- id: F07
+  desc: SRL după 48 luni
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 48
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - three_year_limit_exceeded
+- id: F08
+  desc: activitățile sunt încă autorizate
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    suspension_elapsed_months: 8
+    activities_still_registered_authorized: true
+    seat_use_right_still_valid: true
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+- id: F09
+  desc: codurile de activitate s-au schimbat
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    suspension_elapsed_months: 8
+    activities_still_registered_authorized: false
+    seat_use_right_still_valid: true
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - activity_update_before_operation
+    included_steps:
+    - update_and_authorize_activities
+- id: F10
+  desc: dreptul de sediu a expirat
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 8
+    activities_still_registered_authorized: true
+    seat_use_right_still_valid: false
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - seat_right_not_valid
+    triggered_events:
+    - life.change_company_address
+- id: F11
+  desc: decizie de reluare în ziua 15
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    resume_decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F12
+  desc: decizie de reluare după 16 zile
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    resume_decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F13
+  desc: PFA depune prin avocat
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F14
+  desc: SRL depune prin mandatar
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: authenticated_proxy
+  expect:
+    status: resolved
+- id: F15
+  desc: contabil fără mandat
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F16
+  desc: online cu QES
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+- id: F17
+  desc: online fără QES
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F18
+  desc: activitate comercială Timișoara, acord actual
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_activity: true
+    local_agreement_current: true
+  expect:
+    status: resolved
+- id: F19
+  desc: activitate comercială Timișoara, acord neactualizat
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_activity: true
+    local_agreement_current: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_or_modify_timisoara_agreement
+- id: F20
+  desc: serviciu fără acord comercial local
+  facts:
+    entity_type: pfa
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: pfa_holder
+    municipality_id: ro.tm.timisoara
+    local_commercial_activity: false
+    local_agreement_current: false
+  expect:
+    status: resolved
+- id: F21
+  desc: reluare în alt UAT
+  facts:
+    entity_type: srl
+    currently_suspended: true
+    suspension_elapsed_months: 6
+    filing_actor: legal_representative
+    municipality_id: ro.cj.cluj
+    local_commercial_activity: true
+    local_agreement_current: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj

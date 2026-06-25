@@ -1,0 +1,707 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.administrative_petition
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: PET01
+  desc: petiție identificată, formular Timiș, fără atașament
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    channels:
+    - ch.pet.timis_form
+- id: PET02
+  desc: petiție anonimă obișnuită
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: false
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: blocked
+    blocks:
+    - anonymous_petition_archived
+- id: PET03
+  desc: petiție anonimă privind hărțuire morală
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: false
+    harassment_subject: moral
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - anonymous_harassment_petition_must_be_analyzed
+- id: PET04
+  desc: petiție anonimă privind hărțuire pe criteriu de sex
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: false
+    harassment_subject: sex_based
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - anonymous_harassment_petition_must_be_analyzed
+- id: PET05
+  desc: excepția anonimă este neclară
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: false
+    harassment_subject: unknown
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - anonymous_exception_requires_review
+- id: PET06
+  desc: hărțuire cu indicii penale
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: false
+    harassment_subject: sex_based
+    criminal_indications: true
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - possible_criminal_indications_immediate_referral
+- id: PET07
+  desc: autoritate greșit sesizată
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: false
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - wrong_authority_forwards_within_5_days
+- id: PET08
+  desc: ziua 30 fără răspuns
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 30
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - petition_answer_deadline_30_days
+- id: PET09
+  desc: ziua 31 fără răspuns
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 31
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - petition_response_overdue
+- id: PET10
+  desc: prelungire obișnuită notificată
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 40
+    complexity_extension: true
+    domain: other
+    extension_notice_received: true
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    requirements:
+    - req.pet.extension_notice
+    warnings:
+    - extension_max_15_days
+- id: PET11
+  desc: prelungire obișnuită fără notificare
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 35
+    complexity_extension: true
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - extension_requires_prior_notice
+- id: PET12
+  desc: prelungire obișnuită depășită
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 46
+    complexity_extension: true
+    domain: other
+    extension_notice_received: true
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - extended_petition_response_overdue
+- id: PET13
+  desc: prelungire energie/gaze notificată
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 50
+    complexity_extension: true
+    domain: energy_gas
+    extension_notice_received: true
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - energy_extension_max_30_days
+- id: PET14
+  desc: prelungire energie/gaze depășită
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 61
+    complexity_extension: true
+    domain: energy_gas
+    extension_notice_received: true
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - extended_petition_response_overdue
+- id: PET15
+  desc: duplicat înainte de răspuns
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: true
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - duplicate_petitions_connected_single_answer
+- id: PET16
+  desc: duplicat după răspuns
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: true
+    prior_answer_received: true
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - same_content_after_answer_may_be_archived
+- id: PET17
+  desc: răspuns primit cu temei legal
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: true
+    response_has_legal_basis: true
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+- id: PET18
+  desc: răspuns fără temei legal indicat
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: true
+    response_has_legal_basis: false
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    warnings:
+    - response_legal_basis_missing
+- id: PET19
+  desc: atașament PDF de 0,8 MB
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: true
+    attachment_extension: pdf
+    attachment_size_mb: 0.8
+    attachment_filename_has_diacritics: false
+    submission_confirmation_received: true
+  expect:
+    status: ready
+    requirements:
+    - req.pet.timis_attachment
+- id: PET20
+  desc: atașament cu extensie neacceptată
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: true
+    attachment_extension: other
+    attachment_size_mb: 0.8
+    attachment_filename_has_diacritics: false
+    submission_confirmation_received: true
+  expect:
+    status: blocked
+    blocks:
+    - timis_attachment_extension_not_allowed
+- id: PET21
+  desc: atașament de 1,1 MB
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: true
+    attachment_extension: pdf
+    attachment_size_mb: 1.1
+    attachment_filename_has_diacritics: false
+    submission_confirmation_received: true
+  expect:
+    status: blocked
+    blocks:
+    - timis_attachment_over_1mb
+- id: PET22
+  desc: nume de fișier cu diacritice
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: true
+    attachment_extension: pdf
+    attachment_size_mb: 0.5
+    attachment_filename_has_diacritics: true
+    submission_confirmation_received: true
+  expect:
+    status: blocked
+    blocks:
+    - timis_attachment_filename_diacritics
+- id: PET23
+  desc: formular trimis fără confirmare
+  facts:
+    petition_kind: complaint
+    submission_channel: online_form
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: timis_prefecture
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - online_submission_not_confirmed
+- id: PET24
+  desc: petiție către altă autoritate
+  facts:
+    petition_kind: complaint
+    submission_channel: email
+    identified: true
+    harassment_subject: none
+    criminal_indications: false
+    competent_authority: true
+    registration_date: '2026-06-01'
+    reference_date: '2026-06-25'
+    days_since_registration: 24
+    complexity_extension: false
+    domain: other
+    extension_notice_received: false
+    duplicate_same_issue: false
+    prior_answer_received: false
+    response_received: false
+    response_has_legal_basis: null
+    target_authority: other
+    attachment_present: false
+    attachment_extension: null
+    attachment_size_mb: null
+    attachment_filename_has_diacritics: null
+    submission_confirmation_received: true
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_target_authority_channel

@@ -1,0 +1,265 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_ERASMUS_MOBILITY
+alias_event_type_id: ro.life.erasmus_mobility
+event_type_id: life.erasmus_mobility
+status: draft
+rules:
+- id: rule.erasmus.required_facts
+  canonical_rule_id: erasmus.required_facts
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_erasmus_facts
+    message_ro: Precizează instituția de origine, tipul mobilității și stadiul candidaturii.
+  source_claim_ids:
+  - claim.erasmus.student_status
+  status: draft
+  required_facts:
+  - home_institution
+  - mobility_type
+  - application_stage
+- id: rule.erasmus.status_preserved
+  canonical_rule_id: erasmus.status_preserved
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: application_stage
+    values:
+    - exploring
+    - applying
+    - selected
+    - on_mobility
+    - returned
+  effects:
+  - type: emit_advice
+    tag: student_status_preserved
+    message_ro: Calitatea de student/student-doctorand se menține pe perioada mobilității.
+  source_claim_ids:
+  - claim.erasmus.student_status
+  status: draft
+- id: rule.erasmus.upt.channel
+  canonical_rule_id: erasmus.upt.channel
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: home_institution
+    value: UPT
+  effects:
+  - type: attach_channel
+    channel_id: ch.upt.erasmus_outgoing
+  - type: emit_advice
+    tag: upt_outgoing_contact
+    message_ro: 'DRI UPT: Rectorat, Piața Victoriei nr. 2; +40 256 403 034; erasmus.outgoing@upt.ro.'
+  source_claim_ids:
+  - claim.erasmus.upt.contact
+  status: draft
+- id: rule.erasmus.other_institution
+  canonical_rule_id: erasmus.other_institution
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: home_institution
+    - op: neq
+      field: home_institution
+      value: UPT
+  effects:
+  - type: require_confirmation
+    tag: home_institution_call
+    message_ro: Termenele, criteriile, grantul și actele se verifică în apelul oficial al instituției de origine.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.erasmus.anpcdefp_admin
+  status: draft
+- id: rule.erasmus.upt.study
+  canonical_rule_id: erasmus.upt.study
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: home_institution
+      value: UPT
+    - op: eq
+      field: mobility_type
+      value: study
+  effects:
+  - type: include_step
+    step_id: check_upt_partner_and_current_call
+  - type: emit_advice
+    tag: study_semester_or_year
+    message_ro: La UPT, mobilitatea de studii poate acoperi un semestru sau un an academic.
+  source_claim_ids:
+  - claim.erasmus.upt.study
+  status: draft
+- id: rule.erasmus.upt.traineeship
+  canonical_rule_id: erasmus.upt.traineeship
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: home_institution
+      value: UPT
+    - op: eq
+      field: mobility_type
+      value: traineeship
+  effects:
+  - type: include_step
+    step_id: check_upt_traineeship_call
+  - type: emit_advice
+    tag: traineeship_after_graduation_possible
+    message_ro: UPT indică practică în timpul studiilor sau imediat după absolvire; eligibilitatea exactă se verifică în apel.
+  source_claim_ids:
+  - claim.erasmus.upt.traineeship
+  status: draft
+- id: rule.erasmus.upt.other_types
+  canonical_rule_id: erasmus.upt.other_types
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: home_institution
+      value: UPT
+    - op: in
+      field: mobility_type
+      values:
+      - blended_short
+      - doctoral
+      - free_mover
+  effects:
+  - type: include_step
+    step_id: check_upt_mobility_type_page
+  source_claim_ids:
+  - claim.erasmus.upt.other_types
+  status: draft
+- id: rule.erasmus.applying.current_call
+  canonical_rule_id: erasmus.applying.current_call
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: application_stage
+    value: applying
+  effects:
+  - type: include_step
+    step_id: read_current_official_call
+  - type: require_confirmation
+    tag: call_specific_deadline_docs_grant
+    message_ro: Nu folosi termene, documente sau sume din alt apel/an academic.
+  source_claim_ids:
+  - claim.erasmus.anpcdefp_admin
+  status: draft
+- id: rule.erasmus.selected.documents
+  canonical_rule_id: erasmus.selected.documents
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: application_stage
+    value: selected
+  effects:
+  - type: include_step
+    step_id: complete_home_and_host_institution_documents
+  - type: require_confirmation
+    tag: selected_student_document_pack
+    message_ro: 'Confirmă pachetul curent: acorduri academice/financiare, acceptare și condițiile instituționale.'
+  source_claim_ids:
+  - claim.erasmus.upt.contact
+  status: draft
+- id: rule.erasmus.return.recognition
+  canonical_rule_id: erasmus.return.recognition
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: application_stage
+    value: returned
+  effects:
+  - type: include_step
+    step_id: submit_host_evidence_for_credit_recognition
+  - type: include_requirement
+    requirement_id: req.host_institution_relevant_documents
+  source_claim_ids:
+  - claim.erasmus.credit_recognition_evidence
+  - claim.erasmus.upt.recognition_route
+  status: draft
+- id: rule.erasmus.no_hardcoded_money
+  canonical_rule_id: erasmus.no_hardcoded_money
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: exists
+    field: claimed_grant_amount
+  effects:
+  - type: require_confirmation
+    tag: grant_amount_current_call
+    message_ro: Valoarea grantului se confirmă exclusiv în apelul/contractul curent.
+  source_claim_ids:
+  - claim.erasmus.anpcdefp_admin
+  status: draft
+- id: rule.erasmus.stale_call
+  canonical_rule_id: erasmus.stale_call
+  event_type_id: life.erasmus_mobility
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: call_matches_target_year
+    value: false
+  effects:
+  - type: emit_warning
+    tag: stale_call
+    message_ro: Apelul consultat nu corespunde anului universitar țintă; nu folosi termenele, actele sau grantul din apelul
+      vechi.
+  source_claim_ids:
+  - claim.erasmus.upt.study
+  status: draft

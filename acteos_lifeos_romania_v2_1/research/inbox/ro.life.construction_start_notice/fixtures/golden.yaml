@@ -1,0 +1,512 @@
+batch_id: batch08.construction_start_notice
+defaults:
+  event_type_id: ro.life.construction_start_notice
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.complete
+  desc: Ambele notificări sunt efectuate
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+- id: fx.no_permit
+  desc: Nu există autorizație
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: false
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: blocked
+    warnings:
+    - do_not_start_works
+- id: fx.invalid_permit
+  desc: Autorizația nu este valabilă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: false
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: blocked
+    warnings:
+    - verify_extension_or_new_permit
+- id: fx.date_unknown
+  desc: Data începerii nu este stabilită
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: false
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    requirements:
+    - actual_construction_start_date
+- id: fx.issuer_missing.timisoara
+  desc: Emitentul Timișoara nu a fost notificat
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: false
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    - submit_start_notice_to_timisoara
+    requirements:
+    - standard_start_notice
+    - building_permit_copy
+    - identity_document
+    channels:
+    - pmt_construction_start_notice_online
+    warnings:
+    - start_notice_omission_affects_duration
+    - start_notice_omission_contravention
+- id: fx.isc_missing
+  desc: ISC teritorial nu a fost notificat
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: false
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    - submit_start_notice_to_territorial_isc
+    warnings:
+    - start_notice_omission_affects_duration
+    - start_notice_omission_contravention
+    confirmations:
+    - confirm_current_isc_start_notice_channel
+- id: fx.both_missing
+  desc: Nici emitentul, nici ISC nu au fost notificate
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: false
+    isc_notified: false
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    - submit_start_notice_to_timisoara
+    - submit_start_notice_to_territorial_isc
+    requirements:
+    - standard_start_notice
+    - building_permit_copy
+    - identity_document
+    channels:
+    - pmt_construction_start_notice_online
+    warnings:
+    - start_notice_omission_affects_duration
+    - start_notice_omission_contravention
+    confirmations:
+    - confirm_current_isc_start_notice_channel
+- id: fx.tax_regularization_missing
+  desc: Regularizarea este aplicabilă și nu este făcută
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: true
+    tax_regularization_done: false
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    requirements:
+    - authorisation_fee_regularization_proof_if_applicable
+    advice_tags:
+    - both_start_notices_completed
+- id: fx.representative_no_power
+  desc: Reprezentant fără împuternicire disponibilă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: true
+    power_of_attorney_available: false
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    requirements:
+    - power_of_attorney
+    advice_tags:
+    - both_start_notices_completed
+- id: fx.other_uat.issuer_missing
+  desc: Emitentul altui UAT nu a fost notificat
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: false
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    - identify_issuer_notice_channel
+    advice_tags:
+    - verified_with_local_gap
+    warnings:
+    - start_notice_omission_affects_duration
+    - start_notice_omission_contravention
+    confirmations:
+    - confirm_local_issuer_start_notice_channel
+- id: fx.other_uat.complete
+  desc: Ambele notificări efectuate în alt UAT
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+- id: fx.isc_missing.other_uat
+  desc: ISC lipsă și emitent alt UAT notificat
+  facts:
+    jurisdiction_id: ro.bv.brasov
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: false
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    - submit_start_notice_to_territorial_isc
+    warnings:
+    - start_notice_omission_affects_duration
+    - start_notice_omission_contravention
+    confirmations:
+    - confirm_current_isc_start_notice_channel
+- id: fx.regularized.representative
+  desc: Regularizare făcută, depunere prin reprezentant cu împuternicire
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: true
+    tax_regularization_done: true
+    representative_used: true
+    power_of_attorney_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.permit_exists
+  desc: Lipsește faptul obligatoriu permit_exists
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - permit_exists
+- id: fx.missing.permit_valid
+  desc: Lipsește faptul obligatoriu permit_valid
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - permit_valid
+- id: fx.missing.start_date_known
+  desc: Lipsește faptul obligatoriu start_date_known
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    missing_facts:
+    - start_date_known
+- id: fx.missing.issuer_notified
+  desc: Lipsește faptul obligatoriu issuer_notified
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    missing_facts:
+    - issuer_notified
+- id: fx.missing.isc_notified
+  desc: Lipsește faptul obligatoriu isc_notified
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    missing_facts:
+    - isc_notified
+- id: fx.missing.tax_regularization_applicable
+  desc: Lipsește faptul obligatoriu tax_regularization_applicable
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_done: true
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+    missing_facts:
+    - tax_regularization_applicable
+- id: fx.missing.tax_regularization_done
+  desc: Lipsește faptul obligatoriu tax_regularization_done
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    representative_used: false
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+    missing_facts:
+    - tax_regularization_done
+- id: fx.missing.representative_used
+  desc: Lipsește faptul obligatoriu representative_used
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    power_of_attorney_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+    missing_facts:
+    - representative_used
+- id: fx.missing.power_of_attorney_available
+  desc: Lipsește faptul obligatoriu power_of_attorney_available
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    permit_exists: true
+    permit_valid: true
+    start_date_known: true
+    issuer_notified: true
+    isc_notified: true
+    tax_regularization_applicable: false
+    tax_regularization_done: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - record_actual_start_date
+    - verify_issuer_and_isc_notifications
+    advice_tags:
+    - both_start_notices_completed
+    missing_facts:
+    - power_of_attorney_available
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+    - permit_exists
+    - permit_valid
+    - start_date_known
+    - issuer_notified
+    - isc_notified
+    - tax_regularization_applicable
+    - tax_regularization_done
+    - representative_used
+    - power_of_attorney_available

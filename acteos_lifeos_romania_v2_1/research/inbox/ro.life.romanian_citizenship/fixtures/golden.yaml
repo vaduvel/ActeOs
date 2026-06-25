@@ -1,0 +1,1007 @@
+batch_id: B02_ROMANIAN_CITIZENSHIP
+defaults:
+  event_type_id: ro.life.romanian_citizenship
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.cit.001
+  desc: Naturalizare art. 8, adult, rezidență permanentă și 8 ani de ședere legală.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - prepare_art8_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.good_conduct_documents
+    - req.personal_presence_and_biometrics
+    - req.proof_legal_means
+    - req.proof_long_term_or_permanent_residence
+    advice_tags:
+    - appeal_rejection_15d
+    - art8_duration_met
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.anc
+- id: fx.cit.002
+  desc: Copil născut în străinătate din părinte român; nu se pornește naturalizare.
+  facts:
+    basis: by_birth
+    age: 5
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - prove_citizenship_by_birth
+    requirements:
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - born_abroad_romanian_parent
+    warnings_present:
+    - application_not_entitlement
+    channels:
+    - ch.anc
+- id: fx.cit.003
+  desc: Dobândire prin adopție; ruta necesită verificare specifică.
+  facts:
+    basis: adoption
+    age: 12
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - open_adoption_citizenship_route
+    requirements:
+    - req.personal_presence_and_biometrics
+    warnings_present:
+    - application_not_entitlement
+    channels:
+    - ch.anc
+    needs_confirmation:
+    - adoption_case_specific
+- id: fx.cit.004
+  desc: Art. 8 solicitat de minor.
+  facts:
+    basis: naturalisation_art8
+    age: 17
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.anc
+- id: fx.cit.005
+  desc: Art. 8 fără ședere pe termen lung sau rezidență permanentă.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: other
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.anc
+- id: fx.cit.006
+  desc: Art. 8 prin căsătorie și conviețuire de 5 ani.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 4
+    married_to_romanian_cohabiting: true
+    marriage_years: 5
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - prepare_art8_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    - req.proof_marriage_and_cohabitation
+    advice_tags:
+    - appeal_rejection_15d
+    - art8_marriage_duration_met
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.anc
+- id: fx.cit.007
+  desc: Art. 8 fără prag de durată și fără caz de reducere.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 4
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.anc
+- id: fx.cit.008
+  desc: Art. 8 cu reducere invocată; necesită validare individuală.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 5
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: true
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - document_art8_reduction_case
+    - file_personally_at_anc
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.anc
+    needs_confirmation:
+    - art8_reduction_not_automatic
+- id: fx.cit.009
+  desc: Art. 8 cu absență anuală de peste 6 luni.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: true
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    - prepare_art8_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.good_conduct_documents
+    - req.personal_presence_and_biometrics
+    - req.proof_legal_means
+    - req.proof_long_term_or_permanent_residence
+    advice_tags:
+    - appeal_rejection_15d
+    - art8_duration_met
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    - year_excluded_over_6m_absence
+    channels:
+    - ch.anc
+- id: fx.cit.010
+  desc: Art. 10 — fost cetățean român, exceptat de la dovada limbii.
+  facts:
+    basis: reacquisition_art10
+    age: 30
+    former_romanian_citizen: true
+    descendant_degree: 0
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: exempt
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art10_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - art10_degree_ok
+    - foreign_document_formalities
+    - language_proof_exempt
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.011
+  desc: Art. 10 — descendent grad II cu dovadă lingvistică.
+  facts:
+    basis: reacquisition_art10
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 2
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: available
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art10_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    - req.romanian_language_evidence
+    advice_tags:
+    - appeal_rejection_15d
+    - art10_degree_ok
+    - foreign_document_formalities
+    - language_proof_available
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.012
+  desc: Art. 10 — descendent grad III, neeligibil pe această rută.
+  facts:
+    basis: reacquisition_art10
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 3
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: available
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    - req.romanian_language_evidence
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - language_proof_available
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.013
+  desc: Art. 11 — pierdere neimputabilă, descendent grad III.
+  facts:
+    basis: restoration_art11
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 3
+    loss_context: involuntary
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: available
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art11_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    - req.romanian_language_evidence
+    advice_tags:
+    - appeal_rejection_15d
+    - art11_degree_and_loss_ok
+    - foreign_document_formalities
+    - language_proof_available
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.014
+  desc: Art. 11 invocat pentru pierdere voluntară sau neclară.
+  facts:
+    basis: restoration_art11
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 2
+    loss_context: voluntary_or_unknown
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: available
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    - req.romanian_language_evidence
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - language_proof_available
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.015
+  desc: Art. 11 — descendent grad IV.
+  facts:
+    basis: restoration_art11
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 4
+    loss_context: involuntary
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: available
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    - req.romanian_language_evidence
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - language_proof_available
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.016
+  desc: Art. 10/11 cu solicitant de 65 de ani; excepție lingvistică.
+  facts:
+    basis: reacquisition_art10
+    age: 65
+    former_romanian_citizen: false
+    descendant_degree: 2
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: exempt
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art10_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - art10_degree_ok
+    - foreign_document_formalities
+    - language_proof_exempt
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.017
+  desc: Art. 10/11 în fereastra tranzitorie de limbă.
+  facts:
+    basis: reacquisition_art10
+    age: 40
+    former_romanian_citizen: false
+    descendant_degree: 2
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: transition_pending
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art10_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - art10_degree_ok
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - language_evidence_pending
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - language_transition_date_check
+- id: fx.cit.018
+  desc: Art. 10/11 fără dovadă de limbă și fără excepție.
+  facts:
+    basis: reacquisition_art10
+    age: 40
+    former_romanian_citizen: false
+    descendant_degree: 2
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art10_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - art10_degree_ok
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_4m
+    channels:
+    - ch.romanian_mission
+- id: fx.cit.019
+  desc: Ruta specială pentru promovarea culturii române.
+  facts:
+    basis: cultural_art8_1
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - file_at_romanian_mission_or_consulate
+    - prepare_art8_1_special_application
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    - req.personal_presence_and_biometrics
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    channels:
+    - ch.romanian_mission
+    needs_confirmation:
+    - art8_1_special_assessment
+- id: fx.cit.020
+  desc: Ruta specială sportivă.
+  facts:
+    basis: sport_art8_2
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: abroad
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_citizenship_basis
+    - open_art8_2_government_route
+    - track_decision_and_oath
+    requirements:
+    - req.civil_status_extracts_max_2y
+    - req.foreign_acts_apostilled_or_supralegalised
+    advice_tags:
+    - appeal_rejection_15d
+    - foreign_document_formalities
+    - provisional_and_card_60d
+    warnings_present:
+    - application_not_entitlement
+    - oath_within_1y
+    - supplement_6m
+    needs_confirmation:
+    - art8_2_institution_live_check
+- id: fx.cit.021
+  desc: Baza juridică nu este cunoscută.
+  facts:
+    basis: unknown
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_citizenship_basis
+    - file_personally_at_anc
+    requirements:
+    - req.personal_presence_and_biometrics
+    warnings_present:
+    - application_not_entitlement
+    channels:
+    - ch.anc
+    needs_confirmation:
+    - anc_basis_classification
+- id: fx.cit.022
+  desc: Lipsește faptul obligatoriu `basis`.
+  facts:
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - basis
+- id: fx.cit.023
+  desc: Lipsește faptul obligatoriu `age`.
+  facts:
+    basis: naturalisation_art8
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - age
+- id: fx.cit.024
+  desc: Lipsește faptul obligatoriu `former_romanian_citizen`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - former_romanian_citizen
+- id: fx.cit.025
+  desc: Lipsește faptul obligatoriu `descendant_degree`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - descendant_degree
+- id: fx.cit.026
+  desc: Lipsește faptul obligatoriu `loss_context`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - loss_context
+- id: fx.cit.027
+  desc: Lipsește faptul obligatoriu `residence_status`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - residence_status
+- id: fx.cit.028
+  desc: Lipsește faptul obligatoriu `legal_residence_years`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - legal_residence_years
+- id: fx.cit.029
+  desc: Lipsește faptul obligatoriu `married_to_romanian_cohabiting`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - married_to_romanian_cohabiting
+- id: fx.cit.030
+  desc: Lipsește faptul obligatoriu `marriage_years`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    language_proof_status: missing
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - marriage_years
+- id: fx.cit.031
+  desc: Lipsește faptul obligatoriu `language_proof_status`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    annual_absence_over_6m: false
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - language_proof_status
+- id: fx.cit.032
+  desc: Lipsește faptul obligatoriu `annual_absence_over_6m`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    reduction_case_claimed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - annual_absence_over_6m
+- id: fx.cit.033
+  desc: Lipsește faptul obligatoriu `reduction_case_claimed`.
+  facts:
+    basis: naturalisation_art8
+    age: 30
+    former_romanian_citizen: false
+    descendant_degree: 99
+    loss_context: not_applicable
+    residence_status: long_term_or_permanent
+    legal_residence_years: 8
+    married_to_romanian_cohabiting: false
+    marriage_years: 0
+    language_proof_status: missing
+    annual_absence_over_6m: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reduction_case_claimed
+- id: fx.cit.034
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - basis
+    - age
+    - former_romanian_citizen
+    - descendant_degree
+    - loss_context
+    - residence_status
+    - legal_residence_years
+    - married_to_romanian_cohabiting
+    - marriage_years
+    - language_proof_status
+    - annual_absence_over_6m
+    - reduction_case_claimed

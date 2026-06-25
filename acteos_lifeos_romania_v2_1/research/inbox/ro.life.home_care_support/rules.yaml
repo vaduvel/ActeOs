@@ -1,0 +1,290 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.home_care_support
+event_type_id: ro.life.home_care_support
+required_facts:
+- is_employee
+- relationship
+- same_household
+- serious_medical_problem_documented
+- written_request_ready
+- days_used_this_year
+- collective_agreement_extra_days
+- need_is_emergency_unforeseen
+status: draft
+rules:
+- id: rule.home_care_support.not_employee.v1
+  canonical_rule_id: rule.home_care_support.not_employee
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: is_employee
+    value: false
+  effects:
+  - type: block
+    code: caregiver_leave_requires_employee_status
+    message_ro: Concediul de îngrijitor din Codul muncii se acordă salariatului.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_basic
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.home_care_support.eligible_route.v1
+  canonical_rule_id: rule.home_care_support.eligible_route
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_employee
+      value: true
+    - op: any
+      args:
+      - op: in
+        field: relationship
+        values:
+        - child
+        - parent
+        - spouse
+      - op: all
+        args:
+        - op: eq
+          field: relationship
+          value: household_member
+        - op: eq
+          field: same_household
+          value: true
+    - op: lt
+      field: days_used_this_year
+      value: 5
+  effects:
+  - type: include_step
+    step_id: prepare_written_caregiver_leave_request
+  - type: include_step
+    step_id: attach_medical_supporting_documents
+  - type: include_step
+    step_id: submit_request_to_employer
+  - type: emit_advice
+    tag: caregiver_leave_paid_and_preserves_rights
+    message_ro: Concediul este plătit, nu reduce concediul anual și constituie vechime/stagiu în condițiile legii.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_basic
+  - clm.home_care_support.caregiver_rights
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.home_care_support.ineligible_relation.v1
+  canonical_rule_id: rule.home_care_support.ineligible_relation
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_employee
+      value: true
+    - op: eq
+      field: relationship
+      value: other
+  effects:
+  - type: block
+    code: relationship_not_in_verified_caregiver_scope
+    message_ro: Relația declarată nu intră în categoriile verificate pentru acest drept.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_relatives
+  - clm.home_care_support.caregiver_basic
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.home_care_support.household_not_same.v1
+  canonical_rule_id: rule.home_care_support.household_not_same
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: relationship
+      value: household_member
+    - op: eq
+      field: same_household
+      value: false
+  effects:
+  - type: block
+    code: household_member_not_same_household
+    message_ro: Pentru persoana care nu este ruda enumerată, condiția aceleiași gospodării nu este îndeplinită.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_basic
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.home_care_support.missing_medical_docs.v1
+  canonical_rule_id: rule.home_care_support.missing_medical_docs
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: serious_medical_problem_documented
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: documents_supporting_serious_medical_problem
+  - type: require_confirmation
+    tag: confirm_caregiver_medical_documents
+    message_ro: Actele concrete trebuie confirmate după ordinul comun și procedura angajatorului.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_docs_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.home_care_support.missing_request.v1
+  canonical_rule_id: rule.home_care_support.missing_request
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: written_request_ready
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: written_caregiver_leave_request
+  source_claim_ids:
+  - clm.home_care_support.caregiver_basic
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.home_care_support.five_days_exhausted.v1
+  canonical_rule_id: rule.home_care_support.five_days_exhausted
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: days_used_this_year
+      value: 5
+    - op: eq
+      field: collective_agreement_extra_days
+      value: false
+  effects:
+  - type: block
+    code: statutory_caregiver_days_exhausted
+    message_ro: Minimumul legal de 5 zile lucrătoare este epuizat pentru anul calendaristic.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_basic
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.home_care_support.extra_days.v1
+  canonical_rule_id: rule.home_care_support.extra_days
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: days_used_this_year
+      value: 5
+    - op: eq
+      field: collective_agreement_extra_days
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_collective_or_special_extra_caregiver_days
+    message_ro: Verifică numărul și condițiile zilelor suplimentare din contractul colectiv sau legea specială.
+  source_claim_ids:
+  - clm.home_care_support.caregiver_basic
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.home_care_support.family_emergency.v1
+  canonical_rule_id: rule.home_care_support.family_emergency
+  event_type_id: ro.life.home_care_support
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: need_is_emergency_unforeseen
+    value: true
+  effects:
+  - type: emit_advice
+    tag: distinct_family_emergency_absence_up_to_10_days
+    message_ro: Situația poate aparține rutei distincte de urgență familială, cu informare și recuperarea timpului, maximum
+      10 zile lucrătoare/an.
+  source_claim_ids:
+  - clm.home_care_support.family_emergency
+  override_rule_ids: []
+  status: active
+  reviewer_id: null

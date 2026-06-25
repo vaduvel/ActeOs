@@ -1,0 +1,487 @@
+batch_id: B13_TAX_RETURN_INDIVIDUAL
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.tax_return_individual
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: TR01
+  desc: Venit 2025 raportabil, declarație încă nedepusă
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+- id: TR02
+  desc: Declarația 2025 este deja depusă corect
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: filed_correct
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - archive_d212_submission_receipt
+    advice_tags:
+    - d212_already_filed_keep_receipt
+    - prefill_verified_by_taxpayer
+- id: TR03
+  desc: Declarația depusă necesită rectificare
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: filed_needs_correction
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    - submit_rectifying_d212
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - use_d212_rectification_type
+    - prefill_verified_by_taxpayer
+- id: TR04
+  desc: Venit exclusiv din străinătate
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: foreign
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    - add_foreign_income_to_d212
+    requirements:
+    - req.d212_identity_and_income_data
+    - req.foreign_income_details_and_tax_evidence
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+- id: TR05
+  desc: Venituri din România și străinătate
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: both
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    - add_foreign_income_to_d212
+    requirements:
+    - req.d212_identity_and_income_data
+    - req.foreign_income_details_and_tax_evidence
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+- id: TR06
+  desc: Categoria venitului nu este cunoscută
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: unknown
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    - confirm_d212_income_category
+- id: TR07
+  desc: Date precompletate dar neverificate
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_unverified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    - req.verify_and_complete_prefilled_d212_data
+    channels:
+    - ch.anaf.d212_web
+    warnings_present:
+    - d212_2025_deadline_passed
+    - d212_prefill_not_tax_confirmation
+    needs_confirmation:
+    - confirm_late_d212_consequences
+- id: TR08
+  desc: Precompletare indicată fără acces SPV
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: false
+    prefill_state: used_unverified
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    - req.verify_and_complete_prefilled_d212_data
+    channels:
+    - ch.anaf.d212_web
+    warnings_present:
+    - d212_2025_deadline_passed
+    - d212_prefill_not_tax_confirmation
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    - confirm_spv_access_or_manual_route
+- id: TR09
+  desc: Completare manuală fără precompletare
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: false
+    prefill_state: not_used
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - manual_d212_completion_allowed
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+- id: TR10
+  desc: Nu există venit raportabil confirmat
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: false
+    income_origin: none
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    - confirm_optional_cass_or_other_d212_reason
+    needs_confirmation:
+    - confirm_d212_needed_without_reportable_income
+- id: TR11
+  desc: Este selectat un alt an fiscal
+  facts:
+    fiscal_year: 2024
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    needs_confirmation:
+    - confirm_d212_form_for_fiscal_year
+- id: TR12
+  desc: Venitul este raportabil dar originea este none
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: none
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: conflicting
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    conflicts:
+    - reportable_income_without_origin
+    blocked_effects:
+    - finalize_d212_income_sections
+- id: TR13
+  desc: Venit cu reținere la sursă relevant pentru CAS/CASS
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: withholding_cass
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - prepare_d212_individual_tax_return
+    - add_withholding_income_relevant_to_cas_cass
+    requirements:
+    - req.d212_identity_and_income_data
+    - req.withholding_income_and_cas_cass_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+- id: TR14
+  desc: Declarație corectă fără venit raportabil curent
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: false
+    income_origin: none
+    income_category: independent
+    filing_state: filed_correct
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: ok
+    included_steps:
+    - archive_d212_submission_receipt
+    advice_tags:
+    - d212_already_filed_keep_receipt
+    - prefill_verified_by_taxpayer
+    - confirm_optional_cass_or_other_d212_reason
+    needs_confirmation:
+    - confirm_d212_needed_without_reportable_income
+- id: TR15
+  desc: Lipsește faptul obligatoriu fiscal_year
+  facts:
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: needs_facts
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    missing_facts:
+    - fiscal_year
+- id: TR16
+  desc: Lipsește faptul obligatoriu has_reportable_income
+  facts:
+    fiscal_year: 2025
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: needs_facts
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    missing_facts:
+    - has_reportable_income
+- id: TR17
+  desc: Lipsește faptul obligatoriu income_origin
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    missing_facts:
+    - income_origin
+- id: TR18
+  desc: Lipsește faptul obligatoriu income_category
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    filing_state: not_filed
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    missing_facts:
+    - income_category
+- id: TR19
+  desc: Lipsește faptul obligatoriu filing_state
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    spv_access: true
+    prefill_state: used_verified
+  expect:
+    status: needs_facts
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    missing_facts:
+    - filing_state
+- id: TR20
+  desc: Lipsește faptul obligatoriu spv_access
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    prefill_state: used_verified
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    advice_tags:
+    - prefill_verified_by_taxpayer
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    missing_facts:
+    - spv_access
+- id: TR21
+  desc: Lipsește faptul obligatoriu prefill_state
+  facts:
+    fiscal_year: 2025
+    has_reportable_income: true
+    income_origin: romania
+    income_category: independent
+    filing_state: not_filed
+    spv_access: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_d212_individual_tax_return
+    requirements:
+    - req.d212_identity_and_income_data
+    channels:
+    - ch.anaf.d212_web
+    warnings_present:
+    - d212_2025_deadline_passed
+    needs_confirmation:
+    - confirm_late_d212_consequences
+    missing_facts:
+    - prefill_state
+- id: TR22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - fiscal_year
+    - has_reportable_income
+    - income_origin
+    - income_category
+    - filing_state
+    - spv_access
+    - prefill_state

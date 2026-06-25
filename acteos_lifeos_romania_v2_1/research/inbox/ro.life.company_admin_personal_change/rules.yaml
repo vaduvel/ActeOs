@@ -1,0 +1,324 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_COMPANY_ADMIN_PERSONAL_CHANGE
+event_type_id: ro.life.company_admin_personal_change
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- change_scope
+- days_since_modifying_act
+- submission_channel
+- qualified_signature_available
+- representative_used
+- beneficial_owner_affected
+- documents_ready
+- tariff_note_obtained
+rules:
+- id: rule.b13.company_admin.base
+  canonical_rule_id: company_admin.change.base
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_onrc_mention_application
+  - type: include_requirement
+    requirement_id: req.onrc_registration_application
+  - type: include_requirement
+    requirement_id: req.competent_body_resolution
+  source_claim_ids:
+  - claim.b13.company_admin.identity_docs
+  - claim.b13.company_admin.replacement_docs
+  status: draft
+- id: rule.b13.company_admin.identity_change
+  canonical_rule_id: company_admin.change.identity
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: change_scope
+    values:
+    - same_person_identification_data
+    - both
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_new_identification_data
+  - type: include_requirement
+    requirement_id: req.updated_articles_of_association
+  - type: include_step
+    step_id: register_administrator_identification_change
+  source_claim_ids:
+  - claim.b13.company_admin.identity_docs
+  status: in_review
+- id: rule.b13.company_admin.replacement
+  canonical_rule_id: company_admin.change.replacement
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: change_scope
+    values:
+    - administrator_replacement
+    - both
+  effects:
+  - type: include_requirement
+    requirement_id: req.new_administrator_identity_documents
+  - type: include_requirement
+    requirement_id: req.case_specific_administrator_documents
+  - type: include_step
+    step_id: register_administrator_replacement
+  - type: emit_advice
+    tag: fiscal_record_obtained_ex_officio
+    message_ro: ORCT obține din oficiu informațiile din cazierul fiscal, când sunt cerute.
+  source_claim_ids:
+  - claim.b13.company_admin.replacement_docs
+  - claim.b13.company_admin.fiscal_record_ex_officio
+  status: in_review
+- id: rule.b13.company_admin.deadline_ok
+  canonical_rule_id: company_admin.change.deadline
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lte
+    field: days_since_modifying_act
+    value: 15
+  effects:
+  - type: emit_advice
+    tag: onrc_general_15_day_window
+    message_ro: Depunerea se află în fereastra generală de 15 zile.
+  source_claim_ids:
+  - claim.b13.company_admin.filing_term
+  status: draft
+- id: rule.b13.company_admin.deadline_late
+  canonical_rule_id: company_admin.change.deadline
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: gt
+    field: days_since_modifying_act
+    value: 15
+  effects:
+  - type: emit_warning
+    tag: onrc_general_filing_window_exceeded
+    message_ro: Au trecut peste 15 zile de la actul modificator; depune și verifică eventualele consecințe.
+  - type: require_confirmation
+    tag: confirm_late_onrc_filing_consequences
+    message_ro: Consecințele concrete trebuie confirmate de ORCT.
+  source_claim_ids:
+  - claim.b13.company_admin.filing_term
+  status: in_review
+- id: rule.b13.company_admin.electronic
+  canonical_rule_id: company_admin.change.channel.electronic
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: electronic
+    - op: eq
+      field: qualified_signature_available
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc.online_portal
+  - type: emit_advice
+    tag: electronic_documents_require_qes
+    message_ro: Semnează cererea și documentele electronice cu semnătură calificată.
+  source_claim_ids:
+  - claim.b13.company_admin.channels_qes
+  status: in_review
+- id: rule.b13.company_admin.electronic_no_qes
+  canonical_rule_id: company_admin.change.channel.electronic
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: electronic
+    - op: eq
+      field: qualified_signature_available
+      value: false
+  effects:
+  - type: block
+    tag: qualified_signature_missing
+    message_ro: Ruta electronică nu este pregătită fără semnătură calificată.
+  - type: emit_advice
+    tag: use_counter_or_post_without_qes
+    message_ro: Alege ghișeul ori poșta/curierul sau obține semnătura calificată.
+  source_claim_ids:
+  - claim.b13.company_admin.channels_qes
+  status: in_review
+- id: rule.b13.company_admin.counter
+  canonical_rule_id: company_admin.change.channel.counter
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: submission_channel
+    value: counter
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc.counter
+  source_claim_ids:
+  - claim.b13.company_admin.channels_qes
+  status: in_review
+- id: rule.b13.company_admin.post
+  canonical_rule_id: company_admin.change.channel.post
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: submission_channel
+    value: post_courier
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc.post_courier
+  - type: include_requirement
+    requirement_id: req.certified_copy_requester_identity_for_post
+  source_claim_ids:
+  - claim.b13.company_admin.channels_qes
+  status: in_review
+- id: rule.b13.company_admin.representative
+  canonical_rule_id: company_admin.change.representative
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representative_used
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.power_for_onrc_formalities
+  source_claim_ids:
+  - claim.b13.company_admin.identity_docs
+  status: in_review
+- id: rule.b13.company_admin.bo
+  canonical_rule_id: company_admin.change.beneficial_owner
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: beneficial_owner_affected
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.beneficial_owner_update
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_declaration_if_applicable
+  source_claim_ids:
+  - claim.b13.company_admin.identity_docs
+  - claim.b13.company_admin.replacement_docs
+  status: in_review
+- id: rule.b13.company_admin.docs_incomplete
+  canonical_rule_id: company_admin.change.completeness
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: documents_ready
+    value: incomplete
+  effects:
+  - type: block
+    tag: mandatory_onrc_documents_incomplete
+    message_ro: Completează înscrisurile obligatorii înainte de depunere.
+  - type: emit_warning
+    tag: onrc_rejection_risk
+    message_ro: Lipsa unui înscris obligatoriu poate duce la respingere.
+  source_claim_ids:
+  - claim.b13.company_admin.rejection
+  status: in_review
+- id: rule.b13.company_admin.docs_unknown
+  canonical_rule_id: company_admin.change.completeness
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: documents_ready
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_case_specific_onrc_documents
+    message_ro: Verifică lista exactă de înscrisuri pentru forma juridică și situația concretă.
+  source_claim_ids:
+  - claim.b13.company_admin.identity_docs
+  - claim.b13.company_admin.replacement_docs
+  status: in_review
+- id: rule.b13.company_admin.tariff
+  canonical_rule_id: company_admin.change.tariff
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: tariff_note_obtained
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_onrc_tariff_note
+    message_ro: Obține nota de calcul înainte de a afișa sau plăti un tarif.
+  source_claim_ids:
+  - claim.b13.company_admin.dynamic_tariff
+  status: in_review
+- id: rule.b13.company_admin.resolution
+  canonical_rule_id: company_admin.change.processing
+  event_type_id: ro.life.company_admin_personal_change
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: registrar_one_working_day_target
+    message_ro: ONRC publică un termen operațional de o zi lucrătoare pentru soluționare.
+  source_claim_ids:
+  - claim.b13.company_admin.resolution
+  status: draft

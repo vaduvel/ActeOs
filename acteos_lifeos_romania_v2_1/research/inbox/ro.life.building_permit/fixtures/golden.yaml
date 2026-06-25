@@ -1,0 +1,857 @@
+batch_id: batch08.building_permit
+defaults:
+  event_type_id: ro.life.building_permit
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.new.complete
+  desc: Clădire nouă, dosar complet, Timișoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.extension.complete
+  desc: Extindere, dosar complet
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: extension
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.rehabilitation.complete
+  desc: Reabilitare supusă autorizării
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: rehabilitation
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.change_use.complete
+  desc: Schimbare de destinație cu lucrări
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: change_of_use_with_works
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.protected.complete
+  desc: Dosar complet în zonă protejată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: true
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    requirements:
+    - specific_heritage_and_protected_area_approvals
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    - protected_area_special_route
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.incomplete
+  desc: Documentație declarată incompletă
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - incomplete_notice_5_working_days
+    - supplement_window_max_3_months
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.other_uat
+  desc: Clădire nouă în alt UAT
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    - identify_authorising_local_authority
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - verified_with_local_gap
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_local_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+- id: fx.no_real_right
+  desc: Lipsește dovada dreptului real
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: false
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    requirements:
+    - proof_of_title_or_real_right
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    overridden_rules:
+    - rule.building_permit.complete_file.v1
+- id: fx.no_cu
+  desc: Lipsește certificatul de urbanism
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: false
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    requirements:
+    - urbanism_certificate
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    overridden_rules:
+    - rule.building_permit.complete_file.v1
+- id: fx.no_dt
+  desc: Lipsește documentația tehnică
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: false
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    requirements:
+    - technical_documentation_for_authorisation
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    overridden_rules:
+    - rule.building_permit.complete_file.v1
+- id: fx.no_approvals
+  desc: Lipsesc avizele
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: false
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    requirements:
+    - approvals_and_agreements_from_urbanism_certificate
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    overridden_rules:
+    - rule.building_permit.complete_file.v1
+- id: fx.no_environment
+  desc: Lipsește actul de mediu
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: false
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    requirements:
+    - environmental_authority_act_if_applicable
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    overridden_rules:
+    - rule.building_permit.complete_file.v1
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.work_scope
+  desc: Lipsește faptul obligatoriu work_scope
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - work_scope
+- id: fx.missing.has_real_right
+  desc: Lipsește faptul obligatoriu has_real_right
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - has_real_right
+- id: fx.missing.has_urbanism_certificate
+  desc: Lipsește faptul obligatoriu has_urbanism_certificate
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - has_urbanism_certificate
+- id: fx.missing.cadastral_evidence_requirement_satisfied
+  desc: Lipsește faptul obligatoriu cadastral_evidence_requirement_satisfied
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - cadastral_evidence_requirement_satisfied
+- id: fx.missing.has_dt
+  desc: Lipsește faptul obligatoriu has_dt
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - has_dt
+- id: fx.missing.approvals_requirement_satisfied
+  desc: Lipsește faptul obligatoriu approvals_requirement_satisfied
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - approvals_requirement_satisfied
+- id: fx.missing.environmental_requirement_satisfied
+  desc: Lipsește faptul obligatoriu environmental_requirement_satisfied
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - environmental_requirement_satisfied
+- id: fx.missing.has_fee_proof
+  desc: Lipsește faptul obligatoriu has_fee_proof
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    protected_area: false
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - has_fee_proof
+- id: fx.missing.protected_area
+  desc: Lipsește faptul obligatoriu protected_area
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    application_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - permit_decision_max_30_calendar_days
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - protected_area
+- id: fx.missing.application_complete
+  desc: Lipsește faptul obligatoriu application_complete
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_scope: new_building
+    has_real_right: true
+    has_urbanism_certificate: true
+    cadastral_evidence_requirement_satisfied: true
+    has_dt: true
+    approvals_requirement_satisfied: true
+    environmental_requirement_satisfied: true
+    has_fee_proof: true
+    protected_area: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - obtain_urbanism_certificate
+    - complete_environmental_procedure
+    - obtain_required_approvals
+    - prepare_technical_documentation_dt
+    - pay_authorisation_fee
+    - submit_complete_permit_file
+    - receive_building_permit
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    - timisoara_archived_permit_service
+    warnings:
+    - do_not_start_before_permit
+    confirmations:
+    - confirm_current_timisoara_permit_submission_channel
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - application_complete
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    advice_tags:
+    - start_validity_max_24_months
+    - extension_request_45_working_days_before
+    - single_free_extension_max_24_months
+    confirmations:
+    - confirm_current_local_permit_fee_amount
+    missing_facts:
+    - jurisdiction_id
+    - work_scope
+    - has_real_right
+    - has_urbanism_certificate
+    - cadastral_evidence_requirement_satisfied
+    - has_dt
+    - approvals_requirement_satisfied
+    - environmental_requirement_satisfied
+    - has_fee_proof
+    - protected_area
+    - application_complete

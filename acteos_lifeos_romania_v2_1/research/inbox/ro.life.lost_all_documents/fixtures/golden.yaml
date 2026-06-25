@@ -1,0 +1,91 @@
+batch_id: R1_LOST_ALL_DOCUMENTS
+defaults:
+  event_type_id: life.lost_all_documents
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: D01
+    desc: doar CI pierdut
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, triggered_events: [life.id_card_lost_stolen], advice_present: [ci_first] }
+  - id: D02
+    desc: toate pierdute - CI prima
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: true, lost_driving_license: true, lost_vehicle_registration: true }
+    expect: { status: ok, triggered_events: [life.id_card_lost_stolen, life.passport_first_or_renew, life.driving_license_duplicate, life.vehicle_registration_duplicate], advice_present: [ci_first] }
+  - id: D03
+    desc: pierdere - fara obligatie politie
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, warnings_present: [loss_not_theft] }
+  - id: D04
+    desc: CI + pasaport
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: true, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, triggered_events: [life.id_card_lost_stolen, life.passport_first_or_renew] }
+  - id: D05
+    desc: doar pasaport (CI valid)
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: true, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, triggered_events: [life.passport_first_or_renew], events_absent: [life.id_card_lost_stolen], advice_absent: [ci_first] }
+  - id: D06
+    desc: doar permis
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: false, lost_driving_license: true, lost_vehicle_registration: false }
+    expect: { status: ok, triggered_events: [life.driving_license_duplicate] }
+  - id: D07
+    desc: doar talon
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: true }
+    expect: { status: ok, triggered_events: [life.vehicle_registration_duplicate] }
+  - id: D08
+    desc: nimic pierdut
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, triggered_events: [] }
+  - id: D09
+    desc: pierdere vs furt ramane in_review
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, needs_confirmation: [loss_not_theft] }
+  - id: D10
+    desc: lipseste loss_date
+    facts: { lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: needs_facts, missing_facts: [loss_date] }
+  - id: D11
+    desc: lipseste lost_id_card
+    facts: { loss_date: '2026-06-24', lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: needs_facts, missing_facts: [lost_id_card] }
+  - id: D12
+    desc: lipseste lost_passport
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: needs_facts, missing_facts: [lost_passport] }
+  - id: D13
+    desc: lipseste lost_driving_license
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: false, lost_vehicle_registration: false }
+    expect: { status: needs_facts, missing_facts: [lost_driving_license] }
+  - id: D14
+    desc: lipseste lost_vehicle_registration
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: false, lost_driving_license: false }
+    expect: { status: needs_facts, missing_facts: [lost_vehicle_registration] }
+  - id: D15
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [loss_date, lost_id_card, lost_passport, lost_driving_license, lost_vehicle_registration] }
+  - id: D16
+    desc: CI + talon
+    facts: { loss_date: '2026-06-24', lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: true }
+    expect: { status: ok, triggered_events: [life.id_card_lost_stolen, life.vehicle_registration_duplicate], advice_present: [ci_first] }
+  - id: D17
+    desc: fara CI - fara advice ci_first
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: true, lost_driving_license: true, lost_vehicle_registration: false }
+    expect: { status: ok, advice_absent: [ci_first] }
+  - id: D18
+    desc: pierdere azi
+    facts: { loss_date: '2026-06-25', lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, triggered_events: [life.id_card_lost_stolen] }
+  - id: D19
+    desc: pierdere in viitor - avertisment
+    facts: { loss_date: '2026-12-01', lost_id_card: true, lost_passport: false, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, warnings: [future_loss_date] }
+  - id: D20
+    desc: permis + talon (fara CI)
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: false, lost_driving_license: true, lost_vehicle_registration: true }
+    expect: { status: ok, triggered_events: [life.driving_license_duplicate, life.vehicle_registration_duplicate] }
+  - id: D21
+    desc: warning pierdere-nu-furt mereu prezent
+    facts: { loss_date: '2026-06-24', lost_id_card: false, lost_passport: true, lost_driving_license: false, lost_vehicle_registration: false }
+    expect: { status: ok, warnings_present: [loss_not_theft] }

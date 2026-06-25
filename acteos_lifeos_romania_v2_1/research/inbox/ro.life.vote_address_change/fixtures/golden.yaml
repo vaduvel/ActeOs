@@ -1,0 +1,444 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.vote_address_change
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VOT01
+  desc: locale, reședință peste 6 luni și cerere depusă
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    requirements:
+    - req.vote.register_request
+- id: VOT02
+  desc: locale, reședință sub 6 luni
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2026-05-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: false
+  expect:
+    status: blocked
+    blocks:
+    - local_vote_at_residence_requires_over_6_months
+- id: VOT03
+  desc: locale, cerere în registru nedepusă
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: false
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - local_register_request_may_be_required
+- id: VOT04
+  desc: locale, domiciliu schimbat
+  facts:
+    election_type: local
+    address_kind: domicile
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    channels:
+    - ch.vote.registry
+- id: VOT05
+  desc: parlamentare, reședință
+  facts:
+    election_type: parliamentary
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    requirements:
+    - req.vote.register_request
+- id: VOT06
+  desc: parlamentare, domiciliu
+  facts:
+    election_type: parliamentary
+    address_kind: domicile
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    channels:
+    - ch.vote.registry
+- id: VOT07
+  desc: prezidențiale în aceeași UAT
+  facts:
+    election_type: presidential
+    address_kind: domicile
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: true
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - presidential_use_assigned_section_same_uat
+- id: VOT08
+  desc: prezidențiale în altă UAT
+  facts:
+    election_type: presidential
+    address_kind: domicile
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - presidential_supplementary_list_other_uat
+- id: VOT09
+  desc: prezidențiale, mobilitate redusă
+  facts:
+    election_type: presidential
+    address_kind: domicile
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: true
+    mobility_reduced: true
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - accessible_section_same_locality
+- id: VOT10
+  desc: alegeri europene
+  facts:
+    election_type: european
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - election_specific_address_rule_unverified
+- id: VOT11
+  desc: referendum
+  facts:
+    election_type: referendum
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - election_specific_address_rule_unverified
+- id: VOT12
+  desc: tip scrutin necunoscut
+  facts:
+    election_type: unknown
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - election_specific_address_rule_unverified
+- id: VOT13
+  desc: reședința nu este finalizată
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: false
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: blocked
+    blocks:
+    - residence_registration_not_completed
+- id: VOT14
+  desc: serviciu flotant Timișoara
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - timisoara_residence_service_5_working_days
+- id: VOT15
+  desc: reședință în Lugoj
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Lugoj
+    residence_over_6_months: true
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_local_residence_service
+- id: VOT16
+  desc: 45 de zile înainte de locale
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-08-13'
+    register_request_submitted: false
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - local_register_request_may_be_required
+- id: VOT17
+  desc: 44 de zile înainte de locale
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-08-14'
+    register_request_submitted: false
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - local_register_request_may_be_required
+- id: VOT18
+  desc: reședință exact 6 luni înainte
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2026-03-27'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: null
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - residence_six_month_threshold_needs_review
+- id: VOT19
+  desc: reședință cu o zi peste 6 luni
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2026-03-26'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    requirements:
+    - req.vote.register_request
+- id: VOT20
+  desc: secția verificată înainte de scrutin
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    channels:
+    - ch.vote.registry
+- id: VOT21
+  desc: parlamentare fără cerere depusă
+  facts:
+    election_type: parliamentary
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: false
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - parliamentary_register_request_may_be_required
+- id: VOT22
+  desc: domiciliu nou în Timișoara
+  facts:
+    election_type: local
+    address_kind: domicile
+    residence_established_date: null
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    channels:
+    - ch.vote.registry
+- id: VOT23
+  desc: prezidențiale, altă UAT, mobilitate redusă
+  facts:
+    election_type: presidential
+    address_kind: domicile
+    residence_established_date: '2025-10-01'
+    election_date: '2026-09-27'
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: true
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: ready
+    warnings:
+    - presidential_supplementary_list_other_uat
+    - accessible_section_same_locality
+- id: VOT24
+  desc: data scrutinului lipsește
+  facts:
+    election_type: local
+    address_kind: residence
+    residence_established_date: '2025-10-01'
+    election_date: null
+    reference_date: '2026-06-25'
+    register_request_submitted: true
+    same_uat_as_registered_domicile: false
+    mobility_reduced: false
+    residence_registration_completed: true
+    target_uat: Timișoara
+    residence_over_6_months: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - election_date

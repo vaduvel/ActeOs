@@ -1,0 +1,1065 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.administrative_decision_contest
+status: draft
+rules:
+- id: rule.admin.require_special_route_check
+  canonical_rule_id: administrative_decision_contest.require_special_route_check
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-12-02'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: special_judicial_procedure_checked
+    - op: eq
+      field: special_judicial_procedure_checked
+      value: false
+  effects:
+  - type: include_step
+    step_id: verify_special_judicial_procedure
+  - type: require_confirmation
+    tag: special_judicial_procedure_check_required
+    message_ro: Înainte de aplicarea Legii nr. 554/2004 trebuie verificată existența unei proceduri judiciare speciale.
+  source_claim_ids:
+  - claim.admin.special_procedure_gate
+  status: draft
+  required_facts:
+  - special_judicial_procedure_checked
+- id: rule.admin.special_route_overrides_general
+  canonical_rule_id: administrative_decision_contest.special_route_overrides_general
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2004-12-02'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: special_judicial_procedure_checked
+      value: true
+    - op: eq
+      field: special_judicial_procedure_exists
+      value: true
+  effects:
+  - type: block
+    tag: special_procedure_overrides_general_route
+    message_ro: Nu aplica traseul general al Legii nr. 554/2004; urmează procedura judiciară specială identificată.
+  - type: include_step
+    step_id: route_to_special_judicial_procedure
+  source_claim_ids:
+  - claim.admin.special_procedure_gate
+  status: draft
+- id: rule.admin.addressee_prior_timely
+  canonical_rule_id: administrative_decision_contest.addressee_prior_timely
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: addressee
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+    - op: lte
+      field: days_since_communication
+      value: 30
+  effects:
+  - type: include_step
+    step_id: prepare_prior_complaint
+  - type: set_deadline
+    tag: prior_complaint_30_days_from_communication
+    value:
+      days: 30
+      anchor: communication_date
+  - type: attach_channel
+    channel_id: issuing_or_hierarchically_superior_authority
+  source_claim_ids:
+  - claim.admin.prior_complaint_addressee
+  status: draft
+  required_facts:
+  - act_type
+  - recipient_role
+  - days_since_communication
+  - communication_date
+- id: rule.admin.addressee_prior_late_justified
+  canonical_rule_id: administrative_decision_contest.addressee_prior_late_justified
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: addressee
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+    - op: gt
+      field: days_since_communication
+      value: 30
+    - op: eq
+      field: within_6_months_of_issue
+      value: true
+    - op: eq
+      field: justified_late_reasons
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_prior_complaint
+  - type: emit_warning
+    tag: late_prior_complaint_requires_justified_reasons
+    message_ro: Plângerea este după termenul de 30 de zile și trebuie să arate motive temeinice; limita exterioară se raportează
+      la emiterea actului.
+  source_claim_ids:
+  - claim.admin.prior_complaint_addressee
+  status: draft
+- id: rule.admin.addressee_late_reason_missing
+  canonical_rule_id: administrative_decision_contest.addressee_late_reason_missing
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: addressee
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+    - op: gt
+      field: days_since_communication
+      value: 30
+    - op: eq
+      field: within_6_months_of_issue
+      value: true
+    - op: eq
+      field: justified_late_reasons
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: justified_late_reasons_required
+    message_ro: După 30 de zile, continuarea cere motive temeinice documentate.
+  source_claim_ids:
+  - claim.admin.prior_complaint_addressee
+  status: draft
+- id: rule.admin.addressee_outer_limit_exceeded
+  canonical_rule_id: administrative_decision_contest.addressee_outer_limit_exceeded
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: addressee
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+    - op: gt
+      field: days_since_communication
+      value: 30
+    - op: eq
+      field: within_6_months_of_issue
+      value: false
+  effects:
+  - type: block
+    tag: prior_complaint_outer_limit_exceeded
+    message_ro: Limita de 6 luni de la emiterea actului pentru plângerea prealabilă tardivă este depășită; cazul necesită
+      analiză juridică individuală.
+  source_claim_ids:
+  - claim.admin.prior_complaint_addressee
+  status: draft
+- id: rule.admin.normative_prior_anytime
+  canonical_rule_id: administrative_decision_contest.normative_prior_anytime
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: normative
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+  effects:
+  - type: include_step
+    step_id: prepare_prior_complaint
+  - type: emit_advice
+    tag: normative_prior_complaint_anytime
+    message_ro: Pentru actul normativ, plângerea prealabilă poate fi formulată oricând.
+  source_claim_ids:
+  - claim.admin.normative_prior_anytime
+  status: draft
+- id: rule.admin.third_party_prior_timely
+  canonical_rule_id: administrative_decision_contest.third_party_prior_timely
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: third_party
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+    - op: lte
+      field: days_since_knowledge
+      value: 30
+  effects:
+  - type: include_step
+    step_id: prepare_prior_complaint
+  - type: set_deadline
+    tag: third_party_prior_30_days_from_knowledge
+    value:
+      days: 30
+      anchor: knowledge_date
+  source_claim_ids:
+  - claim.admin.third_party_prior_complaint
+  status: draft
+  required_facts:
+  - days_since_knowledge
+  - knowledge_date
+- id: rule.admin.third_party_prior_late_justified
+  canonical_rule_id: administrative_decision_contest.third_party_prior_late_justified
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: third_party
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: false
+    - op: gt
+      field: days_since_knowledge
+      value: 30
+    - op: eq
+      field: within_6_months_of_knowledge
+      value: true
+    - op: eq
+      field: justified_late_reasons
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_prior_complaint
+  - type: emit_warning
+    tag: third_party_late_prior_requires_justified_reasons
+    message_ro: Terțul formulează plângerea după 30 de zile și trebuie să invoce motive temeinice, în interiorul limitei de
+      6 luni de la luarea la cunoștință.
+  source_claim_ids:
+  - claim.admin.third_party_prior_complaint
+  status: draft
+- id: rule.admin.third_party_late_reason_missing
+  canonical_rule_id: administrative_decision_contest.third_party_late_reason_missing
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: third_party
+    - op: gt
+      field: days_since_knowledge
+      value: 30
+    - op: eq
+      field: within_6_months_of_knowledge
+      value: true
+    - op: eq
+      field: justified_late_reasons
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: third_party_justified_late_reasons_required
+    message_ro: După 30 de zile de la luarea la cunoștință, terțul trebuie să documenteze motive temeinice.
+  source_claim_ids:
+  - claim.admin.third_party_prior_complaint
+  status: draft
+- id: rule.admin.third_party_outer_limit_exceeded
+  canonical_rule_id: administrative_decision_contest.third_party_outer_limit_exceeded
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: recipient_role
+      value: third_party
+    - op: gt
+      field: days_since_knowledge
+      value: 30
+    - op: eq
+      field: within_6_months_of_knowledge
+      value: false
+  effects:
+  - type: block
+    tag: third_party_prior_outer_limit_exceeded
+    message_ro: Limita de 6 luni de la luarea la cunoștință este depășită; cazul necesită analiză juridică individuală.
+  source_claim_ids:
+  - claim.admin.third_party_prior_complaint
+  status: draft
+- id: rule.admin.confirmed_prior_exception
+  canonical_rule_id: administrative_decision_contest.confirmed_prior_exception
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: prior_complaint_exception_confirmed
+      value: true
+  effects:
+  - type: exclude_step
+    step_id: prepare_prior_complaint
+  - type: emit_advice
+    tag: prior_complaint_not_required_confirmed_exception
+    message_ro: Plângerea prealabilă este omisă numai pentru excepția legală confirmată și documentată.
+  source_claim_ids:
+  - claim.admin.prior_complaint_exceptions
+  status: draft
+- id: rule.admin.venue_local_county
+  canonical_rule_id: administrative_decision_contest.venue_local_county
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: fiscal_case
+      value: false
+    - op: in
+      field: authority_level
+      values:
+      - local
+      - county
+  effects:
+  - type: include_step
+    step_id: identify_administrative_fiscal_tribunal
+  - type: emit_advice
+    tag: material_venue_tribunal
+    message_ro: În fond, actul autorității locale sau județene intră la tribunalul administrativ-fiscal, sub rezerva unei
+      legi speciale.
+  source_claim_ids:
+  - claim.admin.material_jurisdiction
+  status: draft
+- id: rule.admin.venue_central
+  canonical_rule_id: administrative_decision_contest.venue_central
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: fiscal_case
+      value: false
+    - op: eq
+      field: authority_level
+      value: central
+  effects:
+  - type: include_step
+    step_id: identify_administrative_fiscal_court_of_appeal
+  - type: emit_advice
+    tag: material_venue_court_of_appeal
+    message_ro: În fond, actul autorității centrale intră la secția de contencios administrativ și fiscal a curții de apel,
+      sub rezerva unei legi speciale.
+  source_claim_ids:
+  - claim.admin.material_jurisdiction
+  status: draft
+- id: rule.admin.venue_fiscal_up_to_threshold
+  canonical_rule_id: administrative_decision_contest.venue_fiscal_up_to_threshold
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: fiscal_case
+      value: true
+    - op: lte
+      field: fiscal_amount_lei
+      value: 3000000
+  effects:
+  - type: include_step
+    step_id: identify_administrative_fiscal_tribunal
+  - type: emit_advice
+    tag: fiscal_material_venue_tribunal
+    message_ro: Pentru suma fiscală de până la 3.000.000 lei, competența materială generală este tribunalul administrativ-fiscal,
+      dacă legea specială nu derogă.
+  source_claim_ids:
+  - claim.admin.material_jurisdiction
+  status: draft
+- id: rule.admin.venue_fiscal_over_threshold
+  canonical_rule_id: administrative_decision_contest.venue_fiscal_over_threshold
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: fiscal_case
+      value: true
+    - op: gt
+      field: fiscal_amount_lei
+      value: 3000000
+  effects:
+  - type: include_step
+    step_id: identify_administrative_fiscal_court_of_appeal
+  - type: emit_advice
+    tag: fiscal_material_venue_court_of_appeal
+    message_ro: Pentru suma fiscală peste 3.000.000 lei, competența materială generală este curtea de apel, dacă legea specială
+      nu derogă.
+  source_claim_ids:
+  - claim.admin.material_jurisdiction
+  status: draft
+- id: rule.admin.private_claimant_territorial_venue
+  canonical_rule_id: administrative_decision_contest.private_claimant_territorial_venue
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2018-08-02'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: claimant_type
+      value: private
+    - op: exists
+      field: claimant_jurisdiction_id
+  effects:
+  - type: include_step
+    step_id: select_court_at_claimant_domicile_or_seat
+  - type: emit_advice
+    tag: private_claimant_own_domicile_or_seat
+    message_ro: Persoana fizică sau juridică de drept privat se adresează instanței de la propriul domiciliu sau sediu.
+  source_claim_ids:
+  - claim.admin.territorial_jurisdiction_private_claimant
+  status: draft
+- id: rule.admin.individual_court_action_timely
+  canonical_rule_id: administrative_decision_contest.individual_court_action_timely
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: court_action_planned
+      value: true
+    - op: eq
+      field: within_6_months_of_court_anchor
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_court_action
+  - type: emit_advice
+    tag: court_action_within_6_months
+    message_ro: Acțiunea este în interiorul termenului general de 6 luni calculat de la ancora legală aplicabilă.
+  source_claim_ids:
+  - claim.admin.court_action_deadlines
+  status: draft
+- id: rule.admin.individual_court_action_late_justified
+  canonical_rule_id: administrative_decision_contest.individual_court_action_late_justified
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: court_action_planned
+      value: true
+    - op: eq
+      field: within_6_months_of_court_anchor
+      value: false
+    - op: eq
+      field: within_1_year_of_court_anchor
+      value: true
+    - op: eq
+      field: justified_court_delay_reasons
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_court_action
+  - type: emit_warning
+    tag: late_court_action_requires_justified_reasons
+    message_ro: Acțiunea este după 6 luni și trebuie să arate motive temeinice; nu poate depăși limita de un an.
+  source_claim_ids:
+  - claim.admin.court_action_deadlines
+  status: draft
+- id: rule.admin.individual_court_action_late_reason_missing
+  canonical_rule_id: administrative_decision_contest.individual_court_action_late_reason_missing
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: court_action_planned
+      value: true
+    - op: eq
+      field: within_6_months_of_court_anchor
+      value: false
+    - op: eq
+      field: within_1_year_of_court_anchor
+      value: true
+    - op: eq
+      field: justified_court_delay_reasons
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: justified_court_delay_reasons_required
+    message_ro: După expirarea celor 6 luni, acțiunea cere motive temeinice documentate.
+  source_claim_ids:
+  - claim.admin.court_action_deadlines
+  status: draft
+- id: rule.admin.individual_court_action_outer_limit
+  canonical_rule_id: administrative_decision_contest.individual_court_action_outer_limit
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: individual
+    - op: eq
+      field: court_action_planned
+      value: true
+    - op: eq
+      field: within_1_year_of_court_anchor
+      value: false
+  effects:
+  - type: block
+    tag: court_action_one_year_outer_limit_exceeded
+    message_ro: Limita exterioară de un an pentru acțiunea tardivă împotriva actului individual este depășită; este necesar
+      review juridic.
+  source_claim_ids:
+  - claim.admin.court_action_deadlines
+  status: draft
+- id: rule.admin.normative_court_action_anytime
+  canonical_rule_id: administrative_decision_contest.normative_court_action_anytime
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: act_type
+      value: normative
+    - op: eq
+      field: court_action_planned
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_court_action
+  - type: emit_advice
+    tag: normative_court_action_anytime
+    message_ro: Actul administrativ normativ considerat nelegal poate fi atacat oricând.
+  source_claim_ids:
+  - claim.admin.normative_action_anytime
+  status: draft
+- id: rule.admin.court_documents_and_base_fee
+  canonical_rule_id: administrative_decision_contest.court_documents_and_base_fee
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: court_action_planned
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: copy_of_contested_act_or_refusal_or_registered_request
+  - type: include_requirement
+    requirement_id: proof_of_prior_complaint_when_required
+  - type: include_requirement
+    requirement_id: court_fee_50_lei_for_annulment_or_recognition
+  source_claim_ids:
+  - claim.admin.court_documents
+  - claim.admin.court_fees
+  status: draft
+- id: rule.admin.damage_claim_fee
+  canonical_rule_id: administrative_decision_contest.damage_claim_fee
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: court_action_planned
+      value: true
+    - op: eq
+      field: requests_damages
+      value: true
+    - op: gt
+      field: claimed_damages_lei
+      value: 0
+  effects:
+  - type: include_requirement
+    requirement_id: damage_claim_fee_10_percent_max_300_lei
+  - type: emit_advice
+    tag: damage_claim_fee_formula
+    message_ro: Componenta patrimonială se taxează cu 10% din valoarea pretinsă, plafonată la 300 lei; instanța verifică timbrarea
+      concretă.
+  source_claim_ids:
+  - claim.admin.court_fees
+  status: draft
+- id: rule.admin.suspension_eligible
+  canonical_rule_id: administrative_decision_contest.suspension_eligible
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-04-21'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: requests_suspension
+      value: true
+    - op: eq
+      field: well_justified_case
+      value: true
+    - op: eq
+      field: imminent_damage
+      value: true
+    - op: eq
+      field: suspension_procedural_trigger_met
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_suspension_request
+  - type: emit_advice
+    tag: suspension_substantive_conditions_met
+    message_ro: Cererea trebuie să argumenteze distinct cazul bine justificat și paguba iminentă.
+  source_claim_ids:
+  - claim.admin.suspension_conditions_and_windows
+  status: draft
+- id: rule.admin.suspension_conditions_missing
+  canonical_rule_id: administrative_decision_contest.suspension_conditions_missing
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-04-21'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: requests_suspension
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: well_justified_case
+        value: false
+      - op: eq
+        field: imminent_damage
+        value: false
+      - op: eq
+        field: suspension_procedural_trigger_met
+        value: false
+  effects:
+  - type: require_confirmation
+    tag: suspension_conditions_or_trigger_missing
+    message_ro: Suspendarea nu poate fi prezentată ca disponibilă fără cazul bine justificat, paguba iminentă și declanșatorul
+      procedural legal.
+  source_claim_ids:
+  - claim.admin.suspension_conditions_and_windows
+  status: draft
+- id: rule.admin.suspension_before_main_action_60_day_safeguard
+  canonical_rule_id: administrative_decision_contest.suspension_before_main_action_60_day_safeguard
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-04-21'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: requests_suspension
+      value: true
+    - op: eq
+      field: suspension_mode
+      value: before_main_action
+    - op: eq
+      field: main_action_filed_within_60_days
+      value: false
+  effects:
+  - type: emit_warning
+    tag: main_action_60_day_safeguard
+    message_ro: Dacă acțiunea în anulare nu este introdusă în maximum 60 de zile de la cererea de suspendare, cererea poate
+      fi respinsă ca lipsită de interes, iar suspendarea acordată încetează de drept.
+  source_claim_ids:
+  - claim.admin.suspension_conditions_and_windows
+  status: draft
+- id: rule.admin.suspension_after_main_action_window
+  canonical_rule_id: administrative_decision_contest.suspension_after_main_action_window
+  event_type_id: life.administrative_decision_contest
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-04-21'
+  when:
+    op: all
+    args:
+    - op: all
+      args:
+      - op: eq
+        field: special_judicial_procedure_checked
+        value: true
+      - op: eq
+        field: special_judicial_procedure_exists
+        value: false
+    - op: eq
+      field: requests_suspension
+      value: true
+    - op: eq
+      field: suspension_mode
+      value: after_main_action
+    - op: gt
+      field: days_since_main_action
+      value: 60
+  effects:
+  - type: block
+    tag: separate_suspension_request_60_day_window_exceeded
+    message_ro: Cererea separată de suspendare este după limita de maximum 60 de zile de la introducerea acțiunii principale.
+  source_claim_ids:
+  - claim.admin.suspension_conditions_and_windows
+  status: draft

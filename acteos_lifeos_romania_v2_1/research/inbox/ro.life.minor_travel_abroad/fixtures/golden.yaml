@@ -1,0 +1,318 @@
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.minor_travel_abroad
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: minor de 10 ani cu ambii părinți
+  facts:
+    minor_age_years: 10
+    travel_companion: both_parents
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.minor_valid_travel_document
+    requirements_absent:
+    - req.parental_consent_declaration
+    emitted_tags:
+    - birth_certificate_not_travel_document
+  id: ro.life.minor_travel_abroad.F01
+- title: minor de 10 ani cu mama, acordul tatălui necesar
+  facts:
+    minor_age_years: 10
+    travel_companion: one_parent
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.other_parent_authenticated_consent
+    emitted_tags:
+    - consent_max_3_years
+  id: ro.life.minor_travel_abroad.F02
+- title: minor cu părinte unic prin hotărâre
+  facts:
+    minor_age_years: 10
+    travel_companion: one_parent
+    sole_parental_authority_or_exception: true
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.exception_proof_sole_authority_death_or_judgment
+  id: ro.life.minor_travel_abroad.F03
+- title: minor cu bunica
+  facts:
+    minor_age_years: 10
+    travel_companion: third_person
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.authenticated_parental_consent_for_third_person
+    - req.companion_identity_document
+    emitted_tags:
+    - criminal_record_checked_electronically
+  id: ro.life.minor_travel_abroad.F04
+- title: minor merge în țara unde are reședința
+  facts:
+    minor_age_years: 12
+    travel_companion: one_parent
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: true
+    travel_purpose: return_to_residence
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.destination_domicile_or_residence_proof
+    requirements_absent:
+    - req.parental_consent_declaration
+  id: ro.life.minor_travel_abroad.F05
+- title: minor de 15 ani neînsoțit
+  facts:
+    minor_age_years: 15
+    travel_companion: unaccompanied
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - under16_unaccompanied_not_allowed
+  id: ro.life.minor_travel_abroad.F06
+- title: minor de 16 ani neînsoțit cu acord
+  facts:
+    minor_age_years: 16
+    travel_companion: unaccompanied
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: conflicting
+    requirements:
+    - req.parents_or_legal_representative_consent
+    emitted_tags:
+    - pfr_age16_operational_conflict
+  id: ro.life.minor_travel_abroad.F07
+- title: minor de 17 ani neînsoțit către țara de reședință
+  facts:
+    minor_age_years: 17
+    travel_companion: unaccompanied
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: true
+    travel_purpose: return_to_residence
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: conflicting
+    requirements:
+    - req.destination_domicile_or_residence_proof
+    emitted_tags:
+    - pfr_age16_operational_conflict
+  id: ro.life.minor_travel_abroad.F08
+- title: tratament medical urgent cu alt însoțitor
+  facts:
+    minor_age_years: 8
+    travel_companion: third_person
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: urgent_medical_treatment
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: needs_confirmation
+    requirements:
+    - req.official_romanian_medical_documents
+    - req.authenticated_parental_consent_for_third_person
+    emitted_tags:
+    - medical_exception_border_review
+  id: ro.life.minor_travel_abroad.F09
+- title: concurs sportiv oficial
+  facts:
+    minor_age_years: 14
+    travel_companion: third_person
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: official_competition
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.organizer_documents
+    - req.one_parent_authenticated_consent
+  id: ro.life.minor_travel_abroad.F10
+- title: declarație semnată în Italia
+  facts:
+    minor_age_years: 10
+    travel_companion: one_parent
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: true
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    requirements:
+    - req.other_parent_authenticated_consent
+    - req.consular_authentication_or_apostille_legalisation
+  id: ro.life.minor_travel_abroad.F11
+- title: are doar certificat de naștere, fără document de călătorie
+  facts:
+    minor_age_years: 10
+    travel_companion: both_parents
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: false
+  expected:
+    status: resolved
+    readiness: missing_document
+    requirements:
+    - req.minor_valid_travel_document
+    emitted_tags:
+    - birth_certificate_not_travel_document
+  id: ro.life.minor_travel_abroad.F12
+- title: fără niciun fapt — motorul cere contextul minim
+  facts: {}
+  expected:
+    status: needs_facts
+    missing_facts:
+    - minor_age_years
+    - travel_companion
+  id: ro.life.minor_travel_abroad.F13
+- title: lipsește faptul obligatoriu minor_age_years
+  facts:
+    travel_companion: both_parents
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: needs_facts
+    missing_facts:
+    - minor_age_years
+  id: ro.life.minor_travel_abroad.F14
+- title: valoare invalidă pentru minor_age_years
+  facts:
+    minor_age_years: __invalid__
+    travel_companion: both_parents
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: needs_facts
+    missing_facts:
+    - minor_age_years
+    emitted_tags:
+    - invalid_enum
+  id: ro.life.minor_travel_abroad.F15
+- title: aceeași situație în alt UAT — regula națională rămâne, canalul Timișoara nu
+  facts: &id001
+    minor_age_years: 10
+    travel_companion: both_parents
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: resolved
+    channels_absent: []
+  id: ro.life.minor_travel_abroad.F16
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- title: dată de referință anterioară ruleset-ului curent
+  facts: *id001
+  expected:
+    status: no_active_ruleset
+  id: ro.life.minor_travel_abroad.F17
+  reference_date: '2005-07-19'
+- title: exact la limita termenului principal
+  facts:
+    minor_age_years: 16
+    travel_companion: unaccompanied
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: conflicting
+    emitted_tags:
+    - pfr_age16_operational_conflict
+  id: ro.life.minor_travel_abroad.F18
+- title: cu o zi după limita termenului principal
+  facts:
+    minor_age_years: 15
+    travel_companion: unaccompanied
+    sole_parental_authority_or_exception: false
+    destination_residence_proved: false
+    travel_purpose: tourism
+    consent_signed_abroad: false
+    has_valid_travel_document: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - under16_unaccompanied_not_allowed
+  id: ro.life.minor_travel_abroad.F19
+- title: sursa operațională locală indisponibilă
+  facts: *id001
+  expected:
+    status: needs_confirmation
+    emitted_tags:
+    - local_channel_unavailable
+  id: ro.life.minor_travel_abroad.F20
+  source_state_overrides:
+    local_operational: source_unavailable
+- title: claim critic hard-expired — efectul critic se blochează
+  facts: *id001
+  expected:
+    status: blocked
+    emitted_tags:
+    - claim_hard_expired
+  id: ro.life.minor_travel_abroad.F21
+  source_state_overrides:
+    critical_claim: hard_expired
+- title: replay idempotent — același input și ruleset
+  facts: *id001
+  expected:
+    status: conflicting
+  id: ro.life.minor_travel_abroad.F22
+  assertions:
+    same_semantic_output: true
+    same_event_plan_hash: true

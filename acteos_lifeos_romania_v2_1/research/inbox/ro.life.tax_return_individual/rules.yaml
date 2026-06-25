@@ -1,0 +1,323 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_TAX_RETURN_INDIVIDUAL
+event_type_id: ro.life.tax_return_individual
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- fiscal_year
+- has_reportable_income
+- income_origin
+- income_category
+- filing_state
+- spv_access
+- prefill_state
+rules:
+- id: rule.b13.d212.prepare
+  canonical_rule_id: individual_tax_return.prepare
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fiscal_year
+      value: 2025
+    - op: eq
+      field: has_reportable_income
+      value: true
+    - op: in
+      field: filing_state
+      values:
+      - not_filed
+      - filed_needs_correction
+  effects:
+  - type: include_step
+    step_id: prepare_d212_individual_tax_return
+  - type: include_requirement
+    requirement_id: req.d212_identity_and_income_data
+  - type: attach_channel
+    channel_id: ch.anaf.d212_web
+  source_claim_ids:
+  - claim.b13.d212.current_form
+  - claim.b13.d212.income_scope
+  status: in_review
+- id: rule.b13.d212.overdue
+  canonical_rule_id: individual_tax_return.deadline_2025
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: fiscal_year
+      value: 2025
+    - op: eq
+      field: has_reportable_income
+      value: true
+    - op: eq
+      field: filing_state
+      value: not_filed
+  effects:
+  - type: emit_warning
+    tag: d212_2025_deadline_passed
+    message_ro: Termenul publicat pentru anul fiscal 2025 a fost 25 mai 2026 inclusiv.
+  - type: require_confirmation
+    tag: confirm_late_d212_consequences
+    message_ro: Confirmă la ANAF consecințele și pașii depunerii tardive pentru situația concretă.
+  source_claim_ids:
+  - claim.b13.d212.deadline_2025
+  - claim.b13.d212.late_consequences_unverified
+  status: in_review
+- id: rule.b13.d212.correct
+  canonical_rule_id: individual_tax_return.already_correct
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: filing_state
+    value: filed_correct
+  effects:
+  - type: include_step
+    step_id: archive_d212_submission_receipt
+  - type: emit_advice
+    tag: d212_already_filed_keep_receipt
+    message_ro: Păstrează recipisa și versiunea declarației depuse.
+  source_claim_ids:
+  - claim.b13.d212.current_form
+  status: in_review
+- id: rule.b13.d212.rectify
+  canonical_rule_id: individual_tax_return.rectify
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: filing_state
+    value: filed_needs_correction
+  effects:
+  - type: include_step
+    step_id: submit_rectifying_d212
+  - type: emit_advice
+    tag: use_d212_rectification_type
+    message_ro: Selectează tipul de rectificare corespunzător datelor corectate.
+  source_claim_ids:
+  - claim.b13.d212.rectification
+  status: in_review
+- id: rule.b13.d212.foreign
+  canonical_rule_id: individual_tax_return.foreign_income
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: income_origin
+    values:
+    - foreign
+    - both
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_income_details_and_tax_evidence
+  - type: include_step
+    step_id: add_foreign_income_to_d212
+  source_claim_ids:
+  - claim.b13.d212.income_scope
+  status: in_review
+- id: rule.b13.d212.withholding
+  canonical_rule_id: individual_tax_return.withholding
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: income_category
+    value: withholding_cass
+  effects:
+  - type: include_requirement
+    requirement_id: req.withholding_income_and_cas_cass_data
+  - type: include_step
+    step_id: add_withholding_income_relevant_to_cas_cass
+  source_claim_ids:
+  - claim.b13.d212.income_scope
+  - claim.b13.d212.current_form
+  status: in_review
+- id: rule.b13.d212.unknown_category
+  canonical_rule_id: individual_tax_return.category
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: income_category
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_d212_income_category
+    message_ro: Identifică tipul fiscal exact al venitului înainte de completare.
+  source_claim_ids:
+  - claim.b13.d212.income_scope
+  status: in_review
+- id: rule.b13.d212.prefill_unverified
+  canonical_rule_id: individual_tax_return.prefill
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: prefill_state
+    value: used_unverified
+  effects:
+  - type: emit_warning
+    tag: d212_prefill_not_tax_confirmation
+    message_ro: Nu transmite declarația doar pe baza datelor precompletate.
+  - type: include_requirement
+    requirement_id: req.verify_and_complete_prefilled_d212_data
+  source_claim_ids:
+  - claim.b13.d212.prefill_responsibility
+  - claim.b13.d212.prefill_not_confirmation
+  status: in_review
+- id: rule.b13.d212.prefill_verified
+  canonical_rule_id: individual_tax_return.prefill
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: prefill_state
+    value: used_verified
+  effects:
+  - type: emit_advice
+    tag: prefill_verified_by_taxpayer
+    message_ro: Datele precompletate au fost verificate de contribuabil înainte de transmitere.
+  source_claim_ids:
+  - claim.b13.d212.prefill_responsibility
+  status: in_review
+- id: rule.b13.d212.prefill_manual
+  canonical_rule_id: individual_tax_return.prefill
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: prefill_state
+    value: not_used
+  effects:
+  - type: emit_advice
+    tag: manual_d212_completion_allowed
+    message_ro: Completează formularul folosind documentele fiscale proprii și verifică totalurile.
+  source_claim_ids:
+  - claim.b13.d212.current_form
+  status: in_review
+- id: rule.b13.d212.prefill_no_spv
+  canonical_rule_id: individual_tax_return.prefill_access
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: prefill_state
+      values:
+      - used_unverified
+      - used_verified
+    - op: eq
+      field: spv_access
+      value: false
+  effects:
+  - type: block
+    tag: d212_prefill_requires_spv_access
+    message_ro: Ruta de precompletare nu este coerentă fără acces SPV confirmat.
+  - type: require_confirmation
+    tag: confirm_spv_access_or_manual_route
+    message_ro: Confirmă accesul SPV ori continuă prin completare fără precompletare.
+  source_claim_ids:
+  - claim.b13.d212.spv_prefill
+  status: in_review
+- id: rule.b13.d212.no_income
+  canonical_rule_id: individual_tax_return.no_reportable_income
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: has_reportable_income
+    value: false
+  effects:
+  - type: emit_advice
+    tag: confirm_optional_cass_or_other_d212_reason
+    message_ro: Lipsa venitului raportabil nu exclude automat opțiunile CASS sau alte motive de depunere.
+  - type: require_confirmation
+    tag: confirm_d212_needed_without_reportable_income
+    message_ro: Verifică dacă există o opțiune CASS ori alt temei de depunere.
+  source_claim_ids:
+  - claim.b13.d212.current_form
+  status: in_review
+- id: rule.b13.d212.other_year
+  canonical_rule_id: individual_tax_return.year
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: fiscal_year
+    value: 2025
+  effects:
+  - type: require_confirmation
+    tag: confirm_d212_form_for_fiscal_year
+    message_ro: Folosește formularul și instrucțiunile aplicabile anului fiscal selectat.
+  source_claim_ids:
+  - claim.b13.d212.current_form
+  status: in_review
+- id: rule.b13.d212.origin_conflict
+  canonical_rule_id: individual_tax_return.origin
+  event_type_id: ro.life.tax_return_individual
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_reportable_income
+      value: true
+    - op: eq
+      field: income_origin
+      value: none
+  effects:
+  - type: flag_conflict
+    tag: reportable_income_without_origin
+    blocked_effect: finalize_d212_income_sections
+    message_ro: Venitul este marcat raportabil, dar nu are origine fiscală selectată.
+  source_claim_ids:
+  - claim.b13.d212.income_scope
+  status: in_review

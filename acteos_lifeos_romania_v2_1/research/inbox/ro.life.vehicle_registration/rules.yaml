@@ -1,0 +1,659 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_VEHICLE_REGISTRATION
+alias_event_type_id: ro.life.vehicle_registration
+event_type_id: life.vehicle_registration
+status: draft
+required_facts:
+- registration_case
+- applicant_county
+- representation_type
+- applicant_type
+- ownership_document_registered_local_tax
+rules:
+- id: rule.vehicle_registration.base.route
+  canonical_rule_id: vehicle_registration.base.route
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: identify_registration_case
+  - type: include_step
+    step_id: prepare_competent_service_application
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_registration.competent_service
+  - claim.vehicle_registration.order_181
+  status: draft
+- id: rule.vehicle_registration.case.new_domestic
+  canonical_rule_id: vehicle_registration.case.new_domestic
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_case
+    value: new_domestic
+  effects:
+  - type: include_step
+    step_id: declare_vehicle_at_local_tax_authority
+  - type: include_step
+    step_id: submit_new_domestic_registration
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.valid_rca_copy_owner_name
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  source_claim_ids:
+  - claim.vehicle_registration.new_domestic_docs
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.case.new_imported
+  canonical_rule_id: vehicle_registration.case.new_imported
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_case
+    value: new_imported
+  effects:
+  - type: include_step
+    step_id: declare_vehicle_at_local_tax_authority
+  - type: include_step
+    step_id: submit_new_imported_registration
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.valid_rca_copy_owner_name
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: emit_advice
+    tag: new_vehicle_authenticity_exempt
+    message_ro: Vehiculul nou este exceptat de la certificatul de autenticitate.
+  source_claim_ids:
+  - claim.vehicle_registration.new_imported_docs
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.case.used_imported
+  canonical_rule_id: vehicle_registration.case.used_imported
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_case
+    value: used_imported
+  effects:
+  - type: include_step
+    step_id: obtain_rar_civ_and_required_checks
+  - type: include_step
+    step_id: declare_vehicle_at_local_tax_authority
+  - type: include_step
+    step_id: submit_used_imported_registration
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.valid_rca_copy_owner_name
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: include_requirement
+    requirement_id: req.foreign_registration_documents_original
+  - type: include_requirement
+    requirement_id: req.foreign_registration_plates
+  - type: include_requirement
+    requirement_id: req.valid_itp
+  - type: include_requirement
+    requirement_id: req.valid_authenticity_certificate
+  source_claim_ids:
+  - claim.vehicle_registration.used_imported_docs
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.case.transcription
+  canonical_rule_id: vehicle_registration.case.transcription
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: registration_case
+    value: ownership_transcription
+  effects:
+  - type: include_step
+    step_id: declare_acquisition_at_local_tax_authority
+  - type: include_step
+    step_id: submit_ownership_transcription
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.previous_registration_certificate_or_substitute
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: include_requirement
+    requirement_id: req.valid_itp
+  - type: include_requirement
+    requirement_id: req.valid_rca_current_owner
+  - type: include_requirement
+    requirement_id: req.previous_plates_or_substitute
+  source_claim_ids:
+  - claim.vehicle_registration.transcription_docs
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.transcription.deadline
+  canonical_rule_id: vehicle_registration.transcription.deadline
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: ownership_transcription
+    - op: exists
+      field: acquisition_date
+  effects:
+  - type: include_step
+    step_id: complete_transcription_within_90_days
+  - type: set_deadline
+    step_id: complete_transcription_within_90_days
+    value:
+      kind: relative_calendar_days
+      anchor: acquisition_date
+      days: 90
+  source_claim_ids:
+  - claim.vehicle_registration.transcription_90
+  status: draft
+- id: rule.vehicle_registration.transcription.plates_transfer
+  canonical_rule_id: vehicle_registration.transcription.plates_transfer
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: ownership_transcription
+    - op: eq
+      field: plates_transfer_automatically
+      value: true
+  effects:
+  - type: exclude_step
+    step_id: deposit_previous_plates
+  - type: emit_advice
+    tag: previous_plates_not_deposited
+    message_ro: Plăcuțele nu se depun atunci când se transferă automat în condițiile publicate.
+  - type: set_requirement_obligation
+    requirement_id: req.previous_plates_or_substitute
+    value: not_required_when_automatic_transfer_confirmed
+  source_claim_ids:
+  - claim.vehicle_registration.plate_transfer_exception
+  status: draft
+- id: rule.vehicle_registration.transcription.no_deregistration
+  canonical_rule_id: vehicle_registration.transcription.no_deregistration
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: ownership_transcription
+    - op: eq
+      field: attempting_deregistration
+      value: true
+  effects:
+  - type: emit_warning
+    tag: domestic_transfer_does_not_require_deregistration
+    message_ro: Transferul unui vehicul deja înmatriculat în România se soluționează prin transcriere, fără radiere
+      prealabilă.
+  - type: exclude_step
+    step_id: request_deregistration
+  source_claim_ids:
+  - claim.vehicle_registration.no_deregistration_domestic_transfer
+  status: draft
+- id: rule.vehicle_registration.vat.eu_nonregistered
+  canonical_rule_id: vehicle_registration.vat.eu_nonregistered
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: registration_case
+      values:
+      - new_imported
+      - used_imported
+    - op: eq
+      field: origin_region
+      value: eu
+    - op: eq
+      field: vat_registered
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.intracommunity_vehicle_vat_certificate
+  source_claim_ids:
+  - claim.vehicle_registration.vat_certificate_intracommunity
+  status: draft
+- id: rule.vehicle_registration.customs.non_eu
+  canonical_rule_id: vehicle_registration.customs.non_eu
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: registration_case
+      values:
+      - new_imported
+      - used_imported
+    - op: eq
+      field: origin_region
+      value: non_eu
+  effects:
+  - type: include_requirement
+    requirement_id: req.customs_clearance_and_import_tax_evidence
+  - type: require_confirmation
+    tag: customs_document_set
+    message_ro: Confirmă documentele vamale românești și situația plății/scutirii înaintea depunerii dosarului.
+  source_claim_ids:
+  - claim.vehicle_registration.non_eu_duty_vat
+  status: draft
+- id: rule.vehicle_registration.fiscal.not_registered
+  canonical_rule_id: vehicle_registration.fiscal.not_registered
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: ownership_document_registered_local_tax
+    value: false
+  effects:
+  - type: block
+    code: ownership_not_registered_local_tax
+    message_ro: Actul de proprietate trebuie să fie înregistrat la organul fiscal local pentru cazurile care implică
+      dobândirea proprietății.
+  source_claim_ids:
+  - claim.vehicle_registration.new_domestic_docs
+  - claim.vehicle_registration.new_imported_docs
+  - claim.vehicle_registration.used_imported_docs
+  - claim.vehicle_registration.transcription_docs
+  status: draft
+- id: rule.vehicle_registration.timis.counter_fiscal
+  canonical_rule_id: vehicle_registration.timis.counter_fiscal
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: counter
+    - op: eq
+      field: ownership_document_registered_local_tax
+      value: true
+  effects:
+  - type: emit_advice
+    tag: timis_counter_fiscal_document_rule
+    message_ro: În Timiș, la înmatriculare/transcriere la ghișeu, actul de proprietate înregistrat fiscal poate
+      evita certificatul fiscal separat.
+  source_claim_ids:
+  - claim.vehicle_registration.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_registration.timis.online_transcription
+  canonical_rule_id: vehicle_registration.timis.online_transcription
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: online
+    - op: eq
+      field: registration_case
+      value: ownership_transcription
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_fiscal_clearance_certificate_all_obligations_paid
+  source_claim_ids:
+  - claim.vehicle_registration.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_registration.online.other_cases
+  canonical_rule_id: vehicle_registration.online.other_cases
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_mode
+      value: online
+    - op: neq
+      field: registration_case
+      value: ownership_transcription
+  effects:
+  - type: require_confirmation
+    tag: online_service_availability_for_case
+    message_ro: Confirmă dacă operațiunea concretă este disponibilă integral online; pagina analizată nu publică
+      aceeași disponibilitate pentru toate cazurile.
+  source_claim_ids:
+  - claim.vehicle_registration.competent_service
+  status: draft
+- id: rule.vehicle_registration.rca.invalid
+  canonical_rule_id: vehicle_registration.rca.invalid
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: rca_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_rca
+    message_ro: RCA valabilă pe numele persoanei cerute de procedură este necesară.
+  source_claim_ids:
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.civ.invalid
+  canonical_rule_id: vehicle_registration.civ.invalid
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: civ_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_civ
+    message_ro: CIV valabilă este necesară.
+  source_claim_ids:
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.itp.invalid
+  canonical_rule_id: vehicle_registration.itp.invalid
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: registration_case
+      values:
+      - used_imported
+      - ownership_transcription
+    - op: eq
+      field: itp_valid
+      value: false
+  effects:
+  - type: block
+    code: invalid_itp
+    message_ro: ITP valabilă este necesară pentru vehiculul utilizat/transcriere.
+  source_claim_ids:
+  - claim.vehicle_registration.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration.foreign_docs.missing
+  canonical_rule_id: vehicle_registration.foreign_docs.missing
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: used_imported
+    - op: eq
+      field: foreign_registration_documents_available
+      value: false
+  effects:
+  - type: block
+    code: missing_foreign_registration_documents
+    message_ro: Documentele de înmatriculare străine și plăcuțele sunt cerute pentru vehiculul uzat importat.
+  source_claim_ids:
+  - claim.vehicle_registration.used_imported_docs
+  status: draft
+- id: rule.vehicle_registration.fees
+  canonical_rule_id: vehicle_registration.fees
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: registration_certificate_fee_49
+    message_ro: Contravaloarea publicată a certificatului de înmatriculare este 49 lei.
+  - type: emit_advice
+    tag: standard_plate_a_pair_fee_52
+    message_ro: Pentru perechea de plăcuțe tip A este publicată valoarea de 52 lei.
+  source_claim_ids:
+  - claim.vehicle_registration.fee_certificate
+  - claim.vehicle_registration.fee_plate_a_pair
+  status: draft
+- id: rule.vehicle_registration.identity.individual
+  canonical_rule_id: vehicle_registration.identity.individual
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.vehicle_registration.representation_forms
+  status: draft
+- id: rule.vehicle_registration.identity.company
+  canonical_rule_id: vehicle_registration.identity.company
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.vehicle_registration.representation_forms
+  status: draft
+- id: rule.vehicle_registration.representation.lawyer
+  canonical_rule_id: vehicle_registration.representation.lawyer
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.vehicle_registration.representation_forms
+  status: draft
+- id: rule.vehicle_registration.representation.authorized_individual
+  canonical_rule_id: vehicle_registration.representation.authorized_individual
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.vehicle_registration.representation_forms
+  status: draft
+- id: rule.vehicle_registration.representation.company_delegate
+  canonical_rule_id: vehicle_registration.representation.company_delegate
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.vehicle_registration.representation_forms
+  status: draft
+- id: rule.vehicle_registration.payment.proof
+  canonical_rule_id: vehicle_registration.payment.proof
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.registration_and_plate_payment_proof
+  source_claim_ids:
+  - claim.vehicle_registration.new_domestic_docs
+  status: draft
+- id: rule.vehicle_registration.payment.snep
+  canonical_rule_id: vehicle_registration.payment.snep
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: true
+  effects:
+  - type: emit_advice
+    tag: snep_payment_proof_exception
+    message_ro: Dovada plății nu se depune atunci când plata este identificată prin SNEP, potrivit procedurii publicate.
+  source_claim_ids:
+  - claim.vehicle_registration.new_domestic_docs
+  status: draft
+- id: rule.vehicle_registration.channel.timis
+  canonical_rule_id: vehicle_registration.channel.timis
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_verified_channel
+    message_ro: Pentru pilotul Timiș este publicat canalul SPCRPCIV Timiș și legătura DGPCI pentru programare/informare.
+  source_claim_ids:
+  - claim.vehicle_registration.timis_contact
+  status: draft
+- id: rule.vehicle_registration.channel.other_county
+  canonical_rule_id: vehicle_registration.channel.other_county
+  event_type_id: life.vehicle_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și particularitățile locale pentru înmatriculare sau transcriere
+      în județul competent.
+  source_claim_ids:
+  - claim.vehicle_registration.competent_service
+  status: draft

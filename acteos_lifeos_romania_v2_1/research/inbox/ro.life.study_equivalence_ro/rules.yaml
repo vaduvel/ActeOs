@@ -1,0 +1,362 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.study_equivalence_ro
+status: draft
+rules:
+- id: rule.eq.required_facts
+  canonical_rule_id: eq.required_facts
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  required_facts:
+  - study_level
+  - applicant_citizenship
+  - issuing_country_group
+  - document_language
+  - purpose
+  - regulated_profession
+  - dossier_complete
+  - procedure_channel
+  - reference_date
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.eq.select_procedure
+  source_claim_ids:
+  - claim.eq.preuniversity_scope
+  - claim.eq.university_scope
+  status: draft
+- id: rule.eq.bac
+  canonical_rule_id: eq.bac
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: study_level
+    value: bac
+  effects:
+  - type: attach_channel
+    channel_id: ch.eq.bac
+  - type: include_step
+    step_id: step.eq.prepare_dossier
+  - type: include_requirement
+    requirement_id: req.eq.diploma
+  - type: include_requirement
+    requirement_id: req.eq.identity
+  source_claim_ids:
+  - claim.eq.bac_channels
+  - claim.eq.bac_documents
+  status: draft
+- id: rule.eq.bachelor
+  canonical_rule_id: eq.bachelor
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: study_level
+    value: bachelor
+  effects:
+  - type: attach_channel
+    channel_id: ch.eq.bachelor
+  - type: include_step
+    step_id: step.eq.prepare_dossier
+  - type: include_requirement
+    requirement_id: req.eq.diploma
+  - type: include_requirement
+    requirement_id: req.eq.transcript
+  source_claim_ids:
+  - claim.eq.bachelor_documents
+  status: draft
+- id: rule.eq.school_years
+  canonical_rule_id: eq.school_years
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: study_level
+    value: school_years
+  effects:
+  - type: attach_channel
+    channel_id: ch.eq.pre
+  - type: require_confirmation
+    tag: school_years_isj_route
+    message_ro: Pentru echivalarea anilor I-XII, confirmă ruta exactă CNRED/inspectorat și documentele nivelului concret.
+  source_claim_ids:
+  - claim.eq.preuniversity_scope
+  status: in_review
+- id: rule.eq.eu_auto
+  canonical_rule_id: eq.eu_auto
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: issuing_country_group
+    value: eu_eea_swiss
+  effects:
+  - type: emit_advice
+    tag: eu_automatic_level
+    message_ro: Nivelul diplomei poate beneficia de recunoaștere automată, dar dosarul și scopul rămân obligatoriu de verificat.
+  source_claim_ids:
+  - claim.eq.eu_automatic
+  status: draft
+- id: rule.eq.auth_required
+  canonical_rule_id: eq.auth_required
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: issuing_country_group
+      values:
+      - hague_apostille
+      - other
+    - op: eq
+      field: authentication_complete
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.eq.verify_authentication
+  - type: include_requirement
+    requirement_id: req.eq.authentication
+  - type: block
+    tag: authentication_missing
+    message_ro: Formalitatea de autentificare aplicabilă statului emitent nu este completă.
+  source_claim_ids:
+  - claim.eq.bac_documents
+  - claim.eq.bachelor_documents
+  status: draft
+- id: rule.eq.translation
+  canonical_rule_id: eq.translation
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_language
+    value: other
+  effects:
+  - type: include_step
+    step_id: step.eq.prepare_translation
+  - type: include_requirement
+    requirement_id: req.eq.translation
+  source_claim_ids:
+  - claim.eq.bac_documents
+  - claim.eq.bachelor_documents
+  status: draft
+- id: rule.eq.name_change
+  canonical_rule_id: eq.name_change
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: name_changed
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.eq.name_change
+  source_claim_ids:
+  - claim.eq.bac_documents
+  - claim.eq.bachelor_documents
+  status: draft
+- id: rule.eq.complete_term
+  canonical_rule_id: eq.complete_term
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: dossier_complete
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.eq.submit
+  - type: include_step
+    step_id: step.eq.track_term
+  - type: set_deadline
+    step_id: step.eq.track_term
+    value:
+      kind: working_days_from_complete_file
+      days: 30
+  source_claim_ids:
+  - claim.eq.preuniversity_term
+  - claim.eq.university_scope
+  status: draft
+- id: rule.eq.incomplete
+  canonical_rule_id: eq.incomplete
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: dossier_complete
+    value: false
+  effects:
+  - type: block
+    tag: dossier_incomplete
+    message_ro: Termenul de soluționare nu se calculează ca pentru un dosar complet; completează actele solicitate.
+  source_claim_ids:
+  - claim.eq.preuniversity_term
+  - claim.eq.university_scope
+  status: draft
+- id: rule.eq.regulated
+  canonical_rule_id: eq.regulated
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: regulated_profession
+      value: true
+    - op: eq
+      field: issuing_country_group
+      value: eu_eea_swiss
+  effects:
+  - type: block
+    tag: use_competent_professional_authority
+    message_ro: Pentru profesia reglementată folosește autoritatea profesională competentă, nu ruta generică CNRED.
+  - type: emit_advice
+    tag: regulated_profession_redirect
+    message_ro: Identifică autoritatea competentă din lista oficială pentru profesia concretă.
+  source_claim_ids:
+  - claim.eq.regulated_profession
+  status: draft
+- id: rule.eq.bac_contest
+  canonical_rule_id: eq.bac_contest
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: study_level
+      value: bac
+    - op: eq
+      field: decision_contested
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.eq.contest
+  - type: set_deadline
+    step_id: step.eq.contest
+    value:
+      submit_within_working_days: 45
+      resolve_within_working_days: 60
+  source_claim_ids:
+  - claim.eq.bac_contest
+  status: draft
+- id: rule.eq.bachelor_contest
+  canonical_rule_id: eq.bachelor_contest
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: study_level
+      value: bachelor
+    - op: eq
+      field: decision_contested
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.eq.contest
+  - type: set_deadline
+    step_id: step.eq.contest
+    value:
+      submit_within_working_days: 30
+      resolve_within_working_days: 60
+  source_claim_ids:
+  - claim.eq.bachelor_contest
+  status: draft
+- id: rule.eq.fee
+  canonical_rule_id: eq.fee
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: fee_requested_by_channel
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: fee_unverified
+    message_ro: Nu plăti și nu afișa o taxă până când suma și contul nu sunt confirmate pe procedura oficială exactă.
+  source_claim_ids:
+  - claim.eq.fee_unverified
+  status: in_review
+- id: rule.eq.university_channel
+  canonical_rule_id: eq.university_channel
+  event_type_id: life.study_equivalence_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: study_level
+    values:
+    - bachelor
+    - master
+    - doctorate
+  effects:
+  - type: attach_channel
+    channel_id: ch.eq.uni
+  source_claim_ids:
+  - claim.eq.university_scope
+  status: draft

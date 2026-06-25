@@ -1,0 +1,368 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B05_EDUCATION_1
+event_type_id: life.preschool_enrollment
+status: draft
+rules:
+- id: rule.preschool.required_facts
+  canonical_rule_id: preschool.required_facts
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  required_facts:
+  - child.birth_date
+  - reference_date
+  - enrollment_mode
+  - target_unit_id
+  - local_dataset_verified
+  severity: critical
+  effective_from: '2026-04-28'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.preschool.identify_stage
+  source_claim_ids:
+  - claim.preschool.age_range
+  - claim.preschool.dossier
+  - claim.preschool.validation
+  status: draft
+- id: rule.preschool.age_eligible
+  canonical_rule_id: preschool.age_eligible
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: age_band
+    value: 3–6 ani
+  effects:
+  - type: include_step
+    step_id: step.preschool.verify_unit
+  - type: include_step
+    step_id: step.preschool.prepare_dossier
+  source_claim_ids:
+  - claim.preschool.age_range
+  status: draft
+- id: rule.preschool.age_outside
+  canonical_rule_id: preschool.age_outside
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: age_eligible
+    value: false
+  effects:
+  - type: block
+    tag: age_not_eligible
+    message_ro: Vârsta nu intră în intervalul național 3–6 ani; nu continua pe acest traseu fără o excepție oficială.
+  source_claim_ids:
+  - claim.preschool.age_range
+  status: draft
+- id: rule.preschool.reenrollment
+  canonical_rule_id: preschool.reenrollment
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-05-18'
+  effective_to: '2026-05-22'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: enrollment_mode
+      value: reenrollment
+    - op: eq
+      field: same_unit_continuity
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.preschool.submit
+  - type: set_deadline
+    step_id: step.preschool.submit
+    value:
+      kind: window
+      from: '2026-05-18'
+      to: '2026-05-22'
+  - type: emit_warning
+    tag: reenrollment_window
+    message_ro: Fereastra standard de reînscriere a fost 18-22 mai 2026.
+  source_claim_ids:
+  - claim.preschool.calendar.reenrollment
+  status: draft
+- id: rule.preschool.stage1
+  canonical_rule_id: preschool.stage1
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-05-25'
+  effective_to: '2026-05-29'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-05-25'
+    - '2026-05-29'
+  effects:
+  - type: include_step
+    step_id: step.preschool.submit
+  - type: include_step
+    step_id: step.preschool.validate
+  - type: include_requirement
+    requirement_id: req.preschool.originals
+  - type: set_deadline
+    step_id: step.preschool.submit
+    value:
+      kind: window
+      from: '2026-05-25'
+      to: '2026-05-29'
+  source_claim_ids:
+  - claim.preschool.calendar.stage1_collection
+  - claim.preschool.validation
+  status: draft
+- id: rule.preschool.stage2
+  canonical_rule_id: preschool.stage2
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-22'
+  effective_to: '2026-06-26'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-06-22'
+    - '2026-06-26'
+  effects:
+  - type: include_step
+    step_id: step.preschool.submit
+  - type: include_step
+    step_id: step.preschool.validate
+  - type: include_requirement
+    requirement_id: req.preschool.originals
+  - type: set_deadline
+    step_id: step.preschool.submit
+    value:
+      kind: window
+      from: '2026-06-22'
+      to: '2026-06-26'
+  - type: emit_advice
+    tag: stage2_new_options
+    message_ro: Etapa a II-a folosește o nouă cerere cu trei opțiuni, pe locurile rămase.
+  source_claim_ids:
+  - claim.preschool.calendar.stage2_collection
+  - claim.preschool.dossier
+  - claim.preschool.validation
+  status: draft
+- id: rule.preschool.adjustment
+  canonical_rule_id: preschool.adjustment
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-08-17'
+  effective_to: '2026-08-27'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2026-08-17'
+    - '2026-08-27'
+  effects:
+  - type: include_step
+    step_id: step.preschool.submit
+  - type: attach_channel
+    channel_id: ch.preschool.isjtm
+  - type: set_deadline
+    step_id: step.preschool.submit
+    value:
+      kind: window
+      from: '2026-08-17'
+      to: '2026-08-27'
+  source_claim_ids:
+  - claim.preschool.calendar.adjustment
+  status: draft
+- id: rule.preschool.remote
+  canonical_rule_id: preschool.remote_submission
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: in
+    field: submission_channel
+    values:
+    - email
+    - post
+  effects:
+  - type: include_requirement
+    requirement_id: req.preschool.remote_declaration
+  - type: include_step
+    step_id: step.preschool.validate
+  - type: include_requirement
+    requirement_id: req.preschool.originals
+  source_claim_ids:
+  - claim.preschool.dossier
+  - claim.preschool.validation
+  status: draft
+- id: rule.preschool.employment_docs
+  canonical_rule_id: preschool.employment_docs
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: program_type
+      value: extended
+    - op: const
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.preschool.employment
+  source_claim_ids:
+  - claim.preschool.dossier
+  status: draft
+- id: rule.preschool.criteria
+  canonical_rule_id: preschool.criteria_documents
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: criteria_invoked
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.preschool.criteria
+  - type: emit_warning
+    tag: not_first_come
+    message_ro: Numărul de înregistrare nu acordă prioritate; se aplică criteriile oficiale.
+  source_claim_ids:
+  - claim.preschool.selection.criteria
+  status: draft
+- id: rule.preschool.divorce
+  canonical_rule_id: preschool.parental_authority
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: parents_divorced
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.preschool.parental_authority
+  source_claim_ids:
+  - claim.preschool.dossier
+  status: draft
+- id: rule.preschool.medical
+  canonical_rule_id: preschool.medical_documents
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2026-05-10'
+  when:
+    op: eq
+    field: application_accepted
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.preschool.medical
+  - type: include_requirement
+    requirement_id: req.preschool.medical
+  - type: emit_advice
+    tag: medical_timing
+    message_ro: Nu obține avizul epidemiologic mai devreme de fereastra de maximum 5 zile.
+  source_claim_ids:
+  - claim.preschool.medical
+  status: draft
+- id: rule.preschool.local_gap
+  canonical_rule_id: preschool.local_gap
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: county
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: local_dataset_verified
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: local_unit_data
+    message_ro: Confirmă pe sursa oficială a unității locurile, programul, criteriile și programarea curente; nu afișa o recomandare
+      fermă.
+  source_claim_ids:
+  - claim.preschool.local_publication_duty
+  - claim.preschool.timis.local_dataset
+  status: in_review
+- id: rule.preschool.stage1_result
+  canonical_rule_id: preschool.stage1_result
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-18'
+  effective_to: '2026-06-18'
+  when:
+    op: eq
+    field: reference_date
+    value: '2026-06-18'
+  effects:
+  - type: include_step
+    step_id: step.preschool.check_result
+  source_claim_ids:
+  - claim.preschool.calendar.stage1_result
+  status: draft
+- id: rule.preschool.stage2_result
+  canonical_rule_id: preschool.stage2_result
+  event_type_id: life.preschool_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-07-09'
+  effective_to: '2026-07-09'
+  when:
+    op: eq
+    field: reference_date
+    value: '2026-07-09'
+  effects:
+  - type: include_step
+    step_id: step.preschool.check_result
+  source_claim_ids:
+  - claim.preschool.calendar.stage2_result
+  status: draft

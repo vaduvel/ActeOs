@@ -1,0 +1,418 @@
+batch_id: B09_EVENT_PUBLIC_SPACE_AUTHORISATION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.event_public_space_authorisation
+  event_alias: ro.life.event_public_space_authorisation
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: eveniment generic pe domeniul public
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - classify_event_and_public_space_use
+    - select_timisoara_event_case
+    - submit_timisoara_event_request
+    confirmations:
+    - event_case_documents
+    - event_processing_deadline
+    - event_fee_amount
+  reference_date: '2026-06-25'
+- id: F02
+  desc: festival exterior, împrejmuit, cu bilet
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: true
+    special_event_branch: true
+    event_start_date: '2026-08-15'
+  expect:
+    status: conflicting
+    included_steps:
+    - assess_limited_access_outdoor_event_tax
+    - submit_before_event_start
+    blocks:
+    - exact_special_event_documents_unconfirmed
+    conflicts:
+    - event_documentation_basis_2025_2026
+  reference_date: '2026-06-25'
+- id: F03
+  desc: concert exterior neîmprejmuit
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: false
+    public_access_limited: true
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    not_included:
+    - assess_limited_access_outdoor_event_tax
+    advice:
+    - special_tax_cumulative_conditions_not_met
+  reference_date: '2026-06-25'
+- id: F04
+  desc: târg exterior gratuit
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    advice:
+    - special_tax_cumulative_conditions_not_met
+  reference_date: '2026-06-25'
+- id: F05
+  desc: eveniment interior
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    not_included:
+    - assess_limited_access_outdoor_event_tax
+  reference_date: '2026-06-25'
+- id: F06
+  desc: adunare publică/protest
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_assembly_or_protest
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_timisoara_event_case
+    confirmations:
+    - public_assembly_documents_and_deadline
+    - event_case_documents
+  reference_date: '2026-06-25'
+- id: F07
+  desc: eveniment fără domeniu public
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: false
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_timisoara_event_request
+    advice:
+    - public_space_authorisation_not_triggered
+  reference_date: '2026-06-25'
+- id: F08
+  desc: organizator persoană fizică
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: natural_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - classify_event_and_public_space_use
+  reference_date: '2026-06-25'
+- id: F09
+  desc: special branch, data viitoare
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: true
+    special_event_branch: true
+    event_start_date: '2026-12-01'
+  expect:
+    status: conflicting
+    included_steps:
+    - submit_before_event_start
+    conflicts:
+    - event_documentation_basis_2025_2026
+  reference_date: '2026-06-25'
+- id: F10
+  desc: special branch, eveniment început
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: true
+    special_event_branch: true
+    event_start_date: '2026-06-20'
+  expect:
+    status: conflicting
+    blocks:
+    - exact_special_event_documents_unconfirmed
+    conflicts:
+    - event_documentation_basis_2025_2026
+    note: Nu se inventează autorizarea retroactivă.
+  reference_date: '2026-06-25'
+- id: F11
+  desc: alt UAT
+  facts:
+    jurisdiction_id: ro.cj.cluj
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - other_uat_event_authorisation
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F12
+  desc: lipsește jurisdicția
+  facts:
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+  reference_date: '2026-06-25'
+- id: F13
+  desc: lipsește tipul organizatorului
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - organizer_type
+  reference_date: '2026-06-25'
+- id: F14
+  desc: lipsește tipul evenimentului
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - event_type
+  reference_date: '2026-06-25'
+- id: F15
+  desc: lipsește utilizarea domeniului public
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - uses_public_domain
+  reference_date: '2026-06-25'
+- id: F16
+  desc: festival, delimitarea necunoscută
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_access_limited: true
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - public_place_delimited
+  reference_date: '2026-06-25'
+- id: F17
+  desc: festival, accesul necunoscut
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - public_access_limited
+  reference_date: '2026-06-25'
+- id: F18
+  desc: eveniment cultural cu abonament
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: true
+    special_event_branch: true
+    event_start_date: '2026-08-15'
+    access_mode: subscription
+  expect:
+    status: conflicting
+    conflicts:
+    - event_documentation_basis_2025_2026
+  reference_date: '2026-06-25'
+- id: F19
+  desc: festival cu taxă de participare
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: true
+    special_event_branch: true
+    event_start_date: '2026-08-15'
+    access_mode: participation_fee
+  expect:
+    status: conflicting
+    conflicts:
+    - event_documentation_basis_2025_2026
+  reference_date: '2026-06-25'
+- id: F20
+  desc: eveniment gratuit delimitat și exterior
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: true
+    public_place_delimited: true
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    not_included:
+    - assess_limited_access_outdoor_event_tax
+  reference_date: '2026-06-25'
+- id: F21
+  desc: cerere finalizată cu notificare e-mail
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+    request_finalised: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_timisoara_event_request
+    note: Canalul confirmă notificarea, nu durata de soluționare.
+  reference_date: '2026-06-25'
+- id: F22
+  desc: eveniment în alt stat
+  facts:
+    jurisdiction_id: it.mi.milano
+    organizer_type: legal_person
+    event_type: public_domain_event
+    uses_public_domain: true
+    is_outdoor_cultural_event: false
+    public_place_delimited: false
+    public_access_limited: false
+    special_event_branch: false
+    event_start_date: '2026-08-15'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - other_uat_event_authorisation
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - it
+  - it.mi
+  - it.mi.milano

@@ -1,0 +1,278 @@
+batch_id: B07_CHANGE_CORRESPONDENCE_ADDRESS
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.change_correspondence_address
+  event_alias: ro.life.change_correspondence_address
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: doar corespondență la DFMT Timișoara
+  facts:
+    change_scope: correspondence_only
+    target_institution: dfmt_timisoara
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_dfmt_personal_data_correction
+    not_included:
+    - update_identity_card
+    - register_residence
+- id: F02
+  desc: doar corespondență la ANAF
+  facts:
+    change_scope: correspondence_only
+    target_institution: anaf
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_target_institution_for_correspondence_update
+    confirmations:
+    - institution_specific_correspondence
+- id: F03
+  desc: doar corespondență la bancă
+  facts:
+    change_scope: correspondence_only
+    target_institution: bank
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_confirmation
+    not_included:
+    - update_identity_card
+- id: F04
+  desc: doar corespondență la asigurător
+  facts:
+    change_scope: correspondence_only
+    target_institution: insurer
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_target_institution_for_correspondence_update
+- id: F05
+  desc: doar corespondență la sănătate
+  facts:
+    change_scope: correspondence_only
+    target_institution: health
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_target_institution_for_correspondence_update
+- id: F06
+  desc: DFMT, dar alt UAT
+  facts:
+    change_scope: correspondence_only
+    target_institution: dfmt_timisoara
+    jurisdiction_id: ro.cj.cluj
+    has_address_proof: true
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.dfmt.atlas.correct_data
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F07
+  desc: schimbare domiciliu
+  facts:
+    change_scope: domicile
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    has_address_proof: true
+  expect:
+    status: resolved
+    included_steps:
+    - update_identity_card
+    deadlines:
+      update_identity_card: '2026-07-05'
+- id: F08
+  desc: domiciliu fără dovadă
+  facts:
+    change_scope: domicile
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    has_address_proof: false
+  expect:
+    status: resolved
+    requirements:
+    - req.address_proof
+- id: F09
+  desc: domiciliu fără data mutării
+  facts:
+    change_scope: domicile
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - move_date
+- id: F10
+  desc: reședință 16 zile/lună
+  facts:
+    change_scope: residence
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    days_per_month_at_new_address: 16
+    has_address_proof: true
+  expect:
+    status: resolved
+    included_steps:
+    - register_residence
+    deadlines:
+      register_residence: '2026-07-05'
+- id: F11
+  desc: reședință exact 15 zile/lună
+  facts:
+    change_scope: residence
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    days_per_month_at_new_address: 15
+    has_address_proof: true
+  expect:
+    status: resolved
+    not_included:
+    - register_residence
+    advice:
+    - residence_threshold_not_met
+- id: F12
+  desc: reședință 0 zile/lună
+  facts:
+    change_scope: residence
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    days_per_month_at_new_address: 0
+    has_address_proof: true
+  expect:
+    status: resolved
+    not_included:
+    - register_residence
+- id: F13
+  desc: reședință 31 zile/lună invalid
+  facts:
+    change_scope: residence
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    days_per_month_at_new_address: 31
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_per_month_at_new_address
+    note: valoare în afara domeniului 0-31
+- id: F14
+  desc: lipsește scope
+  facts:
+    target_institution: dfmt_timisoara
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_scope
+- id: F15
+  desc: lipsește instituția țintă
+  facts:
+    change_scope: correspondence_only
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - target_institution
+- id: F16
+  desc: lipsește jurisdicția pentru DFMT
+  facts:
+    change_scope: correspondence_only
+    target_institution: dfmt_timisoara
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+- id: F17
+  desc: scope invalid
+  facts:
+    change_scope: postal
+    target_institution: dfmt_timisoara
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_scope
+- id: F18
+  desc: doar corespondență fără dovadă
+  facts:
+    change_scope: correspondence_only
+    target_institution: dfmt_timisoara
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - dfmt_correspondence_field
+- id: F19
+  desc: reședință fără număr de zile
+  facts:
+    change_scope: residence
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-20'
+    has_address_proof: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_per_month_at_new_address
+- id: F20
+  desc: corespondență la instituție generică
+  facts:
+    change_scope: correspondence_only
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    has_address_proof: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - contact_target_institution_for_correspondence_update
+- id: F21
+  desc: schimbare domiciliu astăzi
+  facts:
+    change_scope: domicile
+    target_institution: other
+    jurisdiction_id: ro.tm.timisoara
+    move_date: '2026-06-25'
+    has_address_proof: true
+  expect:
+    status: resolved
+    deadlines:
+      update_identity_card: '2026-07-10'
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - change_scope
+    - target_institution

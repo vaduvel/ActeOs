@@ -1,0 +1,396 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.preschool_enrollment
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: PRE01
+  desc: eligibil, etapă II, depunere fizică
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2022-03-01'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    included_steps:
+    - step.preschool.submit
+    - step.preschool.validate
+- id: PRE02
+  desc: lipsă data nașterii
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: needs_facts
+    missing_facts:
+    - child.birth_date
+- id: PRE03
+  desc: lipsă unitate
+  facts:
+    target_unit_id: null
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: needs_facts
+    missing_facts:
+    - target_unit_id
+- id: PRE04
+  desc: vârstă în afara intervalului
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2020-01-01'
+    age_eligible: false
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: blocked
+    blocks:
+    - age_not_eligible
+- id: PRE05
+  desc: reînscriere în fereastra oficială
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-05-20'
+    enrollment_mode: reenrollment
+    same_unit_continuity: true
+  expect:
+    status: ready
+    deadlines:
+    - 2026-05-18/2026-05-22
+- id: PRE06
+  desc: reînscriere după închiderea ferestrei
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: reenrollment
+    same_unit_continuity: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - reenrollment_window
+- id: PRE07
+  desc: etapa I activă
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-05-27'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    deadlines:
+    - 2026-05-25/2026-05-29
+- id: PRE08
+  desc: etapa II activă
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-22'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    warnings:
+    - stage2_new_options
+- id: PRE09
+  desc: ajustări active
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-08-20'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    channels:
+    - ch.preschool.isjtm
+- id: PRE10
+  desc: între etapa II și ajustări
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-07-20'
+    enrollment_mode: new_enrollment
+  expect:
+    status: needs_confirmation
+    note: nu există fereastră standard de colectare
+- id: PRE11
+  desc: depunere prin e-mail
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: email
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    requirements:
+    - req.preschool.remote_declaration
+    - req.preschool.originals
+- id: PRE12
+  desc: depunere prin poștă
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: post
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    requirements:
+    - req.preschool.remote_declaration
+- id: PRE13
+  desc: program prelungit
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: extended
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    requirements:
+    - req.preschool.employment
+- id: PRE14
+  desc: criterii invocate
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+    criteria_invoked: true
+  expect:
+    status: ready
+    requirements:
+    - req.preschool.criteria
+    warnings:
+    - not_first_come
+- id: PRE15
+  desc: părinți divorțați
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+    parents_divorced: true
+  expect:
+    status: ready
+    requirements:
+    - req.preschool.parental_authority
+- id: PRE16
+  desc: date locale neverificate
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: false
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - local_unit_data
+- id: PRE17
+  desc: alt UAT
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.cj
+    - ro.cj.cluj_napoca
+- id: PRE18
+  desc: cerere acceptată, documente medicale
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-08-30'
+    enrollment_mode: new_enrollment
+    application_accepted: true
+  expect:
+    status: ready
+    requirements:
+    - req.preschool.medical
+    warnings:
+    - medical_timing
+- id: PRE19
+  desc: cerere neacceptată încă
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-25'
+    enrollment_mode: new_enrollment
+    application_accepted: false
+  expect:
+    status: ready
+    requirements_absent:
+    - req.preschool.medical
+- id: PRE20
+  desc: data de referință lipsă
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    enrollment_mode: new_enrollment
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: PRE21
+  desc: mod înscriere lipsă
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_facts
+    missing_facts:
+    - enrollment_mode
+- id: PRE22
+  desc: exact prima zi etapa II
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-06-22'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    included_steps:
+    - step.preschool.submit
+- id: PRE23
+  desc: exact ultima zi formală etapa II
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-07-09'
+    enrollment_mode: new_enrollment
+  expect:
+    status: ready
+    included_steps:
+    - step.preschool.check_result
+- id: PRE24
+  desc: după finalizarea ajustărilor
+  facts:
+    target_unit_id: unit.tm.001
+    program_type: normal
+    submission_channel: physical
+    local_dataset_verified: true
+    child.birth_date: '2024-01-10'
+    age_band: 3–6 ani
+    age_eligible: true
+    reference_date: '2026-09-10'
+    enrollment_mode: new_enrollment
+  expect:
+    status: needs_confirmation
+    note: înscrierea în cursul anului este doar în situațiile oficial prevăzute

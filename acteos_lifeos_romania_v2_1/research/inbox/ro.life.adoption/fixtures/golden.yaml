@@ -1,0 +1,322 @@
+batch_id: B03_ADOPTION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.adoption
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: A01
+  desc: Începutul procesului în Timiș
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - start_adoption_guidance
+    channels:
+    - ch.dgaspctm.adoption
+    advice_tags:
+    - adoption_information_and_preparation
+- id: A02
+  desc: Etapa de evaluare
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: evaluation
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - complete_adopter_evaluation
+    needs_confirmation:
+    - confirm_attestation_dossier
+- id: A03
+  desc: Potrivire cu atestat valabil și copil identificat prin procedură
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: matching
+    has_valid_attestation: true
+    child_identified: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - participate_in_adoption_matching
+    advice_tags:
+    - matching_by_dgaspc
+- id: A04
+  desc: Potrivire fără atestat valabil
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: matching
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - complete_adopter_evaluation
+    warnings_present:
+    - valid_attestation_needed_before_matching
+    needs_confirmation:
+    - confirm_attestation_status
+- id: A05
+  desc: Atestat valabil, copil încă neidentificat
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: matching
+    has_valid_attestation: true
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - matching_waits_for_authority_process
+- id: A06
+  desc: Încredințare în vederea adopției
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: placement
+    has_valid_attestation: true
+    child_identified: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - complete_placement_monitoring
+    advice_tags:
+    - placement_monitoring_biweekly
+- id: A07
+  desc: Monitorizare postadopție
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: post_adoption
+    has_valid_attestation: true
+    child_identified: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - complete_post_adoption_monitoring
+    advice_tags:
+    - post_adoption_monitoring_quarterly
+- id: A08
+  desc: Adopție definitivă
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: finalized
+    has_valid_attestation: true
+    child_identified: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - create_new_birth_record_after_adoption
+    requirements:
+    - req.final_adoption_judgment
+    needs_confirmation:
+    - confirm_adoption_birth_record_office
+- id: A09
+  desc: Adopția copilului soțului
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: spouse_child
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_special_adoption_type_route
+- id: A10
+  desc: Adopție internațională
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: international
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_special_adoption_type_route
+- id: A11
+  desc: Tip de adopție neclar
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: unknown
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_special_adoption_type_route
+- id: A12
+  desc: Domiciliu în alt județ
+  facts:
+    applicant_domicile_county: other_ro
+    adoption_type: domestic_general
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.dgaspctm.adoption
+    needs_confirmation:
+    - confirm_competent_dgaspc
+- id: A13
+  desc: Domiciliu în străinătate
+  facts:
+    applicant_domicile_county: abroad
+    adoption_type: international
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: FOREIGN
+  jurisdiction_path:
+  - RO
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_cross_border_adoption_route
+    - confirm_special_adoption_type_route
+- id: A14
+  desc: Încredințare fără atestat marcat în facts
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: placement
+    has_valid_attestation: false
+    child_identified: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - complete_placement_monitoring
+- id: A15
+  desc: Adopția copilului soțului este definitivă
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: spouse_child
+    workflow_stage: finalized
+    has_valid_attestation: true
+    child_identified: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - create_new_birth_record_after_adoption
+    needs_confirmation:
+    - confirm_special_adoption_type_route
+    - confirm_adoption_birth_record_office
+- id: A16
+  desc: Lipsește faptul obligatoriu applicant_domicile_county
+  facts:
+    adoption_type: domestic_general
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_domicile_county
+- id: A17
+  desc: Lipsește faptul obligatoriu adoption_type
+  facts:
+    applicant_domicile_county: timis
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - adoption_type
+- id: A18
+  desc: Lipsește faptul obligatoriu workflow_stage
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    has_valid_attestation: false
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - workflow_stage
+- id: A19
+  desc: Lipsește faptul obligatoriu has_valid_attestation
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: information
+    child_identified: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_valid_attestation
+- id: A20
+  desc: Lipsește faptul obligatoriu child_identified
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: information
+    has_valid_attestation: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - child_identified
+- id: A21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    applicant_domicile_county: timis
+    adoption_type: domestic_general
+    workflow_stage: information
+    has_valid_attestation: false
+    child_identified: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: A22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - applicant_domicile_county
+    - adoption_type
+    - workflow_stage
+    - has_valid_attestation
+    - child_identified
+    - territory_id

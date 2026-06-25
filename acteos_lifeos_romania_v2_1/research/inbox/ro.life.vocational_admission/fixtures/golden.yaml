@@ -1,0 +1,447 @@
+batch_id: B05_EDUCATION_1
+defaults:
+  event_type_id: life.vocational_admission
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VOC01
+  desc: nivel 3→4, zi, eligibil
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+    included_steps:
+    - step.voc.obtain_sheet
+- id: VOC02
+  desc: nivel 3→4, seral, eligibil
+  facts:
+    entry_path: level3_to_level4
+    study_form: evening
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: false
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+- id: VOC03
+  desc: fără certificat nivel 3
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: false
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: blocked
+    blocks:
+    - missing_level3_certificate
+- id: VOC04
+  desc: domeniu diferit
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: false
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: blocked
+    blocks:
+    - training_field_mismatch
+- id: VOC05
+  desc: peste limita formei de zi
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: false
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: blocked
+    blocks:
+    - day_age_limit
+- id: VOC06
+  desc: peste limita de zi, alege seral
+  facts:
+    entry_path: level3_to_level4
+    study_form: evening
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: false
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+- id: VOC07
+  desc: situație școlară neîncheiată
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: false
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: blocked
+    blocks:
+    - school_situation_open
+- id: VOC08
+  desc: deja înmatriculat
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: true
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: blocked
+    blocks:
+    - use_transfer
+    child_events:
+    - life.school_transfer
+- id: VOC09
+  desc: prima zi fișe nivel 4
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-13'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+    deadlines:
+    - 2026-07-13/2026-07-17
+- id: VOC10
+  desc: ultima zi fișe nivel 4
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-17'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+- id: VOC11
+  desc: probe cerute de unitate
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-22'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+    unit_tests_required: true
+  expect:
+    status: ready
+    included_steps:
+    - step.voc.take_tests
+- id: VOC12
+  desc: fără probe la unitate
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-22'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+    unit_tests_required: false
+  expect:
+    status: ready
+    steps_absent:
+    - step.voc.take_tests
+- id: VOC13
+  desc: admis, depunere dosar
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-30'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+    admitted: true
+  expect:
+    status: ready
+    requirements:
+    - req.voc.identity_birth
+- id: VOC14
+  desc: după termenul dosarului
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-08-01'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+    admitted: true
+  expect:
+    status: needs_confirmation
+    note: verifică etapa următoare și locurile rămase
+- id: VOC15
+  desc: rută clasa VIII→IX dual
+  facts:
+    entry_path: grade8_to_grade9
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+    warnings:
+    - grade8_uses_6060
+- id: VOC16
+  desc: rută clasa VIII fără Evaluare Națională
+  facts:
+    entry_path: grade8_to_grade9
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+    evaluation_national_taken: false
+  expect:
+    status: needs_confirmation
+    note: se aplică procedura județeană ulterioară
+    confirmations:
+    - grade8_without_en_county_route
+- id: VOC17
+  desc: unitate pilot
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - pilot_procedure
+- id: VOC18
+  desc: procedură unitate neverificată
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: false
+    pilot_unit: false
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - unit_procedure_unverified
+- id: VOC19
+  desc: alt județ
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: verified_with_local_gap
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.ab
+- id: VOC20
+  desc: lipsește entry_path
+  facts:
+    entry_path: null
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - entry_path
+- id: VOC21
+  desc: lipsește program țintă
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: null
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - target_program_id
+- id: VOC22
+  desc: lipsește data
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: null
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reference_date
+- id: VOC23
+  desc: ruta nivel 4 fără formă aleasă
+  facts:
+    entry_path: level3_to_level4
+    study_form: null
+    reference_date: '2026-07-15'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - study_form
+- id: VOC24
+  desc: înainte de deschiderea înscrierilor
+  facts:
+    entry_path: level3_to_level4
+    study_form: day
+    reference_date: '2026-06-25'
+    previously_enrolled: false
+    level3_certificate: true
+    same_training_field: true
+    age_within_day_limit: true
+    school_situation_closed: true
+    target_program_id: dual.tm.001
+    unit_procedure_verified: true
+    pilot_unit: false
+  expect:
+    status: ready
+    included_steps:
+    - step.voc.verify_offer
+    note: pregătire și verificare ofertă

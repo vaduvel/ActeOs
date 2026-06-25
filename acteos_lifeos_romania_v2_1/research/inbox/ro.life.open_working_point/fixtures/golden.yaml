@@ -1,0 +1,269 @@
+batch_id: B12_OPEN_WORKING_POINT
+defaults:
+  event_type_id: life.open_working_point
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA deschide punct de lucru cu drept de folosință și activitate deja autorizată
+  facts:
+    entity_type: pfa
+    has_use_right_document: true
+    activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+    filing_channel: counter
+  expect:
+    status: resolved
+    included_steps:
+    - register_pfa_working_point
+    requirements:
+    - req.working_point_use_right_document
+    - req.onrc_operating_declaration
+- id: F02
+  desc: tipul entității nu este precizat
+  facts: {}
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F03
+  desc: PFA fără dovada folosinței spațiului
+  facts:
+    entity_type: pfa
+    has_use_right_document: false
+    activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - working_point_use_right_missing
+- id: F04
+  desc: PFA vrea activitate nouă neînregistrată la punct
+  facts:
+    entity_type: pfa
+    has_use_right_document: true
+    activity_already_registered_authorized: false
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - activity_not_registered_for_point
+    included_steps:
+    - register_or_authorize_new_activity
+- id: F05
+  desc: PFA depune prin avocat
+  facts:
+    entity_type: pfa
+    has_use_right_document: true
+    activity_already_registered_authorized: true
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F06
+  desc: PFA depune prin contabil fără procură
+  facts:
+    entity_type: pfa
+    has_use_right_document: true
+    activity_already_registered_authorized: true
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F07
+  desc: SRL deschide punct de lucru, actul constitutiv nu se modifică
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_srl_secondary_office
+    - file_working_point_mention
+    requirements:
+    - req.company_body_decision_for_secondary_office
+    - req.onrc_operating_declaration
+- id: F08
+  desc: SRL deschide punct și modifică actul constitutiv
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    constitutive_act_is_modified: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    requirements:
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F09
+  desc: SRL în ziua a 15-a de la decizie
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F10
+  desc: SRL după 16 zile de la decizie
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F11
+  desc: SRL depune prin avocat
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F12
+  desc: SRL depune prin asociat care nu este reprezentant și nu are procură
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: associate_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F13
+  desc: depunere online cu QES
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+    channels:
+    - ch.onrc_online_portal
+- id: F14
+  desc: depunere online fără QES
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F15
+  desc: punct retail în Timișoara
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_applicable: true
+    local_activity_family: retail
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_timisoara_commercial_agreement_for_point
+    confirmations:
+    - confirm_current_local_case_fee_documents
+- id: F16
+  desc: punct de alimentație publică în Timișoara
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_applicable: true
+    local_activity_family: food_service
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - confirm_current_local_case_fee_documents
+    - confirm_fire_environment_hours_gates
+- id: F17
+  desc: restaurant cu program după ora 22
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_applicable: true
+    local_activity_family: food_service
+    closing_after_22: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - confirm_fire_environment_hours_gates
+- id: F18
+  desc: punct de lucru în alt UAT decât Timișoara
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    filing_actor: legal_representative
+    municipality_id: ro.cj.cluj
+    local_commercial_agreement_applicable: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F19
+  desc: spațiul punctului expiră înainte de data pornirii
+  facts:
+    entity_type: pfa
+    has_use_right_document: true
+    activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+    use_right_valid_on_start_date: false
+  expect:
+    status: needs_confirmation
+    missing_facts:
+    - valid_use_right_on_start_date
+- id: F20
+  desc: punct fără activitate la sediul social principal
+  facts:
+    entity_type: srl
+    company_decision_date: '2026-06-20'
+    filing_actor: legal_representative
+    activity_at_registered_office: false
+    activity_at_working_point: true
+  expect:
+    status: resolved
+- id: F21
+  desc: activitate sectorială care cere permis separat
+  facts:
+    entity_type: pfa
+    has_use_right_document: true
+    activity_already_registered_authorized: true
+    filing_actor: pfa_holder
+    special_permit_required: true
+    special_permit_obtained: false
+  expect:
+    status: needs_confirmation
+    missing_facts:
+    - sector_permit_before_operation

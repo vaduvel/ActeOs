@@ -1,0 +1,378 @@
+batch_id: B03_SPOUSE_DEATH
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.spouse_death
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: S01
+  desc: Deces natural recent, neînregistrat, cheltuieli suportate, pensie de urmaș și succesiune
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - register_spouse_death
+    - claim_death_benefit
+    - assess_and_claim_survivor_pension
+    requirements:
+    - req.medical_death_certificate
+    - req.proof_funeral_expenses
+    - req.civil_status_documents
+    channels:
+    - ch.timisoara.death_registration
+    - ch.cnpp.death_benefit
+    - ch.cnpp.survivor_pension
+    warnings_present:
+    - survivor_pension_filing_30d
+    advice_tags:
+    - timisoara_death_registration_no_fee
+    - death_benefit_payment_3_workdays
+    - death_benefit_claim_limit_3y
+    - survivor_route_standard_age
+    - start_succession_assessment
+    - timisoara_ex_officio_succession_notice
+    needs_confirmation:
+    - confirm_survivor_income_marriage_conditions
+- id: S02
+  desc: Deces deja înregistrat
+  facts:
+    death_registered: true
+    days_since_death: 10
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements_absent:
+    - req.medical_death_certificate
+    channels_absent:
+    - ch.timisoara.death_registration
+- id: S03
+  desc: Înregistrare tardivă în ziua 4
+  facts:
+    death_registered: false
+    days_since_death: 4
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.prosecutor_late_registration_approval
+    warnings_present:
+    - death_registration_after_3d
+- id: S04
+  desc: Deces violent
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: violent
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    requirements:
+    - req.police_or_prosecutor_proof
+    warnings_present:
+    - special_death_registration_proof
+- id: S05
+  desc: Solicitantul nu a suportat cheltuielile
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: false
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - death_benefit_requires_expense_proof
+    included_steps:
+    - assess_and_claim_survivor_pension
+- id: S06
+  desc: Statutul de pensie/asigurare al decedatului este necunoscut
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: unknown
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_deceased_pension_condition
+    included_steps:
+    - register_spouse_death
+- id: S07
+  desc: Condiția CNPP a decedatului nu este îndeplinită
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: not_eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - register_spouse_death
+    channels_absent:
+    - ch.cnpp.death_benefit
+    - ch.cnpp.survivor_pension
+- id: S08
+  desc: Profil pensie de urmaș bazat pe invaliditate
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: invalidity
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - survivor_route_invalidity
+    included_steps:
+    - assess_and_claim_survivor_pension
+- id: S09
+  desc: Profil temporar 6 luni
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: temporary_6m
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - survivor_route_temporary_6m
+- id: S10
+  desc: Profil îngrijire copil sub 7 ani
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: child_under7
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - survivor_route_child_under7
+- id: S11
+  desc: Profilul pentru pensia de urmaș este necunoscut
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: unknown
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - identify_survivor_pension_route
+- id: S12
+  desc: Nu sunt cunoscute bunuri sau datorii succesorale
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_absent:
+    - start_succession_assessment
+    - timisoara_ex_officio_succession_notice
+- id: S13
+  desc: Deces în alt UAT
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.death_registration
+    channels:
+    - ch.cnpp.death_benefit
+    - ch.cnpp.survivor_pension
+    advice_absent:
+    - timisoara_ex_officio_succession_notice
+- id: S14
+  desc: Lipsește faptul obligatoriu death_registered
+  facts:
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_registered
+- id: S15
+  desc: Lipsește faptul obligatoriu days_since_death
+  facts:
+    death_registered: false
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_since_death
+- id: S16
+  desc: Lipsește faptul obligatoriu death_cause
+  facts:
+    death_registered: false
+    days_since_death: 1
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_cause
+- id: S17
+  desc: Lipsește faptul obligatoriu deceased_pension_condition
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - deceased_pension_condition
+- id: S18
+  desc: Lipsește faptul obligatoriu paid_funeral_expenses
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    survivor_profile: standard_age
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - paid_funeral_expenses
+- id: S19
+  desc: Lipsește faptul obligatoriu survivor_profile
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    estate_may_exist: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - survivor_profile
+- id: S20
+  desc: Lipsește faptul obligatoriu estate_may_exist
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - estate_may_exist
+- id: S21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    death_registered: false
+    days_since_death: 1
+    death_cause: natural
+    deceased_pension_condition: eligible
+    paid_funeral_expenses: true
+    survivor_profile: standard_age
+    estate_may_exist: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: S22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_registered
+    - days_since_death
+    - death_cause
+    - deceased_pension_condition
+    - paid_funeral_expenses
+    - survivor_profile
+    - estate_may_exist
+    - territory_id

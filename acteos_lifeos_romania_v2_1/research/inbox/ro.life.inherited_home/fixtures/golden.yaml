@@ -1,0 +1,462 @@
+batch_id: B07_INHERITED_HOME
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.inherited_home
+  event_alias: ro.life.inherited_home
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: deces 2010, fereastră veche
+  facts:
+    death_date: '2010-06-01'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - confirm_successoral_option_status
+    - open_notarial_succession
+    warnings:
+    - successoral_option_6m
+- id: F02
+  desc: deces 2012, fereastră nouă
+  facts:
+    death_date: '2012-06-01'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    warnings:
+    - successoral_option_1y
+    included_steps:
+    - open_notarial_succession
+- id: F03
+  desc: deces exact 1 octombrie 2011
+  facts:
+    death_date: '2011-10-01'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - succession_boundary_2011_10_01
+- id: F04
+  desc: deces 30 septembrie 2011
+  facts:
+    death_date: '2011-09-30'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: false
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    warnings:
+    - successoral_option_6m
+- id: F05
+  desc: deces 2 octombrie 2011
+  facts:
+    death_date: '2011-10-02'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: false
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    warnings:
+    - successoral_option_1y
+- id: F06
+  desc: certificat de deces străin pentru cetățean român
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: it
+    deceased_last_domicile_uat: it.mi.milano
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: true
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    triggered_events:
+    - life.transcribe_foreign_death
+    included_steps:
+    - confirm_cross_border_succession_competence
+- id: F07
+  desc: defunct străin, certificat străin
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: it
+    deceased_last_domicile_uat: it.mi.milano
+    deceased_is_romanian: false
+    death_certificate_issued_abroad: true
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_triggered:
+    - life.transcribe_foreign_death
+    included_steps:
+    - confirm_cross_border_succession_competence
+- id: F08
+  desc: ultimul domiciliu în Timișoara
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    channels:
+    - ch.cnp_timisoara
+- id: F09
+  desc: ultimul domiciliu în Cluj
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.cj.cluj
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.cnp_timisoara
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F10
+  desc: succesor reprezentat prin procură
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: false
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    requirements:
+    - req.authentic_succession_power_of_attorney
+- id: F11
+  desc: există testament
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: true
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    requirements:
+    - req.will
+- id: F12
+  desc: succesiune finalizată în 2 ani
+  facts:
+    death_date: '2025-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: true
+    completion_within_2_years: true
+    ownership_effective_date: '2025-01-10'
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    advice:
+    - succession_tax_exemption_2y
+    included_steps:
+    - declare_inherited_home_for_local_tax
+- id: F13
+  desc: succesiune după 2 ani, cu imobil
+  facts:
+    death_date: '2020-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: true
+    completion_within_2_years: false
+    ownership_effective_date: '2020-01-10'
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - pay_succession_transfer_tax_at_notary
+    - declare_inherited_home_for_local_tax
+    warnings:
+    - succession_tax_1pct
+- id: F14
+  desc: succesiune după 2 ani, fără imobil
+  facts:
+    death_date: '2020-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: true
+    completion_within_2_years: false
+    ownership_effective_date: '2020-01-10'
+    includes_real_estate: false
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    not_included:
+    - pay_succession_transfer_tax_at_notary
+    - declare_inherited_home_for_local_tax
+- id: F15
+  desc: apartament moștenit, ancoră furnizată
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: true
+    completion_within_2_years: true
+    ownership_effective_date: '2026-01-10'
+    includes_real_estate: true
+    is_condominium: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_association_after_inheritance
+    - declare_inherited_home_for_local_tax
+    confirmations:
+    - inheritance_ownership_anchor
+- id: F16
+  desc: apartament, lipsește ancora proprietății
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: true
+    completion_within_2_years: true
+    includes_real_estate: true
+    is_condominium: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - ownership_effective_date
+- id: F17
+  desc: imobil moștenit în alt UAT
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.cj.cluj
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: true
+    completion_within_2_years: true
+    ownership_effective_date: '2026-01-10'
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: needs_confirmation
+    channels_absent:
+    - ch.dfmt.atlas.home_declaration
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F18
+  desc: lipsește data decesului
+  facts:
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_date
+- id: F19
+  desc: lipsește ultimul domiciliu
+  facts:
+    death_date: '2026-01-10'
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - deceased_last_domicile_country
+    - deceased_last_domicile_uat
+- id: F20
+  desc: solicitant fără interes legitim declarat
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: false
+    successor_attends_personally: true
+    has_will: false
+    succession_completed: false
+    includes_real_estate: true
+    is_condominium: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - succession_interest_not_established
+    confirmations:
+    - legitimate_interest
+- id: F21
+  desc: finalizare necunoscută
+  facts:
+    death_date: '2026-01-10'
+    deceased_last_domicile_country: ro
+    deceased_last_domicile_uat: ro.tm.timisoara
+    deceased_is_romanian: true
+    death_certificate_issued_abroad: false
+    requester_has_legitimate_interest: true
+    successor_attends_personally: true
+    has_will: false
+    includes_real_estate: true
+    is_condominium: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - succession_completed
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_date
+    - deceased_last_domicile_country
+    - requester_has_legitimate_interest
+    - succession_completed
+    - includes_real_estate
+    - jurisdiction_id

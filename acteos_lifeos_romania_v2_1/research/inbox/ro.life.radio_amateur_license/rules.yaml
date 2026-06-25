@@ -1,0 +1,552 @@
+batch_id: batch18.radio_amateur_license
+event_type_id: ro.life.radio_amateur_license
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.radio_amateur_license.exam_base
+  canonical_rule_id: canonical.radio_amateur_license.exam_base
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: take_exam
+  effects:
+  - type: include_step
+    step_id: step.choose_radio_amateur_class
+  - type: include_step
+    step_id: step.choose_ancom_exam_session
+  - type: include_step
+    step_id: step.prepare_exam_application
+  - type: include_step
+    step_id: step.submit_exam_file_before_session_deadline
+  - type: include_requirement
+    requirement_id: req.exam_application_form
+  - type: include_requirement
+    requirement_id: req.identity_document_copy
+  - type: attach_channel
+    channel_id: channel.ancom_direct_post_or_digitally_signed_email
+  source_claim_ids:
+  - b18.radio_amateur_license.exam_file_channels
+  - b18.radio_amateur_license.exam_decision_rules
+  status: active
+- id: rule.b18.radio_amateur_license.exam_minor
+  canonical_rule_id: canonical.radio_amateur_license.exam_minor
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: eq
+      field: is_minor
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.minor_identity_or_birth_document
+  - type: include_requirement
+    requirement_id: req.representative_identity_document
+  - type: include_requirement
+    requirement_id: req.parent_guardian_consent_declaration
+  source_claim_ids:
+  - b18.radio_amateur_license.exam_decision_rules
+  status: active
+- id: rule.b18.radio_amateur_license.exam_minor_unknown
+  canonical_rule_id: canonical.radio_amateur_license.exam_minor_unknown
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: missing
+      field: is_minor
+  effects:
+  - type: require_confirmation
+    tag: confirm_minor_status
+    message_ro: Confirmă dacă solicitantul este minor pentru completarea dosarului.
+  source_claim_ids:
+  - b18.radio_amateur_license.exam_decision_rules
+  status: active
+- id: rule.b18.radio_amateur_license.class_missing
+  canonical_rule_id: canonical.radio_amateur_license.class_missing
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: missing
+      field: desired_class
+  effects:
+  - type: require_confirmation
+    tag: confirm_radio_class
+    message_ro: Alege clasa înainte de verificarea condițiilor de examen.
+  source_claim_ids:
+  - b18.radio_amateur_license.current_classes
+  - b18.radio_amateur_license.decision_classes
+  status: active
+- id: rule.b18.radio_amateur_license.class_iv_conflict
+  canonical_rule_id: canonical.radio_amateur_license.class_iv_conflict
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: eq
+      field: desired_class
+      value: IV
+  effects:
+  - type: flag_conflict
+    tag: radio_class_iv_vs_current_page
+    blocked_effect: final_exam_class
+    message_ro: Decizia publicată enumeră clasa IV, iar pagina operațională curentă afișează clasa III restrâns.
+  source_claim_ids:
+  - b18.radio_amateur_license.current_classes
+  - b18.radio_amateur_license.decision_classes
+  status: active
+- id: rule.b18.radio_amateur_license.class_iii_restricted_conflict
+  canonical_rule_id: canonical.radio_amateur_license.class_iii_restricted_conflict
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: eq
+      field: desired_class
+      value: III_restricted
+  effects:
+  - type: flag_conflict
+    tag: radio_class_iii_restricted_vs_decision
+    blocked_effect: final_exam_class
+    message_ro: Pagina operațională afișează clasa III restrâns, iar decizia publicată enumeră clasa IV.
+  source_claim_ids:
+  - b18.radio_amateur_license.current_classes
+  - b18.radio_amateur_license.decision_classes
+  status: active
+- id: rule.b18.radio_amateur_license.under14_conflict
+  canonical_rule_id: canonical.radio_amateur_license.under14_conflict
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: lt
+      field: applicant_age
+      value: 14
+  effects:
+  - type: flag_conflict
+    tag: under14_class_nomenclature_conflict
+    blocked_effect: final_exam_class
+    message_ro: Decizia indică exclusiv clasa IV pentru sub 14 ani, însă pagina curentă nu enumeră clasa IV.
+  source_claim_ids:
+  - b18.radio_amateur_license.under14_class
+  - b18.radio_amateur_license.current_classes
+  status: active
+- id: rule.b18.radio_amateur_license.age_missing
+  canonical_rule_id: canonical.radio_amateur_license.age_missing
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: missing
+      field: applicant_age
+  effects:
+  - type: require_confirmation
+    tag: confirm_applicant_age
+    message_ro: Vârsta este necesară pentru ruta minorului și pragul de 14 ani.
+  source_claim_ids:
+  - b18.radio_amateur_license.under14_class
+  - b18.radio_amateur_license.exam_decision_rules
+  status: active
+- id: rule.b18.radio_amateur_license.current_session
+  canonical_rule_id: canonical.radio_amateur_license.current_session
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: eq
+      field: session_code
+      value: 2026-07-16-campina
+  effects:
+  - type: include_step
+    step_id: step.submit_by_2026_07_02
+  - type: emit_warning
+    tag: session_deadline_2026_07_02
+    message_ro: Pentru sesiunea din 16.07.2026, dosarul trebuie să intre la ANCOM până la 02.07.2026.
+  source_claim_ids:
+  - b18.radio_amateur_license.session_2026_07_16
+  status: active
+  effective_to: '2026-07-02'
+- id: rule.b18.radio_amateur_license.session_missing
+  canonical_rule_id: canonical.radio_amateur_license.session_missing
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: take_exam
+    - op: missing
+      field: session_code
+  effects:
+  - type: require_confirmation
+    tag: confirm_exam_session
+    message_ro: Alege o sesiune și verifică termenul exact publicat pentru aceasta.
+  source_claim_ids:
+  - b18.radio_amateur_license.exam_file_channels
+  status: active
+- id: rule.b18.radio_amateur_license.individual_authorization
+  canonical_rule_id: canonical.radio_amateur_license.individual_authorization
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: obtain_individual_authorization
+  effects:
+  - type: include_step
+    step_id: step.prepare_individual_authorization_application
+  - type: include_step
+    step_id: step.submit_individual_authorization_to_ancom
+  - type: include_requirement
+    requirement_id: req.radio_amateur_certificate_for_requested_class
+  - type: include_requirement
+    requirement_id: req.identity_document
+  - type: include_requirement
+    requirement_id: req.passport_photo
+  - type: attach_channel
+    channel_id: channel.ancom_official_forms
+  - type: emit_advice
+    tag: authorization_five_years_30_days
+    message_ro: Decizia publicată indică valabilitate 5 ani și emitere în cel mult 30 de zile pentru dosar complet.
+  source_claim_ids:
+  - b18.radio_amateur_license.authorization
+  - b18.radio_amateur_license.forms_channels
+  status: active
+- id: rule.b18.radio_amateur_license.renew_authorization
+  canonical_rule_id: canonical.radio_amateur_license.renew_authorization
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: renew_authorization
+  effects:
+  - type: include_step
+    step_id: step.use_ancom_modification_extension_form
+  - type: attach_channel
+    channel_id: channel.ancom_official_forms
+  - type: require_confirmation
+    tag: confirm_current_renewal_checklist
+    message_ro: Confirmă checklistul și eventualele costuri actuale pentru prelungire.
+  source_claim_ids:
+  - b18.radio_amateur_license.forms_channels
+  - b18.radio_amateur_license.fee_checklist_gap
+  status: active
+- id: rule.b18.radio_amateur_license.duplicate_certificate
+  canonical_rule_id: canonical.radio_amateur_license.duplicate_certificate
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: duplicate_certificate
+  effects:
+  - type: include_step
+    step_id: step.use_duplicate_certificate_form
+  - type: include_requirement
+    requirement_id: req.duplicate_declaration
+  - type: attach_channel
+    channel_id: channel.ancom_official_forms
+  - type: require_confirmation
+    tag: confirm_duplicate_certificate_checklist
+    message_ro: Confirmă documentele și eventualele costuri actuale.
+  source_claim_ids:
+  - b18.radio_amateur_license.forms_channels
+  - b18.radio_amateur_license.fee_checklist_gap
+  status: active
+- id: rule.b18.radio_amateur_license.duplicate_authorization
+  canonical_rule_id: canonical.radio_amateur_license.duplicate_authorization
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: duplicate_authorization
+  effects:
+  - type: include_step
+    step_id: step.use_duplicate_authorization_form
+  - type: include_requirement
+    requirement_id: req.duplicate_declaration
+  - type: attach_channel
+    channel_id: channel.ancom_official_forms
+  - type: require_confirmation
+    tag: confirm_duplicate_authorization_checklist
+    message_ro: Confirmă documentele și eventualele costuri actuale.
+  source_claim_ids:
+  - b18.radio_amateur_license.forms_channels
+  - b18.radio_amateur_license.fee_checklist_gap
+  status: active
+- id: rule.b18.radio_amateur_license.radioclub
+  canonical_rule_id: canonical.radio_amateur_license.radioclub
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: authorize_radioclub
+  effects:
+  - type: include_step
+    step_id: step.prepare_radioclub_authorization_file
+  - type: include_requirement
+    requirement_id: req.legal_person_registration_proof
+  - type: include_requirement
+    requirement_id: req.station_responsible_commitment
+  - type: include_requirement
+    requirement_id: req.assistant_responsible_commitment
+  - type: attach_channel
+    channel_id: channel.ancom_official_forms
+  - type: require_confirmation
+    tag: confirm_radioclub_current_checklist
+    message_ro: Verifică formularul și checklistul curent.
+  source_claim_ids:
+  - b18.radio_amateur_license.club_repeater
+  - b18.radio_amateur_license.forms_channels
+  - b18.radio_amateur_license.fee_checklist_gap
+  status: active
+- id: rule.b18.radio_amateur_license.repeater
+  canonical_rule_id: canonical.radio_amateur_license.repeater
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: authorize_repeater_or_beacon
+  effects:
+  - type: include_step
+    step_id: step.prepare_repeater_beacon_file
+  - type: include_requirement
+    requirement_id: req.technical_memorandum
+  - type: attach_channel
+    channel_id: channel.ancom_official_forms
+  - type: require_confirmation
+    tag: confirm_repeater_current_checklist
+    message_ro: Verifică formularul și checklistul curent.
+  source_claim_ids:
+  - b18.radio_amateur_license.club_repeater
+  - b18.radio_amateur_license.forms_channels
+  - b18.radio_amateur_license.fee_checklist_gap
+  status: active
+- id: rule.b18.radio_amateur_license.contest_exam
+  canonical_rule_id: canonical.radio_amateur_license.contest_exam
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: contest_exam_result
+  effects:
+  - type: include_step
+    step_id: step.file_exam_result_contest
+  - type: emit_warning
+    tag: contest_three_working_days
+    message_ro: Contestația se depune în 3 zile lucrătoare de la publicarea rezultatelor.
+  - type: emit_advice
+    tag: contest_response_30_working_days
+    message_ro: Decizia publicată indică răspuns în 30 de zile lucrătoare.
+  source_claim_ids:
+  - b18.radio_amateur_license.results_contest_certificate
+  status: active
+- id: rule.b18.radio_amateur_license.certificate_after_pass
+  canonical_rule_id: canonical.radio_amateur_license.certificate_after_pass
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: obtain_certificate_after_pass
+  effects:
+  - type: include_step
+    step_id: step.submit_passport_photo_for_certificate
+  - type: emit_advice
+    tag: certificate_15_days_after_photo
+    message_ro: Certificatul se eliberează în 15 zile de la depunerea fotografiei.
+  source_claim_ids:
+  - b18.radio_amateur_license.results_contest_certificate
+  status: active
+- id: rule.b18.radio_amateur_license.old_email
+  canonical_rule_id: canonical.radio_amateur_license.old_email
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: uses_old_srs_email
+    value: true
+  effects:
+  - type: emit_warning
+    tag: old_srs_email_closed
+    message_ro: Nu utiliza srs@ancom.ro; din 18.06.2026 ANCOM indică ancom@ancom.ro.
+  source_claim_ids:
+  - b18.radio_amateur_license.old_email_closed
+  status: active
+- id: rule.b18.radio_amateur_license.timis_channel
+  canonical_rule_id: canonical.radio_amateur_license.timis_channel
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro.county.timis
+  - ro.uat.timisoara
+  authority_level: institution
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: region
+    value: timis
+  effects:
+  - type: attach_channel
+    channel_id: channel.ancom_regional_timisoara
+  - type: emit_advice
+    tag: timisoara_regional_submission
+    message_ro: Pagina sesiunilor include Direcția Regională Timișoara între punctele de depunere.
+  source_claim_ids:
+  - b18.radio_amateur_license.exam_file_channels
+  status: active
+- id: rule.b18.radio_amateur_license.unknown_goal
+  canonical_rule_id: canonical.radio_amateur_license.unknown_goal
+  event_type_id: ro.life.radio_amateur_license
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: goal
+    - op: not_in
+      field: goal
+      values:
+      - take_exam
+      - obtain_individual_authorization
+      - renew_authorization
+      - duplicate_certificate
+      - duplicate_authorization
+      - authorize_radioclub
+      - authorize_repeater_or_beacon
+      - contest_exam_result
+      - obtain_certificate_after_pass
+  effects:
+  - type: require_confirmation
+    tag: confirm_radio_amateur_procedure
+    message_ro: Procedura cerută nu este una dintre rutele verificate.
+  source_claim_ids:
+  - b18.radio_amateur_license.fee_checklist_gap
+  status: active

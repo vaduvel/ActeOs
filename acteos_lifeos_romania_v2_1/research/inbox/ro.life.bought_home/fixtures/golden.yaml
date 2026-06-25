@@ -1,0 +1,379 @@
+batch_id: B07_BOUGHT_HOME
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.bought_home
+  event_alias: ro.life.bought_home
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: apartament Timișoara, certificat primit
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_authentic_notarial_transfer
+    - notify_association_as_new_owner
+    - declare_home_for_local_tax
+- id: F02
+  desc: certificat energetic original lipsă
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: false
+    received_energy_certificate_original: false
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_energy_certificate_original
+    - declare_home_for_local_tax
+    warnings:
+    - energy_original_missing
+- id: F03
+  desc: casă individuală fără asociație
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: false
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - notify_association_as_new_owner
+- id: F04
+  desc: apartament, datorii acceptate expres
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: true
+    buyer_expressly_accepts_debts: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - buyer_accepts_association_debts
+- id: F05
+  desc: apartament, datorii neacceptate
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: true
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: blocked
+    blocks:
+    - unresolved_association_debts
+- id: F06
+  desc: se mută și schimbă domiciliul
+  facts:
+    transfer_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: true
+    changes_domicile: true
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - update_identity_for_new_domicile
+    - notify_association_as_new_owner
+    - declare_home_for_local_tax
+- id: F07
+  desc: cumpără ca investiție, nu se mută
+  facts:
+    transfer_date: '2026-06-01'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - update_identity_for_new_domicile
+- id: F08
+  desc: se mută dar nu schimbă domiciliul
+  facts:
+    transfer_date: '2026-06-01'
+    move_date: '2026-06-10'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: true
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - update_identity_for_new_domicile
+    note: reședința este eveniment separat în lipsa faptului zile/lună
+- id: F09
+  desc: imobil în Cluj
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.cj.cluj
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_home_for_local_tax
+    channels_absent:
+    - ch.dfmt.atlas.home_declaration
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F10
+  desc: transfer bun mobil etichetat greșit
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: false
+    is_condominium: false
+    received_energy_certificate_original: false
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - complete_authentic_notarial_transfer
+    - declare_home_for_local_tax
+- id: F11
+  desc: ziua 11 lucrătoare pentru asociație
+  facts:
+    transfer_date: '2026-06-01'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - association_new_owner_overdue
+  reference_date: '2026-06-16'
+- id: F12
+  desc: transfer azi
+  facts:
+    transfer_date: '2026-06-25'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    deadline_state: future
+- id: F13
+  desc: lipsește transfer_date
+  facts:
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - transfer_date
+- id: F14
+  desc: lipsește jurisdiction_id
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+- id: F15
+  desc: lipsește status datorii
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - seller_debts_exist
+- id: F16
+  desc: datorii true, acceptare lipsă
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - buyer_expressly_accepts_debts
+- id: F17
+  desc: mutare fără move_date
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: true
+    changes_domicile: true
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - move_date
+- id: F18
+  desc: certificat energetic necunoscut
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - received_energy_certificate_original
+- id: F19
+  desc: apartament cu datorii zero și certificat
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: true
+    move_date: '2026-06-21'
+    changes_domicile: true
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_authentic_notarial_transfer
+    - notify_association_as_new_owner
+    - declare_home_for_local_tax
+    - update_identity_for_new_domicile
+- id: F20
+  desc: condominiu în altă țară
+  facts:
+    transfer_date: '2026-06-20'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: true
+    moves_in: false
+    changes_domicile: false
+    jurisdiction_id: it.mi.milano
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    note: în afara jurisdicției ro; nu aplica reguli locale române
+  jurisdiction_path:
+  - eu
+  - it
+  - it.mi
+  - it.mi.milano
+- id: F21
+  desc: data transfer viitoare
+  facts:
+    transfer_date: '2026-08-01'
+    is_real_estate: true
+    is_condominium: true
+    received_energy_certificate_original: false
+    moves_in: true
+    move_date: '2026-08-05'
+    changes_domicile: true
+    jurisdiction_id: ro.tm.timisoara
+    seller_debts_exist: false
+    buyer_expressly_accepts_debts: false
+  expect:
+    status: needs_confirmation
+    deadline_state: future_anchor
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - transfer_date
+    - is_real_estate
+    - is_condominium
+    - jurisdiction_id

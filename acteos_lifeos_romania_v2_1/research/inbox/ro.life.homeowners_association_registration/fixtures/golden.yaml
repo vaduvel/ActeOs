@@ -1,0 +1,394 @@
+batch_id: B07_HOMEOWNERS_ASSOCIATION_REGISTRATION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.homeowners_association_registration
+  event_alias: ro.life.homeowners_association_registration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: nou proprietar, vrea să devină membru
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-20'
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_membership_request
+    - provide_new_owner_information
+    requirements:
+    - req.written_membership_request
+    - req.addendum_to_association_agreement
+- id: F02
+  desc: nou proprietar, nu dorește încă aderarea
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: false
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-20'
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - provide_new_owner_information
+    not_included:
+    - submit_membership_request
+- id: F03
+  desc: chiriaș cere calitate de membru
+  facts:
+    is_owner: false
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - membership_owner_only
+- id: F04
+  desc: asociația nu există
+  facts:
+    is_owner: true
+    is_existing_association: false
+    previously_member: false
+    wants_membership: true
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-20'
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - association_not_existing
+- id: F05
+  desc: proprietar deja membru
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: true
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_membership_request
+    advice:
+    - already_member
+- id: F06
+  desc: fost membru, a vândut
+  facts:
+    is_owner: false
+    is_existing_association: true
+    previously_member: true
+    wants_membership: false
+    is_new_owner: false
+    ownership_lost: true
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    advice:
+    - membership_ended
+- id: F07
+  desc: nou proprietar, ziua 1
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: false
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-24'
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - provide_new_owner_information
+    deadline_state: active
+- id: F08
+  desc: nou proprietar, peste 10 zile lucrătoare
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: false
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-01'
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    warnings:
+    - new_owner_overdue
+- id: F09
+  desc: schimbare ocupanți azi
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: true
+    wants_membership: false
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: true
+    occupancy_change_date: '2026-06-25'
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_occupancy_change
+    deadlines:
+      notify_occupancy_change: '2026-07-05'
+- id: F10
+  desc: contract chirie de 11 zile
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: true
+    wants_membership: false
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: true
+    occupancy_change_date: '2026-06-14'
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    warnings:
+    - occupancy_change_overdue
+- id: F11
+  desc: nou proprietar și chiriaș nou
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-20'
+    ownership_lost: false
+    has_occupancy_change: true
+    occupancy_change_date: '2026-06-21'
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_membership_request
+    - provide_new_owner_information
+    - notify_occupancy_change
+- id: F12
+  desc: refuz al asociației în Timișoara
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_membership_request
+    - request_local_association_guidance
+    confirmations:
+    - refusal_remedy
+- id: F13
+  desc: refuz în alt UAT
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: true
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.primariatm.association_information
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F14
+  desc: lipsește calitatea de proprietar
+  facts:
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_owner
+- id: F15
+  desc: lipsește existența asociației
+  facts:
+    is_owner: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_existing_association
+- id: F16
+  desc: nou proprietar fără data dobândirii
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: false
+    is_new_owner: true
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - ownership_acquisition_date
+- id: F17
+  desc: schimbare ocupanți fără dată
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: true
+    wants_membership: false
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: true
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - occupancy_change_date
+- id: F18
+  desc: nu există schimbare de ocupanți
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: true
+    wants_membership: false
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_included:
+    - notify_occupancy_change
+- id: F19
+  desc: proprietar nou în Cluj
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: true
+    is_new_owner: true
+    ownership_acquisition_date: '2026-06-20'
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: resolved
+    channels_absent:
+    - ch.primariatm.association_forms
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F20
+  desc: nu vrea aderare și nu e nou proprietar
+  facts:
+    is_owner: true
+    is_existing_association: true
+    previously_member: false
+    wants_membership: false
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_membership_request
+    - provide_new_owner_information
+- id: F21
+  desc: status membru necunoscut
+  facts:
+    is_owner: true
+    is_existing_association: true
+    wants_membership: true
+    is_new_owner: false
+    ownership_lost: false
+    has_occupancy_change: false
+    association_refuses_application: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - previously_member
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_owner
+    - is_existing_association
+    - previously_member
+    - wants_membership
+    - jurisdiction_id

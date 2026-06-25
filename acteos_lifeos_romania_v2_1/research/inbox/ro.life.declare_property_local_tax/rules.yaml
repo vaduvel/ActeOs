@@ -1,0 +1,285 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.declare_property_local_tax
+event_type_id: ro.life.declare_property_local_tax
+required_facts:
+- jurisdiction_id
+- owner_type
+- property_kind
+- property_event
+status: draft
+rules:
+- id: rule.property_tax.timisoara.pf_land.v1
+  canonical_rule_id: rule.property_tax.timisoara.pf_land
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: owner_type
+      value: person
+    - op: eq
+      field: property_kind
+      value: land
+  effects:
+  - type: include_step
+    step_id: select_atlas_tax_case
+  - type: include_step
+    step_id: prepare_property_tax_file
+  - type: include_step
+    step_id: submit_property_tax_declaration
+  - type: attach_channel
+    channel_id: pmt_atlas_tax
+  - type: emit_advice
+    tag: atlas_case_controls_documents
+    message_ro: Lista exactă a documentelor depinde de speța selectată în Atlas.
+  source_claim_ids:
+  - clm.property_tax.pmt.pf_land
+  status: active
+  reviewer_id: null
+- id: rule.property_tax.timisoara.pj_land.v1
+  canonical_rule_id: rule.property_tax.timisoara.pj_land
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: owner_type
+      value: legal_entity
+    - op: eq
+      field: property_kind
+      value: land
+    - op: eq
+      field: property_event
+      value: acquired
+  effects:
+  - type: include_step
+    step_id: select_atlas_tax_case
+  - type: include_requirement
+    requirement_id: copies_certified_conform_to_original
+  - type: include_step
+    step_id: submit_property_tax_declaration
+  - type: attach_channel
+    channel_id: pmt_atlas_tax
+  source_claim_ids:
+  - clm.property_tax.pmt.pj_land
+  status: active
+  reviewer_id: null
+- id: rule.property_tax.timisoara.pj_building_acquired.v1
+  canonical_rule_id: rule.property_tax.timisoara.pj_building_acquired
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: owner_type
+      value: legal_entity
+    - op: eq
+      field: property_kind
+      value: building
+    - op: eq
+      field: property_event
+      value: acquired
+  effects:
+  - type: include_step
+    step_id: select_atlas_tax_case
+  - type: include_requirement
+    requirement_id: destination_supporting_documents_if_applicable
+  - type: include_requirement
+    requirement_id: copies_certified_conform_to_original
+  - type: include_step
+    step_id: submit_property_tax_declaration
+  - type: attach_channel
+    channel_id: pmt_atlas_tax
+  source_claim_ids:
+  - clm.property_tax.pmt.pj_building
+  status: active
+  reviewer_id: null
+- id: rule.property_tax.timisoara.pj_revaluation.v1
+  canonical_rule_id: rule.property_tax.timisoara.pj_revaluation
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: owner_type
+      value: legal_entity
+    - op: eq
+      field: property_kind
+      value: building
+    - op: eq
+      field: property_event
+      value: revalued
+  effects:
+  - type: include_step
+    step_id: select_atlas_revaluation_case
+  - type: include_requirement
+    requirement_id: revaluation_supporting_document
+  - type: include_requirement
+    requirement_id: copies_certified_conform_to_original
+  - type: include_step
+    step_id: submit_property_tax_declaration
+  - type: attach_channel
+    channel_id: pmt_atlas_tax
+  source_claim_ids:
+  - clm.property_tax.pmt.pj_revaluation
+  status: active
+  reviewer_id: null
+- id: rule.property_tax.timisoara.other_case.v1
+  canonical_rule_id: rule.property_tax.timisoara.other_case
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  competence_scope: []
+  legal_rank: pagină oficială de serviciu
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: not
+      arg:
+        op: any
+        args:
+        - op: all
+          args:
+          - op: eq
+            field: owner_type
+            value: person
+          - op: eq
+            field: property_kind
+            value: land
+        - op: all
+          args:
+          - op: eq
+            field: owner_type
+            value: legal_entity
+          - op: eq
+            field: property_kind
+            value: land
+          - op: eq
+            field: property_event
+            value: acquired
+        - op: all
+          args:
+          - op: eq
+            field: owner_type
+            value: legal_entity
+          - op: eq
+            field: property_kind
+            value: building
+          - op: in
+            field: property_event
+            values:
+            - acquired
+            - revalued
+  effects:
+  - type: include_step
+    step_id: select_atlas_tax_case
+  - type: attach_channel
+    channel_id: pmt_atlas_tax
+  - type: require_confirmation
+    tag: confirm_atlas_property_case
+    message_ro: Speța exactă și documentele obligatorii trebuie confirmate în Atlas.
+  source_claim_ids:
+  - clm.property_tax.pmt.index
+  status: in_review
+  reviewer_id: null
+- id: rule.property_tax.other_uat.v1
+  canonical_rule_id: rule.property_tax.other_uat
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro
+  authority_level: uat
+  competence_scope: []
+  legal_rank: procedură locală
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: identify_competent_local_tax_authority
+  - type: require_confirmation
+    tag: confirm_local_property_tax_procedure
+    message_ro: Procedura și documentele UAT-ului competent trebuie confirmate local.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Pilotul operațional verificat este Timișoara.
+  source_claim_ids:
+  - clm.property_tax.pmt.index
+  status: in_review
+  reviewer_id: null
+- id: rule.property_tax.deadline_confirmation.v1
+  canonical_rule_id: rule.property_tax.deadline_confirmation
+  event_type_id: ro.life.declare_property_local_tax
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: lege — text indisponibil pentru extragere
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_property_tax_declaration_deadline
+    message_ro: Termenul național curent trebuie reconfirmat din textul oficial disponibil al Codului fiscal.
+  source_claim_ids:
+  - clm.property_tax.cod_fiscal_unavailable
+  status: in_review
+  reviewer_id: null

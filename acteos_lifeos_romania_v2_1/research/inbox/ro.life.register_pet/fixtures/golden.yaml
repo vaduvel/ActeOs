@@ -1,0 +1,371 @@
+batch_id: B09_REGISTER_PET
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.register_pet
+  event_alias: ro.life.register_pet
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: câine fără microcip
+  facts: &id001
+    species: dog
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_pet_registration_regime
+    - choose_licensed_recs_veterinarian
+    - microchip_dog
+    - register_dog_in_recs
+    confirmations:
+    - veterinary_fee_and_appointment
+  reference_date: '2026-06-25'
+- id: F02
+  desc: câine microcipat, neînregistrat
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: false
+    microchip_code_available: true
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_dog_in_recs
+    - verify_dog_by_microchip_code
+    confirmations:
+    - veterinary_fee_and_appointment
+  reference_date: '2026-06-25'
+- id: F03
+  desc: câine microcipat și înregistrat
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: true
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - verify_dog_by_microchip_code
+    confirmations:
+    - veterinary_fee_and_appointment
+  reference_date: '2026-06-25'
+- id: F04
+  desc: cumpărare câine
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: purchase
+    dog_event_date: '2026-06-25'
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_veterinarian_about_dog_event
+  reference_date: '2026-06-25'
+- id: F05
+  desc: vânzare câine
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: sale
+    dog_event_date: '2026-06-20'
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_veterinarian_about_dog_event
+  reference_date: '2026-06-25'
+- id: F06
+  desc: pierdere câine
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: loss
+    dog_event_date: '2026-06-24'
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_veterinarian_about_dog_event
+  reference_date: '2026-06-25'
+- id: F07
+  desc: furt câine
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: theft
+    dog_event_date: '2026-06-23'
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_veterinarian_about_dog_event
+  reference_date: '2026-06-25'
+- id: F08
+  desc: donație câine
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: donation
+    dog_event_date: '2026-06-22'
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_veterinarian_about_dog_event
+  reference_date: '2026-06-25'
+- id: F09
+  desc: deces câine
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: death
+    dog_event_date: '2026-06-21'
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_veterinarian_about_dog_event
+  reference_date: '2026-06-25'
+- id: F10
+  desc: eveniment notificabil fără dată
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: loss
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - dog_event_date
+  reference_date: '2026-06-25'
+- id: F11
+  desc: câine în spațiu public cu RECS
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - verify_dog_by_microchip_code
+  reference_date: '2026-06-25'
+- id: F12
+  desc: câine neînregistrat în spațiu public
+  facts:
+    species: dog
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    warnings:
+    - unregistered_dog_in_public_space
+  reference_date: '2026-06-25'
+- id: F13
+  desc: cabinet în Timișoara
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - choose_licensed_recs_veterinarian
+  reference_date: '2026-06-25'
+- id: F14
+  desc: cabinet în Cluj
+  facts:
+    species: dog
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - choose_licensed_recs_veterinarian
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F15
+  desc: pisică
+  facts:
+    species: cat
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    not_included:
+    - register_dog_in_recs
+    confirmations:
+    - species_specific_registration_regime
+  reference_date: '2026-06-25'
+- id: F16
+  desc: dihor
+  facts:
+    species: ferret
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - species_specific_registration_regime
+  reference_date: '2026-06-25'
+- id: F17
+  desc: animal exotic
+  facts:
+    species: exotic
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - species_specific_registration_regime
+  reference_date: '2026-06-25'
+- id: F18
+  desc: specie necunoscută
+  facts:
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - species
+  reference_date: '2026-06-25'
+- id: F19
+  desc: statut microcip necunoscut
+  facts:
+    species: dog
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - dog_has_microchip
+  reference_date: '2026-06-25'
+- id: F20
+  desc: statut RECS necunoscut la câine microcipat
+  facts:
+    species: dog
+    dog_has_microchip: true
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - dog_registered_recs
+  reference_date: '2026-06-25'
+- id: F21
+  desc: verificare după cod microcip
+  facts:
+    species: dog
+    dog_has_microchip: true
+    dog_registered_recs: true
+    microchip_code_available: true
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - verify_dog_by_microchip_code
+  reference_date: '2026-06-25'
+- id: F22
+  desc: utilizator caută pașaport pentru călătorie
+  facts:
+    species: dog
+    dog_has_microchip: false
+    dog_registered_recs: false
+    microchip_code_available: false
+    dog_event: none
+    dog_event_date: null
+    dog_goes_to_public_space: false
+    jurisdiction_id: ro.tm.timisoara
+    travel_abroad: true
+  expect:
+    status: needs_confirmation
+    note: Pașaportul și circulația internațională sunt proceduri distincte; nu sunt deduse din înregistrarea RECS.
+  reference_date: '2026-06-25'

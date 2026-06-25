@@ -1,0 +1,423 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.contest_fine
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: proces-verbal comunicat acum 5 zile
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_contravention_complaint
+    - identify_district_court_for_domicile
+    - prepare_evidence
+    requirements:
+    - court_fee_20_lei
+    - copy_of_process_verbal
+    - identity_or_company_documents
+    - supporting_evidence
+    emitted_tags:
+    - contravention_complaint_15_days
+    - alternative_venue_domicile
+    - contravention_court_fee_20_lei
+  id: ro.life.contest_fine.F01
+- title: în ultima zi a termenului
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 15
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_contravention_complaint
+    emitted_tags:
+    - contravention_complaint_15_days
+  id: ro.life.contest_fine.F02
+- title: ziua 16
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 16
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - contravention_deadline_expired
+  id: ro.life.contest_fine.F03
+- title: data comunicării necunoscută
+  facts:
+    has_contravention_process_verbal: true
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - fine_deadline_anchor_missing
+    missing_facts:
+    - communication_date
+  id: ro.life.contest_fine.F04
+- title: nu are proces-verbal, doar somație
+  facts:
+    has_contravention_process_verbal: false
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - process_verbal_required
+  id: ro.life.contest_fine.F05
+- title: alege judecătoria locului faptei
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: offense_place
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_district_court_for_offense_place
+    emitted_tags:
+    - alternative_venue_offense_place
+  id: ro.life.contest_fine.F06
+- title: alege judecătoria domiciliului
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_district_court_for_domicile
+    emitted_tags:
+    - alternative_venue_domicile
+  id: ro.life.contest_fine.F07
+- title: fapta în alt județ, domiciliu Timișoara
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.bv.brasov
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    emitted_tags:
+    - alternative_venue_domicile
+  id: ro.life.contest_fine.F08
+- title: domiciliu alt județ, faptă Timișoara
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.bv.brasov
+    chosen_venue_basis: offense_place
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    emitted_tags:
+    - alternative_venue_offense_place
+  id: ro.life.contest_fine.F09
+- title: actul special nu a fost verificat
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: false
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: needs_facts
+    included_steps:
+    - verify_special_contravention_statute
+    emitted_tags:
+    - special_statute_check_required
+  id: ro.life.contest_fine.F10
+- title: amendă rutieră
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: false
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - special_statute_check_required
+  id: ro.life.contest_fine.F11
+- title: amendă locală
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_contravention_complaint
+    emitted_tags:
+    - contravention_complaint_15_days
+  id: ro.life.contest_fine.F12
+- title: contravenient a depus plângerea
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: true
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    emitted_tags:
+    - complaint_suspends_execution
+  id: ro.life.contest_fine.F13
+- title: parte vătămată contestă despăgubirea
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: injured_third_party
+    complaint_filed: true
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - limit_complaint_to_damages
+    emitted_tags:
+    - third_party_only_damages
+  id: ro.life.contest_fine.F14
+- title: proprietarul terț contestă confiscarea
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: confiscated_goods_owner
+    complaint_filed: true
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - limit_complaint_to_confiscation
+    emitted_tags:
+    - owner_only_confiscation
+  id: ro.life.contest_fine.F15
+- title: parte vătămată vrea anularea amenzii
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: injured_third_party
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - third_party_only_damages
+  id: ro.life.contest_fine.F16
+- title: proces-verbal fără termen și instanță
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: false
+  expected:
+    status: resolved
+    emitted_tags:
+    - process_verbal_missing_appeal_information
+  id: ro.life.contest_fine.F17
+- title: plătește taxa judiciară
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    requirements:
+    - court_fee_20_lei
+    emitted_tags:
+    - contravention_court_fee_20_lei
+  id: ro.life.contest_fine.F18
+- title: contestă doar cuantumul sancțiunii
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - state_legality_and_merits_arguments
+    emitted_tags:
+    - contravention_complaint_15_days
+  id: ro.life.contest_fine.F19
+- title: contestă temeinicia faptei
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - state_legality_and_merits_arguments
+    requirements:
+    - supporting_evidence
+    emitted_tags:
+    - contravention_complaint_15_days
+  id: ro.life.contest_fine.F20
+- title: vrea să conteste după ce a plătit
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    days_since_communication: 5
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_contravention_complaint
+    emitted_tags:
+    - contravention_complaint_15_days
+  id: ro.life.contest_fine.F21
+- title: lipsește numărul de zile de la comunicare
+  facts:
+    has_contravention_process_verbal: true
+    communication_date: '2026-06-20'
+    offense_place: ro.tm.timisoara
+    contravenient_domicile_or_seat: ro.tm.timisoara
+    chosen_venue_basis: contravenient_domicile_or_seat
+    special_statute_checked: true
+    complainant_role: contravenient
+    complaint_filed: false
+    pv_contains_appeal_term_and_court: true
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - fine_deadline_anchor_missing
+    missing_facts:
+    - days_since_communication
+  id: ro.life.contest_fine.F22

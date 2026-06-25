@@ -1,0 +1,254 @@
+batch_id: B06_SPECIAL_EDUCATION_SUPPORT
+defaults:
+  alias_event_type_id: ro.life.special_education_support
+  event_type_id: life.special_education_support
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: SES01
+  description: Prima orientare în Timiș, dosar complet
+  facts:
+    county: TM
+    request_type: initial_orientation
+    child_enrolled: true
+    dossier_complete: true
+  expect:
+    status: resolved
+    channels:
+    - ch.cjrae_tm.ceosp
+    included_steps:
+    - prepare_cjrae_orientation_dossier
+    - submit_to_cjrae_cmbrae
+- id: SES02
+  description: Prima orientare, lipsește ancheta socială
+  facts:
+    county: TM
+    request_type: initial_orientation
+    missing_documents:
+    - social_inquiry
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.social_inquiry
+- id: SES03
+  description: Prima orientare, lipsește A5
+  facts:
+    county: TM
+    request_type: initial_orientation
+    missing_documents:
+    - medical_certificate_a5
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.medical_certificate_a5
+- id: SES04
+  description: Prima orientare, lipsește fișa psihologică
+  facts:
+    county: TM
+    request_type: initial_orientation
+    missing_documents:
+    - psychological_evaluation
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.psychological_evaluation
+- id: SES05
+  description: Reorientare în Timiș, documente condiționale complete
+  facts:
+    county: TM
+    request_type: reorientation
+    has_previous_certificate: true
+    has_psi: true
+    has_monitoring_report: true
+  expect:
+    status: resolved
+    requirements:
+    - req.previous_orientation_certificate
+    - req.individualized_services_plan
+    - req.monitoring_report
+- id: SES06
+  description: Reorientare fără certificatul anterior
+  facts:
+    county: TM
+    request_type: reorientation
+    has_previous_certificate: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.previous_orientation_certificate
+- id: SES07
+  description: Reorientare fără PSI
+  facts:
+    county: TM
+    request_type: reorientation
+    has_psi: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.individualized_services_plan
+- id: SES08
+  description: Reorientare fără raport de monitorizare
+  facts:
+    county: TM
+    request_type: reorientation
+    has_monitoring_report: false
+  expect:
+    status: resolved
+    missing_requirements:
+    - req.monitoring_report
+- id: SES09
+  description: Dosar depus în Timiș, evaluare neprogramată
+  facts:
+    county: TM
+    request_type: initial_orientation
+    dossier_submitted: true
+    evaluation_scheduled: false
+  expect:
+    status: resolved
+    advice:
+    - tm_submission_hours
+- id: SES10
+  description: Certificat emis
+  facts:
+    county: TM
+    request_type: initial_orientation
+    orientation_certificate_issued: true
+    certificate_issue_date: '2026-06-25'
+  expect:
+    status: resolved
+    deadlines:
+    - cosp_certificate_transmission
+    advice:
+    - orientation_certificate_validity
+- id: SES11
+  description: Contestație în termen
+  facts:
+    county: TM
+    request_type: appeal
+    signed_acknowledgement_date: '2026-06-23'
+    appeal_submission_date: '2026-06-25'
+    appeal_deadline_state: within
+  expect:
+    status: resolved
+    deadlines:
+    - orientation_appeal_submission
+    - orientation_appeal_solution
+- id: SES12
+  description: Contestație fără data luării la cunoștință
+  facts:
+    county: TM
+    request_type: appeal
+  expect:
+    status: needs_facts
+    missing_facts:
+    - signed_acknowledgement_date
+- id: SES13
+  description: Contestație aparent tardivă
+  facts:
+    county: TM
+    request_type: appeal
+    signed_acknowledgement_date: '2026-06-01'
+    appeal_submission_date: '2026-06-25'
+    appeal_deadline_state: uncertain
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - working_day_deadline_calculation
+- id: SES14
+  description: Copil neînscris, prima orientare
+  facts:
+    county: TM
+    request_type: initial_orientation
+    child_enrolled: false
+  expect:
+    status: resolved
+    requirements:
+    - req.school_enrollment_or_transcript
+    note: dovada situației educaționale se verifică la CJRAE
+- id: SES15
+  description: Plan PSI pentru copil înscris, responsabil numit
+  facts:
+    county: TM
+    request_type: initial_orientation
+    child_enrolled: true
+    case_manager_appointment_date: '2026-06-25'
+  expect:
+    status: resolved
+    deadlines:
+    - psi_project_after_case_manager
+- id: SES16
+  description: Fișa medicală sintetică este taxată
+  facts:
+    county: TM
+    request_type: initial_orientation
+    synthetic_medical_sheet_fee_requested: true
+  expect:
+    status: resolved
+    advice:
+    - synthetic_medical_sheet_free
+    warnings:
+    - request_written_basis_if_fee
+- id: SES17
+  description: Cerere în alt județ
+  facts:
+    county: CJ
+    request_type: initial_orientation
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - county_cjrae_channel
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: SES18
+  description: Lipsește județul
+  facts:
+    request_type: initial_orientation
+  expect:
+    status: needs_facts
+    missing_facts:
+    - county
+- id: SES19
+  description: Lipsește tipul cererii
+  facts:
+    county: TM
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_type
+- id: SES20
+  description: Solicitare doar de consiliere, fără orientare
+  facts:
+    county: TM
+    request_type: counseling_only
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - appropriate_cjrae_service
+- id: SES21
+  description: Schimbare de condiții înainte de expirare
+  facts:
+    county: TM
+    request_type: reorientation
+    conditions_changed: true
+    days_to_expiry: 120
+  expect:
+    status: resolved
+    advice:
+    - reorientation_notice_30_days
+- id: SES22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - county
+    - request_type

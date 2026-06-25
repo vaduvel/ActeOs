@@ -1,0 +1,200 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.paternity_leave
+status: draft
+rules:
+- id: rule.paternity.eligibility
+  canonical_rule_id: paternity_leave.eligibility.worker
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2022-08-29'
+  when:
+    op: eq
+    field: father_is_worker
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_paternity_leave
+  - type: include_requirement
+    requirement_id: req.child_birth_certificate
+  - type: set_deadline
+    step_id: request_paternity_leave
+    value:
+      kind: relative_calendar_weeks
+      weeks: 8
+      anchor: child_birth_date
+  source_claim_ids:
+  - claim.paternity.worker_scope
+  - claim.paternity.window_8_weeks
+  status: draft
+  required_facts:
+  - father_is_worker
+  - child_birth_date
+- id: rule.paternity.not_worker
+  canonical_rule_id: paternity_leave.no_worker_status
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2022-08-29'
+  when:
+    op: eq
+    field: father_is_worker
+    value: false
+  effects:
+  - type: block
+    tag: paternity_worker_status_missing
+    message_ro: Legea concediului paternal cere calitatea de lucrător sau categorie asimilată.
+  source_claim_ids:
+  - claim.paternity.worker_scope
+  status: draft
+- id: rule.paternity.base_duration
+  canonical_rule_id: paternity_leave.duration.base
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2022-08-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: father_is_worker
+      value: true
+    - op: eq
+      field: has_puericulture_certificate
+      value: false
+  effects:
+  - type: set_deadline
+    step_id: paternity_leave_duration
+    value:
+      kind: duration_business_days
+      days: 10
+  - type: emit_advice
+    tag: paternity_10_workdays
+    message_ro: Durata de bază este de 10 zile lucrătoare plătite.
+  source_claim_ids:
+  - claim.paternity.base_10_workdays
+  - claim.paternity.payment_salary
+  status: draft
+- id: rule.paternity.puericulture_duration
+  canonical_rule_id: paternity_leave.duration.puericulture
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2022-08-29'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: father_is_worker
+      value: true
+    - op: eq
+      field: has_puericulture_certificate
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.puericulture_certificate
+  - type: set_deadline
+    step_id: paternity_leave_duration
+    value:
+      kind: duration_business_days
+      days: 15
+  - type: emit_advice
+    tag: paternity_15_workdays
+    message_ro: Atestatul adaugă 5 zile la cele 10 zile de bază.
+  source_claim_ids:
+  - claim.paternity.base_10_workdays
+  - claim.paternity.puericulture_plus5
+  status: draft
+- id: rule.paternity.late_request
+  canonical_rule_id: paternity_leave.block.after_8_weeks
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2022-08-29'
+  when:
+    op: gt
+    field: days_since_birth
+    value: 56
+  effects:
+  - type: block
+    tag: paternity_request_after_8_weeks
+    message_ro: Cererea este în afara primelor 8 săptămâni de la naștere.
+  source_claim_ids:
+  - claim.paternity.window_8_weeks
+  status: draft
+- id: rule.paternity.employer_rights
+  canonical_rule_id: paternity_leave.employer.protection
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2022-08-29'
+  when:
+    op: eq
+    field: father_is_worker
+    value: true
+  effects:
+  - type: emit_advice
+    tag: employer_must_approve
+    message_ro: Angajatorul are obligația de a aproba concediul paternal.
+  - type: emit_advice
+    tag: paternity_return_rights
+    message_ro: La revenire se păstrează condiții cel puțin la fel de favorabile.
+  source_claim_ids:
+  - claim.paternity.employer_approve_protect
+  - claim.paternity.return_rights
+  status: draft
+- id: rule.paternity.other_birth_leave
+  canonical_rule_id: paternity_leave.cumulate.other_rights
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2022-08-29'
+  when:
+    op: eq
+    field: has_other_birth_leave_right
+    value: true
+  effects:
+  - type: emit_advice
+    tag: paternity_cumulative
+    message_ro: Concediul paternal poate fi cumulat cu dreptul distinct pentru nașterea copilului prevăzut de regulile aplicabile.
+  source_claim_ids:
+  - claim.paternity.cumulative
+  status: draft
+- id: rule.paternity.mother_death
+  canonical_rule_id: paternity_leave.mother_death_remainder
+  event_type_id: life.paternity_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2000-01-01'
+  when:
+    op: eq
+    field: mother_died_during_birth_or_puerperium
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_unused_maternity_remainder
+  - type: include_requirement
+    requirement_id: req.mother_death_certificate
+  - type: require_confirmation
+    tag: calculate_unused_maternity_remainder
+    message_ro: Durata exactă este restul concediului de lăuzie neefectuat de mamă și trebuie documentată.
+  source_claim_ids:
+  - claim.paternity.mother_death_remainder
+  status: draft

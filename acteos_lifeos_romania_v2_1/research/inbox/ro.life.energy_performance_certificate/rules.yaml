@@ -1,0 +1,319 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_ENERGY_PERFORMANCE_CERTIFICATE
+event_alias: ro.life.energy_performance_certificate
+event_type_id: life.energy_performance_certificate
+status: research_inbox
+rules:
+- id: rule.energy.determine_applicability.rev1
+  canonical_rule_id: rule.energy.determine_applicability
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: determine_certificate_applicability
+  source_claim_ids:
+  - claim.energy.auditor_issues
+  status: active
+  required_facts:
+  - purpose_class
+  - is_exempt_building_type
+- id: rule.energy.obtain_from_auditor.rev1
+  canonical_rule_id: rule.energy.obtain_from_auditor
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_exempt_building_type
+      value: false
+    - op: eq
+      field: has_valid_certificate
+      value: false
+  effects:
+  - type: include_step
+    step_id: select_attested_energy_auditor
+  - type: include_step
+    step_id: obtain_energy_certificate
+  - type: attach_channel
+    step_id: select_attested_energy_auditor
+    channel_id: ch.mdrap.auditor_registry
+  source_claim_ids:
+  - claim.energy.auditor_issues
+  - claim.energy.auditor_list
+  status: active
+  required_facts:
+  - is_exempt_building_type
+  - has_valid_certificate
+  legal_rank: Lege
+- id: rule.energy.expired_10y.rev1
+  canonical_rule_id: rule.energy.expired_10y
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: certificate_age_years_gte_10
+    value: true
+  effects:
+  - type: include_step
+    step_id: obtain_energy_certificate
+  - type: emit_warning
+    tag: certificate_expired_10_years
+    message_ro: Certificatul a depășit valabilitatea legală de 10 ani.
+  source_claim_ids:
+  - claim.energy.validity_10y
+  status: active
+  required_facts:
+  - certificate_age_years_gte_10
+  legal_rank: Lege
+- id: rule.energy.major_renovation.rev1
+  canonical_rule_id: rule.energy.major_renovation
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: major_renovation_changed_consumption
+    value: true
+  effects:
+  - type: include_step
+    step_id: obtain_energy_certificate
+  - type: emit_warning
+    tag: major_renovation_invalidates_prior_certificate
+    message_ro: Renovarea majoră poate înlătura valabilitatea certificatului anterior.
+  source_claim_ids:
+  - claim.energy.validity_10y
+  status: active
+  required_facts:
+  - major_renovation_changed_consumption
+  legal_rank: Lege
+- id: rule.energy.unique_code.rev1
+  canonical_rule_id: rule.energy.unique_code
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_certificate
+      value: true
+    - op: eq
+      field: unique_registration_code_present
+      value: false
+  effects:
+  - type: block
+    tag: certificate_null_without_unique_code
+    message_ro: Nu utiliza certificatul fără cod unic de înregistrare.
+  source_claim_ids:
+  - claim.energy.unique_code_nullity
+  status: active
+  required_facts:
+  - has_certificate
+  - unique_registration_code_present
+  legal_rank: Lege
+- id: rule.energy.sale_before_contract.rev1
+  canonical_rule_id: rule.energy.sale_before_contract
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose_class
+      value: sale
+    - op: eq
+      field: contract_concluded
+      value: false
+  effects:
+  - type: include_step
+    step_id: give_copy_to_potential_buyer_before_contract
+  source_claim_ids:
+  - claim.energy.copy_before_sale_rent
+  - claim.energy.sale_relative_nullity
+  status: active
+  required_facts:
+  - purpose_class
+  - contract_concluded
+  legal_rank: Lege
+- id: rule.energy.rent_before_contract.rev1
+  canonical_rule_id: rule.energy.rent_before_contract
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose_class
+      value: rent
+    - op: eq
+      field: contract_concluded
+      value: false
+  effects:
+  - type: include_step
+    step_id: give_copy_to_potential_tenant_before_contract
+  source_claim_ids:
+  - claim.energy.copy_before_sale_rent
+  status: active
+  required_facts:
+  - purpose_class
+  - contract_concluded
+  legal_rank: Lege
+- id: rule.energy.sale_closing.rev1
+  canonical_rule_id: rule.energy.sale_closing
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose_class
+      value: sale
+    - op: eq
+      field: contract_concluded
+      value: true
+  effects:
+  - type: include_step
+    step_id: transfer_original_to_buyer
+  - type: include_step
+    step_id: deposit_copy_with_competent_tax_body
+  source_claim_ids:
+  - claim.energy.original_to_buyer
+  - claim.energy.copy_to_tax_body
+  status: active
+  required_facts:
+  - purpose_class
+  - contract_concluded
+  legal_rank: Lege
+- id: rule.energy.rent_registration.rev1
+  canonical_rule_id: rule.energy.rent_registration
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose_class
+      value: rent
+    - op: eq
+      field: contract_concluded
+      value: true
+  effects:
+  - type: include_step
+    step_id: deposit_copy_with_competent_tax_body
+  source_claim_ids:
+  - claim.energy.copy_to_tax_body
+  status: active
+  required_facts:
+  - purpose_class
+  - contract_concluded
+  legal_rank: Lege
+- id: rule.energy.new_building.rev1
+  canonical_rule_id: rule.energy.new_building
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: purpose_class
+    value: new_building_reception
+  effects:
+  - type: include_step
+    step_id: present_certificate_at_reception
+  - type: include_step
+    step_id: attach_copy_to_reception_record_and_technical_book
+  source_claim_ids:
+  - claim.energy.new_building_reception
+  status: active
+  required_facts:
+  - purpose_class
+  legal_rank: Lege
+- id: rule.energy.new_building_missing.rev1
+  canonical_rule_id: rule.energy.new_building_missing
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose_class
+      value: new_building_reception
+    - op: eq
+      field: has_certificate
+      value: false
+  effects:
+  - type: block
+    tag: reception_record_null_without_certificate_copy
+    message_ro: Nu finaliza procesul-verbal fără copia certificatului.
+  source_claim_ids:
+  - claim.energy.reception_nullity
+  status: active
+  required_facts:
+  - purpose_class
+  - has_certificate
+  legal_rank: Lege
+- id: rule.energy.fee_turnaround.rev1
+  canonical_rule_id: rule.energy.fee_turnaround
+  event_type_id: life.energy_performance_certificate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: needs_new_certificate
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: auditor_fee_and_delivery_time
+    message_ro: Onorariul și termenul de predare se confirmă cu auditorul selectat.
+  source_claim_ids:
+  - claim.energy.fee_turnaround_gap
+  status: in_review
+  required_facts:
+  - needs_new_certificate

@@ -1,0 +1,92 @@
+batch_id: R1_CHANGE_WATER_HOLDER
+defaults:
+  event_type_id: life.change_water_holder
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: A01
+    desc: cumparare cu bransament existent
+    facts: { reason: purchase, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, included_steps: [change_water_holder], requirements: [req.valid_id, req.proof_of_space], channels: [ch.aquatim_timisoara], advice_tags: [aquatim_only, branch_exists] }
+  - id: A02
+    desc: chirias devine titular
+    facts: { reason: rent, has_existing_branch: true, is_owner: false }
+    expect: { status: ok, requirements: [req.valid_id, req.proof_of_space], channels: [ch.aquatim_timisoara] }
+  - id: A03
+    desc: fara bransament - nevoie de avizul tehnic
+    facts: { reason: purchase, has_existing_branch: false, is_owner: true }
+    expect: { status: ok, warnings_present: [needs_branch_connection] }
+  - id: A04
+    desc: deces titular
+    facts: { reason: inheritance_death, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, requirements: [req.death_certificate], needs_confirmation: [death_path] }
+  - id: A05
+    desc: operator unic Aquatim mereu
+    facts: { reason: purchase, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, channels: [ch.aquatim_timisoara], advice_tags: [aquatim_only] }
+  - id: A06
+    desc: bransament existent - advisory
+    facts: { reason: rent, has_existing_branch: true, is_owner: false }
+    expect: { status: ok, advice_tags: [branch_exists] }
+  - id: A07
+    desc: non-deces - fara certificat deces
+    facts: { reason: purchase, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: A08
+    desc: chirias non-deces - fara certificat deces
+    facts: { reason: rent, has_existing_branch: true, is_owner: false }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: A09
+    desc: act identitate mereu necesar
+    facts: { reason: purchase, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, requirements: [req.valid_id] }
+  - id: A10
+    desc: dovada spatiu necesara
+    facts: { reason: rent, has_existing_branch: true, is_owner: false }
+    expect: { status: ok, requirements: [req.proof_of_space] }
+  - id: A11
+    desc: deces + bransament existent
+    facts: { reason: inheritance_death, has_existing_branch: true, is_owner: false }
+    expect: { status: ok, requirements: [req.death_certificate], advice_tags: [branch_exists] }
+  - id: A12
+    desc: deces fara bransament
+    facts: { reason: inheritance_death, has_existing_branch: false, is_owner: true }
+    expect: { status: ok, warnings_present: [needs_branch_connection], requirements: [req.death_certificate] }
+  - id: A13
+    desc: alt judet - Aquatim absent
+    facts: { reason: purchase, has_existing_branch: true, is_owner: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.aquatim_timisoara] }
+  - id: A14
+    desc: lipseste reason
+    facts: { has_existing_branch: true, is_owner: true }
+    expect: { status: needs_facts, missing_facts: [reason] }
+  - id: A15
+    desc: lipseste has_existing_branch
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: needs_facts, missing_facts: [has_existing_branch] }
+  - id: A16
+    desc: lipseste is_owner
+    facts: { reason: purchase, has_existing_branch: true }
+    expect: { status: needs_facts, missing_facts: [is_owner] }
+  - id: A17
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [reason, has_existing_branch, is_owner] }
+  - id: A18
+    desc: cumparare - advisory aquatim_only
+    facts: { reason: purchase, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, advice_tags: [aquatim_only] }
+  - id: A19
+    desc: fara bransament - fara advisory branch_exists
+    facts: { reason: purchase, has_existing_branch: false, is_owner: true }
+    expect: { status: ok, advice_absent: [branch_exists] }
+  - id: A20
+    desc: deces - confirmare necesara
+    facts: { reason: inheritance_death, has_existing_branch: true, is_owner: true }
+    expect: { status: ok, needs_confirmation: [death_path] }
+  - id: A21
+    desc: chirias cu bransament - canal Aquatim
+    facts: { reason: rent, has_existing_branch: true, is_owner: false }
+    expect: { status: ok, channels: [ch.aquatim_timisoara] }

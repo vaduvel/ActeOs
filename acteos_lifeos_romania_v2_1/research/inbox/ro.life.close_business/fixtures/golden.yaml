@@ -1,0 +1,251 @@
+batch_id: B12_CLOSE_BUSINESS
+defaults:
+  event_type_id: life.close_business
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA închis voluntar de titular
+  facts:
+    entity_type: pfa
+    closure_reason: voluntary
+    filing_actor: pfa_holder
+    filing_channel: counter
+  expect:
+    status: resolved
+    included_steps:
+    - file_pfa_deregistration
+    requirements:
+    - req.pfa_deregistration_request
+- id: F02
+  desc: tipul entității lipsește
+  facts: {}
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F03
+  desc: PFA radiat după decesul titularului
+  facts:
+    entity_type: pfa
+    closure_reason: death
+    filing_actor: interested_person
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - pfa_closure_evidence_required
+- id: F04
+  desc: PFA cu motiv judiciar sau alt temei
+  facts:
+    entity_type: pfa
+    closure_reason: other
+    filing_actor: interested_person
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - pfa_closure_evidence_required
+- id: F05
+  desc: SRL fără datorii, asociații sunt de acord
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: true
+    liabilities_settled_or_regularized: true
+    remaining_assets_exist: false
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_simultaneous_dissolution_liquidation
+    - file_srl_dissolution_liquidation
+- id: F06
+  desc: SRL cu datorii regularizate prin acord cu creditorii
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: true
+    liabilities_settled_or_regularized: true
+    remaining_assets_exist: false
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_simultaneous_dissolution_liquidation
+- id: F07
+  desc: SRL cu pasiv neregularizat
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: true
+    liabilities_settled_or_regularized: false
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - start_standard_dissolution_liquidation
+    confirmations:
+    - liquidator_and_staged_route
+- id: F08
+  desc: SRL fără acord asupra lichidării
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: false
+    liabilities_settled_or_regularized: true
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - start_standard_dissolution_liquidation
+- id: F09
+  desc: SRL cu active rămase și distribuire unanimă
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: true
+    liabilities_settled_or_regularized: true
+    remaining_assets_exist: true
+    assets_distribution_unanimous: true
+    liquidation_income_tax_proof_available: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F10
+  desc: SRL cu active rămase fără unanimitate
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: true
+    liabilities_settled_or_regularized: true
+    remaining_assets_exist: true
+    assets_distribution_unanimous: false
+    liquidation_income_tax_proof_available: true
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - unanimous_asset_distribution_missing
+- id: F11
+  desc: SRL cu active și fără dovada fiscală
+  facts:
+    entity_type: srl
+    associates_agree_liquidation: true
+    liabilities_settled_or_regularized: true
+    remaining_assets_exist: true
+    assets_distribution_unanimous: true
+    liquidation_income_tax_proof_available: false
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - liquidation_tax_proof_missing
+    requirements:
+    - req.liquidation_income_tax_proof
+- id: F12
+  desc: administratorul vrea operațiuni noi după dizolvare
+  facts:
+    entity_type: srl
+    dissolution_registered: true
+    new_operations_planned: true
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - new_operations_after_dissolution
+- id: F13
+  desc: operațiuni strict de lichidare după dizolvare
+  facts:
+    entity_type: srl
+    dissolution_registered: true
+    new_operations_planned: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F14
+  desc: decizie SRL în ziua a 15-a
+  facts:
+    entity_type: srl
+    decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F15
+  desc: decizie SRL de 16 zile
+  facts:
+    entity_type: srl
+    decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F16
+  desc: depunere prin avocat
+  facts:
+    entity_type: srl
+    filing_actor: lawyer
+    filing_channel: counter
+  expect:
+    status: resolved
+- id: F17
+  desc: depunere de contabil fără procură
+  facts:
+    entity_type: srl
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F18
+  desc: depunere online cu QES
+  facts:
+    entity_type: srl
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+- id: F19
+  desc: depunere online fără QES
+  facts:
+    entity_type: srl
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F20
+  desc: cerere admisă și act supus publicării
+  facts:
+    entity_type: srl
+    onrc_application_status: admitted
+    publication_required: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - pay_monitorul_oficial_publication_tariff
+    confirmations:
+    - use_generated_publication_note
+- id: F21
+  desc: firmă cu acord comercial în Timișoara
+  facts:
+    entity_type: srl
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - cancel_timisoara_commercial_agreement
+    confirmations:
+    - confirm_local_cancellation_documents

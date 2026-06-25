@@ -1,0 +1,835 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_VEHICLE_INHERITANCE
+alias_event_type_id: ro.life.vehicle_inheritance
+event_type_id: life.vehicle_inheritance
+status: draft
+required_facts:
+- intended_action
+- succession_status
+- applicant_county
+rules:
+- id: rule.vehicle_inheritance.succession.not_completed_keep
+  canonical_rule_id: vehicle_inheritance.succession.not_completed_keep
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: succession_status
+      values:
+      - not_opened
+      - in_progress
+    - op: in
+      field: intended_action
+      values:
+      - keep_and_use
+      - sell
+  effects:
+  - type: block
+    code: succession_not_completed_for_ownership_transfer
+    message_ro: Dreptul dobândit prin moștenire nu este încă dovedit printr-un document de proprietate verificabil
+      pentru transcriere sau înstrăinare.
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  - claim.vehicle_inheritance.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_inheritance.keep.route
+  canonical_rule_id: vehicle_inheritance.keep.route
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: applicant_role
+      value: legal_heir
+  effects:
+  - type: include_step
+    step_id: declare_inherited_vehicle_at_local_tax_authority
+  - type: include_step
+    step_id: prepare_inherited_vehicle_transcription_file
+  - type: include_step
+    step_id: submit_vehicle_transcription_application
+  - type: include_requirement
+    requirement_id: req.document_attesting_inherited_ownership_registered_local_tax
+  - type: include_requirement
+    requirement_id: req.previous_registration_certificate_or_substitute
+  - type: include_requirement
+    requirement_id: req.registration_plates_or_substitute
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: include_requirement
+    requirement_id: req.valid_itp
+  - type: include_requirement
+    requirement_id: req.valid_rca_current_owner_name
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  - claim.vehicle_inheritance.competent_service
+  status: draft
+- id: rule.vehicle_inheritance.sell.route
+  canonical_rule_id: vehicle_inheritance.sell.route
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: sell
+    - op: eq
+      field: applicant_role
+      value: legal_heir
+  effects:
+  - type: include_step
+    step_id: establish_inherited_ownership_before_disposal
+  - type: include_requirement
+    requirement_id: req.document_attesting_inherited_ownership
+  - type: require_confirmation
+    tag: sale_route_after_inheritance
+    message_ro: Confirmă forma actului de înstrăinare, calitatea tuturor semnatarilor și formalitățile fiscale aplicabile
+      situației succesorale concrete.
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.deregister.route
+  canonical_rule_id: vehicle_inheritance.deregister.route
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: deregister
+    - op: eq
+      field: applicant_role
+      value: legal_heir
+  effects:
+  - type: include_step
+    step_id: select_verified_deregistration_ground
+  - type: include_step
+    step_id: prepare_inherited_vehicle_deregistration_file
+  - type: include_step
+    step_id: submit_vehicle_deregistration_application
+  - type: include_requirement
+    requirement_id: req.registration_certificate
+  - type: include_requirement
+    requirement_id: req.registration_plates_or_substitute_proof
+  - type: include_requirement
+    requirement_id: req.valid_identity_or_entity_documents
+  - type: include_requirement
+    requirement_id: req.document_proving_selected_deregistration_ground
+  - type: require_confirmation
+    tag: proof_of_legal_heir_capacity
+    message_ro: Confirmă documentul oficial acceptat pentru dovedirea calității de moștenitor legal.
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_grounds_heirs
+  - claim.vehicle_inheritance.deregistration_docs
+  - claim.vehicle_inheritance.competent_service
+  status: draft
+- id: rule.vehicle_inheritance.role.not_heir
+  canonical_rule_id: vehicle_inheritance.role.not_heir
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: other
+  effects:
+  - type: block
+    code: applicant_not_verified_legal_heir
+    message_ro: Ruta este verificată pentru moștenitorul legal; o altă calitate nu este suficient susținută de sursele
+      acestui eveniment.
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_grounds_heirs
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.role.missing
+  canonical_rule_id: vehicle_inheritance.role.missing
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: missing
+    field: applicant_role
+  effects:
+  - type: require_confirmation
+    tag: legal_heir_capacity
+    message_ro: Precizează și dovedește calitatea în care soliciți operațiunea asupra vehiculului moștenit.
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_inheritance.transcription.deadline
+  canonical_rule_id: vehicle_inheritance.transcription.deadline
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: legal_acquisition_date_confirmed
+      value: true
+    - op: exists
+      field: acquisition_date
+  effects:
+  - type: include_step
+    step_id: request_transcription_within_90_days
+  - type: set_deadline
+    step_id: request_transcription_within_90_days
+    value:
+      kind: relative_calendar_days
+      anchor: acquisition_date
+      days: 90
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_90
+  status: draft
+- id: rule.vehicle_inheritance.transcription.date_unconfirmed
+  canonical_rule_id: vehicle_inheritance.transcription.date_unconfirmed
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: legal_acquisition_date_confirmed
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: inheritance_acquisition_date_for_90_day_deadline
+    message_ro: Confirmă data juridică a dobândirii dreptului de proprietate; termenul de 90 de zile nu este calculat
+      dintr-o dată presupusă.
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_90
+  status: draft
+- id: rule.vehicle_inheritance.coheirs
+  canonical_rule_id: vehicle_inheritance.coheirs
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: co_heirs
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: co_heir_consent_or_partition
+    message_ro: Confirmă actul succesoral, atribuirea vehiculului și puterile fiecărui co-moștenitor înainte de
+      transcriere, vânzare sau radiere.
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_grounds_heirs
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.minor_heir
+  canonical_rule_id: vehicle_inheritance.minor_heir
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: minor_heir
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: minor_heir_representation_and_authorisation
+    message_ro: Confirmă reprezentarea minorului și orice autorizare specială necesară pentru actul de dispoziție.
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_inheritance.keep.rca_invalid
+  canonical_rule_id: vehicle_inheritance.keep.rca_invalid
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: rca_valid
+      value: false
+  effects:
+  - type: block
+    code: invalid_rca
+    message_ro: Transcrierea cere RCA valabilă pe numele actualului proprietar.
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.keep.civ_invalid
+  canonical_rule_id: vehicle_inheritance.keep.civ_invalid
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: civ_valid
+      value: false
+  effects:
+  - type: block
+    code: invalid_civ
+    message_ro: Transcrierea cere CIV valabilă.
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.keep.itp_invalid
+  canonical_rule_id: vehicle_inheritance.keep.itp_invalid
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: itp_valid
+      value: false
+  effects:
+  - type: block
+    code: invalid_itp
+    message_ro: Transcrierea cere ITP valabil, în situațiile în care este aplicabil.
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.deregister.certificate_unavailable
+  canonical_rule_id: vehicle_inheritance.deregister.certificate_unavailable
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: deregister
+    - op: eq
+      field: registration_certificate_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: missing_registration_certificate_for_inherited_vehicle_deregistration
+    message_ro: Lista oficială publicată cere certificatul de înmatriculare la radiere; confirmă soluția acceptată
+      dacă documentul nu este disponibil.
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_docs
+  status: draft
+- id: rule.vehicle_inheritance.deregister.plates_unavailable
+  canonical_rule_id: vehicle_inheritance.deregister.plates_unavailable
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: deregister
+    - op: eq
+      field: registration_plates_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_replacing_unavailable_registration_plates
+  source_claim_ids:
+  - claim.vehicle_inheritance.deregistration_docs
+  status: draft
+- id: rule.vehicle_inheritance.certificate.unavailable
+  canonical_rule_id: vehicle_inheritance.certificate.unavailable
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: registration_certificate_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_replacing_unavailable_registration_certificate
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.plates.unavailable
+  canonical_rule_id: vehicle_inheritance.plates.unavailable
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: registration_plates_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_replacing_unavailable_registration_plates
+  source_claim_ids:
+  - claim.vehicle_inheritance.transcription_docs
+  status: draft
+- id: rule.vehicle_inheritance.plate.transfer
+  canonical_rule_id: vehicle_inheritance.plate.transfer
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: automatic_plate_transfer_applicable
+      value: true
+  effects:
+  - type: emit_advice
+    tag: plate_deposit_not_required_when_transfer_applies
+    message_ro: Plăcuțele nu se depun dacă sunt îndeplinite condițiile transferului automat către noul proprietar.
+  source_claim_ids:
+  - claim.vehicle_inheritance.plate_transfer_exception
+  status: draft
+- id: rule.vehicle_inheritance.timis.tax_channel_keep
+  canonical_rule_id: vehicle_inheritance.timis.tax_channel_keep
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: tax_locality
+      value: timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.dfmt_atlas
+  source_claim_ids:
+  - claim.vehicle_inheritance.dfmt_vehicle_declaration
+  status: draft
+- id: rule.vehicle_inheritance.timis.tax_channel_sell
+  canonical_rule_id: vehicle_inheritance.timis.tax_channel_sell
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: succession_status
+      value: completed
+    - op: eq
+      field: intended_action
+      value: sell
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: tax_locality
+      value: timisoara
+  effects:
+  - type: include_step
+    step_id: declare_vehicle_disposal_to_local_tax_authority
+  - type: attach_channel
+    channel_id: ch.dfmt_atlas
+  source_claim_ids:
+  - claim.vehicle_inheritance.dfmt_disposal_declaration
+  status: draft
+- id: rule.vehicle_inheritance.timis.registration_channel
+  canonical_rule_id: vehicle_inheritance.timis.registration_channel
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: intended_action
+      values:
+      - keep_and_use
+      - deregister
+    - op: eq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  source_claim_ids:
+  - claim.vehicle_inheritance.timis_contact
+  status: draft
+- id: rule.vehicle_inheritance.timis.fiscal_keep_counter
+  canonical_rule_id: vehicle_inheritance.timis.fiscal_keep_counter
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: counter
+  effects:
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  - type: emit_advice
+    tag: timis_counter_fiscal_document_rule
+    message_ro: La ghișeu, actul de proprietate înregistrat în evidența fiscală poate evita un certificat fiscal
+      separat pentru transcriere.
+  source_claim_ids:
+  - claim.vehicle_inheritance.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_inheritance.timis.fiscal_keep_online
+  canonical_rule_id: vehicle_inheritance.timis.fiscal_keep_online
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: online
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_fiscal_clearance_certificate_all_obligations_paid
+  - type: emit_advice
+    tag: timis_online_transcription_fiscal_certificate
+    message_ro: Pentru transcrierea solicitată online în Timiș, pagina oficială cere certificatul de atestare fiscală.
+  source_claim_ids:
+  - claim.vehicle_inheritance.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_inheritance.timis.fiscal_keep_mode_missing
+  canonical_rule_id: vehicle_inheritance.timis.fiscal_keep_mode_missing
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: keep_and_use
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: missing
+      field: submission_mode
+  effects:
+  - type: require_confirmation
+    tag: timis_inheritance_transcription_submission_mode
+    message_ro: Precizează depunerea la ghișeu sau online; documentul fiscal diferă între aceste canale în Timiș.
+  source_claim_ids:
+  - claim.vehicle_inheritance.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_inheritance.timis.fiscal_deregister
+  canonical_rule_id: vehicle_inheritance.timis.fiscal_deregister
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: deregister
+    - op: eq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_fiscal_clearance_certificate_all_obligations_paid
+  source_claim_ids:
+  - claim.vehicle_inheritance.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_inheritance.other_county.channel
+  canonical_rule_id: vehicle_inheritance.other_county.channel
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: require_confirmation
+    tag: local_inheritance_vehicle_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și cerințele fiscale locale din județul competent.
+  source_claim_ids:
+  - claim.vehicle_inheritance.competent_service
+  status: draft
+- id: rule.vehicle_inheritance.post_deregistration.tax
+  canonical_rule_id: vehicle_inheritance.post_deregistration.tax
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: deregister
+    - op: exists
+      field: deregistration_date
+  effects:
+  - type: include_step
+    step_id: declare_deregistration_to_local_tax_authority
+  - type: set_deadline
+    step_id: declare_deregistration_to_local_tax_authority
+    value:
+      kind: relative_calendar_days
+      anchor: deregistration_date
+      days: 30
+  - type: attach_channel
+    channel_id: ch.local_tax_authority
+  source_claim_ids:
+  - claim.vehicle_inheritance.post_deregistration_tax
+  status: draft
+- id: rule.vehicle_inheritance.deregistration.unpaid
+  canonical_rule_id: vehicle_inheritance.deregistration.unpaid
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: intended_action
+      value: deregister
+    - op: eq
+      field: all_local_obligations_paid
+      value: false
+  effects:
+  - type: block
+    code: local_obligations_unpaid
+    message_ro: La radierea la cerere trebuie achitate obligațiile locale până la data radierii.
+  source_claim_ids:
+  - claim.vehicle_inheritance.post_deregistration_tax
+  status: draft
+- id: rule.vehicle_inheritance.identity.individual
+  canonical_rule_id: vehicle_inheritance.identity.individual
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.vehicle_inheritance.representation_forms
+  status: draft
+- id: rule.vehicle_inheritance.identity.company
+  canonical_rule_id: vehicle_inheritance.identity.company
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.vehicle_inheritance.representation_forms
+  status: draft
+- id: rule.vehicle_inheritance.representation.lawyer
+  canonical_rule_id: vehicle_inheritance.representation.lawyer
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.vehicle_inheritance.representation_forms
+  status: draft
+- id: rule.vehicle_inheritance.representation.authorized_individual
+  canonical_rule_id: vehicle_inheritance.representation.authorized_individual
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.vehicle_inheritance.representation_forms
+  status: draft
+- id: rule.vehicle_inheritance.representation.company_delegate
+  canonical_rule_id: vehicle_inheritance.representation.company_delegate
+  event_type_id: life.vehicle_inheritance
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.vehicle_inheritance.representation_forms
+  status: draft

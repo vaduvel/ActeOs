@@ -1,0 +1,518 @@
+batch_id: B13_BENEFICIAL_OWNER_UPDATE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.beneficial_owner_update
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: BO01
+  desc: Beneficiarul real s-a schimbat, depunere în termen
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+- id: BO02
+  desc: Schimbarea este declarată exact în ziua 15
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 15
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+- id: BO03
+  desc: Schimbarea este declarată în ziua 16
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 16
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    warnings_present:
+    - beneficial_owner_change_overdue
+    - beneficial_owner_nonfiling_fine_5000_10000
+- id: BO04
+  desc: Obligație anuală specială, situații aprobate, ziua 10
+  facts:
+    beneficial_owner_changed: false
+    days_since_change: 7
+    high_risk_shareholding_chain: true
+    annual_statements_approved: true
+    days_since_annual_approval: 10
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_annual_beneficial_owner_declaration
+    requirements:
+    - req.beneficial_owner_declaration
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - annual_beneficial_owner_within_15_days
+- id: BO05
+  desc: Obligație anuală specială exact în ziua 15
+  facts:
+    beneficial_owner_changed: false
+    days_since_change: 7
+    high_risk_shareholding_chain: true
+    annual_statements_approved: true
+    days_since_annual_approval: 15
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_annual_beneficial_owner_declaration
+    requirements:
+    - req.beneficial_owner_declaration
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - annual_beneficial_owner_within_15_days
+- id: BO06
+  desc: Obligație anuală specială depășită
+  facts:
+    beneficial_owner_changed: false
+    days_since_change: 7
+    high_risk_shareholding_chain: true
+    annual_statements_approved: true
+    days_since_annual_approval: 16
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_annual_beneficial_owner_declaration
+    requirements:
+    - req.beneficial_owner_declaration
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    warnings_present:
+    - annual_beneficial_owner_overdue
+    - beneficial_owner_nonfiling_fine_5000_10000
+- id: BO07
+  desc: Nu există schimbare și nici lanț special
+  facts:
+    beneficial_owner_changed: false
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - no_general_annual_declaration_trigger_identified
+- id: BO08
+  desc: Lanț special, dar situațiile financiare nu sunt încă aprobate
+  facts:
+    beneficial_owner_changed: false
+    days_since_change: 7
+    high_risk_shareholding_chain: true
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+- id: BO09
+  desc: Datele beneficiarului real sunt incomplete
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: false
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: blocked
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    - req.complete_beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+- id: BO10
+  desc: Depunere la ghișeu
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: counter
+    qualified_signature_available: false
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_counter
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+- id: BO11
+  desc: Depunere prin poștă sau curier
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: post_courier
+    qualified_signature_available: false
+    representative_used: false
+  expect:
+    status: ok
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_post_courier
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+- id: BO12
+  desc: Depunere electronică fără semnătură pregătită
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: false
+    representative_used: false
+  expect:
+    status: blocked
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    - choose_counter_or_post_for_bo
+- id: BO13
+  desc: Lipsește faptul obligatoriu beneficial_owner_changed
+  facts:
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    missing_facts:
+    - beneficial_owner_changed
+- id: BO14
+  desc: Lipsește faptul obligatoriu days_since_change
+  facts:
+    beneficial_owner_changed: true
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    missing_facts:
+    - days_since_change
+- id: BO15
+  desc: Lipsește faptul obligatoriu high_risk_shareholding_chain
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - high_risk_shareholding_chain
+- id: BO16
+  desc: Lipsește faptul obligatoriu annual_statements_approved
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - annual_statements_approved
+- id: BO17
+  desc: Lipsește faptul obligatoriu days_since_annual_approval
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - days_since_annual_approval
+- id: BO18
+  desc: Lipsește faptul obligatoriu identification_and_control_data_complete
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    submission_channel: electronic
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - identification_and_control_data_complete
+- id: BO19
+  desc: Lipsește faptul obligatoriu submission_channel
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    qualified_signature_available: true
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - submission_channel
+- id: BO20
+  desc: Lipsește faptul obligatoriu qualified_signature_available
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    representative_used: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - qualified_signature_available
+- id: BO21
+  desc: Lipsește faptul obligatoriu representative_used
+  facts:
+    beneficial_owner_changed: true
+    days_since_change: 7
+    high_risk_shareholding_chain: false
+    annual_statements_approved: false
+    days_since_annual_approval: 0
+    identification_and_control_data_complete: true
+    submission_channel: electronic
+    qualified_signature_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    - prepare_and_file_beneficial_owner_change
+    requirements:
+    - req.beneficial_owner_declaration
+    - req.beneficial_owner_identification_and_control_data
+    channels:
+    - ch.onrc.beneficial_owner_electronic
+    advice_tags:
+    - beneficial_owner_change_within_15_days
+    missing_facts:
+    - representative_used
+- id: BO22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - assess_beneficial_owner_filing_trigger
+    missing_facts:
+    - beneficial_owner_changed
+    - days_since_change
+    - high_risk_shareholding_chain
+    - annual_statements_approved
+    - days_since_annual_approval
+    - identification_and_control_data_complete
+    - submission_channel
+    - qualified_signature_available
+    - representative_used

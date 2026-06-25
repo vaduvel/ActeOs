@@ -1,0 +1,481 @@
+batch_id: B09_REGISTER_DRONE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.register_drone
+  event_alias: ro.life.register_drone
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: C0 249 g cu cameră, nu este jucărie
+  facts: &id001
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - classify_operator_and_uas_registration
+    - register_drone_operator
+    - register_with_residence_country_naa
+    confirmations:
+    - aacr_2026_registration_workflow
+    - aacr_fee_validity_and_documents
+  reference_date: '2026-06-25'
+- id: F02
+  desc: sub 250 g fără cameră
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: false
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: false
+    operator_registration_number_received: false
+  expect:
+    status: resolved
+    not_included:
+    - register_drone_operator
+    advice:
+    - operator_registration_not_required_under250_no_sensor
+  reference_date: '2026-06-25'
+- id: F03
+  desc: sub 250 g, jucărie cu cameră
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: true
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: false
+    operator_registration_number_received: false
+  expect:
+    status: resolved
+    advice:
+    - operator_registration_not_required_toy_under250
+  reference_date: '2026-06-25'
+- id: F04
+  desc: C1
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 800
+    uas_mass_under_250g: false
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C1
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_drone_operator
+    - register_with_residence_country_naa
+  reference_date: '2026-06-25'
+- id: F05
+  desc: C2
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 3000
+    uas_mass_under_250g: false
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C2
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_drone_operator
+  reference_date: '2026-06-25'
+- id: F06
+  desc: C3
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 10000
+    uas_mass_under_250g: false
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C3
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_drone_operator
+  reference_date: '2026-06-25'
+- id: F07
+  desc: C4
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 12000
+    uas_mass_under_250g: false
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C4
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_drone_operator
+  reference_date: '2026-06-25'
+- id: F08
+  desc: operator deja înregistrat în alt stat EASA
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: true
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: resolved
+    included_steps:
+    - verify_existing_operator_number
+    warnings:
+    - do_not_register_twice
+    not_included:
+    - register_drone_operator
+  reference_date: '2026-06-25'
+- id: F09
+  desc: operator român neînregistrat
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_with_residence_country_naa
+    confirmations:
+    - aacr_2026_registration_workflow
+    - aacr_fee_validity_and_documents
+  reference_date: '2026-06-25'
+- id: F10
+  desc: rezident italian
+  facts:
+    operator_residence_country: IT
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: resolved
+    included_steps:
+    - register_with_residence_country_naa
+    not_included:
+    - aacr_2026_registration_workflow
+  reference_date: '2026-06-25'
+- id: F11
+  desc: nerezident UE, prima operare România
+  facts:
+    operator_residence_country: US
+    operator_is_non_eu_resident: true
+    first_eu_operation_country: RO
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_in_first_eu_operation_country
+    confirmations:
+    - aacr_2026_registration_workflow
+  reference_date: '2026-06-25'
+- id: F12
+  desc: nerezident UE, prima operare Franța
+  facts:
+    operator_residence_country: US
+    operator_is_non_eu_resident: true
+    first_eu_operation_country: FR
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: resolved
+    included_steps:
+    - register_in_first_eu_operation_country
+    not_included:
+    - aacr_2026_registration_workflow
+  reference_date: '2026-06-25'
+- id: F13
+  desc: categorie specific
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: specific
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - specific_category_declaration_or_authorisation
+    - aacr_2026_registration_workflow
+  reference_date: '2026-06-25'
+- id: F14
+  desc: număr operator primit
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - display_operator_number_on_all_drones
+    - upload_operator_number_to_remote_id
+  reference_date: '2026-06-25'
+- id: F15
+  desc: dronă certificată
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: true
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - certified_uas_aircraft_registration
+  reference_date: '2026-06-25'
+- id: F16
+  desc: lipsește țara de reședință
+  facts:
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - operator_residence_country
+  reference_date: '2026-06-25'
+- id: F17
+  desc: lipsește categoria operațiunii
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - operation_category
+  reference_date: '2026-06-25'
+- id: F18
+  desc: masa necunoscută
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - uas_mass_g
+  reference_date: '2026-06-25'
+- id: F19
+  desc: camera/senzor necunoscut
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_camera_or_personal_data_sensor
+  reference_date: '2026-06-25'
+- id: F20
+  desc: statut jucărie necunoscut
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_toy
+  reference_date: '2026-06-25'
+- id: F21
+  desc: nerezident UE fără prima țară de operare
+  facts:
+    operator_residence_country: US
+    operator_is_non_eu_resident: true
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - first_eu_operation_country
+  reference_date: '2026-06-25'
+- id: F22
+  desc: utilizator cere înregistrarea fiecărei drone
+  facts:
+    operator_residence_country: RO
+    operator_is_non_eu_resident: false
+    first_eu_operation_country: null
+    operation_category: open
+    uas_mass_g: 249
+    uas_mass_under_250g: true
+    has_camera_or_personal_data_sensor: true
+    is_toy: false
+    uas_class_label: C0
+    is_certified_aircraft: false
+    operator_registered_in_easa_state: false
+    registration_required: true
+    operator_registration_number_received: false
+    number_of_drones: 4
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_drone_operator
+    note: Înregistrarea operatorului este unică; numărul se afișează ulterior pe toate dronele.
+  reference_date: '2026-06-25'

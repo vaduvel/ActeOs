@@ -1,0 +1,415 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_VEHICLE_REGISTRATION_CERTIFICATE_LOST
+alias_event_type_id: ro.life.vehicle_registration_certificate_lost
+event_type_id: life.vehicle_registration_certificate_lost
+status: draft
+required_facts:
+- replacement_reason
+- applicant_role
+- applicant_county
+- applicant_type
+- representation_type
+- submission_mode
+rules:
+- id: rule.vehicle_registration_certificate_lost.base.route
+  canonical_rule_id: vehicle_registration_certificate_lost.base.route
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_registration_certificate_replacement_file
+  - type: include_step
+    step_id: submit_to_original_registering_authority
+  - type: include_requirement
+    requirement_id: req.valid_vehicle_identity_card_civ
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  - claim.vehicle_registration_certificate_lost.eligibility_auth_itp_rca_civ
+  - claim.vehicle_registration_certificate_lost.competent_service
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.reason.lost
+  canonical_rule_id: vehicle_registration_certificate_lost.reason.lost
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: lost
+  effects:
+  - type: include_requirement
+    requirement_id: req.registration_certificate_loss_declaration
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.reason.stolen
+  canonical_rule_id: vehicle_registration_certificate_lost.reason.stolen
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: stolen
+  effects:
+  - type: include_requirement
+    requirement_id: req.competent_authority_certificate_theft_proof
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.reason.damaged
+  canonical_rule_id: vehicle_registration_certificate_lost.reason.damaged
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: damaged
+  effects:
+  - type: include_requirement
+    requirement_id: req.damaged_registration_certificate
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.reason.retained_abroad
+  canonical_rule_id: vehicle_registration_certificate_lost.reason.retained_abroad
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: retained_abroad
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_retention_proof
+  - type: include_requirement
+    requirement_id: req.proof_retention_reasons_ceased
+  - type: include_requirement
+    requirement_id: req.authorised_romanian_translation
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_retained_abroad
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.reason.other
+  canonical_rule_id: vehicle_registration_certificate_lost.reason.other
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: replacement_reason
+    value: other
+  effects:
+  - type: require_confirmation
+    tag: certificate_replacement_reason
+    message_ro: Confirmă dacă situația intră în pierdere, furt, deteriorare sau reținere în străinătate; nu este
+      automatizată o categorie reziduală.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.role.owner
+  canonical_rule_id: vehicle_registration_certificate_lost.role.owner
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: registered_owner
+  effects:
+  - type: emit_advice
+    tag: registered_owner_can_request_duplicate
+    message_ro: Proprietarul înscris în certificat poate cere duplicatul.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.role.mandated_holder
+  canonical_rule_id: vehicle_registration_certificate_lost.role.mandated_holder
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: mandated_holder
+  effects:
+  - type: emit_advice
+    tag: mandated_holder_can_request_duplicate
+    message_ro: Deținătorul mandatat poate cere duplicatul în condițiile publicate.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.role.other
+  canonical_rule_id: vehicle_registration_certificate_lost.role.other
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: other
+  effects:
+  - type: block
+    code: applicant_not_verified_for_duplicate
+    message_ro: Sursa verificată indică proprietarul înscris sau deținătorul mandatat; alt solicitant trebuie să
+      își clarifice calitatea.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.civ.invalid
+  canonical_rule_id: vehicle_registration_certificate_lost.civ.invalid
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: civ_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_civ
+    message_ro: CIV valabilă este condiție pentru emiterea duplicatului certificatului.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.eligibility_auth_itp_rca_civ
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.fee
+  canonical_rule_id: vehicle_registration_certificate_lost.fee
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: registration_certificate_fee_49
+    message_ro: Contravaloarea publicată a certificatului de înmatriculare este 49 lei.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.fee_certificate
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.channel.timis.counter
+  canonical_rule_id: vehicle_registration_certificate_lost.channel.timis.counter
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: counter
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_counter_or_booking
+    message_ro: În pilotul Timiș, operațiunea Duplicat/Modificări certificat/Plăci este publicată în lista programărilor;
+      verifică și anunțurile operative înainte de prezentare.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.timis_contact
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.channel.timis.online
+  canonical_rule_id: vehicle_registration_certificate_lost.channel.timis.online
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: online
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_online
+  - type: include_requirement
+    requirement_id: req.verified_dgpci_online_account
+  - type: emit_advice
+    tag: timis_online_duplicate_available
+    message_ro: În Timiș este publicată solicitarea online a duplicatului certificatului; este necesar un cont DGPCI
+      creat fizic la ghișeu.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.timis_online_duplicate_certificate
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.channel.other_county
+  canonical_rule_id: vehicle_registration_certificate_lost.channel.other_county
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă la autoritatea care a înmatriculat vehiculul dacă depunerea se face online, cu programare
+      sau prin alt flux local.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.competent_service
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.identity.individual
+  canonical_rule_id: vehicle_registration_certificate_lost.identity.individual
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.representation_forms
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.identity.company
+  canonical_rule_id: vehicle_registration_certificate_lost.identity.company
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.representation_forms
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.representation.lawyer
+  canonical_rule_id: vehicle_registration_certificate_lost.representation.lawyer
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.representation_forms
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.representation.authorized_individual
+  canonical_rule_id: vehicle_registration_certificate_lost.representation.authorized_individual
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.representation_forms
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.representation.company_delegate
+  canonical_rule_id: vehicle_registration_certificate_lost.representation.company_delegate
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.representation_forms
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.payment.proof
+  canonical_rule_id: vehicle_registration_certificate_lost.payment.proof
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.registration_certificate_payment_proof
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft
+- id: rule.vehicle_registration_certificate_lost.payment.snep
+  canonical_rule_id: vehicle_registration_certificate_lost.payment.snep
+  event_type_id: life.vehicle_registration_certificate_lost
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: true
+  effects:
+  - type: emit_advice
+    tag: snep_payment_proof_exception
+    message_ro: Dovada plății nu se depune atunci când plata este identificată prin SNEP, potrivit procedurii publicate.
+  source_claim_ids:
+  - claim.vehicle_registration_certificate_lost.duplicate_certificate_docs
+  status: draft

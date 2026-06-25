@@ -1,0 +1,345 @@
+batch_id: B03_TRANSCRIBE_FOREIGN_MARRIAGE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.transcribe_foreign_marriage
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: T01
+  desc: Certificat UE, domiciliu comun Timișoara, în primele 6 luni
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    included_steps:
+    - transcribe_foreign_marriage_certificate
+    requirements:
+    - req.foreign_marriage_certificate_original
+    - req.spouses_birth_certificates
+    - req.authenticated_romanian_translation
+    channels:
+    - ch.timisoara.marriage_transcription
+    warnings_present:
+    - official_deadline_anchor_conflict
+    advice_tags:
+    - eu_document_no_apostille
+    needs_confirmation:
+    - confirm_transcription_deadline_anchor
+    - confirm_local_processing_time_and_fee
+- id: T02
+  desc: Extras multilingv Convenția de la Viena
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: vienna_multilingual
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    advice_tags:
+    - vienna_extract_no_apostille_or_translation
+    requirements_absent:
+    - req.authenticated_romanian_translation
+- id: T03
+  desc: Certificat din alt stat
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: other
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    requirements:
+    - req.apostille_or_supralegalization_as_applicable
+    - req.authenticated_romanian_translation
+    needs_confirmation:
+    - confirm_foreign_document_authentication
+- id: T04
+  desc: Certificatul nu menționează numele după căsătorie
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: false
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    requirements:
+    - req.notarized_joint_surname_declaration
+- id: T05
+  desc: Există o căsătorie anterioară
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: true
+    same_sex_marriage: false
+  expect:
+    status: ok
+    requirements:
+    - req.proof_prior_marriage_ended
+- id: T06
+  desc: Au trecut 7 luni de la înregistrarea străină
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 7
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    warnings_present:
+    - foreign_marriage_transcription_over_6m
+    needs_confirmation:
+    - confirm_late_transcription_consequence
+- id: T07
+  desc: Domiciliu în alt UAT din România
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: other_ro
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.marriage_transcription
+    needs_confirmation:
+    - confirm_competent_local_transcription_office
+- id: T08
+  desc: Cetățeanul român nu a avut domiciliu în România
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: never_domiciled
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_special_never_domiciled_competence
+- id: T09
+  desc: Ruta consulară
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: consular
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_consular_transcription_route
+- id: T10
+  desc: Niciun soț nu este cetățean român
+  facts:
+    romanian_citizen_involved: false
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    advice_tags:
+    - foreign_marriage_transcription_not_targeted
+    included_steps: []
+- id: T11
+  desc: Căsătorie între persoane de același sex încheiată în străinătate
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: true
+  expect:
+    status: blocked
+- id: T12
+  desc: Soții au domicilii diferite, unul în Timișoara
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: different_one_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    channels:
+    - ch.timisoara.marriage_transcription
+    needs_confirmation:
+    - confirm_local_processing_time_and_fee
+- id: T13
+  desc: 'Caz complex: stat non-UE, nume lipsă, căsătorie anterioară'
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: other
+    surname_recorded: false
+    months_since_foreign_registration: 2
+    prior_marriage_exists: true
+    same_sex_marriage: false
+  expect:
+    status: ok
+    requirements:
+    - req.apostille_or_supralegalization_as_applicable
+    - req.authenticated_romanian_translation
+    - req.notarized_joint_surname_declaration
+    - req.proof_prior_marriage_ended
+    needs_confirmation:
+    - confirm_foreign_document_authentication
+- id: T14
+  desc: Exact 6 luni nu activează regula peste termen
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 6
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: ok
+    warnings_present:
+    - official_deadline_anchor_conflict
+    needs_confirmation:
+    - confirm_transcription_deadline_anchor
+- id: T15
+  desc: Lipsește faptul obligatoriu romanian_citizen_involved
+  facts:
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - romanian_citizen_involved
+- id: T16
+  desc: Lipsește faptul obligatoriu domicile_case
+  facts:
+    romanian_citizen_involved: true
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - domicile_case
+- id: T17
+  desc: Lipsește faptul obligatoriu certificate_origin
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - certificate_origin
+- id: T18
+  desc: Lipsește faptul obligatoriu surname_recorded
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - surname_recorded
+- id: T19
+  desc: Lipsește faptul obligatoriu months_since_foreign_registration
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    prior_marriage_exists: false
+    same_sex_marriage: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - months_since_foreign_registration
+- id: T20
+  desc: Lipsește faptul obligatoriu prior_marriage_exists
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    same_sex_marriage: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - prior_marriage_exists
+- id: T21
+  desc: Lipsește faptul obligatoriu same_sex_marriage
+  facts:
+    romanian_citizen_involved: true
+    domicile_case: common_timisoara
+    certificate_origin: eu
+    surname_recorded: true
+    months_since_foreign_registration: 2
+    prior_marriage_exists: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - same_sex_marriage
+- id: T22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - romanian_citizen_involved
+    - domicile_case
+    - certificate_origin
+    - surname_recorded
+    - months_since_foreign_registration
+    - prior_marriage_exists
+    - same_sex_marriage

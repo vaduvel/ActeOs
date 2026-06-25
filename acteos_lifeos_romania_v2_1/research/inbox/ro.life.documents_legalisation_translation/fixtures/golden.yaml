@@ -1,0 +1,560 @@
+batch_id: B02_DOCUMENTS_LEGALISATION_TRANSLATION
+defaults:
+  event_type_id: ro.life.documents_legalisation_translation
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.dlt.001
+  desc: Act public UE acoperit, emis în alt stat UE și folosit în România.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    - translation_not_required_language_accepted
+    warnings_present:
+    - authenticity_not_recognition
+- id: fx.dlt.002
+  desc: Act public românesc acoperit, folosit într-un alt stat UE.
+  facts:
+    document_direction: ro_to_foreign
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    - translation_not_required_language_accepted
+    warnings_present:
+    - authenticity_not_recognition
+- id: fx.dlt.003
+  desc: Pereche Haga verificată pentru un act străin non-UE.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: hague_non_eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: true
+    receiving_language_status: not_accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - confirm_translation_requirement
+    - obtain_apostille_from_competent_authority
+    advice_tags:
+    - apostille_pair_verified
+    - classification_required
+    needs_confirmation:
+    - translation_authority_confirm
+- id: fx.dlt.004
+  desc: Act administrativ românesc pentru o destinație Haga, depunere în Timiș.
+  facts:
+    document_direction: ro_to_foreign
+    issuing_country_group: eu
+    receiving_country_group: hague_non_eu
+    document_subject: covered_public_matter
+    hague_pair_status: true
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: administrative
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - obtain_apostille_from_competent_authority
+    - submit_to_timis_prefecture_for_apostille
+    advice_tags:
+    - apostille_free_timis
+    - apostille_pair_verified
+    - classification_required
+    - translation_not_required_language_accepted
+    channels:
+    - ch.prefectura_timis_apostila
+- id: fx.dlt.005
+  desc: Act administrativ românesc pre-verificat pentru procedura rapidă Timiș.
+  facts:
+    document_direction: ro_to_foreign
+    issuing_country_group: eu
+    receiving_country_group: hague_non_eu
+    document_subject: covered_public_matter
+    hague_pair_status: true
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: administrative
+    preverification_completed: true
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - obtain_apostille_from_competent_authority
+    - submit_to_timis_prefecture_for_apostille
+    advice_tags:
+    - apostille_free_timis
+    - apostille_pair_verified
+    - classification_required
+    - timis_prechecked_2h
+    - translation_not_required_language_accepted
+    channels:
+    - ch.prefectura_timis_apostila
+    needs_confirmation:
+    - timis_fast_local_recheck
+- id: fx.dlt.006
+  desc: Stat emitent non-Haga; lanțul de supralegalizare nu este ghicit.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: non_hague
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - confirm_supralegalisation_chain
+    advice_tags:
+    - classification_required
+    - translation_not_required_language_accepted
+    warnings_present:
+    - supralegalisation_not_inferred
+    needs_confirmation:
+    - destination_chain_required
+- id: fx.dlt.007
+  desc: Stat primitor non-Haga.
+  facts:
+    document_direction: ro_to_foreign
+    issuing_country_group: eu
+    receiving_country_group: non_hague
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - confirm_supralegalisation_chain
+    advice_tags:
+    - classification_required
+    - translation_not_required_language_accepted
+    warnings_present:
+    - supralegalisation_not_inferred
+    needs_confirmation:
+    - destination_chain_required
+- id: fx.dlt.008
+  desc: Perechea Convenției Haga nu a fost verificată.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: hague_non_eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: unknown
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - confirm_supralegalisation_chain
+    advice_tags:
+    - classification_required
+    - translation_not_required_language_accepted
+    warnings_present:
+    - supralegalisation_not_inferred
+    needs_confirmation:
+    - destination_chain_required
+- id: fx.dlt.009
+  desc: Limba actului este acceptată de autoritatea primitoare.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    - translation_not_required_language_accepted
+    warnings_present:
+    - authenticity_not_recognition
+- id: fx.dlt.010
+  desc: Limba nu este acceptată, dar formularul standard multilingv este disponibil.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: not_accepted
+    multilingual_form_status: available
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - request_multilingual_standard_form
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    - multilingual_form_may_replace_translation
+    warnings_present:
+    - authenticity_not_recognition
+- id: fx.dlt.011
+  desc: Limba nu este acceptată și formularul multilingv nu este disponibil.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: not_accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - confirm_translation_requirement
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    warnings_present:
+    - authenticity_not_recognition
+    needs_confirmation:
+    - translation_authority_confirm
+- id: fx.dlt.012
+  desc: Cerința lingvistică nu este cunoscută.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: unknown
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    - confirm_translation_requirement
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    warnings_present:
+    - authenticity_not_recognition
+    needs_confirmation:
+    - translation_authority_confirm
+- id: fx.dlt.013
+  desc: Înscris privat, în afara regimului automat al documentelor publice.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: private_document
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    advice_tags:
+    - classification_required
+    - translation_not_required_language_accepted
+    warnings_present:
+    - private_document_outside_public_regime
+    needs_confirmation:
+    - private_document_formality
+- id: fx.dlt.014
+  desc: Document public într-o materie neacoperită de simplificarea UE.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: other_public_document
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: ok
+    included_steps:
+    - classify_document_and_destination
+    advice_tags:
+    - classification_required
+    - translation_not_required_language_accepted
+- id: fx.dlt.015
+  desc: Autoritatea primitoare nu și-a confirmat cerințele.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: false
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: blocked
+    included_steps:
+    - classify_document_and_destination
+    - use_eu_public_document_simplification
+    advice_tags:
+    - classification_required
+    - eu_no_apostille
+    - translation_not_required_language_accepted
+    warnings_present:
+    - authenticity_not_recognition
+    needs_confirmation:
+    - receiving_authority_check
+- id: fx.dlt.016
+  desc: Lipsește faptul obligatoriu `document_direction`.
+  facts:
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_direction
+- id: fx.dlt.017
+  desc: Lipsește faptul obligatoriu `issuing_country_group`.
+  facts:
+    document_direction: foreign_to_ro
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issuing_country_group
+- id: fx.dlt.018
+  desc: Lipsește faptul obligatoriu `receiving_country_group`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - receiving_country_group
+- id: fx.dlt.019
+  desc: Lipsește faptul obligatoriu `document_subject`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_subject
+- id: fx.dlt.020
+  desc: Lipsește faptul obligatoriu `hague_pair_status`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - hague_pair_status
+- id: fx.dlt.021
+  desc: Lipsește faptul obligatoriu `receiving_language_status`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - receiving_language_status
+- id: fx.dlt.022
+  desc: Lipsește faptul obligatoriu `multilingual_form_status`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - multilingual_form_status
+- id: fx.dlt.023
+  desc: Lipsește faptul obligatoriu `destination_requirements_confirmed`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    romanian_document_authority_class: unknown
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - destination_requirements_confirmed
+- id: fx.dlt.024
+  desc: Lipsește faptul obligatoriu `romanian_document_authority_class`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    preverification_completed: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - romanian_document_authority_class
+- id: fx.dlt.025
+  desc: Lipsește faptul obligatoriu `preverification_completed`.
+  facts:
+    document_direction: foreign_to_ro
+    issuing_country_group: eu
+    receiving_country_group: eu
+    document_subject: covered_public_matter
+    hague_pair_status: false
+    receiving_language_status: accepted
+    multilingual_form_status: unavailable
+    destination_requirements_confirmed: true
+    romanian_document_authority_class: unknown
+  expect:
+    status: needs_facts
+    missing_facts:
+    - preverification_completed
+- id: fx.dlt.026
+  desc: Niciun fapt furnizat; motorul trebuie să ceară toate faptele obligatorii.
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - document_direction
+    - issuing_country_group
+    - receiving_country_group
+    - document_subject
+    - hague_pair_status
+    - receiving_language_status
+    - multilingual_form_status
+    - destination_requirements_confirmed
+    - romanian_document_authority_class
+    - preverification_completed

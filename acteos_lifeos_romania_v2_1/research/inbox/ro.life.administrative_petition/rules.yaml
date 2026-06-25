@@ -1,0 +1,596 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.administrative_petition
+status: draft
+rules:
+- id: rule.pet.base
+  canonical_rule_id: pet.base
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.pet.choose_authority
+  - type: include_step
+    step_id: step.pet.prepare
+  - type: include_step
+    step_id: step.pet.submit
+  - type: include_step
+    step_id: step.pet.track_deadline
+  - type: include_requirement
+    requirement_id: req.pet.content
+  - type: include_requirement
+    requirement_id: req.pet.registration_proof
+  source_claim_ids:
+  - claim.pet.definition
+  - claim.pet.answer_30d
+  status: draft
+- id: rule.pet.identity
+  canonical_rule_id: pet.identity
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: identified
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.pet.identity
+  source_claim_ids:
+  - claim.pet.anonymous_archived
+  status: draft
+- id: rule.pet.anonymous_normal
+  canonical_rule_id: pet.anonymous_normal
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: identified
+      value: false
+    - op: eq
+      field: harassment_subject
+      value: none
+  effects:
+  - type: block
+    tag: anonymous_petition_archived
+    message_ro: O petiție anonimă obișnuită se clasează; include datele de identificare pentru a primi răspuns.
+  source_claim_ids:
+  - claim.pet.anonymous_archived
+  status: draft
+- id: rule.pet.anonymous_unknown
+  canonical_rule_id: pet.anonymous_unknown
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: identified
+      value: false
+    - op: eq
+      field: harassment_subject
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: anonymous_exception_requires_review
+    message_ro: Verifică dacă obiectul intră exact în excepția legală pentru hărțuire.
+  source_claim_ids:
+  - claim.pet.anonymous_archived
+  - claim.pet.anonymous_harassment
+  status: draft
+- id: rule.pet.anonymous_harassment
+  canonical_rule_id: pet.anonymous_harassment
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: identified
+      value: false
+    - op: in
+      field: harassment_subject
+      values:
+      - sex_based
+      - moral
+  effects:
+  - type: emit_advice
+    tag: anonymous_harassment_petition_must_be_analyzed
+    message_ro: Petiția anonimă privind hărțuirea exceptată de lege nu se clasează automat.
+  source_claim_ids:
+  - claim.pet.anonymous_harassment
+  status: draft
+- id: rule.pet.criminal_referral
+  canonical_rule_id: pet.criminal_referral
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: harassment_subject
+      values:
+      - sex_based
+      - moral
+    - op: eq
+      field: criminal_indications
+      value: true
+  effects:
+  - type: emit_warning
+    tag: possible_criminal_indications_immediate_referral
+    message_ro: Textul legal prevede sesizarea de îndată a organelor de urmărire penală de către persoana/comisia responsabilă.
+  source_claim_ids:
+  - claim.pet.criminal_referral
+  status: draft
+- id: rule.pet.wrong_authority
+  canonical_rule_id: pet.wrong_authority
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: competent_authority
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.pet.follow_forwarding
+  - type: set_deadline
+    step_id: step.pet.follow_forwarding
+    value:
+      kind: calendar_days_from_registration
+      days: 5
+  - type: emit_advice
+    tag: wrong_authority_forwards_within_5_days
+    message_ro: Autoritatea greșit sesizată trebuie să trimită petiția autorității competente și să te informeze.
+  source_claim_ids:
+  - claim.pet.forward_5d
+  status: draft
+- id: rule.pet.deadline_30
+  canonical_rule_id: pet.deadline_30
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: step.pet.track_deadline
+    value:
+      kind: calendar_days_from_competent_registration
+      days: 30
+  - type: emit_advice
+    tag: petition_answer_deadline_30_days
+    message_ro: Termenul de bază este 30 de zile de la înregistrarea la autoritatea competentă.
+  source_claim_ids:
+  - claim.pet.answer_30d
+  status: draft
+- id: rule.pet.extension_other
+  canonical_rule_id: pet.extension_other
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: complexity_extension
+      value: true
+    - op: eq
+      field: domain
+      value: other
+  effects:
+  - type: include_requirement
+    requirement_id: req.pet.extension_notice
+  - type: set_deadline
+    step_id: step.pet.track_deadline
+    value:
+      kind: maximum_calendar_days_total
+      days: 45
+  - type: emit_advice
+    tag: extension_max_15_days
+    message_ro: În celelalte domenii, prelungirea poate fi de cel mult 15 zile peste termenul de bază.
+  source_claim_ids:
+  - claim.pet.extension
+  status: draft
+- id: rule.pet.extension_energy
+  canonical_rule_id: pet.extension_energy
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: complexity_extension
+      value: true
+    - op: eq
+      field: domain
+      value: energy_gas
+  effects:
+  - type: include_requirement
+    requirement_id: req.pet.extension_notice
+  - type: set_deadline
+    step_id: step.pet.track_deadline
+    value:
+      kind: maximum_calendar_days_total
+      days: 60
+  - type: emit_advice
+    tag: energy_extension_max_30_days
+    message_ro: În energie și gaze naturale, prelungirea poate fi de cel mult 30 de zile peste termenul de bază.
+  source_claim_ids:
+  - claim.pet.extension
+  status: draft
+- id: rule.pet.extension_notice_missing
+  canonical_rule_id: pet.extension_notice_missing
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: complexity_extension
+      value: true
+    - op: eq
+      field: extension_notice_received
+      value: false
+  effects:
+  - type: emit_warning
+    tag: extension_requires_prior_notice
+    message_ro: Prelungirea legală este legată de notificarea prealabilă a petentului.
+  source_claim_ids:
+  - claim.pet.extension
+  status: draft
+- id: rule.pet.duplicate_pending
+  canonical_rule_id: pet.duplicate_pending
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: duplicate_same_issue
+      value: true
+    - op: eq
+      field: prior_answer_received
+      value: false
+  effects:
+  - type: emit_advice
+    tag: duplicate_petitions_connected_single_answer
+    message_ro: Petițiile privind aceeași problemă se conexează și primesc un singur răspuns.
+  source_claim_ids:
+  - claim.pet.duplicate
+  status: draft
+- id: rule.pet.duplicate_answered
+  canonical_rule_id: pet.duplicate_answered
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: duplicate_same_issue
+      value: true
+    - op: eq
+      field: prior_answer_received
+      value: true
+  effects:
+  - type: emit_warning
+    tag: same_content_after_answer_may_be_archived
+    message_ro: O nouă petiție cu același conținut după răspuns se clasează cu mențiune la numărul inițial.
+  source_claim_ids:
+  - claim.pet.duplicate
+  status: draft
+- id: rule.pet.overdue_30
+  canonical_rule_id: pet.overdue_30
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: response_received
+      value: false
+    - op: eq
+      field: complexity_extension
+      value: false
+    - op: gt
+      field: days_since_registration
+      value: 30
+  effects:
+  - type: emit_warning
+    tag: petition_response_overdue
+    message_ro: Termenul de bază de 30 de zile a fost depășit; folosește dovada înregistrării într-o revenire sau cale legală
+      adecvată.
+  source_claim_ids:
+  - claim.pet.answer_30d
+  status: draft
+- id: rule.pet.overdue_extended_other
+  canonical_rule_id: pet.overdue_extended_other
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: response_received
+      value: false
+    - op: eq
+      field: complexity_extension
+      value: true
+    - op: eq
+      field: domain
+      value: other
+    - op: gt
+      field: days_since_registration
+      value: 45
+  effects:
+  - type: emit_warning
+    tag: extended_petition_response_overdue
+    message_ro: A fost depășit și maximul modelat de 45 de zile.
+  source_claim_ids:
+  - claim.pet.extension
+  status: draft
+- id: rule.pet.overdue_extended_energy
+  canonical_rule_id: pet.overdue_extended_energy
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: response_received
+      value: false
+    - op: eq
+      field: complexity_extension
+      value: true
+    - op: eq
+      field: domain
+      value: energy_gas
+    - op: gt
+      field: days_since_registration
+      value: 60
+  effects:
+  - type: emit_warning
+    tag: extended_petition_response_overdue
+    message_ro: A fost depășit și maximul modelat de 60 de zile pentru energie/gaze.
+  source_claim_ids:
+  - claim.pet.extension
+  status: draft
+- id: rule.pet.response_basis_missing
+  canonical_rule_id: pet.response_basis_missing
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: response_received
+      value: true
+    - op: eq
+      field: response_has_legal_basis
+      value: false
+  effects:
+  - type: emit_warning
+    tag: response_legal_basis_missing
+    message_ro: Răspunsul trebuie să indice temeiul legal al soluției.
+  source_claim_ids:
+  - claim.pet.response_legal_basis
+  status: draft
+- id: rule.pet.timis_form
+  canonical_rule_id: pet.timis_form
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: eq
+    field: target_authority
+    value: timis_prefecture
+  effects:
+  - type: attach_channel
+    channel_id: ch.pet.timis_form
+  source_claim_ids:
+  - claim.pet.timis_form
+  - claim.pet.timis_confirmation
+  status: draft
+- id: rule.pet.timis_attachment
+  canonical_rule_id: pet.timis_attachment
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: all
+    args:
+    - op: eq
+      field: target_authority
+      value: timis_prefecture
+    - op: eq
+      field: submission_channel
+      value: online_form
+    - op: eq
+      field: attachment_present
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.pet.timis_attachment
+  source_claim_ids:
+  - claim.pet.timis_attachment
+  status: draft
+- id: rule.pet.timis_bad_extension
+  canonical_rule_id: pet.timis_bad_extension
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: all
+    args:
+    - op: eq
+      field: target_authority
+      value: timis_prefecture
+    - op: eq
+      field: attachment_present
+      value: true
+    - op: eq
+      field: attachment_extension
+      value: other
+  effects:
+  - type: block
+    tag: timis_attachment_extension_not_allowed
+    message_ro: Folosește una dintre extensiile acceptate de formularul Timiș.
+  source_claim_ids:
+  - claim.pet.timis_attachment
+  status: draft
+- id: rule.pet.timis_too_large
+  canonical_rule_id: pet.timis_too_large
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: all
+    args:
+    - op: eq
+      field: target_authority
+      value: timis_prefecture
+    - op: eq
+      field: attachment_present
+      value: true
+    - op: gt
+      field: attachment_size_mb
+      value: 1
+  effects:
+  - type: block
+    tag: timis_attachment_over_1mb
+    message_ro: Atașamentul depășește limita de 1 MB afișată de formular.
+  source_claim_ids:
+  - claim.pet.timis_attachment
+  status: draft
+- id: rule.pet.timis_filename
+  canonical_rule_id: pet.timis_filename
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: all
+    args:
+    - op: eq
+      field: target_authority
+      value: timis_prefecture
+    - op: eq
+      field: attachment_present
+      value: true
+    - op: eq
+      field: attachment_filename_has_diacritics
+      value: true
+  effects:
+  - type: block
+    tag: timis_attachment_filename_diacritics
+    message_ro: Redenumește fișierul fără diacritice.
+  source_claim_ids:
+  - claim.pet.timis_attachment
+  status: draft
+- id: rule.pet.timis_no_confirmation
+  canonical_rule_id: pet.timis_no_confirmation
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: all
+    args:
+    - op: eq
+      field: target_authority
+      value: timis_prefecture
+    - op: eq
+      field: submission_channel
+      value: online_form
+    - op: eq
+      field: submission_confirmation_received
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: online_submission_not_confirmed
+    message_ro: Nu considera petiția înregistrată până nu apare mesajul de confirmare sau o dovadă echivalentă.
+  source_claim_ids:
+  - claim.pet.timis_confirmation
+  status: draft
+- id: rule.pet.other_authority
+  canonical_rule_id: pet.other_authority
+  event_type_id: life.administrative_petition
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  when:
+    op: eq
+    field: target_authority
+    value: other
+  effects:
+  - type: attach_channel
+    channel_id: ch.pet.official_registry
+  - type: require_confirmation
+    tag: verify_target_authority_channel
+    message_ro: Verifică pagina oficială și canalul de petiții al autorității competente; formularul Timiș nu se reutilizează.
+  source_claim_ids: []
+  status: draft

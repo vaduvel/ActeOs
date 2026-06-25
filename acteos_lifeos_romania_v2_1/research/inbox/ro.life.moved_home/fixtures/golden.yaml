@@ -1,0 +1,98 @@
+batch_id: R1_MOVED_HOME
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.moved
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: F01
+    desc: domiciliu, buletin, proprietar, fara copii, fara vehicul, ziua 3
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, has_minor_children_moving: false, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: resolved, included_steps: [update_identity_card], deadlines: { update_identity_card: '2026-07-07' }, warnings: [ci_deadline_15d] }
+  - id: F02
+    desc: domiciliu, ci_simpla, gazduit, fara copii, fara vehicul
+    facts: { change_type: domiciliu, id_card_type: ci_simpla, new_address_relation: host_consent, has_minor_children_moving: false, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: resolved, included_steps: [update_identity_card], requirements: [req.id_card_old, req.birth_certificate, req.address_proof, req.host_consent] }
+  - id: F03
+    desc: domiciliu, CEI, proprietar - fara act nou
+    facts: { change_type: domiciliu, id_card_type: cei, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: needs_confirmation, update_identity_card: not_applicable, confirmations: [cei_address_change] }
+  - id: F04
+    desc: domiciliu, buletin, proprietar, are vehicul
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, owns_vehicle: true, move_date: '2026-06-22' }
+    expect: { status: needs_confirmation, included_steps: [update_identity_card, update_vehicle_registration], confirmations: [vehicle_address_deadline] }
+  - id: F05
+    desc: domiciliu, buletin, proprietar, copii sub 14 care se muta
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, has_minor_children_moving: true, minor_children_under_14: true, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: resolved, requirements: [req.children_birth_certificates] }
+  - id: F06
+    desc: domiciliu, ci_simpla, proprietar, ziua 20 (peste 15)
+    facts: { change_type: domiciliu, id_card_type: ci_simpla, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-05' }
+    expect: { status: resolved, warnings: [ci_overdue, sanction_40_80] }
+  - id: F07
+    desc: lipseste id_card_type
+    facts: { change_type: domiciliu, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: needs_facts, missing_facts: [id_card_type] }
+  - id: F08
+    desc: lipseste change_type
+    facts: { id_card_type: buletin, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: needs_facts, missing_facts: [change_type] }
+  - id: F09
+    desc: resedinta (flotant), nu domiciliu
+    facts: { change_type: resedinta, id_card_type: buletin, new_address_relation: host_consent, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: needs_confirmation, included_steps: [register_residence_visa], not_included: [update_identity_card] }
+  - id: F10
+    desc: domiciliu, CEI, proprietar, are vehicul
+    facts: { change_type: domiciliu, id_card_type: cei, new_address_relation: owner, owns_vehicle: true, move_date: '2026-06-22' }
+    expect: { status: needs_confirmation, update_identity_card: not_applicable, included_steps: [update_vehicle_registration] }
+  - id: F11
+    desc: jurisdictie alt judet (Cluj) - regula CI nationala se aplica, fara canal Timisoara
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-22' }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: resolved, included_steps: [update_identity_card], channels_absent: [ch.dep_timisoara] }
+  - id: F12
+    desc: reference_date inainte de effective_from al regulii CEI - CEI inca neaplicabil
+    facts: { change_type: domiciliu, id_card_type: cei, new_address_relation: owner, owns_vehicle: false, move_date: '2025-01-10' }
+    reference_date: '2025-01-12'
+    expect: { status: resolved, note: 'rule.moved.cei_no_new_doc inactiv inainte de 2025-03-20; comportament de confirmat' }
+  - id: F13
+    desc: bundle complet - buletin, gazduit, copii sub 14, vehicul, ziua 1
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: host_consent, has_minor_children_moving: true, minor_children_under_14: true, owns_vehicle: true, move_date: '2026-06-24' }
+    expect: { status: needs_confirmation, included_steps: [update_identity_card, update_vehicle_registration], requirements: [req.host_consent, req.children_birth_certificates] }
+  - id: F14
+    desc: domiciliu, ci_simpla, proprietar, ziua 16 (1 zi intarziere)
+    facts: { change_type: domiciliu, id_card_type: ci_simpla, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-09' }
+    expect: { status: resolved, warnings: [ci_overdue] }
+  - id: F15
+    desc: domiciliu, CEI, gazduit
+    facts: { change_type: domiciliu, id_card_type: cei, new_address_relation: host_consent, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: needs_confirmation, update_identity_card: not_applicable, confirmations: [cei_address_change] }
+  - id: F16
+    desc: are vehicul dar change_type=resedinta - actualizarea vehiculului nu se declanseaza
+    facts: { change_type: resedinta, id_card_type: buletin, new_address_relation: host_consent, owns_vehicle: true, move_date: '2026-06-22' }
+    expect: { status: needs_confirmation, included_steps: [register_residence_visa], not_included: [update_vehicle_registration] }
+  - id: F17
+    desc: domiciliu, buletin, proprietar, mutare azi (ziua 0)
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-25' }
+    expect: { status: resolved, deadlines: { update_identity_card: '2026-07-10' } }
+  - id: F18
+    desc: id_card_type invalid - valoare in afara enum
+    facts: { change_type: domiciliu, id_card_type: pasaport, new_address_relation: owner, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: needs_facts, missing_facts: [id_card_type], note: 'valoare invalida tratata ca fapt lipsa valid' }
+  - id: F19
+    desc: copii care se muta dar toti peste 14 - fara cerinta certificat copii
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, has_minor_children_moving: true, minor_children_under_14: false, owns_vehicle: false, move_date: '2026-06-22' }
+    expect: { status: resolved, requirements_absent: [req.children_birth_certificates] }
+  - id: F20
+    desc: domiciliu, CEI, proprietar, fara vehicul, ziua 40 - fara obligatie, fara overdue
+    facts: { change_type: domiciliu, id_card_type: cei, new_address_relation: owner, owns_vehicle: false, move_date: '2026-05-16' }
+    expect: { status: needs_confirmation, update_identity_card: not_applicable, warnings_absent: [ci_overdue] }
+  - id: F21
+    desc: domiciliu, buletin, proprietar, vehicul, ziua 100 - CI overdue + vehicul needs_confirmation
+    facts: { change_type: domiciliu, id_card_type: buletin, new_address_relation: owner, owns_vehicle: true, move_date: '2026-03-17' }
+    expect: { status: needs_confirmation, warnings: [ci_overdue, sanction_40_80], included_steps: [update_identity_card, update_vehicle_registration] }
+  - id: F22
+    desc: doar event_type, fara fapte - listeaza faptele cerute
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [change_type, id_card_type] }

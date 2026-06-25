@@ -1,0 +1,383 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_MEDICAL_CERTIFICATE_SCHOOL
+alias_event_type_id: ro.life.medical_certificate_school
+event_type_id: life.medical_certificate_school
+status: draft
+rules:
+- id: rule.school_medical.required_facts
+  canonical_rule_id: school_medical.required_facts
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_school_medical_facts
+    message_ro: Precizează scopul adeverinței, nivelul de învățământ și anul școlar.
+  source_claim_ids:
+  - claim.school_medical.school_cabinet_free
+  status: draft
+  required_facts:
+  - certificate_purpose
+  - education_level
+  - school_year
+- id: rule.school_medical.early_2025_2026
+  canonical_rule_id: school_medical.early_2025_2026
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_purpose
+      value: entry_collectivity
+    - op: eq
+      field: education_level
+      value: early_education
+    - op: eq
+      field: school_year
+      value: 2025-2026
+  effects:
+  - type: include_step
+    step_id: request_clinical_certificate_from_family_doctor
+  - type: include_requirement
+    requirement_id: req.clinical_certificate_for_collectivity
+  - type: include_requirement
+    requirement_id: req.epidemiological_opinion_or_vaccination_proof
+  - type: set_deadline
+    code: clinical_certificate_first_day
+    value:
+      kind: fixed_event
+      anchor: first_attendance_day
+    message_ro: Adeverința clinică se prezintă în prima zi de frecventare.
+  - type: set_deadline
+    code: epi_vax_max_5_days
+    value:
+      max_days_before_attendance: 5
+      reference_fact: first_attendance_day
+    message_ro: Avizul/dovada se emite cu maximum 5 zile înainte.
+  source_claim_ids:
+  - claim.school_medical.early.clinical_2025_2026
+  - claim.school_medical.early.epi_vax_5d_2025_2026
+  status: draft
+- id: rule.school_medical.early_other_year
+  canonical_rule_id: school_medical.early_other_year
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_purpose
+      value: entry_collectivity
+    - op: eq
+      field: education_level
+      value: early_education
+    - op: neq
+      field: school_year
+      value: 2025-2026
+  effects:
+  - type: require_confirmation
+    tag: current_school_year_collectivity_documents
+    message_ro: Confirmă ghidul oficial al anului școlar curent înainte de a folosi documentele sau fereastra de 5 zile.
+  source_claim_ids:
+  - claim.school_medical.early.clinical_2025_2026
+  - claim.school_medical.early.epi_vax_5d_2025_2026
+  status: draft
+- id: rule.school_medical.special_support
+  canonical_rule_id: school_medical.special_support
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: certificate_purpose
+    value: special_education_file
+  effects:
+  - type: include_step
+    step_id: obtain_special_education_medical_documents
+  - type: include_requirement
+    requirement_id: req.medical_certificate_a5
+  - type: include_requirement
+    requirement_id: req.synthetic_medical_sheet
+  - type: emit_advice
+    tag: synthetic_sheet_free
+    message_ro: Fișa medicală sintetică este eliberată gratuit de medicul de familie.
+  source_claim_ids:
+  - claim.school_medical.special.a5
+  - claim.school_medical.special.synthetic_sheet_free
+  status: draft
+- id: rule.school_medical.a5_provider_unknown
+  canonical_rule_id: school_medical.a5_provider_unknown
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_purpose
+      value: special_education_file
+    - op: eq
+      field: a5_provider_dsp_authorized
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: dsp_authorized_a5_provider
+    message_ro: Confirmă o unitate abilitată de DSP pentru certificatul A5; nu orice cabinet îl poate emite.
+  source_claim_ids:
+  - claim.school_medical.special.a5
+  status: draft
+- id: rule.school_medical.other_purpose
+  canonical_rule_id: school_medical.other_purpose
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: certificate_purpose
+    values:
+    - return_after_illness
+    - sports_exemption
+    - school_transfer
+    - generic_school_request
+  effects:
+  - type: require_confirmation
+    tag: purpose_specific_form_issuer_validity
+    message_ro: Confirmă formularul, emitentul și valabilitatea exactă din norma/cerința instituției pentru acest scop.
+  source_claim_ids:
+  - claim.school_medical.school_cabinet_free
+  status: draft
+- id: rule.school_medical.school_office_free
+  canonical_rule_id: school_medical.school_office_free
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_provider
+    value: school_medical_office
+  effects:
+  - type: emit_advice
+    tag: school_medical_service_free
+    message_ro: Serviciile furnizate de cabinetul medical/stomatologic școlar sunt gratuite.
+  source_claim_ids:
+  - claim.school_medical.school_cabinet_free
+  status: draft
+- id: rule.school_medical.no_fee_generalization
+  canonical_rule_id: school_medical.no_fee_generalization
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: service_provider
+    value: family_doctor
+  effects:
+  - type: require_confirmation
+    tag: family_doctor_certificate_fee
+    message_ro: Nu presupune gratuitatea oricărei adeverințe eliberate de medicul de familie; confirmă regimul exact al documentului.
+  source_claim_ids:
+  - claim.school_medical.school_cabinet_free
+  status: draft
+- id: rule.school_medical.tm_dsp
+  canonical_rule_id: school_medical.tm_dsp
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_dsp_guidance
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dsp_tm
+  - type: emit_advice
+    tag: dsp_guidance_not_universal_issuer
+    message_ro: DSP Timiș poate confirma unitățile abilitate și regulile sanitare; nu este emitent universal al adeverinței.
+  source_claim_ids:
+  - claim.school_medical.dsp_tm_guidance
+  status: draft
+- id: rule.school_medical.other_county
+  canonical_rule_id: school_medical.other_county
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_dsp_guidance
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: county_dsp_channel
+    message_ro: Confirmă direcția de sănătate publică și canalul județean competent.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.school_medical.dsp_tm_guidance
+  status: draft
+- id: rule.school_medical.epi_window_missed
+  canonical_rule_id: school_medical.epi_window_missed
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_purpose
+      value: entry_collectivity
+    - op: eq
+      field: education_level
+      value: early_education
+    - op: eq
+      field: school_year
+      value: 2025-2026
+    - op: eq
+      field: epi_within_verified_5_day_window
+      value: false
+  effects:
+  - type: emit_warning
+    tag: epi_document_outside_verified_window
+    message_ro: Avizul/dovada este în afara ferestrei de cel mult 5 zile verificată pentru acest an.
+  source_claim_ids:
+  - claim.school_medical.early.epi_vax_5d_2025_2026
+  status: draft
+- id: rule.school_medical.entry_outside_early_scope
+  canonical_rule_id: school_medical.entry_outside_early_scope
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: certificate_purpose
+      value: entry_collectivity
+    - op: neq
+      field: education_level
+      value: early_education
+  effects:
+  - type: require_confirmation
+    tag: scope_outside_verified_early_education_guide
+    message_ro: Ghidul citat verifică educația timpurie 2025–2026; confirmă norma aplicabilă nivelului și anului cerut.
+  source_claim_ids:
+  - claim.school_medical.early.clinical_2025_2026
+  status: draft
+- id: rule.school_medical.unverified_form
+  canonical_rule_id: school_medical.unverified_form
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: institution_form_url_verified
+    value: false
+  effects:
+  - type: emit_warning
+    tag: unverified_institution_form
+    message_ro: Formularul nu are încă un link oficial verificat; nu îl trata ca obligatoriu.
+  source_claim_ids:
+  - claim.school_medical.dsp_tm_guidance
+  status: draft
+- id: rule.school_medical.photo_authenticity
+  canonical_rule_id: school_medical.photo_authenticity
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: document_input
+    value: photo_only
+  effects:
+  - type: emit_warning
+    tag: authenticity_not_verifiable_from_photo
+    message_ro: O fotografie permite doar verificări formale; nu dovedește autenticitatea documentului.
+  source_claim_ids:
+  - claim.school_medical.early.clinical_2025_2026
+  status: draft
+- id: rule.school_medical.school_office_fee_claim
+  canonical_rule_id: school_medical.school_office_fee_claim
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: service_provider
+      value: school_medical_office
+    - op: gt
+      field: claimed_fee
+      value: 0
+  effects:
+  - type: emit_warning
+    tag: claimed_fee_conflicts_with_free_school_cabinet_services
+    message_ro: Sursa oficială indică servicii gratuite în cabinetul medical școlar; cere temeiul scris al taxei.
+  source_claim_ids:
+  - claim.school_medical.school_cabinet_free
+  status: draft
+- id: rule.school_medical.synthetic_sheet_fee_claim
+  canonical_rule_id: school_medical.synthetic_sheet_fee_claim
+  event_type_id: life.medical_certificate_school
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: gt
+    field: claimed_synthetic_sheet_fee
+    value: 0
+  effects:
+  - type: emit_warning
+    tag: claimed_synthetic_sheet_fee_conflicts_with_source
+    message_ro: Sursa oficială indică eliberarea gratuită a fișei medicale sintetice; cere temeiul scris al taxei.
+  source_claim_ids:
+  - claim.school_medical.special.synthetic_sheet_free
+  status: draft

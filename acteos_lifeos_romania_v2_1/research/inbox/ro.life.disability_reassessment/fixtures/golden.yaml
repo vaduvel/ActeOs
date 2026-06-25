@@ -1,0 +1,316 @@
+batch_id: B06_DISABILITY_REASSESSMENT
+defaults:
+  alias_event_type_id: ro.life.disability_reassessment
+  event_type_id: life.disability_reassessment
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: DR01
+  description: Adult, certificat determinat, 90 zile până la expirare
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-09-23'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_adult_reassessment_file
+    - submit_adult_reassessment_before_expiry
+    deadlines:
+    - adult_reassessment_30_days_before_expiry
+    channels:
+    - ch.dgaspc_tm_adult_disability
+    confirmations:
+    - adult_reassessment_dossier_current_local
+- id: DR02
+  description: Adult, exact 30 zile până la expirare
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-07-25'
+  expect:
+    status: needs_confirmation
+    deadlines:
+    - adult_reassessment_30_days_before_expiry
+    confirmations:
+    - adult_reassessment_dossier_current_local
+- id: DR03
+  description: Adult, mai puțin de 30 zile
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-07-10'
+  expect:
+    status: needs_confirmation
+    overdue:
+    - adult_reassessment_30_days_before_expiry
+    confirmations:
+    - adult_reassessment_dossier_current_local
+- id: DR04
+  description: Adult, certificat deja expirat
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-06-01'
+    certificate_expiry_state: expired
+  expect:
+    status: needs_confirmation
+    overdue:
+    - adult_reassessment_30_days_before_expiry
+    warnings:
+    - certificate_expired_no_retroactive_guarantee
+    confirmations:
+    - adult_reassessment_dossier_current_local
+- id: DR05
+  description: Adult, lipsește data expirării
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - expiry_date_required
+- id: DR06
+  description: Copil, 120 zile până la expirare
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-10-23'
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_child_reassessment_file
+    - request_child_reassessment_before_expiry
+    requirements:
+    - req.current_child_disability_certificate_copy
+    - req.child_disability_application
+    - req.updated_social_medical_psychological_educational_file
+    deadlines:
+    - child_reassessment_60_days_before_expiry
+    channels:
+    - ch.dgaspc_tm_child_complex_evaluation
+- id: DR07
+  description: Copil, exact 60 zile până la expirare
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-08-24'
+  expect:
+    status: resolved
+    deadlines:
+    - child_reassessment_60_days_before_expiry
+- id: DR08
+  description: Copil, 20 zile până la expirare
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-07-15'
+  expect:
+    status: resolved
+    overdue:
+    - child_reassessment_60_days_before_expiry
+- id: DR09
+  description: Copil, data expirării lipsește
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - expiry_date_required
+- id: DR10
+  description: Adult cu certificat permanent, cere reevaluare periodică
+  facts:
+    person_type: adult
+    certificate_validity: permanent
+    reassessment_reason: expiry
+    county: TM
+  expect:
+    status: resolved
+    excluded_steps:
+    - submit_periodic_reassessment
+    advice:
+    - permanent_certificate_no_periodic_reassessment
+- id: DR11
+  description: Adult permanent, agravare
+  facts:
+    person_type: adult
+    certificate_validity: permanent
+    reassessment_reason: aggravation
+    county: TM
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_reassessment_due_to_aggravation
+    requirements:
+    - req.updated_medical_and_psychosocial_evidence
+    confirmations:
+    - permanent_aggravation_dossier_and_channel
+- id: DR12
+  description: Adult permanent, convocare oficială
+  facts:
+    person_type: adult
+    certificate_validity: permanent
+    reassessment_reason: authority_summons
+    county: TM
+  expect:
+    status: resolved
+    included_steps:
+    - attend_reassessment_on_authority_summons
+    requirements:
+    - req.official_reassessment_summons
+    warnings:
+    - summons_due_date_controls
+- id: DR13
+  description: Adult grad grav, evaluare la domiciliu
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-09-01'
+    previous_degree: severe
+    home_evaluation_requested: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_periodic_evaluation_at_home
+    requirements:
+    - req.home_evaluation_request
+    confirmations:
+    - adult_reassessment_dossier_current_local
+- id: DR14
+  description: Adult grad mediu, cere domiciliu
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: TM
+    expiry_date: '2026-09-01'
+    previous_degree: medium
+    home_evaluation_requested: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - adult_reassessment_dossier_current_local
+    - home_evaluation_eligibility
+- id: DR15
+  description: Revizuire PIRIS în Timiș
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: piris_revision
+    county: TM
+  expect:
+    status: resolved
+    included_steps:
+    - request_piris_revision_independently
+    excluded_steps:
+    - submit_certificate_reassessment
+    advice:
+    - piris_revision_independent
+- id: DR16
+  description: Revizuire PIRIS în alt județ
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: piris_revision
+    county: CJ
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - local_reassessment_channel_and_dossier
+    - piris_revision_local_route
+- id: DR17
+  description: Copil aproape de 18 ani
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    reassessment_reason: transition_to_adult
+    county: TM
+    age_years: 17.9
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - transition_18_route_and_timing
+- id: DR18
+  description: Adult în Cluj — gap local
+  facts:
+    person_type: adult
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: CJ
+    expiry_date: '2026-09-01'
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - adult_reassessment_dossier_current_local
+    - local_reassessment_channel_and_dossier
+- id: DR19
+  description: Copil în Arad — gap local
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    reassessment_reason: expiry
+    county: AR
+    expiry_date: '2026-09-01'
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - local_reassessment_channel_and_dossier
+- id: DR20
+  description: Lipsește valabilitatea certificatului
+  facts:
+    person_type: adult
+    reassessment_reason: expiry
+    county: TM
+  expect:
+    status: needs_facts
+    missing_facts:
+    - certificate_validity
+- id: DR21
+  description: Lipsește motivul reevaluării
+  facts:
+    person_type: child
+    certificate_validity: fixed
+    county: TM
+  expect:
+    status: needs_facts
+    missing_facts:
+    - reassessment_reason
+- id: DR22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - person_type
+    - certificate_validity
+    - reassessment_reason
+    - county

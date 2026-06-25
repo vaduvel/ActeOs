@@ -1,0 +1,454 @@
+batch_id: B13_PAY_LOCAL_TAXES
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.pay_local_taxes
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: LT01
+  desc: Impozit pe clădire între cele două scadențe
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT02
+  desc: Impozit pe teren înainte de 31 martie
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: land
+    payment_stage: before_march_31
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_first_local_tax_installment_or_verified_full_year
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - first_installment_due_march_31
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT03
+  desc: Impozit auto în data de 30 septembrie
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: vehicle
+    payment_stage: on_september_30
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_remaining_local_tax_by_september_30
+    advice_tags:
+    - timisoara_two_installments_march_september
+    warnings_present:
+    - second_local_tax_installment_due_today
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT04
+  desc: Mai multe impozite după 30 septembrie
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: multiple
+    payment_stage: after_september_30
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_overdue_local_tax_balance
+    advice_tags:
+    - timisoara_two_installments_march_september
+    warnings_present:
+    - local_tax_installment_deadlines_passed
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT05
+  desc: Suma nu este verificată în evidența fiscală curentă
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: false
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: blocked
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    requirements:
+    - req.current_local_tax_assessment_or_live_balance
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT06
+  desc: Utilizatorul solicită bonificația pe baza paginii vechi
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: before_march_31
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: true
+  expect:
+    status: conflicting
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_first_local_tax_installment_or_verified_full_year
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - first_installment_due_march_31
+    needs_confirmation:
+    - confirm_timisoara_2026_bonus
+    - confirm_timisoara_payment_channel_and_account
+    conflicts:
+    - timisoara_bonus_source_is_from_2021
+    blocked_effects:
+    - apply_early_payment_bonus
+- id: LT07
+  desc: Este selectat anul fiscal 2025
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2025
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_local_tax_rules_for_selected_year
+    - confirm_timisoara_payment_channel_and_account
+- id: LT08
+  desc: Impozit local într-un alt UAT
+  facts:
+    territory_id: RO-AR-ARAD
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    advice_tags:
+    - verified_with_local_gap
+    needs_confirmation:
+    - confirm_other_uat_local_tax_procedure
+    - confirm_timisoara_payment_channel_and_account
+- id: LT09
+  desc: Alt tip de taxă locală
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: other
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_special_local_tax_deadline
+    - confirm_timisoara_payment_channel_and_account
+- id: LT10
+  desc: Plată online care necesită validarea contului
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT11
+  desc: Plată prin transfer bancar
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: bank
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT12
+  desc: Plată la casierie
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: cash
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT13
+  desc: Impozit auto înainte de prima scadență
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: vehicle
+    payment_stage: before_march_31
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_first_local_tax_installment_or_verified_full_year
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - first_installment_due_march_31
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+- id: LT14
+  desc: An fiscal viitor fără reguli publicate în batch
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2027
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: ok
+    included_steps:
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_local_tax_rules_for_selected_year
+    - confirm_timisoara_payment_channel_and_account
+- id: LT15
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: needs_facts
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+    missing_facts:
+    - territory_id
+- id: LT16
+  desc: Lipsește faptul obligatoriu tax_year
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+    missing_facts:
+    - tax_year
+- id: LT17
+  desc: Lipsește faptul obligatoriu tax_type
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: needs_facts
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+    missing_facts:
+    - tax_type
+- id: LT18
+  desc: Lipsește faptul obligatoriu payment_stage
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    advice_tags:
+    - timisoara_two_installments_march_september
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+    missing_facts:
+    - payment_stage
+- id: LT19
+  desc: Lipsește faptul obligatoriu amount_verified_in_current_assessment
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    payment_channel: online
+    claims_early_payment_bonus: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+    missing_facts:
+    - amount_verified_in_current_assessment
+- id: LT20
+  desc: Lipsește faptul obligatoriu payment_channel
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    claims_early_payment_bonus: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    missing_facts:
+    - payment_channel
+- id: LT21
+  desc: Lipsește faptul obligatoriu claims_early_payment_bonus
+  facts:
+    territory_id: RO-TM-TIMISOARA
+    tax_year: 2026
+    tax_type: building
+    payment_stage: between_installments
+    amount_verified_in_current_assessment: true
+    payment_channel: online
+  expect:
+    status: needs_facts
+    included_steps:
+    - verify_current_timisoara_local_tax_assessment
+    - pay_outstanding_first_installment_and_plan_second
+    advice_tags:
+    - timisoara_two_installments_march_september
+    - second_installment_due_september_30
+    warnings_present:
+    - first_local_tax_installment_may_be_overdue
+    needs_confirmation:
+    - confirm_timisoara_payment_channel_and_account
+    missing_facts:
+    - claims_early_payment_bonus
+- id: LT22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+    - tax_year
+    - tax_type
+    - payment_stage
+    - amount_verified_in_current_assessment
+    - payment_channel
+    - claims_early_payment_bonus

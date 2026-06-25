@@ -1,0 +1,440 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.invalidity_pension
+status: draft
+rules:
+- id: rule.invalidity.require_core_facts
+  canonical_rule_id: invalidity.core_facts
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: below_standard_age
+    - op: missing
+      field: medical_decision_exists
+    - op: missing
+      field: risk_cause
+  effects:
+  - type: require_confirmation
+    tag: invalidity_core_facts_missing
+    message_ro: Sunt necesare vârsta față de prag, decizia medicală și cauza riscului.
+  source_claim_ids:
+  - claim.invalidity.core_eligibility
+  - claim.invalidity.medical_decision_required
+  status: draft
+  required_facts:
+  - below_standard_age
+  - medical_decision_exists
+  - risk_cause
+- id: rule.invalidity.standard_route
+  canonical_rule_id: invalidity.standard_route
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: below_standard_age
+      value: true
+    - op: eq
+      field: has_qualifying_contributory_stage
+      value: true
+    - op: eq
+      field: medical_decision_exists
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_invalidity_pension_application
+  - type: emit_advice
+    tag: invalidity_standard_conditions_met
+    message_ro: Condițiile de bază sunt prezente, sub rezerva verificării stagiului și deciziei medicale.
+  source_claim_ids:
+  - claim.invalidity.core_eligibility
+  - claim.invalidity.medical_decision_required
+  status: draft
+- id: rule.invalidity.student_practice_exception
+  canonical_rule_id: invalidity.student_practice_exception
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: person_status
+      values:
+      - pupil
+      - apprentice
+      - student
+    - op: eq
+      field: practice_professional_accident
+      value: true
+    - op: eq
+      field: medical_decision_exists
+      value: true
+    - op: eq
+      field: below_standard_age
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_invalidity_pension_application
+  - type: emit_advice
+    tag: practice_exception_no_stage
+    message_ro: Excepția pentru practica profesională permite ruta fără stagiu contributiv.
+  source_claim_ids:
+  - claim.invalidity.student_practice_exception
+  status: draft
+- id: rule.invalidity.no_stage_no_exception
+  canonical_rule_id: invalidity.no_stage_no_exception
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_qualifying_contributory_stage
+      value: false
+    - op: neq
+      field: practice_professional_accident
+      value: true
+  effects:
+  - type: block
+    code: CONTRIBUTORY_STAGE_NOT_MET
+  - type: emit_warning
+    tag: invalidity_stage_condition_not_met
+    message_ro: Nu este identificat un stagiu contributiv eligibil și nici excepția de practică profesională.
+  source_claim_ids:
+  - claim.invalidity.core_eligibility
+  - claim.invalidity.student_practice_exception
+  status: draft
+- id: rule.invalidity.age_not_met
+  canonical_rule_id: invalidity.age_not_met
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: below_standard_age
+    value: false
+  effects:
+  - type: block
+    code: STANDARD_AGE_REACHED
+  - type: trigger_child_event
+    event_type_id: life.retirement_age
+  - type: emit_warning
+    tag: invalidity_age_condition_not_met
+    message_ro: După atingerea vârstei standard se verifică ruta pensiei pentru limită de vârstă.
+  source_claim_ids:
+  - claim.invalidity.core_eligibility
+  status: draft
+- id: rule.invalidity.medical_expertise_first
+  canonical_rule_id: invalidity.medical_expertise_first
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: medical_decision_exists
+    value: false
+  effects:
+  - type: include_step
+    step_id: request_medical_capacity_evaluation
+  - type: include_requirement
+    requirement_id: annex_9_expertise_application
+  - type: include_requirement
+    requirement_id: medical_documents
+  - type: emit_warning
+    tag: medical_decision_required_before_pension
+    message_ro: Mai întâi este necesară evaluarea capacității de muncă.
+  source_claim_ids:
+  - claim.invalidity.medical_decision_required
+  - claim.invalidity.expertise_form
+  status: draft
+- id: rule.invalidity.application_documents
+  canonical_rule_id: invalidity.application_documents
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: medical_decision_exists
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: annex_6_application
+  - type: include_requirement
+    requirement_id: medical_capacity_decision
+  - type: include_requirement
+    requirement_id: identity_and_stage_documents
+  - type: attach_channel
+    channel_id: ch.cnpp.online_forms
+  source_claim_ids:
+  - claim.invalidity.application_30_days_documents
+  - claim.invalidity.official_form
+  status: draft
+- id: rule.invalidity.application_in_time
+  canonical_rule_id: invalidity.application_in_time
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: application_within_30_days_of_medical_decision
+    value: true
+  effects:
+  - type: include_step
+    step_id: derive_invalidity_start_date
+  - type: emit_advice
+    tag: invalidity_start_date_by_insured_status
+    message_ro: Data de început se stabilește după calitatea de asigurat și încetarea indemnizației/calității.
+  source_claim_ids:
+  - claim.invalidity.start_dates
+  status: draft
+- id: rule.invalidity.application_late
+  canonical_rule_id: invalidity.application_late
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: application_within_30_days_of_medical_decision
+    value: false
+  effects:
+  - type: emit_warning
+    tag: invalidity_rights_start_from_filing
+    message_ro: Cererea tardivă produce drepturi de la data înregistrării.
+  source_claim_ids:
+  - claim.invalidity.start_dates
+  status: draft
+- id: rule.invalidity.grade_information
+  canonical_rule_id: invalidity.grade_information
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: explanatory
+  effective_from: '2024-09-01'
+  when:
+    op: in
+    field: medical_grade
+    values:
+    - I
+    - II
+    - III
+  effects:
+  - type: emit_advice
+    tag: medical_grade_from_expert_decision
+    message_ro: Gradul este preluat din decizia medicului expert, nu ales de solicitant.
+  source_claim_ids:
+  - claim.invalidity.medical_grades
+  status: draft
+- id: rule.invalidity.contest_medical_decision
+  canonical_rule_id: invalidity.contest_medical_decision
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_to_contest_medical_decision
+      value: true
+    - op: eq
+      field: medical_appeal_within_30_days
+      value: true
+  effects:
+  - type: include_step
+    step_id: submit_medical_decision_appeal_to_issuing_office
+  - type: set_deadline
+    tag: medical_appeal_30_days
+    value: 30_days_from_communication
+    message_ro: Contestația se depune la cabinetul emitent în 30 de zile.
+  source_claim_ids:
+  - claim.invalidity.medical_decision_and_appeal
+  status: draft
+- id: rule.invalidity.medical_appeal_late
+  canonical_rule_id: invalidity.medical_appeal_late
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_to_contest_medical_decision
+      value: true
+    - op: eq
+      field: medical_appeal_within_30_days
+      value: false
+  effects:
+  - type: block
+    code: MEDICAL_APPEAL_DEADLINE_EXPIRED
+  - type: emit_warning
+    tag: medical_appeal_deadline_expired
+    message_ro: Termenul special de 30 de zile apare depășit; este necesară analiză juridică individuală.
+  source_claim_ids:
+  - claim.invalidity.medical_decision_and_appeal
+  status: draft
+- id: rule.invalidity.court_after_regional_commission
+  canonical_rule_id: invalidity.court_after_regional_commission
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: regional_commission_decision_received
+    value: true
+  effects:
+  - type: set_deadline
+    tag: regional_medical_decision_court_30_days
+    value: 30_days_from_communication
+    message_ro: Decizia comisiei regionale poate fi atacată în instanță în 30 de zile.
+  source_claim_ids:
+  - claim.invalidity.medical_decision_and_appeal
+  status: draft
+- id: rule.invalidity.periodic_review
+  canonical_rule_id: invalidity.periodic_review
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: already_receives_invalidity_pension
+      value: true
+    - op: eq
+      field: review_exempt
+      value: false
+  effects:
+  - type: include_step
+    step_id: prepare_periodic_medical_review
+  - type: emit_warning
+    tag: medical_review_1_to_3_years_no_notice
+    message_ro: Prezentarea se face la termenul din decizie, fără a aștepta notificare.
+  source_claim_ids:
+  - claim.invalidity.medical_review
+  status: draft
+- id: rule.invalidity.review_exempt
+  canonical_rule_id: invalidity.review_exempt
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: irreversible_invalidity
+      value: true
+    - op: eq
+      field: standard_age_reached
+      value: true
+    - op: all
+      args:
+      - op: lte
+        field: years_to_standard_age
+        value: 5
+      - op: eq
+        field: full_contributory_stage_met
+        value: true
+  effects:
+  - type: exclude_step
+    step_id: prepare_periodic_medical_review
+  - type: emit_advice
+    tag: medical_review_exemption
+    message_ro: Este incidentă una dintre excepțiile publicate de la revizuirea periodică.
+  source_claim_ids:
+  - claim.invalidity.nonappearance_and_exemptions
+  status: draft
+- id: rule.invalidity.nonappearance
+  canonical_rule_id: invalidity.nonappearance
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: already_receives_invalidity_pension
+      value: true
+    - op: eq
+      field: missed_review_imputably
+      value: true
+  effects:
+  - type: emit_warning
+    tag: invalidity_payment_suspension_risk
+    message_ro: Neprezentarea imputabilă poate atrage suspendarea plății.
+  source_claim_ids:
+  - claim.invalidity.nonappearance_and_exemptions
+  status: draft
+- id: rule.invalidity.timisoara_channel
+  canonical_rule_id: invalidity.timisoara_channel
+  event_type_id: life.invalidity_pension
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjp_timisoara.contact
+  - type: require_confirmation
+    tag: local_medical_expertise_location_confirmation
+    message_ro: Locația cabinetului de expertiză și canalul de depunere trebuie confirmate local.
+  source_claim_ids:
+  - claim.invalidity.cjp_timisoara_contact
+  status: draft

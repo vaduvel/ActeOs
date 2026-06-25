@@ -1,0 +1,353 @@
+batch_id: B03_INHERITANCE_SUCCESSION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.inheritance_succession
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: I01
+  desc: Succesiune posibilă, ultim domiciliu Timișoara, certificat disponibil
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - assess_estate_heirs_and_debts
+    - contact_competent_notary_for_succession
+    channels:
+    - ch.timisoara.succession_notification
+    advice_tags:
+    - succession_research_in_review
+    - timisoara_ex_officio_succession_notice
+    needs_confirmation:
+    - confirm_notary_competence_and_dossier
+- id: I02
+  desc: Lipsește certificatul de deces
+  facts:
+    death_certificate_available: false
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - obtain_death_certificate
+    requirements:
+    - req.death_certificate
+- id: I03
+  desc: Nu este cunoscută o masă succesorală
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: false
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    advice_tags:
+    - verify_assets_liabilities_before_closing
+    included_steps:
+    - assess_estate_heirs_and_debts
+- id: I04
+  desc: Moștenitorii nu sunt de acord
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: true
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - heir_dispute_requires_route_review
+    needs_confirmation:
+    - confirm_disputed_succession_route
+- id: I05
+  desc: Au trecut 11 luni
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 11
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present: []
+    needs_confirmation:
+    - confirm_notary_competence_and_dossier
+- id: I06
+  desc: Au trecut 12 luni
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 12
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - succession_option_deadline_must_be_checked
+    needs_confirmation:
+    - confirm_succession_option_deadline
+- id: I07
+  desc: Au trecut peste 2 ani
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 25
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_succession_option_deadline
+    - confirm_tax_consequence_after_two_years
+- id: I08
+  desc: Există un imobil
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - review_land_book_and_local_tax_after_succession
+    needs_confirmation:
+    - confirm_property_post_succession_steps
+- id: I09
+  desc: Ultimul domiciliu era în străinătate
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: abroad
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    needs_confirmation:
+    - confirm_cross_border_succession_competence
+- id: I10
+  desc: Ultimul domiciliu era în altă localitate din Timiș
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timis_other
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-BECICHERECU-MIC
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-BECICHERECU-MIC
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.succession_notification
+    needs_confirmation:
+    - confirm_local_succession_notification
+- id: I11
+  desc: Ultimul domiciliu era în alt județ
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: other_ro
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-CJ-CLUJ-NAPOCA
+  jurisdiction_path:
+  - RO
+  - RO-CJ
+  - RO-CJ-CLUJ-NAPOCA
+  expect:
+    status: ok
+    channels_absent:
+    - ch.timisoara.succession_notification
+    needs_confirmation:
+    - confirm_local_succession_notification
+- id: I12
+  desc: Certificat indisponibil și imobil cunoscut
+  facts:
+    death_certificate_available: false
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - obtain_death_certificate
+    - review_land_book_and_local_tax_after_succession
+- id: I13
+  desc: Moștenitorii sunt de acord
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present: []
+    needs_confirmation:
+    - confirm_notary_competence_and_dossier
+- id: I14
+  desc: 'Caz complex: litigiu, imobil, peste 2 ani, ultim domiciliu în străinătate'
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: abroad
+    estate_may_exist: true
+    heirs_disagree: true
+    months_since_death: 30
+    has_immovable_property: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    warnings_present:
+    - heir_dispute_requires_route_review
+    - succession_option_deadline_must_be_checked
+    included_steps:
+    - review_land_book_and_local_tax_after_succession
+    needs_confirmation:
+    - confirm_disputed_succession_route
+    - confirm_succession_option_deadline
+    - confirm_tax_consequence_after_two_years
+    - confirm_cross_border_succession_competence
+- id: I15
+  desc: Lipsește faptul obligatoriu death_certificate_available
+  facts:
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_certificate_available
+- id: I16
+  desc: Lipsește faptul obligatoriu last_domicile_scope
+  facts:
+    death_certificate_available: true
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - last_domicile_scope
+- id: I17
+  desc: Lipsește faptul obligatoriu estate_may_exist
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - estate_may_exist
+- id: I18
+  desc: Lipsește faptul obligatoriu heirs_disagree
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    months_since_death: 3
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - heirs_disagree
+- id: I19
+  desc: Lipsește faptul obligatoriu months_since_death
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    has_immovable_property: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - months_since_death
+- id: I20
+  desc: Lipsește faptul obligatoriu has_immovable_property
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_immovable_property
+- id: I21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    death_certificate_available: true
+    last_domicile_scope: timisoara
+    estate_may_exist: true
+    heirs_disagree: false
+    months_since_death: 3
+    has_immovable_property: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: I22
+  desc: Toate faptele lipsesc
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - death_certificate_available
+    - last_domicile_scope
+    - estate_may_exist
+    - heirs_disagree
+    - months_since_death
+    - has_immovable_property
+    - territory_id

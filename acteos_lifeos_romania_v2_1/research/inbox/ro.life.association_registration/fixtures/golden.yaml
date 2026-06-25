@@ -1,0 +1,567 @@
+batch_id: batch18.association_registration
+event_type_id: ro.life.association_registration
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.association_registration.01
+  case_ro: Scop lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.association_registration.02
+  case_ro: Standard 3 fondatori
+  facts:
+    goal: register_association
+    founder_count: 3
+    immovable_contribution: false
+    founders_only_natural: true
+    management_only_natural: true
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    - private_signature_statute_allowed
+    - beneficial_owner_declaration_exemption
+- id: fx.association_registration.03
+  case_ro: Doar 2 fondatori
+  facts:
+    goal: register_association
+    founder_count: 2
+    seat_county: other
+  expect:
+    status: blocked
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.04
+  case_ro: 10 fondatori
+  facts:
+    goal: register_association
+    founder_count: 10
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.05
+  case_ro: Aport imobil
+  facts:
+    goal: register_association
+    founder_count: 3
+    immovable_contribution: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.authentic_form_statute
+    - req.proof_of_initial_assets_immovable
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.06
+  case_ro: Aport mobil
+  facts:
+    goal: register_association
+    founder_count: 3
+    immovable_contribution: false
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    - private_signature_statute_allowed
+- id: fx.association_registration.07
+  case_ro: Excepție beneficiar
+  facts:
+    goal: register_association
+    founder_count: 3
+    founders_only_natural: true
+    management_only_natural: true
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    - beneficial_owner_declaration_exemption
+- id: fx.association_registration.08
+  case_ro: Fondator juridic
+  facts:
+    goal: register_association
+    founder_count: 3
+    legal_person_founder: true
+    founders_only_natural: false
+    management_only_natural: true
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.beneficial_owner_declaration
+    - req.legal_person_founder_registry_extract
+    - req.legal_person_founder_resolution
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.09
+  case_ro: Beneficiari neidentificabili
+  facts:
+    goal: register_association
+    founder_count: 3
+    founders_only_natural: true
+    management_only_natural: true
+    beneficiaries_identifiable_from_file: false
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.beneficial_owner_declaration
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.10
+  case_ro: Conducere juridică
+  facts:
+    goal: register_association
+    founder_count: 3
+    founders_only_natural: true
+    management_only_natural: false
+    beneficiaries_identifiable_from_file: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.beneficial_owner_declaration
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.11
+  case_ro: Documente străine
+  facts:
+    goal: register_association
+    founder_count: 3
+    foreign_documents: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.certified_copies_and_legalized_romanian_translations
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.12
+  case_ro: Activități religioase
+  facts:
+    goal: register_association
+    founder_count: 3
+    religious_activities: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.cult_ministry_advisory_opinion_if_applicable
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.13
+  case_ro: Nume Român
+  facts:
+    goal: register_association
+    founder_count: 3
+    name_has_national_or_roman: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    - step.obtain_sgg_prior_name_approval
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.sgg_prior_approval
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.14
+  case_ro: Nume Național
+  facts:
+    goal: register_association
+    founder_count: 3
+    name_has_national_or_roman: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    - step.obtain_sgg_prior_name_approval
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.sgg_prior_approval
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.15
+  case_ro: Nume confundabil
+  facts:
+    goal: register_association
+    founder_count: 3
+    name_confuses_public_authority: true
+    seat_county: other
+  expect:
+    status: blocked
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.16
+  case_ro: Fără activitate la sediu
+  facts:
+    goal: register_association
+    founder_count: 3
+    no_activity_at_seat: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    - no_condominium_destination_approval
+- id: fx.association_registration.17
+  case_ro: Cu activitate la sediu
+  facts:
+    goal: register_association
+    founder_count: 3
+    no_activity_at_seat: false
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.18
+  case_ro: Activitate reglementată
+  facts:
+    goal: register_association
+    founder_count: 3
+    regulated_activities: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    - step.obtain_sector_authorizations_before_activity
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    warnings:
+    - do_not_start_regulated_activity_before_authorization
+- id: fx.association_registration.19
+  case_ro: Sediu Timiș
+  facts:
+    goal: register_association
+    founder_count: 3
+    seat_county: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    - channel.judecatoria_timisoara_to_confirm
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    confirmations:
+    - timisoara_court_local_filing_mechanics
+- id: fx.association_registration.20
+  case_ro: Sediu Cluj
+  facts:
+    goal: register_association
+    founder_count: 3
+    seat_county: cluj
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.21
+  case_ro: Cumul imobil străin cult
+  facts:
+    goal: register_association
+    founder_count: 4
+    immovable_contribution: true
+    foreign_documents: true
+    religious_activities: true
+    seat_county: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.authentic_form_statute
+    - req.proof_of_initial_assets_immovable
+    - req.certified_copies_and_legalized_romanian_translations
+    - req.cult_ministry_advisory_opinion_if_applicable
+    channels:
+    - channel.district_court_association_register
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+- id: fx.association_registration.22
+  case_ro: Cumul Timiș nume reglementat
+  facts:
+    goal: register_association
+    founder_count: 3
+    seat_county: timis
+    name_has_national_or_roman: true
+    regulated_activities: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.reserve_or_verify_association_name
+    - step.prepare_association_statute
+    - step.prepare_association_registration_file
+    - step.file_at_district_court_of_seat
+    - step.obtain_sgg_prior_name_approval
+    - step.obtain_sector_authorizations_before_activity
+    requirements:
+    - req.association_statute
+    - req.founders_identity_documents
+    - req.name_availability_or_refusal_proof
+    - req.court_stamp_fee_100_ron
+    - req.sgg_prior_approval
+    channels:
+    - channel.district_court_association_register
+    - channel.judecatoria_timisoara_to_confirm
+    advice_tags:
+    - judge_check_3_days
+    - appeal_5_days
+    warnings:
+    - do_not_start_regulated_activity_before_authorization
+    confirmations:
+    - timisoara_court_local_filing_mechanics

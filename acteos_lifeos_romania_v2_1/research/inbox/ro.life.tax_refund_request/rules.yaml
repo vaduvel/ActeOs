@@ -1,0 +1,312 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_TAX_REFUND_REQUEST
+event_type_id: ro.life.tax_refund_request
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- authority_scope
+- refund_or_compensation
+- refund_basis_evidence_available
+- known_outstanding_debts
+- request_already_submitted
+- bank_account_available
+- territory_id
+rules:
+- id: rule.b13.refund.tm_refund
+  canonical_rule_id: tax_refund.local_timisoara.refund
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: authority_scope
+      value: local_timisoara
+    - op: eq
+      field: refund_or_compensation
+      value: refund
+    - op: eq
+      field: request_already_submitted
+      value: false
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: include_step
+    step_id: prepare_timisoara_tax_refund_request
+  - type: attach_channel
+    channel_id: ch.timisoara.atlas_refund
+  - type: emit_advice
+    tag: use_atlas_not_current_service_portal
+    message_ro: Cererea se continuă în Atlas.
+  source_claim_ids:
+  - claim.b13.refund.tm_atlas
+  status: in_review
+- id: rule.b13.refund.tm_compensate
+  canonical_rule_id: tax_refund.local_timisoara.compensation
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: authority_scope
+      value: local_timisoara
+    - op: eq
+      field: refund_or_compensation
+      value: compensation
+    - op: eq
+      field: request_already_submitted
+      value: false
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: include_step
+    step_id: prepare_timisoara_tax_compensation_request
+  - type: include_requirement
+    requirement_id: req.documents_proving_right_to_refund
+  - type: attach_channel
+    channel_id: ch.timisoara.atlas_compensation
+  - type: emit_advice
+    tag: use_atlas_not_current_service_portal
+    message_ro: Cererea se continuă în Atlas.
+  source_claim_ids:
+  - claim.b13.refund.tm_compensation_atlas
+  - claim.b13.refund.tm_compensation_evidence
+  status: in_review
+- id: rule.b13.refund.compensation_no_evidence
+  canonical_rule_id: tax_refund.compensation.evidence
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: refund_or_compensation
+      value: compensation
+    - op: eq
+      field: refund_basis_evidence_available
+      value: false
+  effects:
+  - type: block
+    tag: compensation_evidence_missing
+    message_ro: Adună documentele care dovedesc dreptul la restituire înainte de cererea de compensare.
+  source_claim_ids:
+  - claim.b13.refund.tm_compensation_evidence
+  status: in_review
+- id: rule.b13.refund.refund_no_evidence
+  canonical_rule_id: tax_refund.refund.evidence
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: refund_or_compensation
+      value: refund
+    - op: eq
+      field: refund_basis_evidence_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_refund_basis_documents
+    message_ro: Confirmă cu organul fiscal documentele necesare pentru temeiul concret al restituirii.
+  source_claim_ids:
+  - claim.b13.refund.central_route_unverified
+  status: in_review
+- id: rule.b13.refund.central
+  canonical_rule_id: tax_refund.central_anaf
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: authority_scope
+    value: central_anaf
+  effects:
+  - type: require_confirmation
+    tag: confirm_anaf_refund_form_and_channel
+    message_ro: Identifică procedura și canalul ANAF aplicabile tipului exact de sumă.
+  - type: include_requirement
+    requirement_id: req.identify_tax_and_payment_reference
+  source_claim_ids:
+  - claim.b13.refund.cpf_current
+  - claim.b13.refund.central_route_unverified
+  status: in_review
+- id: rule.b13.refund.other_local
+  canonical_rule_id: tax_refund.other_local
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: authority_scope
+    value: other_local
+  effects:
+  - type: require_confirmation
+    tag: confirm_other_uat_refund_procedure
+    message_ro: Verifică formularul, documentele și canalul UAT competent.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Pilotul operațional este validat numai pentru Timișoara.
+  source_claim_ids:
+  - claim.b13.refund.cpf_current
+  status: in_review
+- id: rule.b13.refund.authority_unknown
+  canonical_rule_id: tax_refund.authority
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: authority_scope
+    value: unknown
+  effects:
+  - type: block
+    tag: refund_authority_unknown
+    message_ro: Identifică bugetul și organul fiscal care au încasat suma.
+  - type: require_confirmation
+    tag: confirm_refund_authority
+    message_ro: Confirmă dacă suma aparține ANAF sau unui buget local.
+  source_claim_ids:
+  - claim.b13.refund.cpf_current
+  status: in_review
+- id: rule.b13.refund.type_unknown
+  canonical_rule_id: tax_refund.request_type
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: refund_or_compensation
+    value: unknown
+  effects:
+  - type: block
+    tag: refund_or_compensation_not_selected
+    message_ro: Alege între restituirea sumei și compensarea cu alte obligații.
+  source_claim_ids:
+  - claim.b13.refund.tm_atlas
+  - claim.b13.refund.tm_compensation_atlas
+  status: in_review
+- id: rule.b13.refund.debts_true
+  canonical_rule_id: tax_refund.outstanding_debts
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: known_outstanding_debts
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: confirm_compensation_before_refund
+    message_ro: Confirmă ordinea legală de compensare și restituire în prezența datoriilor.
+  source_claim_ids:
+  - claim.b13.refund.debt_order_unverified
+  status: in_review
+- id: rule.b13.refund.debts_unknown
+  canonical_rule_id: tax_refund.outstanding_debts
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: known_outstanding_debts
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: check_outstanding_tax_debts
+    message_ro: Verifică soldul obligațiilor înainte de alegerea restituirii sau compensării.
+  source_claim_ids:
+  - claim.b13.refund.debt_order_unverified
+  status: in_review
+- id: rule.b13.refund.submitted
+  canonical_rule_id: tax_refund.already_submitted
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: request_already_submitted
+    value: true
+  effects:
+  - type: include_step
+    step_id: track_tax_refund_or_compensation_request
+  - type: emit_advice
+    tag: do_not_duplicate_submitted_request
+    message_ro: Urmărește cererea și păstrează dovada depunerii înainte de o nouă trimitere.
+  - type: require_confirmation
+    tag: confirm_refund_resolution_deadline
+    message_ro: Termenul de soluționare trebuie confirmat pentru procedura și autoritatea concretă.
+  source_claim_ids:
+  - claim.b13.refund.deadline_unverified
+  status: in_review
+- id: rule.b13.refund.bank_missing
+  canonical_rule_id: tax_refund.payment_details
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: bank_account_available
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_refund_payment_details
+    message_ro: Confirmă dacă procedura cere un cont și ce dovadă a titularului este acceptată.
+  source_claim_ids:
+  - claim.b13.refund.central_route_unverified
+  status: in_review
+- id: rule.b13.refund.territory_conflict
+  canonical_rule_id: tax_refund.local_territory
+  event_type_id: ro.life.tax_refund_request
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: authority_scope
+      value: local_timisoara
+    - op: neq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: flag_conflict
+    tag: timisoara_authority_with_other_territory
+    blocked_effect: show_timisoara_atlas_channel
+    message_ro: Autoritatea selectată și teritoriul nu corespund.
+  source_claim_ids:
+  - claim.b13.refund.tm_atlas
+  status: in_review

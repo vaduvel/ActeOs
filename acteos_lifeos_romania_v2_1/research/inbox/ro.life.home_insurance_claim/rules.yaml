@@ -1,0 +1,633 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.home_insurance_claim
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: policy_kind
+  type: enum
+  label: Ce poliță vrei să folosești?
+  reason: PAD și polița facultativă au reguli diferite.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - pad
+  - facultative
+  - both
+  - unknown
+- id: insurer_id
+  type: enum
+  label: Cine este asigurătorul?
+  reason: Termenele și documentele facultative sunt contractuale.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - allianz
+  - groupama
+  - other
+  - unknown
+- id: peril
+  type: enum
+  label: Ce a produs paguba?
+  reason: Riscul selectează autoritățile și termenul aplicabil.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - earthquake
+  - natural_flood
+  - landslide
+  - fire
+  - theft
+  - water_damage
+  - storm
+  - other
+- id: event_date
+  type: date
+  label: Când s-a produs evenimentul?
+  reason: Este necesar pentru calculul termenului.
+  sensitive: true
+  required_for_resolution: true
+- id: property_jurisdiction
+  type: jurisdiction_ref
+  label: Unde se află locuința?
+  reason: Canalele ISU/primărie sunt locale.
+  sensitive: true
+  required_for_resolution: true
+- id: danger_ongoing
+  type: boolean
+  label: Mai există un pericol imediat?
+  reason: Siguranța și limitarea pagubelor preced dosarul.
+  sensitive: false
+  required_for_resolution: true
+- id: authorities_notified
+  type: boolean
+  label: Ai anunțat autoritățile competente?
+  reason: Pentru unele riscuri documentul autorității este necesar.
+  sensitive: false
+  required_for_resolution: true
+- id: repairs_started
+  type: boolean
+  label: Ai început reparațiile?
+  reason: PAD cere constatarea înaintea reparațiilor.
+  sensitive: false
+  required_for_resolution: true
+- id: policy_valid_on_event_date
+  type: boolean
+  label: Polița era valabilă la data evenimentului?
+  reason: Acoperirea trebuie verificată contractual.
+  sensitive: false
+  required_for_resolution: true
+- id: ownership_documents_available
+  type: boolean
+  label: Ai actele de proprietate?
+  reason: Sunt cerute în dosarul PAD.
+  sensitive: false
+  required_for_resolution: true
+gates:
+- id: gate.immediate_safety
+  priority: 100
+  when: danger_ongoing == true
+  effect: warn
+  code: ENSURE_SAFETY_FIRST
+  message: Pune persoanele în siguranță și contactează serviciile de urgență înaintea dosarului.
+  recovery_actions:
+  - Apelează 112 dacă există pericol imediat.
+  - Limitează paguba fără a te expune.
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notify_60_days
+- id: gate.pad_deadline
+  priority: 95
+  when: policy_kind in [pad,both] and event is more than 60 days old
+  effect: needs_confirmation
+  code: PAD_60_DAY_WINDOW_EXCEEDED
+  message: Termenul publicat de avizare PAD de 60 de zile poate fi depășit.
+  recovery_actions:
+  - Avizează imediat și solicită evaluarea oficială a asigurătorului.
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notify_60_days
+- id: gate.pad_authority_doc
+  priority: 90
+  when: policy_kind in [pad,both] and peril in [natural_flood,landslide] and authorities_notified == false
+  effect: warn
+  code: NOTIFY_LOCAL_AUTHORITIES
+  message: Pentru această daună PAD, anunță ISU/primăria și cere proces-verbal.
+  recovery_actions:
+  - Contactează autoritatea locală competentă.
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_authorities_natural_flood_landslide
+- id: gate.repairs
+  priority: 85
+  when: policy_kind in [pad,both] and repairs_started == true
+  effect: warn
+  code: REPAIRS_BEFORE_INSPECTION
+  message: PAD publică regula că reparațiile se încep după constatare.
+  recovery_actions:
+  - Oprește lucrările neurgente și contactează imediat asigurătorul.
+  - Păstrează fotografii și dovezi ale măsurilor urgente.
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_no_repairs_before_inspection
+- id: gate.unknown_insurer
+  priority: 70
+  when: policy_kind in [facultative,both] and insurer_id in [other,unknown]
+  effect: needs_confirmation
+  code: CONTRACT_RULES_REQUIRED
+  message: Termenul și actele poliței facultative trebuie confirmate din contract și pagina asigurătorului.
+  recovery_actions:
+  - Identifică asigurătorul și numărul poliței.
+  source_claim_ids:
+  - claim.home_insurance_claim.allianz_notice_window
+  - claim.home_insurance_claim.groupama_notice_48h
+steps:
+- id: step.secure_property
+  title: Protejează persoanele și limitează paguba
+  instruction: Ia măsuri rezonabile de siguranță fără a începe reparații definitive înaintea constatării, unde polița cere
+    asta.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Pericolul este oprit/gestionat și ai documentat starea inițială.
+  recovery_actions:
+  - Apelează serviciile de urgență pentru risc imediat.
+  official_channel_ids:
+  - channel.isu_timis
+  - channel.primaria_tm_emergency
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_authorities_natural_flood_landslide
+  - claim.home_insurance_claim.pad_no_repairs_before_inspection
+- id: step.notify_authorities
+  title: Anunță autoritățile și cere documentul evenimentului
+  instruction: Pentru inundație naturală sau alunecare PAD, contactează ISU/primăria și solicită proces-verbal.
+  sequence_hint: 2
+  applies_when:
+    op: all
+    args:
+    - op: in
+      field: policy_kind
+      values:
+      - pad
+      - both
+    - op: in
+      field: peril
+      values:
+      - natural_flood
+      - landslide
+  depends_on:
+  - step.secure_property
+  deadline:
+    kind: none
+  completion_evidence: Ai număr de înregistrare/proces-verbal sau dovada solicitării.
+  recovery_actions:
+  - Dacă nu știi autoritatea, folosește contactele locale oficiale.
+  official_channel_ids:
+  - channel.isu_timis
+  - channel.primaria_tm_emergency
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_authorities_natural_flood_landslide
+  - claim.home_insurance_claim.isu_timis_contact
+  - claim.home_insurance_claim.timisoara_emergency_contact
+- id: step.notify_insurer
+  title: Avizează dauna la asigurător
+  instruction: Folosește canalul oficial și comunică polița, data, riscul și pagubele.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.secure_property
+  deadline:
+    kind: none
+  completion_evidence: Ai număr de dosar/confirmare de avizare.
+  recovery_actions:
+  - Dacă portalul nu funcționează, folosește telefonul sau canalul alternativ oficial.
+  official_channel_ids:
+  - channel.pad_claim
+  - channel.allianz_claim
+  - channel.groupama_claim
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notify_60_days
+  - claim.home_insurance_claim.allianz_notice_window
+  - claim.home_insurance_claim.groupama_notice_48h
+- id: step.prepare_file
+  title: Pregătește dosarul de daună
+  instruction: Adună actul de identitate, polița, actele de proprietate și documentele autorităților/daunei.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.notify_insurer
+  deadline:
+    kind: none
+  completion_evidence: Asigurătorul confirmă că dosarul este complet sau comunică exact ce lipsește.
+  recovery_actions:
+  - Încarcă numai documentele cerute pentru polița concretă.
+  - Păstrează originalele.
+  official_channel_ids:
+  - channel.pad_claim
+  - channel.allianz_claim
+  - channel.groupama_claim
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notification_docs
+  - claim.home_insurance_claim.pad_core_file_docs
+  - claim.home_insurance_claim.groupama_notice_48h
+- id: step.inspection
+  title: Participă la constatare
+  instruction: Permite inspectorului să constate avariile înaintea reparațiilor definitive.
+  sequence_hint: 5
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.notify_insurer
+  deadline:
+    kind: none
+  completion_evidence: Raportul de constatare este semnat/primit.
+  recovery_actions:
+  - Dacă nu ești contactat, urmărește dosarul la asigurător.
+  official_channel_ids:
+  - channel.pad_claim
+  - channel.allianz_claim
+  - channel.groupama_claim
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_inspection_five_days
+  - claim.home_insurance_claim.pad_no_repairs_before_inspection
+- id: step.track_payment
+  title: Urmărește finalizarea și plata
+  instruction: Verifică dacă dosarul a fost declarat complet și urmărește decizia/plata.
+  sequence_hint: 6
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.prepare_file
+  - step.inspection
+  deadline:
+    kind: none
+  completion_evidence: Ai decizia de despăgubire și dovada plății sau motivarea refuzului.
+  recovery_actions:
+  - Folosește procedura oficială de reclamații a asigurătorului.
+  official_channel_ids:
+  - channel.pad_claim
+  - channel.allianz_claim
+  - channel.groupama_claim
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_payment_after_complete_file
+requirements:
+- id: req.policy
+  title: Polița de asigurare
+  description: Numărul și documentul poliței valabile la data evenimentului.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - original
+  - copy
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - date_within_window
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notification_docs
+- id: req.identity
+  title: Actul de identitate
+  description: Actul asiguratului sau împuternicitului.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - copy
+  - original
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - not_expired
+  - names_consistent
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notification_docs
+  - claim.home_insurance_claim.pad_core_file_docs
+- id: req.property_title
+  title: Acte privind dreptul asupra locuinței
+  description: Acte de proprietate sau alternativele oficial acceptate în dosarul PAD.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - copy
+  - original
+  - certified_copy
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - names_consistent
+  - address_consistent
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_core_file_docs
+- id: req.authority_report
+  title: Proces-verbal/document al autorității
+  description: Document care confirmă evenimentul, când este cerut de riscul/polița aplicabilă.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: in
+    field: peril
+    values:
+    - natural_flood
+    - landslide
+    - fire
+    - theft
+  accepted_forms:
+  - original
+  - copy
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - date_within_window
+  - address_consistent
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_authorities_natural_flood_landslide
+  - claim.home_insurance_claim.pad_core_file_docs
+  - claim.home_insurance_claim.allianz_notice_window
+- id: req.damage_evidence
+  title: Dovezi ale pagubelor
+  description: Fotografii, liste și documente solicitate de asigurător.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  - copy
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - date_within_window
+  - user_confirmed
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_core_file_docs
+  - claim.home_insurance_claim.groupama_notice_48h
+official_channels:
+- id: channel.pad_claim
+  type: web
+  label: PAD — anunță dauna
+  url: https://www.padrom.ro/daune-pad/
+  integration_status: DEEP_LINK
+  official_domain: padrom.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notify_60_days
+  - claim.home_insurance_claim.pad_notification_docs
+  - claim.home_insurance_claim.pad_inspection_five_days
+- id: channel.allianz_claim
+  type: web
+  label: Allianz-Țiriac — notifică o daună
+  url: https://www.allianztiriac.ro/ro_RO/persoane-fizice/asigurari-persoane-fizice-locuinta-si-bunuri/my-home.html
+  integration_status: DEEP_LINK
+  official_domain: allianztiriac.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.home_insurance_claim.allianz_notice_window
+- id: channel.groupama_claim
+  type: web
+  label: Groupama — daune proprietăți
+  url: https://www.groupama.ro/daune/daune-proprietati
+  integration_status: DEEP_LINK
+  official_domain: groupama.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.home_insurance_claim.groupama_notice_48h
+- id: channel.isu_timis
+  type: physical
+  label: ISU Timiș — Str. Înfrățirii nr. 13, Timișoara
+  url: https://isutm.igsu.ro/
+  integration_status: SOURCE_ONLY
+  official_domain: isutm.igsu.ro
+  territory_ids:
+  - ro
+  - ro.tm
+  source_claim_ids:
+  - claim.home_insurance_claim.isu_timis_contact
+- id: channel.primaria_tm_emergency
+  type: phone
+  label: Primăria Timișoara — situații de urgență, 0256 969
+  url: tel:+40256969
+  integration_status: DEEP_LINK
+  official_domain: primariatm.ro
+  territory_ids:
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  source_claim_ids:
+  - claim.home_insurance_claim.timisoara_emergency_contact
+rules:
+- id: rule.home_insurance_claim.pad_deadline.r1
+  canonical_rule_id: rule.home_insurance_claim.pad_deadline
+  event_type_id: ro.life.home_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - policy:PAD
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: policy_kind
+    values:
+    - pad
+    - both
+  effects:
+  - type: set_deadline
+    step_id: step.notify_insurer
+    value:
+      max_days: 60
+      anchor: event_date
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_notify_60_days
+  status: draft
+  reviewer_id: null
+- id: rule.home_insurance_claim.pad_authority_report.r1
+  canonical_rule_id: rule.home_insurance_claim.pad_authority_report
+  event_type_id: ro.life.home_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: policy_kind
+      values:
+      - pad
+      - both
+    - op: in
+      field: peril
+      values:
+      - natural_flood
+      - landslide
+  effects:
+  - type: include_step
+    step_id: step.notify_authorities
+  - type: include_requirement
+    requirement_id: req.authority_report
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_authorities_natural_flood_landslide
+  status: draft
+  reviewer_id: null
+- id: rule.home_insurance_claim.pad_no_repairs.r1
+  canonical_rule_id: rule.home_insurance_claim.pad_no_repairs
+  event_type_id: ro.life.home_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: policy_kind
+      values:
+      - pad
+      - both
+    - op: eq
+      field: repairs_started
+      value: true
+  effects:
+  - type: emit_warning
+    message_ro: Reparațiile definitive înaintea constatării pot afecta dosarul PAD.
+  source_claim_ids:
+  - claim.home_insurance_claim.pad_no_repairs_before_inspection
+  status: draft
+  reviewer_id: null
+- id: rule.home_insurance_claim.allianz_deadline.r1
+  canonical_rule_id: rule.home_insurance_claim.allianz_deadline
+  event_type_id: ro.life.home_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:allianz
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: policy_kind
+      values:
+      - facultative
+      - both
+    - op: eq
+      field: insurer_id
+      value: allianz
+  effects:
+  - type: set_deadline
+    step_id: step.notify_insurer
+    value:
+      business_days: 5
+      theft_hours: 24
+      anchor: event_date
+  source_claim_ids:
+  - claim.home_insurance_claim.allianz_notice_window
+  status: draft
+  reviewer_id: null
+- id: rule.home_insurance_claim.groupama_deadline.r1
+  canonical_rule_id: rule.home_insurance_claim.groupama_deadline
+  event_type_id: ro.life.home_insurance_claim
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:groupama
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: policy_kind
+      values:
+      - facultative
+      - both
+    - op: eq
+      field: insurer_id
+      value: groupama
+  effects:
+  - type: set_deadline
+    step_id: step.notify_insurer
+    value:
+      hours: 48
+      anchor: event_date
+  source_claim_ids:
+  - claim.home_insurance_claim.groupama_notice_48h
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

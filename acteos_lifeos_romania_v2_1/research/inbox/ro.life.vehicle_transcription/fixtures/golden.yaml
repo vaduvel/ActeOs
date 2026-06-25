@@ -1,0 +1,92 @@
+batch_id: R1_VEHICLE_TRANSCRIPTION
+defaults:
+  event_type_id: life.vehicle_transcription
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: X01
+    desc: caz complet ok (ITP+CIV+fiscal), pastreaza numere
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, included_steps: [transcribe_vehicle], requirements: [req.ownership_document, req.fiscal_declaration_proof], deadline_days: 90 }
+  - id: X02
+    desc: fara ITP - blocat
+    facts: { contract_date: '2026-06-20', has_valid_itp: false, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle], included_steps: [do_itp] }
+  - id: X03
+    desc: fara CIV - blocat
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: false, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle] }
+  - id: X04
+    desc: fara dovada fiscala - blocat
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: false, keeps_old_plates: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle] }
+  - id: X05
+    desc: exact la 90 zile
+    facts: { contract_date: '2026-03-27', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, included_steps: [transcribe_vehicle], confirmations: [deadline_90d] }
+  - id: X06
+    desc: depasit 90 zile
+    facts: { contract_date: '2026-02-25', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, overdue: true }
+  - id: X07
+    desc: 90d ramane in_review
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, needs_confirmation: [deadline_90d] }
+  - id: X08
+    desc: info 20 zile lucratoare prezent
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, warnings_present: [solve_time_info] }
+  - id: X09
+    desc: cumul blocaje (fara ITP, CIV, fiscal)
+    facts: { contract_date: '2026-06-20', has_valid_itp: false, has_valid_civ: false, has_fiscal_proof: false, keeps_old_plates: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle], included_steps: [do_itp] }
+  - id: X10
+    desc: lipseste contract_date
+    facts: { has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: needs_facts, missing_facts: [contract_date] }
+  - id: X11
+    desc: lipseste has_valid_itp
+    facts: { contract_date: '2026-06-20', has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: needs_facts, missing_facts: [has_valid_itp] }
+  - id: X12
+    desc: lipseste has_valid_civ
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: needs_facts, missing_facts: [has_valid_civ] }
+  - id: X13
+    desc: lipseste has_fiscal_proof
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, keeps_old_plates: true }
+    expect: { status: needs_facts, missing_facts: [has_fiscal_proof] }
+  - id: X14
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [contract_date, has_valid_itp, has_valid_civ, has_fiscal_proof, keeps_old_plates] }
+  - id: X15
+    desc: Timisoara - canal SPCRPCIV
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, channels: [ch.spcrpciv_timis] }
+  - id: X16
+    desc: alt judet - canal Timis absent
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.spcrpciv_timis] }
+  - id: X17
+    desc: contract in viitor
+    facts: { contract_date: '2026-12-01', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, warnings: [future_contract_date] }
+  - id: X18
+    desc: documente obligatorii prezente in cerinte
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, requirements: [req.ownership_document, req.fiscal_declaration_proof] }
+  - id: X19
+    desc: transcriere azi - termen plin
+    facts: { contract_date: '2026-06-25', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: true }
+    expect: { status: ok, deadline_days: 90 }
+  - id: X20
+    desc: fara ITP + fara fiscal (cumul blocaje)
+    facts: { contract_date: '2026-06-20', has_valid_itp: false, has_valid_civ: true, has_fiscal_proof: false, keeps_old_plates: true }
+    expect: { status: ok, blocked_effects: [transcribe_vehicle], included_steps: [do_itp] }
+  - id: X21
+    desc: numere noi, restul ok
+    facts: { contract_date: '2026-06-20', has_valid_itp: true, has_valid_civ: true, has_fiscal_proof: true, keeps_old_plates: false }
+    expect: { status: ok, included_steps: [transcribe_vehicle] }

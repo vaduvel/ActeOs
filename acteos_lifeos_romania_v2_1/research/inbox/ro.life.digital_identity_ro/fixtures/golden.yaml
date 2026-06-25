@@ -1,0 +1,983 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.digital_identity_ro
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.digital_identity_ro.01.android_ready
+  purpose: Android pregătit
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.02.ios_ready
+  purpose: iPhone pregătit
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.03.no_phone
+  purpose: Fără smartphone
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: none
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - SUPPORTED_SMARTPHONE_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.04.unsupported_os
+  purpose: Sistem neacceptat
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: other
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - SUPPORTED_SMARTPHONE_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.05.no_internet
+  purpose: Fără internet
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: false
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CAPTURE_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.06.no_camera
+  purpose: Cameră indisponibilă
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: false
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CAPTURE_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.07.no_microphone
+  purpose: Microfon indisponibil
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: false
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CAPTURE_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.08.no_id
+  purpose: Fără carte de identitate
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: false
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - IDENTITY_DOCUMENT_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.09.expired_id
+  purpose: Act nevalabil
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: false
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - IDENTITY_DOCUMENT_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.10.non_romanian
+  purpose: Cetățean străin
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: false
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CITIZENSHIP_SCOPE
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.digital_identity_ro.11.submitted
+  purpose: Solicitare trimisă
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: true
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: conflicting
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_APPROVAL_TIME_CONFLICT
+    confidence: conflicting
+    notes: ''
+- id: fx.digital_identity_ro.12.submitted_needs_exact
+  purpose: Solicitare cu deadline dorit
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: true
+      enrollment_rejected: false
+      needs_exact_completion_deadline: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: conflicting
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_APPROVAL_TIME_CONFLICT
+    confidence: conflicting
+    notes: ''
+- id: fx.digital_identity_ro.13.rejected
+  purpose: Capturi respinse
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: true
+      enrollment_rejected: true
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CAPTURE_REJECTED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.14.rejected_low_light
+  purpose: Refuz probabil din calitatea imaginilor
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: true
+      enrollment_rejected: true
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CAPTURE_REJECTED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.15.no_email
+  purpose: Fără e-mail accesibil
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: false
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.16.all_missing
+  purpose: Lipsesc telefonul și actul
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: none
+      internet_available: false
+      identity_document_available: false
+      identity_document_valid: true
+      camera_available: false
+      microphone_available: false
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - SUPPORTED_SMARTPHONE_REQUIRED
+    - IDENTITY_DOCUMENT_REQUIRED
+    - ROEID_CAPTURE_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.17.ready_after_reinstall
+  purpose: Pregătit după reinstalare
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.18.public_service_login
+  purpose: Identitate pentru serviciu public
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.19.ghiseul_use
+  purpose: Identitate pentru Ghișeul.ro
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.20.uat_platform_use
+  purpose: Identitate pentru platformă UAT
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.21.overseas_roaming
+  purpose: Utilizare din străinătate
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Disponibilitatea poate depinde de rețea/roaming.
+- id: fx.digital_identity_ro.22.notifications_disabled
+  purpose: Notificări dezactivate
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: ios
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: true
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Autentificarea poate necesita activarea notificărilor push.
+- id: fx.digital_identity_ro.23.poor_capture
+  purpose: Capturi neclare
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: android
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: true
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - ROEID_CAPTURE_REJECTED
+    confidence: verified
+    notes: ''
+- id: fx.digital_identity_ro.24.unknown_device
+  purpose: Dispozitiv neclar
+  input:
+    event_type_id: ro.life.digital_identity_ro
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      romanian_citizen: true
+      smartphone_os: other
+      internet_available: true
+      identity_document_available: true
+      identity_document_valid: true
+      camera_available: true
+      microphone_available: true
+      email_available: true
+      enrollment_submitted: false
+      enrollment_rejected: false
+      needs_exact_completion_deadline: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.check_readiness
+    - step.install_official_app
+    - step.capture_identity
+    - step.wait_validation
+    - step.use_roeid
+    requirement_ids:
+    - req.smartphone
+    - req.identity_card
+    - req.camera_microphone_internet
+    - req.email
+    warning_codes:
+    - SUPPORTED_SMARTPHONE_REQUIRED
+    confidence: verified
+    notes: ''

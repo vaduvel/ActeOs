@@ -1,0 +1,324 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B13_COMPANY_VEHICLE_CHANGE
+event_type_id: ro.life.company_vehicle_change
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- change_type
+- territory_id
+- days_since_acquisition
+- tax_record_updated
+- submission_channel
+- fiscal_clearance_available
+- representative_used
+- documents_case_selected
+rules:
+- id: rule.b13.vehicle.assess
+  canonical_rule_id: company_vehicle.assess
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: identify_company_vehicle_change_route
+  source_claim_ids:
+  - claim.b13.vehicle.tm_case_selection
+  - claim.b13.vehicle.transcription_90
+  status: draft
+- id: rule.b13.vehicle.acquire
+  canonical_rule_id: company_vehicle.acquisition
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: change_type
+    value: acquisition_ro_registered
+  effects:
+  - type: include_step
+    step_id: declare_company_vehicle_to_local_tax_authority
+  - type: include_step
+    step_id: request_vehicle_ownership_transcription
+  source_claim_ids:
+  - claim.b13.vehicle.tm_declare_atlas
+  - claim.b13.vehicle.transcription_90
+  status: in_review
+- id: rule.b13.vehicle.transcription_in_time
+  canonical_rule_id: company_vehicle.transcription.deadline
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_type
+      value: acquisition_ro_registered
+    - op: lte
+      field: days_since_acquisition
+      value: 90
+  effects:
+  - type: emit_advice
+    tag: vehicle_transcription_within_90_days
+    message_ro: Cererea se află în termenul de 90 de zile.
+  source_claim_ids:
+  - claim.b13.vehicle.transcription_90
+  status: draft
+- id: rule.b13.vehicle.transcription_late
+  canonical_rule_id: company_vehicle.transcription.deadline
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: change_type
+      value: acquisition_ro_registered
+    - op: gt
+      field: days_since_acquisition
+      value: 90
+  effects:
+  - type: emit_warning
+    tag: vehicle_transcription_deadline_exceeded
+    message_ro: Termenul de 90 de zile este depășit.
+  - type: emit_warning
+    tag: vehicle_registration_suspended_by_law
+    message_ro: Înmatricularea este suspendată de drept până la transcriere.
+  - type: include_step
+    step_id: remedy_overdue_vehicle_transcription
+  source_claim_ids:
+  - claim.b13.vehicle.transcription_90
+  - claim.b13.vehicle.suspension_after_90
+  status: in_review
+- id: rule.b13.vehicle.sale
+  canonical_rule_id: company_vehicle.sale
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: change_type
+    value: sale
+  effects:
+  - type: include_step
+    step_id: declare_company_vehicle_sale_to_local_tax_authority
+  - type: include_step
+    step_id: obtain_vehicle_sale_fiscal_certificate_if_required
+  source_claim_ids:
+  - claim.b13.vehicle.tm_sale_atlas
+  - claim.b13.vehicle.tm_fiscal_certificate
+  status: in_review
+- id: rule.b13.vehicle.certificate_change
+  canonical_rule_id: company_vehicle.certificate_change
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO-TM
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: change_type
+    values:
+    - company_name_change
+    - company_address_change
+  effects:
+  - type: include_step
+    step_id: request_vehicle_certificate_data_change
+  - type: attach_channel
+    channel_id: ch.timis.vehicle_certificate_change_appointment
+  source_claim_ids:
+  - claim.b13.vehicle.tm_appointments
+  status: in_review
+- id: rule.b13.vehicle.special_case
+  canonical_rule_id: company_vehicle.special_case
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: change_type
+    values:
+    - end_leasing
+    - import_eu
+    - import_non_eu
+  effects:
+  - type: include_step
+    step_id: select_company_vehicle_special_case
+  - type: require_confirmation
+    tag: confirm_case_specific_vehicle_documents
+    message_ro: Selectează cazul exact pentru a primi lista oficială de documente.
+  source_claim_ids:
+  - claim.b13.vehicle.tm_case_selection
+  status: in_review
+- id: rule.b13.vehicle.tm_local
+  canonical_rule_id: company_vehicle.local_timisoara
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: territory_id
+    value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    channel_id: ch.timisoara.atlas_vehicle_tax
+  - type: emit_advice
+    tag: timisoara_current_service_redirects_to_atlas
+    message_ro: Serviciul local curent redirecționează cererea către Atlas.
+  source_claim_ids:
+  - claim.b13.vehicle.tm_declare_atlas
+  - claim.b13.vehicle.tm_sale_atlas
+  status: in_review
+- id: rule.b13.vehicle.other_uat
+  canonical_rule_id: company_vehicle.local_other
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: territory_id
+    value: RO-TM-TIMISOARA
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_vehicle_tax_channel
+    message_ro: Confirmă formularul și canalul UAT-ului competent.
+  source_claim_ids:
+  - claim.b13.vehicle.tm_declare_atlas
+  status: in_review
+- id: rule.b13.vehicle.online_certificate
+  canonical_rule_id: company_vehicle.fiscal_clearance.online
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO-TM
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: online
+    - op: in
+      field: change_type
+      values:
+      - sale
+      - acquisition_ro_registered
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_fiscal_clearance_certificate
+  - type: emit_advice
+    tag: online_transcription_or_radiation_needs_fiscal_certificate
+    message_ro: Pentru ruta online verificată în Timiș, pregătește certificatul fiscal.
+  source_claim_ids:
+  - claim.b13.vehicle.online_fiscal_certificate
+  status: in_review
+- id: rule.b13.vehicle.counter_tax_record
+  canonical_rule_id: company_vehicle.fiscal_clearance.counter
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO-TM
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: counter
+    - op: eq
+      field: tax_record_updated
+      value: true
+    - op: eq
+      field: change_type
+      value: acquisition_ro_registered
+  effects:
+  - type: emit_advice
+    tag: counter_uses_registered_ownership_document
+    message_ro: La ghișeu, actul de proprietate înregistrat fiscal poate înlocui documentul fiscal separat.
+  source_claim_ids:
+  - claim.b13.vehicle.counter_property_record
+  status: in_review
+- id: rule.b13.vehicle.fiscal_missing
+  canonical_rule_id: company_vehicle.fiscal_clearance
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO-TM
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: submission_channel
+      value: online
+    - op: eq
+      field: fiscal_clearance_available
+      value: false
+    - op: in
+      field: change_type
+      values:
+      - sale
+      - acquisition_ro_registered
+  effects:
+  - type: block
+    tag: fiscal_clearance_missing_for_online_vehicle_operation
+    message_ro: Obține certificatul fiscal înainte de ruta online verificată.
+  source_claim_ids:
+  - claim.b13.vehicle.online_fiscal_certificate
+  status: in_review
+- id: rule.b13.vehicle.representative
+  canonical_rule_id: company_vehicle.representative
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representative_used
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_vehicle_power_of_attorney
+  source_claim_ids:
+  - claim.b13.vehicle.tm_case_selection
+  - claim.b13.vehicle.tm_fiscal_certificate
+  status: in_review
+- id: rule.b13.vehicle.case_not_selected
+  canonical_rule_id: company_vehicle.case_selection
+  event_type_id: ro.life.company_vehicle_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: documents_case_selected
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: select_vehicle_case_before_document_list
+    message_ro: Selectează situația exactă înainte de a genera lista de documente.
+  source_claim_ids:
+  - claim.b13.vehicle.tm_case_selection
+  status: in_review

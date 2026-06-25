@@ -1,0 +1,339 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_SPECIAL_EDUCATION_SUPPORT
+alias_event_type_id: ro.life.special_education_support
+event_type_id: life.special_education_support
+status: draft
+rules:
+- id: rule.special.required_facts
+  canonical_rule_id: special.required_facts
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_special_support_facts
+    message_ro: Precizează județul, tipul cererii și dacă este prima orientare sau reorientare.
+  source_claim_ids:
+  - claim.special.application.cjrae
+  status: draft
+  required_facts:
+  - county
+  - request_type
+- id: rule.special.route.cjrae
+  canonical_rule_id: special.route.cjrae
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: request_type
+    values:
+    - initial_orientation
+    - reorientation
+  effects:
+  - type: include_step
+    step_id: prepare_cjrae_orientation_dossier
+  - type: include_step
+    step_id: submit_to_cjrae_cmbrae
+  source_claim_ids:
+  - claim.special.application.cjrae
+  - claim.special.minimum_dossier
+  status: draft
+- id: rule.special.requirements.base
+  canonical_rule_id: special.requirements.base
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: request_type
+    values:
+    - initial_orientation
+    - reorientation
+  effects:
+  - type: include_requirement
+    requirement_id: req.orientation_application
+  - type: include_requirement
+    requirement_id: req.child_identity_copy
+  - type: include_requirement
+    requirement_id: req.parent_or_representative_identity_copies
+  - type: include_requirement
+    requirement_id: req.legal_representation_proof_if_applicable
+  - type: include_requirement
+    requirement_id: req.social_inquiry
+  - type: include_requirement
+    requirement_id: req.synthetic_medical_sheet
+  - type: include_requirement
+    requirement_id: req.medical_certificate_a5
+  - type: include_requirement
+    requirement_id: req.psychological_evaluation
+  - type: include_requirement
+    requirement_id: req.psychopedagogical_sheet
+  - type: include_requirement
+    requirement_id: req.school_enrollment_or_transcript
+  source_claim_ids:
+  - claim.special.minimum_dossier
+  status: draft
+- id: rule.special.requirements.reorientation
+  canonical_rule_id: special.requirements.reorientation
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: request_type
+    value: reorientation
+  effects:
+  - type: include_requirement
+    requirement_id: req.previous_orientation_certificate
+  - type: include_requirement
+    requirement_id: req.individualized_services_plan
+  - type: include_requirement
+    requirement_id: req.monitoring_report
+  source_claim_ids:
+  - claim.special.minimum_dossier
+  - claim.special.tm.local_dossier
+  status: draft
+- id: rule.special.medical_sheet.free
+  canonical_rule_id: special.medical_sheet.free
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: request_type
+    values:
+    - initial_orientation
+    - reorientation
+  effects:
+  - type: emit_advice
+    tag: synthetic_medical_sheet_free
+    message_ro: Fișa medicală sintetică este eliberată gratuit de medicul de familie/curant.
+  source_claim_ids:
+  - claim.special.medical_sheet.free
+  status: draft
+- id: rule.special.tm.channel
+  canonical_rule_id: special.tm.channel
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: county
+      value: TM
+    - op: in
+      field: request_type
+      values:
+      - initial_orientation
+      - reorientation
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjrae_tm.ceosp
+  - type: emit_advice
+    tag: tm_submission_hours
+    message_ro: 'Primire dosare și eliberare certificate: luni și miercuri, 9:00–15:00; instituția telefonează pentru programarea
+      evaluării.'
+  source_claim_ids:
+  - claim.special.tm.channel
+  status: draft
+- id: rule.special.other_county.local_gap
+  canonical_rule_id: special.other_county.local_gap
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: county_cjrae_channel
+    message_ro: Confirmă lista și canalul CJRAE din județul de domiciliu.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.special.application.cjrae
+  status: draft
+- id: rule.special.certificate.delivery
+  canonical_rule_id: special.certificate.delivery
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: orientation_certificate_issued
+    value: true
+  effects:
+  - type: set_deadline
+    code: cosp_certificate_transmission
+    value:
+      max_days: 5
+      start_fact: certificate_issue_date
+    message_ro: Transmitere în 5 zile de la eliberare.
+  - type: emit_advice
+    tag: orientation_certificate_validity
+    message_ro: 'Valabilitate: minimum un an școlar sau până la finalizarea nivelului indicat.'
+  source_claim_ids:
+  - claim.special.certificate.dispatch_validity
+  status: draft
+- id: rule.special.appeal.window
+  canonical_rule_id: special.appeal.window
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: request_type
+    value: appeal
+  effects:
+  - type: include_step
+    step_id: submit_orientation_appeal_to_seosp
+  - type: set_deadline
+    code: orientation_appeal_submission
+    value:
+      max_working_days: 5
+      start_fact: signed_acknowledgement_date
+    message_ro: 5 zile lucrătoare de la luarea la cunoștință sub semnătură.
+  - type: set_deadline
+    code: orientation_appeal_solution
+    value:
+      max_days: 30
+      start_fact: appeal_submission_date
+    message_ro: Soluționare în 30 de zile de la depunere.
+  source_claim_ids:
+  - claim.special.appeal.deadline
+  - claim.special.appeal.solution
+  status: draft
+- id: rule.special.reorientation.notice
+  canonical_rule_id: special.reorientation.notice
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: request_type
+    value: reorientation
+  effects:
+  - type: emit_advice
+    tag: reorientation_notice_30_days
+    message_ro: Unitatea/CIEC notifică COSP cu cel puțin 30 de zile înainte de expirare sau la schimbarea condițiilor.
+  source_claim_ids:
+  - claim.special.reorientation.notice
+  status: draft
+- id: rule.special.psi.first_orientation
+  canonical_rule_id: special.psi.first_orientation
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: county
+      value: TM
+    - op: eq
+      field: request_type
+      value: initial_orientation
+    - op: eq
+      field: child_enrolled
+      value: true
+  effects:
+  - type: set_deadline
+    code: psi_project_after_case_manager
+    value:
+      max_days: 30
+      start_fact: case_manager_appointment_date
+    message_ro: Proiectul PSI se întocmește în 30 de zile de la numirea responsabilului de caz.
+  source_claim_ids:
+  - claim.special.psi.30_days
+  status: draft
+- id: rule.special.appeal_deadline_uncertain
+  canonical_rule_id: special.appeal_deadline_uncertain
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_type
+      value: appeal
+    - op: eq
+      field: appeal_deadline_state
+      value: uncertain
+  effects:
+  - type: require_confirmation
+    tag: working_day_deadline_calculation
+    message_ro: Confirmă calculul termenului în zile lucrătoare cu calendarul aplicabil.
+  source_claim_ids:
+  - claim.special.appeal.deadline
+  status: draft
+- id: rule.special.synthetic_sheet_fee_claim
+  canonical_rule_id: special.synthetic_sheet_fee_claim
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: synthetic_medical_sheet_fee_requested
+    value: true
+  effects:
+  - type: emit_warning
+    tag: request_written_basis_if_fee
+    message_ro: Sursa oficială indică eliberarea gratuită; cere temeiul scris pentru orice taxă solicitată.
+  source_claim_ids:
+  - claim.special.medical_sheet.free
+  status: draft
+- id: rule.special.counseling_only_scope
+  canonical_rule_id: special.counseling_only_scope
+  event_type_id: life.special_education_support
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: request_type
+    value: counseling_only
+  effects:
+  - type: require_confirmation
+    tag: appropriate_cjrae_service
+    message_ro: Confirmă serviciul CJRAE competent; ruta COSP de orientare nu se presupune pentru o cerere exclusiv de consiliere.
+  source_claim_ids:
+  - claim.special.cjrae.role
+  status: draft

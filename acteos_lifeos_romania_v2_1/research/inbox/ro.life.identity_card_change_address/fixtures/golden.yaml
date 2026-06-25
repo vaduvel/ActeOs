@@ -1,0 +1,93 @@
+batch_id: R1_ID_CARD_CHANGE_ADDRESS
+defaults:
+  event_type_id: life.id_card_change_address
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: A01
+    desc: schimbare domiciliu, proprietar, CI simpla - termen 15 zile
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: ok, included_steps: [renew_identity_card], requirements: [req.proof_of_address], deadline_days: 15 }
+  - id: A02
+    desc: schimbare domiciliu, gazduit - necesita consimtamant
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: host_consent, move_date: '2026-06-20' }
+    expect: { status: ok, included_steps: [renew_identity_card], requirements: [req.proof_of_address, req.host_consent_declaration] }
+  - id: A03
+    desc: CEI schimbare domiciliu - suprascrie 15 zile (fara act fizic nou)
+    facts: { id_card_type: cei, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: ok, overridden_rules: [rule.addr.ci_15d], warnings: [cei_no_new_doc] }
+  - id: A04
+    desc: schimbare resedinta - mentiune resedinta
+    facts: { id_card_type: ci_simpla, change_type: resedinta, new_address_relation: host_consent, move_date: '2026-06-20' }
+    expect: { status: ok, included_steps: [register_residence] }
+  - id: A05
+    desc: termen exact la 15 zile
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-10' }
+    expect: { status: ok, included_steps: [renew_identity_card] }
+  - id: A06
+    desc: termen depasit (mutat acum 40 zile)
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-05-16' }
+    expect: { status: ok, included_steps: [renew_identity_card], overdue: true }
+  - id: A07
+    desc: buletin vechi schimbare domiciliu
+    facts: { id_card_type: buletin, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: ok, included_steps: [renew_identity_card], deadline_days: 15 }
+  - id: A08
+    desc: CEI dar resedinta - regula CEI no_new_doc nu se aplica
+    facts: { id_card_type: cei, change_type: resedinta, new_address_relation: host_consent, move_date: '2026-06-20' }
+    expect: { status: ok, included_steps: [register_residence], overridden_rules_absent: [rule.addr.ci_15d] }
+  - id: A09
+    desc: lipseste change_type
+    facts: { id_card_type: ci_simpla, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: needs_facts, missing_facts: [change_type] }
+  - id: A10
+    desc: lipseste id_card_type
+    facts: { change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: needs_facts, missing_facts: [id_card_type] }
+  - id: A11
+    desc: lipseste move_date - fara deadline calculabil
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner }
+    expect: { status: needs_facts, missing_facts: [move_date] }
+  - id: A12
+    desc: lipseste new_address_relation - regula host_consent nu se evalueaza
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, move_date: '2026-06-20' }
+    expect: { status: needs_facts, missing_facts: [new_address_relation] }
+  - id: A13
+    desc: proprietar - fara cerinta de consimtamant
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: ok, requirements_absent: [req.host_consent_declaration] }
+  - id: A14
+    desc: domiciliu la membru de familie
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: family, move_date: '2026-06-20' }
+    expect: { status: ok, included_steps: [renew_identity_card], requirements: [req.proof_of_address] }
+  - id: A15
+    desc: alt judet - fara canal Timisoara
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.dep_timisoara] }
+  - id: A16
+    desc: Timisoara - canal atasat
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: ok, channels: [ch.dep_timisoara] }
+  - id: A17
+    desc: move_date in viitor (data invalida logic)
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-12-01' }
+    expect: { status: ok, warnings: [future_move_date] }
+  - id: A18
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [id_card_type, change_type, new_address_relation, move_date] }
+  - id: A19
+    desc: CEI domiciliu proprietar - fara cerinta proof (act fizic nu se emite) - de confirmat
+    facts: { id_card_type: cei, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-20' }
+    expect: { status: ok, warnings: [cei_no_new_doc], needs_confirmation: [cei_no_new_doc] }
+  - id: A20
+    desc: domiciliu gazduit + alt judet
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: host_consent, move_date: '2026-06-20' }
+    jurisdiction_path: [eu, ro, ro.bh, ro.bh.oradea]
+    expect: { status: ok, requirements: [req.proof_of_address, req.host_consent_declaration], channels_absent: [ch.dep_timisoara] }
+  - id: A21
+    desc: move_date azi - termen plin de 15 zile
+    facts: { id_card_type: ci_simpla, change_type: domiciliu, new_address_relation: owner, move_date: '2026-06-25' }
+    expect: { status: ok, deadline_days: 15 }

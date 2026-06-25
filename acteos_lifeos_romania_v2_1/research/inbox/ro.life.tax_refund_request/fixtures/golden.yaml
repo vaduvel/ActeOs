@@ -1,0 +1,381 @@
+batch_id: B13_TAX_REFUND_REQUEST
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: ro.life.tax_refund_request
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - RO
+  - RO-TM
+  - RO-TM-TIMISOARA
+  reference_date: '2026-06-25'
+fixtures:
+- id: RF01
+  desc: Restituire locală Timișoara pregătită
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+- id: RF02
+  desc: Compensare locală cu dovezi disponibile
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: compensation
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - prepare_timisoara_tax_compensation_request
+    requirements:
+    - req.documents_proving_right_to_refund
+    channels:
+    - ch.timisoara.atlas_compensation
+    advice_tags:
+    - use_atlas_not_current_service_portal
+- id: RF03
+  desc: Compensare fără documente doveditoare
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: compensation
+    refund_basis_evidence_available: false
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_timisoara_tax_compensation_request
+    requirements:
+    - req.documents_proving_right_to_refund
+    channels:
+    - ch.timisoara.atlas_compensation
+    advice_tags:
+    - use_atlas_not_current_service_portal
+- id: RF04
+  desc: Restituire administrată de ANAF
+  facts:
+    authority_scope: central_anaf
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO
+  expect:
+    status: ok
+    requirements:
+    - req.identify_tax_and_payment_reference
+    needs_confirmation:
+    - confirm_anaf_refund_form_and_channel
+- id: RF05
+  desc: Restituire la alt UAT
+  facts:
+    authority_scope: other_local
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-CJ-CLUJNAPOCA
+  expect:
+    status: ok
+    advice_tags:
+    - verified_with_local_gap
+    needs_confirmation:
+    - confirm_other_uat_refund_procedure
+- id: RF06
+  desc: Autoritatea fiscală nu este cunoscută
+  facts:
+    authority_scope: unknown
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO
+  expect:
+    status: blocked
+    needs_confirmation:
+    - confirm_refund_authority
+- id: RF07
+  desc: Nu este ales între restituire și compensare
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: unknown
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: blocked
+- id: RF08
+  desc: Există obligații fiscale restante cunoscute
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: true
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    needs_confirmation:
+    - confirm_compensation_before_refund
+- id: RF09
+  desc: Soldul obligațiilor restante este necunoscut
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: unknown
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    needs_confirmation:
+    - check_outstanding_tax_debts
+- id: RF10
+  desc: Cererea de restituire a fost deja depusă
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: true
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - track_tax_refund_or_compensation_request
+    advice_tags:
+    - do_not_duplicate_submitted_request
+    needs_confirmation:
+    - confirm_refund_resolution_deadline
+- id: RF11
+  desc: Nu este disponibil un cont bancar confirmat
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    needs_confirmation:
+    - confirm_refund_payment_details
+- id: RF12
+  desc: Este selectată autoritatea Timișoara pentru alt teritoriu
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-AR-ARAD
+  expect:
+    status: conflicting
+    conflicts:
+    - timisoara_authority_with_other_territory
+    blocked_effects:
+    - show_timisoara_atlas_channel
+- id: RF13
+  desc: Cererea de compensare a fost deja depusă
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: compensation
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: true
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - track_tax_refund_or_compensation_request
+    advice_tags:
+    - do_not_duplicate_submitted_request
+    needs_confirmation:
+    - confirm_refund_resolution_deadline
+- id: RF14
+  desc: Restituire fără documente ale temeiului
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: false
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: ok
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    needs_confirmation:
+    - confirm_refund_basis_documents
+- id: RF15
+  desc: Lipsește faptul obligatoriu authority_scope
+  facts:
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - authority_scope
+- id: RF16
+  desc: Lipsește faptul obligatoriu refund_or_compensation
+  facts:
+    authority_scope: local_timisoara
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - refund_or_compensation
+- id: RF17
+  desc: Lipsește faptul obligatoriu refund_basis_evidence_available
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    missing_facts:
+    - refund_basis_evidence_available
+- id: RF18
+  desc: Lipsește faptul obligatoriu known_outstanding_debts
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    request_already_submitted: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    missing_facts:
+    - known_outstanding_debts
+- id: RF19
+  desc: Lipsește faptul obligatoriu request_already_submitted
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    bank_account_available: true
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_already_submitted
+- id: RF20
+  desc: Lipsește faptul obligatoriu bank_account_available
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    territory_id: RO-TM-TIMISOARA
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_timisoara_tax_refund_request
+    channels:
+    - ch.timisoara.atlas_refund
+    advice_tags:
+    - use_atlas_not_current_service_portal
+    missing_facts:
+    - bank_account_available
+- id: RF21
+  desc: Lipsește faptul obligatoriu territory_id
+  facts:
+    authority_scope: local_timisoara
+    refund_or_compensation: refund
+    refund_basis_evidence_available: true
+    known_outstanding_debts: false
+    request_already_submitted: false
+    bank_account_available: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - territory_id
+- id: RF22
+  desc: Nu a fost furnizat niciun fapt de dezambiguizare
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - authority_scope
+    - refund_or_compensation
+    - refund_basis_evidence_available
+    - known_outstanding_debts
+    - request_already_submitted
+    - bank_account_available
+    - territory_id

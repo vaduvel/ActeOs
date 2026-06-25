@@ -1,0 +1,180 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_04_CHILD_BIRTH_PARENTAL_BENEFITS
+event_type_id: life.return_from_parental_leave
+status: draft
+rules:
+- id: rule.return.notice_30d
+  canonical_rule_id: return_parental_leave.employer.notice30
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-19'
+  when:
+    op: eq
+    field: is_employee
+    value: true
+  effects:
+  - type: include_step
+    step_id: notify_employer_return
+  - type: include_requirement
+    requirement_id: req.written_return_notice
+  - type: set_deadline
+    step_id: notify_employer_return
+    value:
+      kind: relative_calendar_days_before
+      days: 30
+      anchor: planned_return_date
+  - type: emit_warning
+    tag: return_notice_30d
+    message_ro: Anunță în scris angajatorul cu cel puțin 30 de zile înainte.
+  source_claim_ids:
+  - claim.return.employer_notice_30d
+  status: draft
+  required_facts:
+  - is_employee
+  - planned_return_date
+- id: rule.return.work_conditions
+  canonical_rule_id: return_parental_leave.work_conditions
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-19'
+  when:
+    op: eq
+    field: is_employee
+    value: true
+  effects:
+  - type: include_step
+    step_id: verify_return_conditions
+  - type: emit_advice
+    tag: return_not_less_favourable
+    message_ro: Condițiile la revenire nu pot fi mai puțin favorabile și includ îmbunătățirile intervenite între timp.
+  source_claim_ids:
+  - claim.return.conditions_not_less_favourable
+  status: draft
+- id: rule.return.insertion_handoff
+  canonical_rule_id: return_parental_leave.trigger.insertion
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2021-05-17'
+  when:
+    op: eq
+    field: will_earn_taxable_income
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.reinsertion_incentive
+  - type: set_deadline
+    step_id: apply_insertion_incentive
+    value:
+      kind: relative_business_days
+      days: 30
+      anchor: income_start_date
+  source_claim_ids:
+  - claim.return.insertion_30_workdays
+  - claim.return.insertion_early_late
+  status: draft
+  required_facts:
+  - income_start_date
+  - child_birth_date
+  - child_has_disability
+- id: rule.return.report_authority
+  canonical_rule_id: return_parental_leave.report_change
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2011-01-01'
+  when:
+    op: eq
+    field: ccc_or_incentive_payment_active
+    value: true
+  effects:
+  - type: include_step
+    step_id: report_return_to_primaria
+  - type: set_deadline
+    step_id: report_return_to_primaria
+    value:
+      kind: relative_business_days
+      days: 15
+      anchor: income_start_date
+  source_claim_ids:
+  - claim.return.report_change_15d
+  status: draft
+- id: rule.return.other_parent
+  canonical_rule_id: return_parental_leave.plan.other_parent
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-19'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: both_parents_eligible
+      value: true
+    - op: eq
+      field: other_parent_reserved_period_taken
+      value: false
+  effects:
+  - type: include_step
+    step_id: resolve_other_parent_reserved_period
+  - type: emit_warning
+    tag: other_parent_period_unresolved
+    message_ro: Verifică cele 2 luni rezervate celuilalt părinte înainte de data finală a revenirii.
+  source_claim_ids:
+  - claim.return.other_parent_two_months
+  status: draft
+- id: rule.return.employer_dispute
+  canonical_rule_id: return_parental_leave.employer.dispute
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2023-09-19'
+  when:
+    op: eq
+    field: employer_offers_less_favourable_conditions
+    value: true
+  effects:
+  - type: include_step
+    step_id: document_and_challenge_return_conditions
+  - type: emit_warning
+    tag: return_conditions_violation
+    message_ro: Documentează oferta și solicită remedierea; condițiile nu pot fi mai puțin favorabile.
+  source_claim_ids:
+  - claim.return.conditions_not_less_favourable
+  status: draft
+- id: rule.return.timisoara_channel
+  canonical_rule_id: return_parental_leave.channel.timisoara
+  event_type_id: life.return_from_parental_leave
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: operational
+  effective_from: '2024-01-01'
+  when:
+    op: jurisdiction_descends_from
+    field: jurisdiction
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    step_id: report_return_to_primaria
+    channel_id: ch.return_parental_leave.timisoara
+  - type: require_confirmation
+    tag: return_timisoara_documents
+    message_ro: Confirmă documentele cerute de fluxul local pentru schimbarea dreptului/stimulent.
+  source_claim_ids:
+  - claim.return.timisoara_benefit_channel
+  status: in_review

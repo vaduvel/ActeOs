@@ -1,0 +1,433 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.bank_card_lost_stolen
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: provider_id
+  type: enum
+  label: Cine a emis cardul?
+  reason: Canalul de blocare este specific emitentului.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - ing
+  - bt
+  - bcr
+  - cec
+  - other
+  - unknown
+- id: incident_type
+  type: enum
+  label: Cardul este pierdut sau furat?
+  reason: Contextul ajută la explicație, dar blocarea este urgentă în ambele cazuri.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - lost
+  - stolen
+  - retained_by_atm
+  - unknown
+- id: can_access_banking_app
+  type: boolean
+  label: Mai ai acces la aplicația băncii?
+  reason: Poate fi cel mai rapid canal de blocare.
+  sensitive: false
+  required_for_resolution: true
+- id: unauthorized_transactions_seen
+  type: boolean
+  label: Vezi tranzacții pe care nu le recunoști?
+  reason: Activează fluxul separat de contestare a operațiunilor.
+  sensitive: false
+  required_for_resolution: true
+- id: latest_unauthorized_transaction_date
+  type: date
+  label: Când a fost ultima tranzacție nerecunoscută?
+  reason: Este necesar pentru verificarea limitei de 13 luni.
+  sensitive: true
+  required_for_resolution: false
+- id: is_abroad
+  type: boolean
+  label: Ești în străinătate?
+  reason: Unele bănci au numere diferite pentru apel din străinătate.
+  sensitive: false
+  required_for_resolution: false
+- id: card_already_blocked
+  type: boolean
+  label: Cardul este deja blocat?
+  reason: Evită duplicarea pasului și trece la verificarea tranzacțiilor.
+  sensitive: false
+  required_for_resolution: true
+- id: replacement_needed
+  type: boolean
+  label: Vrei și un card nou?
+  reason: Blocarea și reemiterea sunt pași distincți.
+  sensitive: false
+  required_for_resolution: false
+gates:
+- id: gate.card_not_blocked
+  priority: 100
+  when: card_already_blocked == false
+  effect: warn
+  code: BLOCK_CARD_NOW
+  message: Blochează imediat cardul prin canalul oficial al emitentului.
+  recovery_actions:
+  - Folosește aplicația oficială.
+  - Sună numărul oficial dacă nu ai acces la aplicație.
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+- id: gate.provider_unknown
+  priority: 90
+  when: provider_id in [other, unknown]
+  effect: needs_confirmation
+  code: ISSUER_CHANNEL_REQUIRED
+  message: Nu folosi un număr găsit într-un mesaj; identifică emitentul și canalul oficial.
+  recovery_actions:
+  - Deschide site-ul oficial al emitentului.
+  - Folosește numărul de pe spatele altui card/document contractual, dacă este verificabil.
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+- id: gate.cec_conflict
+  priority: 80
+  when: provider_id == cec
+  effect: warn
+  code: CEC_SECONDARY_PHONE_CONFLICT
+  message: Sursele oficiale CEC afișează numere secundare diferite. Numărul comun ambelor pagini este 021 202 69 99.
+  recovery_actions:
+  - Folosește 021 202 69 99 sau aplicația/canalul oficial actual.
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.cec_faq_numbers
+  - claim.bank_card_lost_stolen.cec_contact_numbers
+- id: gate.transactions
+  priority: 70
+  when: unauthorized_transactions_seen == true
+  effect: warn
+  code: REPORT_UNAUTHORIZED_TRANSACTIONS
+  message: Raportează separat tranzacțiile neautorizate și păstrează confirmarea.
+  recovery_actions:
+  - Notează data, suma și comerciantul.
+  - Nu aștepta expirarea termenului legal.
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.unauthorized_13_months
+  - claim.bank_card_lost_stolen.refund_next_business_day
+steps:
+- id: step.block_card
+  title: Blochează cardul
+  instruction: Folosește imediat aplicația sau telefonul oficial al emitentului.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Aplicația sau operatorul confirmă blocarea și ai un număr/referință.
+  recovery_actions:
+  - Dacă aplicația nu funcționează, apelează canalul telefonic oficial.
+  official_channel_ids:
+  - channel.ing_card_stop
+  - channel.bt_card_stop
+  - channel.bcr_card_stop
+  - channel.cec_card_stop
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+  - claim.bank_card_lost_stolen.ing_block_channel
+  - claim.bank_card_lost_stolen.bt_block_channel
+  - claim.bank_card_lost_stolen.bcr_block_channel
+  - claim.bank_card_lost_stolen.cec_faq_numbers
+  - claim.bank_card_lost_stolen.cec_contact_numbers
+- id: step.review_transactions
+  title: Verifică tranzacțiile
+  instruction: Controlează lista operațiunilor și marchează ce nu recunoști.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.block_card
+  deadline:
+    kind: none
+  completion_evidence: Ai o listă datată a operațiunilor contestate sau ai confirmat că nu există.
+  recovery_actions:
+  - Descarcă extrasul sau contactează banca dacă nu ai acces.
+  official_channel_ids:
+  - channel.ing_card_stop
+  - channel.bt_card_stop
+  - channel.bcr_card_stop
+  - channel.cec_card_stop
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.unauthorized_13_months
+- id: step.report_unauthorized
+  title: Raportează operațiunile neautorizate
+  instruction: Transmite băncii reclamația prin canalul indicat și păstrează dovada.
+  sequence_hint: 3
+  applies_when:
+    op: eq
+    field: unauthorized_transactions_seen
+    value: true
+  depends_on:
+  - step.review_transactions
+  deadline:
+    kind: relative
+    max_months: 13
+    anchor: debit_date
+    instruction: fără întârziere nejustificată
+  completion_evidence: Ai număr de înregistrare sau confirmarea electronică a sesizării.
+  recovery_actions:
+  - Dacă banca solicită date suplimentare, răspunde în canalul oficial.
+  - Escaladează conform procedurii de reclamații din contract.
+  official_channel_ids:
+  - channel.ing_card_stop
+  - channel.bt_card_stop
+  - channel.bcr_card_stop
+  - channel.cec_card_stop
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.unauthorized_13_months
+  - claim.bank_card_lost_stolen.refund_next_business_day
+  - claim.bank_card_lost_stolen.liability_up_to_30_eur
+- id: step.request_replacement
+  title: Solicită un card nou
+  instruction: După blocare, urmează fluxul emitentului pentru reemitere și livrare/ridicare.
+  sequence_hint: 4
+  applies_when:
+    op: eq
+    field: replacement_needed
+    value: true
+  depends_on:
+  - step.block_card
+  deadline:
+    kind: none
+  completion_evidence: Ai confirmarea reemiterii și metoda de primire.
+  recovery_actions:
+  - Confirmă costul și termenul înainte de comandă; acestea nu sunt universale.
+  official_channel_ids:
+  - channel.ing_card_stop
+  - channel.bt_card_stop
+  - channel.bcr_card_stop
+  - channel.cec_card_stop
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.bt_block_channel
+  - claim.bank_card_lost_stolen.bcr_block_channel
+requirements:
+- id: req.issuer_identification
+  title: Identificarea emitentului
+  description: Numele băncii emitente și, dacă este disponibil, ultimele cifre ale cardului.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - field_present
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+- id: req.security_identification
+  title: Date pentru identificarea sigură
+  description: Datele pe care banca le solicită pentru autentificare; nu transmite PIN, CVV sau OTP unui apelant neinițiat
+    de tine.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+- id: req.transaction_details
+  title: Detaliile tranzacțiilor contestate
+  description: Data, suma, moneda și comerciantul pentru fiecare operațiune nerecunoscută.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: unauthorized_transactions_seen
+    value: true
+  accepted_forms:
+  - electronic
+  - copy
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - date_within_window
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.unauthorized_13_months
+official_channels:
+- id: channel.ing_card_stop
+  type: phone
+  label: ING Card Stop — 021 402 85 99
+  url: tel:+40214028599
+  integration_status: DEEP_LINK
+  official_domain: ing.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.ing_block_channel
+- id: channel.bt_card_stop
+  type: phone
+  label: BT Call Center — 0264 308 028
+  url: tel:+40264308028
+  integration_status: DEEP_LINK
+  official_domain: bancatransilvania.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.bt_block_channel
+- id: channel.bcr_card_stop
+  type: phone
+  label: BCR Asistența — *2227 / +4021 407 42 00
+  url: tel:+40214074200
+  integration_status: DEEP_LINK
+  official_domain: bcr.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.bcr_block_channel
+- id: channel.cec_card_stop
+  type: phone
+  label: 'CEC — numărul comun surselor: 021 202 69 99'
+  url: tel:+40212026999
+  integration_status: DEEP_LINK
+  official_domain: cec.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.cec_faq_numbers
+  - claim.bank_card_lost_stolen.cec_contact_numbers
+  notes: Numărul secundar este în conflict între două pagini oficiale.
+rules:
+- id: rule.bank_card_lost_stolen.block_immediately.r1
+  canonical_rule_id: rule.bank_card_lost_stolen.block_immediately
+  event_type_id: ro.life.bank_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: card_already_blocked
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.block_card
+  - type: emit_warning
+    message_ro: Blochează cardul fără întârziere.
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+  status: draft
+  reviewer_id: null
+- id: rule.bank_card_lost_stolen.unauthorized_flow.r1
+  canonical_rule_id: rule.bank_card_lost_stolen.unauthorized_flow
+  event_type_id: ro.life.bank_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: unauthorized_transactions_seen
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.report_unauthorized
+  - type: include_requirement
+    requirement_id: req.transaction_details
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.unauthorized_13_months
+  - claim.bank_card_lost_stolen.refund_next_business_day
+  - claim.bank_card_lost_stolen.liability_up_to_30_eur
+  status: draft
+  reviewer_id: null
+- id: rule.bank_card_lost_stolen.cec_conflict_warning.r1
+  canonical_rule_id: rule.bank_card_lost_stolen.cec_conflict_warning
+  event_type_id: ro.life.bank_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: provider_id
+    value: cec
+  effects:
+  - type: emit_warning
+    message_ro: Două surse oficiale CEC diferă asupra numărului secundar; folosește numărul comun 021 202 69 99.
+  - type: set_freshness_state
+    value: conflicting
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.cec_faq_numbers
+  - claim.bank_card_lost_stolen.cec_contact_numbers
+  status: draft
+  reviewer_id: null
+- id: rule.bank_card_lost_stolen.unknown_issuer.r1
+  canonical_rule_id: rule.bank_card_lost_stolen.unknown_issuer
+  event_type_id: ro.life.bank_card_lost_stolen
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: provider_id
+    values:
+    - other
+    - unknown
+  effects:
+  - type: require_confirmation
+    message_ro: Canalul de blocare al emitentului trebuie confirmat din sursă oficială.
+  source_claim_ids:
+  - claim.bank_card_lost_stolen.notify_without_delay
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

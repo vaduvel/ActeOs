@@ -1,0 +1,655 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.unemployment_benefit
+event_type_id: ro.life.unemployment_benefit
+required_facts:
+- termination_reason_class
+- contribution_months_last_24
+- monthly_income_amount_ron
+- pension_conditions_met
+- registered_with_agency
+- jurisdiction_id
+- filing_window
+- has_identity_document
+- has_study_qualification_documents
+- has_employment_records
+- total_contribution_years
+status: draft
+rules:
+- id: rule.unemployment_benefit.route.v1
+  canonical_rule_id: rule.unemployment_benefit.route
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: register_as_jobseeker
+  - type: include_step
+    step_id: prepare_unemployment_benefit_file
+  - type: include_step
+    step_id: submit_application_to_competent_agency
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_conditions
+  - clm.unemployment_benefit.unemp_docs
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.reason_imputable.v1
+  canonical_rule_id: rule.unemployment_benefit.reason_imputable
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: termination_reason_class
+    value: imputable_confirmed
+  effects:
+  - type: block
+    code: termination_reason_not_eligible
+    message_ro: Condiția încetării din motive neimputabile nu este îndeplinită.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_reason
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.reason_unknown.v1
+  canonical_rule_id: rule.unemployment_benefit.reason_unknown
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: termination_reason_class
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_nonimputable_termination_reason
+    message_ro: Temeiul încetării trebuie confirmat din documentele angajatorului și de AJOFM.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_reason
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.unemployment_benefit.insufficient_contribution.v1
+  canonical_rule_id: rule.unemployment_benefit.insufficient_contribution
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: lt
+    field: contribution_months_last_24
+    value: 12
+  effects:
+  - type: block
+    code: minimum_contribution_not_met
+    message_ro: Sunt necesare cel puțin 12 luni de cotizare în ultimele 24 de luni.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_conditions
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.income_at_or_above_isr.v1
+  canonical_rule_id: rule.unemployment_benefit.income_at_or_above_isr
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: gte
+    field: monthly_income_amount_ron
+    value: 660
+  effects:
+  - type: block
+    code: income_threshold_not_met
+    message_ro: Venitul declarat nu este sub ISR-ul indicat de pagina AJOFM Timiș.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_conditions
+  - clm.unemployment_benefit.unemp_isr
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.pension_condition.v1
+  canonical_rule_id: rule.unemployment_benefit.pension_condition
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: pension_conditions_met
+    value: true
+  effects:
+  - type: block
+    code: pension_condition_excludes_benefit
+    message_ro: Condiția privind neîndeplinirea cerințelor de pensionare nu este îndeplinită.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_conditions
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.not_registered.v1
+  canonical_rule_id: rule.unemployment_benefit.not_registered
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: registered_with_agency
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: jobseeker_registration_at_agency_by_domicile_or_residence
+  - type: include_step
+    step_id: complete_ajofm_registration
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_conditions
+  - clm.unemployment_benefit.jobseeker_register
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.missing_identity.v1
+  canonical_rule_id: rule.unemployment_benefit.missing_identity
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: has_identity_document
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: identity_document
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_docs
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.missing_studies.v1
+  canonical_rule_id: rule.unemployment_benefit.missing_studies
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: has_study_qualification_documents
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: study_and_qualification_documents
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_docs
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.missing_employment_records.v1
+  canonical_rule_id: rule.unemployment_benefit.missing_employment_records
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: has_employment_records
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: employment_and_contribution_records
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_docs
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.first_10_days.v1
+  canonical_rule_id: rule.unemployment_benefit.first_10_days
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: filing_window
+    value: within_first_10_days
+  effects:
+  - type: emit_advice
+    tag: entitlement_from_termination_if_filed_in_10_days
+    message_ro: Depunerea în 10 zile permite, dacă restul condițiilor sunt îndeplinite, acordarea de la data încetării.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_timing
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.after_10_days.v1
+  canonical_rule_id: rule.unemployment_benefit.after_10_days
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: filing_window
+    value: after_10_days_within_12_months
+  effects:
+  - type: emit_advice
+    tag: entitlement_from_application_after_10_days
+    message_ro: Între ziua 11 și termenul de 12 luni, dreptul începe de la data înregistrării cererii.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_timing
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.after_12_months.v1
+  canonical_rule_id: rule.unemployment_benefit.after_12_months
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: eq
+    field: filing_window
+    value: after_12_months
+  effects:
+  - type: block
+    code: application_after_12_month_forfeiture
+    message_ro: Cererea este în afara termenului de 12 luni indicat de AJOFM Timiș.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_timing
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.duration_6.v1
+  canonical_rule_id: rule.unemployment_benefit.duration_6
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: total_contribution_years
+      value: 1
+    - op: lt
+      field: total_contribution_years
+      value: 5
+  effects:
+  - type: emit_advice
+    tag: benefit_duration_6_months
+    message_ro: Durata modelată este 6 luni.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_duration
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.duration_9.v1
+  canonical_rule_id: rule.unemployment_benefit.duration_9
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: total_contribution_years
+      value: 5
+    - op: lte
+      field: total_contribution_years
+      value: 10
+  effects:
+  - type: emit_advice
+    tag: benefit_duration_9_months
+    message_ro: Durata modelată este 9 luni.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_duration
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.duration_12.v1
+  canonical_rule_id: rule.unemployment_benefit.duration_12
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: gt
+    field: total_contribution_years
+    value: 10
+  effects:
+  - type: emit_advice
+    tag: benefit_duration_12_months
+    message_ro: Durata modelată este 12 luni.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_duration
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.amount_base.v1
+  canonical_rule_id: rule.unemployment_benefit.amount_base
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: lt
+    field: total_contribution_years
+    value: 3
+  effects:
+  - type: emit_advice
+    tag: benefit_amount_base_isr
+    message_ro: Cuantumul pornește de la ISR, fără procent suplimentar pentru stagiu sub 3 ani.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_amount
+  - clm.unemployment_benefit.unemp_isr
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.amount_3.v1
+  canonical_rule_id: rule.unemployment_benefit.amount_3
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: total_contribution_years
+      value: 3
+    - op: lt
+      field: total_contribution_years
+      value: 5
+  effects:
+  - type: emit_advice
+    tag: benefit_increment_3_percent
+    message_ro: Se aplică tranșa de 3% aferentă stagiului modelat.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_amount
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.amount_5.v1
+  canonical_rule_id: rule.unemployment_benefit.amount_5
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: total_contribution_years
+      value: 5
+    - op: lt
+      field: total_contribution_years
+      value: 10
+  effects:
+  - type: emit_advice
+    tag: benefit_increment_5_percent
+    message_ro: Se aplică tranșa de 5% aferentă stagiului modelat.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_amount
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.amount_7.v1
+  canonical_rule_id: rule.unemployment_benefit.amount_7
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: total_contribution_years
+      value: 10
+    - op: lt
+      field: total_contribution_years
+      value: 20
+  effects:
+  - type: emit_advice
+    tag: benefit_increment_7_percent
+    message_ro: Se aplică tranșa de 7% aferentă stagiului modelat.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_amount
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.amount_10.v1
+  canonical_rule_id: rule.unemployment_benefit.amount_10
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: gte
+    field: total_contribution_years
+    value: 20
+  effects:
+  - type: emit_advice
+    tag: benefit_increment_10_percent
+    message_ro: Se aplică tranșa de 10% aferentă stagiului modelat.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_amount
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.obligations.v1
+  canonical_rule_id: rule.unemployment_benefit.obligations
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-03-09'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: beneficiary_reporting_and_active_search_obligations
+    message_ro: După acordare, respectă prezentarea lunară, notificarea schimbărilor și obligațiile de căutare activă.
+  source_claim_ids:
+  - clm.unemployment_benefit.unemp_obligations
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.timis_channel.v1
+  canonical_rule_id: rule.unemployment_benefit.timis_channel
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: county
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: in
+    field: jurisdiction_id
+    values:
+    - ro.tm
+    - ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ajofm_timis_bd_republicii_21
+  source_claim_ids:
+  - clm.unemployment_benefit.ajofm_timisoara
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.unemployment_benefit.other_uat.v1
+  canonical_rule_id: rule.unemployment_benefit.other_uat
+  event_type_id: ro.life.unemployment_benefit
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: not_in
+    field: jurisdiction_id
+    values:
+    - ro.tm
+    - ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ajofm_by_domicile_or_residence
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Competența este legată de domiciliu/reședință; canalul local trebuie verificat.
+  - type: require_confirmation
+    tag: confirm_local_ajofm_channel
+    message_ro: Verifică agenția, programarea și modalitatea de depunere din județul competent.
+  source_claim_ids:
+  - clm.unemployment_benefit.jobseeker_register
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null

@@ -1,0 +1,488 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_DISABILITY_REASSESSMENT
+alias_event_type_id: ro.life.disability_reassessment
+event_type_id: life.disability_reassessment
+status: draft
+rules:
+- id: rule.disability_reassessment.required_facts
+  canonical_rule_id: disability_reassessment.required_facts
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_reassessment_facts
+    message_ro: Precizează copil/adult, valabilitatea certificatului, motivul reevaluării și județul.
+  source_claim_ids:
+  - claim.disability_reassessment.adult_30_days_before_expiry
+  - claim.disability_reassessment.child_60_days_before_expiry
+  status: draft
+  required_facts:
+  - person_type
+  - certificate_validity
+  - reassessment_reason
+  - county
+- id: rule.disability_reassessment.adult_fixed
+  canonical_rule_id: disability_reassessment.adult_fixed
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: certificate_validity
+      value: fixed
+    - op: eq
+      field: reassessment_reason
+      value: expiry
+    - op: exists
+      field: expiry_date
+  effects:
+  - type: include_step
+    step_id: prepare_adult_reassessment_file
+  - type: include_step
+    step_id: submit_adult_reassessment_before_expiry
+  - type: set_deadline
+    code: adult_reassessment_30_days_before_expiry
+    value:
+      kind: relative_calendar_days_before
+      anchor: expiry_date
+      days: 30
+    message_ro: Prezintă-te pentru reevaluare cu cel puțin 30 de zile înainte de expirare.
+  - type: require_confirmation
+    tag: adult_reassessment_dossier_current_local
+    message_ro: Confirmă lista completă de acte și programarea la DGASPC competentă.
+  source_claim_ids:
+  - claim.disability_reassessment.adult_30_days_before_expiry
+  status: draft
+- id: rule.disability_reassessment.adult_fixed_missing_expiry
+  canonical_rule_id: disability_reassessment.adult_fixed_missing_expiry
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: certificate_validity
+      value: fixed
+    - op: eq
+      field: reassessment_reason
+      value: expiry
+    - op: missing
+      field: expiry_date
+  effects:
+  - type: require_confirmation
+    tag: expiry_date_required
+    message_ro: Introdu data expirării; termenul de 30 de zile nu poate fi calculat fără ea.
+  source_claim_ids:
+  - claim.disability_reassessment.adult_30_days_before_expiry
+  status: draft
+- id: rule.disability_reassessment.child_fixed
+  canonical_rule_id: disability_reassessment.child_fixed
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: certificate_validity
+      value: fixed
+    - op: eq
+      field: reassessment_reason
+      value: expiry
+    - op: exists
+      field: expiry_date
+  effects:
+  - type: include_step
+    step_id: prepare_child_reassessment_file
+  - type: include_step
+    step_id: request_child_reassessment_before_expiry
+  - type: include_requirement
+    requirement_id: req.current_child_disability_certificate_copy
+  - type: include_requirement
+    requirement_id: req.child_disability_application
+  - type: include_requirement
+    requirement_id: req.updated_social_medical_psychological_educational_file
+  - type: set_deadline
+    code: child_reassessment_60_days_before_expiry
+    value:
+      kind: relative_calendar_days_before
+      anchor: expiry_date
+      days: 60
+    message_ro: Solicită reevaluarea cu cel puțin 60 de zile înainte de expirare.
+  source_claim_ids:
+  - claim.disability_reassessment.child_60_days_before_expiry
+  - claim.disability_reassessment.child_current_certificate_copy
+  - claim.disability_reassessment.child_full_file
+  status: draft
+- id: rule.disability_reassessment.child_fixed_missing_expiry
+  canonical_rule_id: disability_reassessment.child_fixed_missing_expiry
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: certificate_validity
+      value: fixed
+    - op: eq
+      field: reassessment_reason
+      value: expiry
+    - op: missing
+      field: expiry_date
+  effects:
+  - type: require_confirmation
+    tag: expiry_date_required
+    message_ro: Introdu data expirării; termenul de 60 de zile nu poate fi calculat fără ea.
+  source_claim_ids:
+  - claim.disability_reassessment.child_60_days_before_expiry
+  status: draft
+- id: rule.disability_reassessment.permanent_periodic_not_required
+  canonical_rule_id: disability_reassessment.permanent_periodic_not_required
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: certificate_validity
+      value: permanent
+    - op: eq
+      field: reassessment_reason
+      value: expiry
+  effects:
+  - type: exclude_step
+    step_id: submit_periodic_reassessment
+  - type: emit_advice
+    tag: permanent_certificate_no_periodic_reassessment
+    message_ro: Certificatul permanent pentru situația ireversibilă nu are reevaluare periodică.
+  source_claim_ids:
+  - claim.disability_reassessment.permanent_no_periodic
+  status: draft
+- id: rule.disability_reassessment.permanent_aggravation
+  canonical_rule_id: disability_reassessment.permanent_aggravation
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: certificate_validity
+      value: permanent
+    - op: eq
+      field: reassessment_reason
+      value: aggravation
+  effects:
+  - type: include_step
+    step_id: request_reassessment_due_to_aggravation
+  - type: include_requirement
+    requirement_id: req.updated_medical_and_psychosocial_evidence
+  - type: require_confirmation
+    tag: permanent_aggravation_dossier_and_channel
+    message_ro: Confirmă dosarul și canalul local pentru reevaluarea solicitată din cauza agravării.
+  source_claim_ids:
+  - claim.disability_reassessment.permanent_exceptions
+  status: draft
+- id: rule.disability_reassessment.permanent_summons
+  canonical_rule_id: disability_reassessment.permanent_summons
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: certificate_validity
+      value: permanent
+    - op: eq
+      field: reassessment_reason
+      value: authority_summons
+  effects:
+  - type: include_step
+    step_id: attend_reassessment_on_authority_summons
+  - type: include_requirement
+    requirement_id: req.official_reassessment_summons
+  - type: emit_warning
+    tag: summons_due_date_controls
+    message_ro: Respectă data și instrucțiunile din convocarea oficială; regula generală de expirare nu se aplică.
+  source_claim_ids:
+  - claim.disability_reassessment.permanent_exceptions
+  status: draft
+- id: rule.disability_reassessment.adult_home
+  canonical_rule_id: disability_reassessment.adult_home
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: previous_degree
+      value: severe
+    - op: eq
+      field: home_evaluation_requested
+      value: true
+    - op: eq
+      field: certificate_validity
+      value: fixed
+  effects:
+  - type: include_step
+    step_id: request_periodic_evaluation_at_home
+  - type: include_requirement
+    requirement_id: req.home_evaluation_request
+  source_claim_ids:
+  - claim.disability_reassessment.adult_home_evaluation
+  status: draft
+- id: rule.disability_reassessment.home_other_degree
+  canonical_rule_id: disability_reassessment.home_other_degree
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: neq
+      field: previous_degree
+      value: severe
+    - op: eq
+      field: home_evaluation_requested
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: home_evaluation_eligibility
+    message_ro: Baza legală verificată privește încadrarea anterioară în grad grav; confirmă o altă bază aplicabilă.
+  source_claim_ids:
+  - claim.disability_reassessment.adult_home_evaluation
+  status: draft
+- id: rule.disability_reassessment.tm_adult_channel
+  canonical_rule_id: disability_reassessment.tm_adult_channel
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: county
+      value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgaspc_tm_adult_disability
+  - type: emit_advice
+    tag: tm_adult_reassessment_address_hours
+    message_ro: DGASPC Timiș publică depunerea la Piața Regina Maria nr. 3; reverifică programul înainte de deplasare.
+  source_claim_ids:
+  - claim.disability_reassessment.tm_adult_channel
+  status: draft
+- id: rule.disability_reassessment.tm_child_channel
+  canonical_rule_id: disability_reassessment.tm_child_channel
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: county
+      value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgaspc_tm_child_complex_evaluation
+  - type: emit_advice
+    tag: tm_child_reassessment_contact
+    message_ro: Pentru programare, DGASPC Timiș publică telefonul 0256/494497.
+  source_claim_ids:
+  - claim.disability_reassessment.tm_child_channel
+  status: draft
+- id: rule.disability_reassessment.piris_revision
+  canonical_rule_id: disability_reassessment.piris_revision
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: reassessment_reason
+      value: piris_revision
+    - op: eq
+      field: county
+      value: TM
+  effects:
+  - type: exclude_step
+    step_id: submit_certificate_reassessment
+  - type: include_step
+    step_id: request_piris_revision_independently
+  - type: emit_advice
+    tag: piris_revision_independent
+    message_ro: În Timiș, revizuirea PIRIS este publicată ca rută independentă de reevaluarea certificatului.
+  source_claim_ids:
+  - claim.disability_reassessment.tm_piris_independent
+  status: draft
+- id: rule.disability_reassessment.transition_18
+  canonical_rule_id: disability_reassessment.transition_18
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: child
+    - op: eq
+      field: reassessment_reason
+      value: transition_to_adult
+  effects:
+  - type: require_confirmation
+    tag: transition_18_route_and_timing
+    message_ro: Confirmă traseul de tranziție copil–adult, documentele și calendarul la DGASPC competentă; nu presupune continuitatea
+      automată.
+  source_claim_ids:
+  - claim.disability_reassessment.child_full_file
+  status: draft
+- id: rule.disability_reassessment.other_county
+  canonical_rule_id: disability_reassessment.other_county
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: local_reassessment_channel_and_dossier
+    message_ro: Confirmă programarea, adresa, formularele și documentele la DGASPC competentă.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.disability_reassessment.adult_30_days_before_expiry
+  - claim.disability_reassessment.child_60_days_before_expiry
+  status: draft
+- id: rule.disability_reassessment.expired_warning
+  canonical_rule_id: disability_reassessment.expired_warning
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: certificate_expiry_state
+    value: expired
+  effects:
+  - type: emit_warning
+    tag: certificate_expired_no_retroactive_guarantee
+    message_ro: Certificatul este expirat; solicită imediat clarificarea DGASPC, fără a presupune menținerea retroactivă a
+      drepturilor.
+  source_claim_ids:
+  - claim.disability_reassessment.adult_30_days_before_expiry
+  status: draft
+- id: rule.disability_reassessment.piris_other_county
+  canonical_rule_id: disability_reassessment.piris_other_county
+  event_type_id: life.disability_reassessment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: person_type
+      value: adult
+    - op: eq
+      field: reassessment_reason
+      value: piris_revision
+    - op: neq
+      field: county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: piris_revision_local_route
+    message_ro: Confirmă dacă DGASPC competentă publică revizuirea PIRIS ca rută separată și ce formular folosește.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.disability_reassessment.tm_piris_independent
+  status: draft

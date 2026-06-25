@@ -1,0 +1,283 @@
+batch_id: B06_HEALTH_CARD_BLOCKED
+defaults:
+  alias_event_type_id: ro.life.health_card_blocked
+  event_type_id: life.health_card_blocked
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: HCB01
+  description: Cinci încercări PIN greșite la medic
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: resolved
+    included_steps:
+    - ask_contract_provider_to_open_helpdesk_ticket
+    channels:
+    - ch.cnas_card_helpdesk_0212026995
+    advice:
+    - provider_initiates_unblock
+- id: HCB02
+  description: Șase încercări, card blocat
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 6
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: resolved
+    included_steps:
+    - ask_contract_provider_to_open_helpdesk_ticket
+- id: HCB03
+  description: Patru încercări greșite
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 4
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - not_verified_as_blocked_yet
+    confirmations:
+    - forgotten_pin_or_reader_diagnosis
+- id: HCB04
+  description: O încercare greșită
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 1
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - not_verified_as_blocked_yet
+- id: HCB05
+  description: Urgență și card blocat
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: true
+    provider_present: false
+  expect:
+    status: needs_confirmation
+    advice:
+    - emergency_without_card
+    steps_absent:
+    - delay_emergency_for_card_resolution
+    confirmations:
+    - provider_contact_needed
+- id: HCB06
+  description: Urgență, card uitat acasă
+  facts:
+    issue_type: card_unavailable
+    failed_pin_attempts: 0
+    emergency_service: true
+  expect:
+    status: resolved
+    advice:
+    - emergency_without_card
+    steps_absent:
+    - delay_emergency_for_card_resolution
+- id: HCB07
+  description: PIN uitat înainte de blocare
+  facts:
+    issue_type: forgotten_pin
+    failed_pin_attempts: 2
+    emergency_service: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - ask_provider_or_cas_for_pin_procedure
+    warnings:
+    - do_not_guess_pin
+    confirmations:
+    - forgotten_pin_current_procedure
+- id: HCB08
+  description: Eroare la un singur cititor
+  facts:
+    issue_type: reader_error
+    failed_pin_attempts: 0
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - provider_diagnoses_reader_or_pias_error
+    confirmations:
+    - reader_or_system_error_route
+- id: HCB09
+  description: Card deteriorat fizic
+  facts:
+    issue_type: physically_damaged
+    failed_pin_attempts: 0
+    emergency_service: false
+  expect:
+    status: resolved
+    triggered_events:
+    - life.health_card_lost
+    advice:
+    - damaged_card_duplicate_fee
+- id: HCB10
+  description: Card blocat, fără furnizor prezent
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    provider_present: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - provider_contact_needed
+- id: HCB11
+  description: Card blocat, Timiș, cere CAS
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    provider_present: false
+    county: TM
+    needs_cas_guidance: true
+  expect:
+    status: needs_confirmation
+    channels:
+    - ch.cas_tm
+    advice:
+    - cas_tm_contact
+    confirmations:
+    - provider_contact_needed
+- id: HCB12
+  description: Card blocat, alt județ
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    provider_present: false
+    county: CJ
+    needs_cas_guidance: true
+  expect:
+    status: needs_confirmation
+    confidence: verified_with_local_gap
+    confirmations:
+    - provider_contact_needed
+    - territorial_cas_contact
+- id: HCB13
+  description: Utilizatorul încearcă să sune singur helpdesk-ul
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    provider_present: false
+    caller: insured
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - provider_contact_needed
+    warnings:
+    - published_route_is_provider_initiated
+- id: HCB14
+  description: Se cere PIN-ul prin SMS
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    provider_present: true
+    request_for_pin_channel: sms
+  expect:
+    status: resolved
+    warnings:
+    - never_disclose_pin_to_unverified_channel
+- id: HCB15
+  description: Cardul nu a fost activat
+  facts:
+    issue_type: not_activated
+    failed_pin_attempts: 0
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - activation_at_provider_not_unblock_route
+- id: HCB16
+  description: PIN inițial 000 nu funcționează la card deja activat
+  facts:
+    issue_type: forgotten_pin
+    failed_pin_attempts: 1
+    emergency_service: false
+    provider_present: true
+    attempted_pin: '000'
+  expect:
+    status: needs_confirmation
+    warnings:
+    - do_not_guess_pin
+    confirmations:
+    - forgotten_pin_current_procedure
+- id: HCB17
+  description: Problema dispare la al doilea furnizor
+  facts:
+    issue_type: reader_error
+    failed_pin_attempts: 0
+    emergency_service: false
+    provider_present: true
+    works_on_other_reader: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - reader_or_system_error_route
+    warnings:
+    - likely_reader_or_system_issue_not_confirmed
+- id: HCB18
+  description: Card declarat blocat fără număr de încercări
+  facts:
+    issue_type: pin_blocked
+    emergency_service: false
+    provider_present: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - failed_pin_attempts
+- id: HCB19
+  description: Lipsește tipul problemei
+  facts:
+    failed_pin_attempts: 5
+    emergency_service: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issue_type
+- id: HCB20
+  description: Nu se știe dacă este urgență
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+  expect:
+    status: needs_facts
+    missing_facts:
+    - emergency_service
+- id: HCB21
+  description: Card european blocat
+  facts:
+    issue_type: pin_blocked
+    failed_pin_attempts: 5
+    emergency_service: false
+    card_type: EHIC
+  expect:
+    status: blocked
+    reason: event_scope_national_health_card_only
+- id: HCB22
+  description: Fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - issue_type
+    - failed_pin_attempts
+    - emergency_service

@@ -1,0 +1,394 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_REGISTER_DRONE
+event_alias: ro.life.register_drone
+event_type_id: life.register_drone
+status: research_inbox
+rules:
+- id: rule.drone.collect_classification.rev1
+  canonical_rule_id: rule.drone.collect_classification
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_operator_and_uas_registration
+  source_claim_ids:
+  - claim.drone.operator_not_aircraft_general
+  - claim.drone.under250_exceptions
+  status: active
+  required_facts:
+  - operator_residence_country
+  - operator_is_non_eu_resident
+  - operation_category
+  - uas_mass_g
+  - has_camera_or_personal_data_sensor
+  - is_toy
+  - uas_class_label
+  - is_certified_aircraft
+- id: rule.drone.certified_aircraft.rev1
+  canonical_rule_id: rule.drone.certified_aircraft
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: is_certified_aircraft
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: certified_uas_aircraft_registration
+    message_ro: Drona certificată poate necesita înregistrarea aeronavei, distinct de înregistrarea operatorului.
+  source_claim_ids:
+  - claim.drone.operator_not_aircraft_general
+  status: in_review
+  required_facts:
+  - is_certified_aircraft
+- id: rule.drone.under250_no_camera.rev1
+  canonical_rule_id: rule.drone.under250_no_camera
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_certified_aircraft
+      value: false
+    - op: eq
+      field: uas_mass_under_250g
+      value: true
+    - op: eq
+      field: has_camera_or_personal_data_sensor
+      value: false
+  effects:
+  - type: exclude_step
+    step_id: register_drone_operator
+  - type: emit_advice
+    tag: operator_registration_not_required_under250_no_sensor
+    message_ro: Pentru faptele modelate, înregistrarea operatorului nu este cerută.
+  source_claim_ids:
+  - claim.drone.under250_exceptions
+  - claim.drone.c0_under250_rule
+  status: active
+  required_facts:
+  - is_certified_aircraft
+  - uas_mass_under_250g
+  - has_camera_or_personal_data_sensor
+- id: rule.drone.under250_toy.rev1
+  canonical_rule_id: rule.drone.under250_toy
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_certified_aircraft
+      value: false
+    - op: eq
+      field: uas_mass_under_250g
+      value: true
+    - op: eq
+      field: is_toy
+      value: true
+  effects:
+  - type: exclude_step
+    step_id: register_drone_operator
+  - type: emit_advice
+    tag: operator_registration_not_required_toy_under250
+    message_ro: Pentru o jucărie sub 250 g, excepția de înregistrare se aplică și cu cameră/senzor.
+  source_claim_ids:
+  - claim.drone.under250_exceptions
+  status: active
+  required_facts:
+  - is_certified_aircraft
+  - uas_mass_under_250g
+  - is_toy
+- id: rule.drone.under250_camera_not_toy.rev1
+  canonical_rule_id: rule.drone.under250_camera_not_toy
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_certified_aircraft
+      value: false
+    - op: eq
+      field: uas_mass_under_250g
+      value: true
+    - op: eq
+      field: has_camera_or_personal_data_sensor
+      value: true
+    - op: eq
+      field: is_toy
+      value: false
+  effects:
+  - type: include_step
+    step_id: register_drone_operator
+  source_claim_ids:
+  - claim.drone.under250_exceptions
+  - claim.drone.c0_under250_rule
+  status: active
+  required_facts:
+  - is_certified_aircraft
+  - uas_mass_under_250g
+  - has_camera_or_personal_data_sensor
+  - is_toy
+- id: rule.drone.c1_c4.rev1
+  canonical_rule_id: rule.drone.c1_c4
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: in
+    field: uas_class_label
+    values:
+    - C1
+    - C2
+    - C3
+    - C4
+  effects:
+  - type: include_step
+    step_id: register_drone_operator
+  source_claim_ids:
+  - claim.drone.c1_c4_registration
+  status: active
+  required_facts:
+  - uas_class_label
+- id: rule.drone.already_registered.rev1
+  canonical_rule_id: rule.drone.already_registered
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: operator_registered_in_easa_state
+    value: true
+  effects:
+  - type: exclude_step
+    step_id: register_drone_operator
+  - type: emit_warning
+    tag: do_not_register_twice
+    message_ro: Nu crea o a doua înregistrare de operator într-un alt stat EASA.
+  - type: include_step
+    step_id: verify_existing_operator_number
+  source_claim_ids:
+  - claim.drone.register_once_no_duplicate
+  status: active
+  required_facts:
+  - operator_registered_in_easa_state
+- id: rule.drone.eu_resident_country.rev1
+  canonical_rule_id: rule.drone.eu_resident_country
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: operator_is_non_eu_resident
+      value: false
+    - op: eq
+      field: operator_registered_in_easa_state
+      value: false
+    - op: eq
+      field: registration_required
+      value: true
+  effects:
+  - type: include_step
+    step_id: register_with_residence_country_naa
+  source_claim_ids:
+  - claim.drone.register_country_residence
+  status: active
+  required_facts:
+  - operator_is_non_eu_resident
+  - operator_residence_country
+  - operator_registered_in_easa_state
+  - registration_required
+- id: rule.drone.romania_aacr.rev1
+  canonical_rule_id: rule.drone.romania_aacr
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: operator_residence_country
+      value: RO
+    - op: eq
+      field: registration_required
+      value: true
+    - op: eq
+      field: operator_registered_in_easa_state
+      value: false
+  effects:
+  - type: attach_channel
+    step_id: register_with_residence_country_naa
+    channel_id: ch.aacr.uas_portal
+  - type: require_confirmation
+    tag: aacr_2026_registration_workflow
+    message_ro: Pașii curenți trebuie confirmați în portalul AACR, care nu a expus conținutul la verificarea automată.
+  source_claim_ids:
+  - claim.drone.aacr_uas_portal
+  - claim.drone.aacr_official_page_unavailable
+  status: in_review
+- id: rule.drone.non_eu.rev1
+  canonical_rule_id: rule.drone.non_eu
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: operator_is_non_eu_resident
+      value: true
+    - op: eq
+      field: registration_required
+      value: true
+  effects:
+  - type: include_step
+    step_id: register_in_first_eu_operation_country
+  source_claim_ids:
+  - claim.drone.non_eu_first_country
+  status: active
+  required_facts:
+  - operator_is_non_eu_resident
+  - first_eu_operation_country
+  - registration_required
+- id: rule.drone.non_eu_first_ro.rev1
+  canonical_rule_id: rule.drone.non_eu_first_ro
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: operator_is_non_eu_resident
+      value: true
+    - op: eq
+      field: first_eu_operation_country
+      value: RO
+    - op: eq
+      field: registration_required
+      value: true
+  effects:
+  - type: attach_channel
+    step_id: register_in_first_eu_operation_country
+    channel_id: ch.aacr.uas_portal
+  - type: require_confirmation
+    tag: aacr_2026_registration_workflow
+    message_ro: Confirmă fluxul 2026 în portalul AACR.
+  source_claim_ids:
+  - claim.drone.non_eu_first_country
+  - claim.drone.aacr_uas_portal
+  status: in_review
+- id: rule.drone.after_registration.rev1
+  canonical_rule_id: rule.drone.after_registration
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: operator_registration_number_received
+    value: true
+  effects:
+  - type: include_step
+    step_id: display_operator_number_on_all_drones
+  - type: include_step
+    step_id: upload_operator_number_to_remote_id
+  source_claim_ids:
+  - claim.drone.after_registration_number
+  status: active
+  required_facts:
+  - operator_registration_number_received
+- id: rule.drone.specific.rev1
+  canonical_rule_id: rule.drone.specific
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: operation_category
+    value: specific
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.drone_specific_operation_authorisation
+  - type: require_confirmation
+    tag: specific_category_declaration_or_authorisation
+    message_ro: Stabilește dacă se aplică scenariu standard cu declarație sau autorizație operațională.
+  source_claim_ids:
+  - claim.drone.specific_declaration_or_authorisation
+  status: active
+  required_facts:
+  - operation_category
+- id: rule.drone.aacr_details.rev1
+  canonical_rule_id: rule.drone.aacr_details
+  event_type_id: life.register_drone
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: operator_residence_country
+      value: RO
+    - op: eq
+      field: registration_required
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: aacr_fee_validity_and_documents
+    message_ro: Taxa, valabilitatea și documentele AACR 2026 nu au fost confirmate din pagina publică accesibilă.
+  source_claim_ids:
+  - claim.drone.romanian_fee_validity_docs_gap
+  status: in_review

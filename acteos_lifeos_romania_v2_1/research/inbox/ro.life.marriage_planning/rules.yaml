@@ -1,0 +1,291 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_MARRIAGE_PLANNING
+event_type_id: ro.life.marriage_planning
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- applicant_age
+- partner_age
+- prior_marriage_status
+- foreign_citizen_involved
+- territory_id
+- desired_days_from_declaration
+- surname_choice_known
+rules:
+- id: rule.b03.marriage.base
+  canonical_rule_id: marriage.declaration.base
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: file_marriage_declaration
+  - type: include_requirement
+    requirement_id: req.identity_documents
+  - type: include_requirement
+    requirement_id: req.birth_certificates
+  - type: include_requirement
+    requirement_id: req.prenuptial_medical_certificates
+  source_claim_ids:
+  - claim.b03.marriage.declaration
+  - claim.b03.marriage.documents
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.marriage.window_valid
+  canonical_rule_id: marriage.ceremony.window
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: desired_days_from_declaration
+      value: 11
+    - op: lte
+      field: desired_days_from_declaration
+      value: 30
+  effects:
+  - type: include_step
+    step_id: celebrate_civil_marriage
+  - type: emit_advice
+    tag: marriage_window_11_30
+    message_ro: Data aleasă intră în fereastra legală de la ziua 11 la ziua 30.
+  source_claim_ids:
+  - claim.b03.marriage.window
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.marriage.window_early
+  canonical_rule_id: marriage.ceremony.early
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lt
+    field: desired_days_from_declaration
+    value: 11
+  effects:
+  - type: emit_warning
+    tag: early_marriage_requires_approval
+    message_ro: Data este înainte de ziua 11; încheierea anticipată cere aprobarea prevăzută de lege.
+  - type: require_confirmation
+    tag: confirm_early_marriage_approval
+    message_ro: Confirmă aprobarea și motivul temeinic la serviciul competent.
+  source_claim_ids:
+  - claim.b03.marriage.window
+  status: in_review
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.marriage.window_late
+  canonical_rule_id: marriage.ceremony.late
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: gt
+    field: desired_days_from_declaration
+    value: 30
+  effects:
+  - type: emit_warning
+    tag: new_marriage_declaration_required
+    message_ro: După ziua 30 este necesară o nouă declarație de căsătorie.
+  - type: include_step
+    step_id: refile_marriage_declaration
+  source_claim_ids:
+  - claim.b03.marriage.window
+  status: draft
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.marriage.under_16
+  canonical_rule_id: marriage.age.under_16
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: any
+    args:
+    - op: lt
+      field: applicant_age
+      value: 16
+    - op: lt
+      field: partner_age
+      value: 16
+  effects:
+  - type: block
+    code: MARRIAGE_AGE_UNDER_16
+    message_ro: Traseul nu poate continua pentru o persoană sub 16 ani.
+  source_claim_ids:
+  - claim.b03.marriage.minor_special
+  status: in_review
+- id: rule.b03.marriage.age_16_17
+  canonical_rule_id: marriage.age.special_route
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: any
+    args:
+    - op: all
+      args:
+      - op: gte
+        field: applicant_age
+        value: 16
+      - op: lt
+        field: applicant_age
+        value: 18
+    - op: all
+      args:
+      - op: gte
+        field: partner_age
+        value: 16
+      - op: lt
+        field: partner_age
+        value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.special_medical_opinion
+  - type: include_requirement
+    requirement_id: req.parent_or_guardian_consent
+  - type: include_requirement
+    requirement_id: req.court_authorization
+  - type: require_confirmation
+    tag: minor_marriage_special_route
+    message_ro: Confirmă documentele și autorizarea aplicabile persoanei de 16-17 ani.
+  source_claim_ids:
+  - claim.b03.marriage.minor_special
+  status: in_review
+- id: rule.b03.marriage.prior_ended
+  canonical_rule_id: marriage.prior_marriage.proof
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: prior_marriage_status
+    value: ended
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_prior_marriage_ended
+  source_claim_ids:
+  - claim.b03.marriage.documents
+  status: draft
+- id: rule.b03.marriage.prior_current
+  canonical_rule_id: marriage.prior_marriage.impediment
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: prior_marriage_status
+    value: current_marriage
+  effects:
+  - type: block
+    code: EXISTING_MARRIAGE
+    message_ro: O căsătorie anterioară neîncetată este un impediment care trebuie rezolvat înainte de depunere.
+  source_claim_ids:
+  - claim.b03.marriage.declaration
+  status: draft
+- id: rule.b03.marriage.foreign_party
+  canonical_rule_id: marriage.foreign_party.documents
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: foreign_citizen_involved
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_birth_document
+  - type: include_requirement
+    requirement_id: req.authorized_romanian_translation
+  - type: include_requirement
+    requirement_id: req.marital_capacity_document
+  - type: require_confirmation
+    tag: confirm_foreign_document_form
+    message_ro: Confirmă apostila/supralegalizarea și forma exactă pentru statul emitent.
+  source_claim_ids:
+  - claim.b03.marriage.foreign_documents
+  status: in_review
+- id: rule.b03.marriage.surname_unknown
+  canonical_rule_id: marriage.surname.choice
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: surname_choice_known
+    value: false
+  effects:
+  - type: emit_advice
+    tag: choose_post_marriage_surname
+    message_ro: Stabiliți numele purtat după căsătorie înainte de completarea declarației.
+  source_claim_ids:
+  - claim.b03.marriage.declaration
+  status: draft
+- id: rule.b03.marriage.timisoara_channel
+  canonical_rule_id: marriage.channel.timisoara
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: territory_id
+    value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: file_marriage_declaration
+    channel_id: ch.timisoara.marriage
+  - type: emit_advice
+    tag: local_medical_certificate_30d
+    message_ro: Pagina locală publică valabilitatea de 30 de zile a certificatului medical; verifică data la programare.
+  source_claim_ids:
+  - claim.b03.marriage.timisoara_channel
+  - claim.b03.marriage.timisoara_medical_validity
+  status: draft
+  authority_level: institution
+- id: rule.b03.marriage.other_uat
+  canonical_rule_id: marriage.channel.other_uat
+  event_type_id: ro.life.marriage_planning
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: territory_id
+    value: RO-TM-TIMISOARA
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_marriage_channel
+    message_ro: Confirmă programarea, circumscripția și cerințele operaționale la UAT-ul competent.
+  source_claim_ids:
+  - claim.b03.marriage.declaration
+  status: in_review

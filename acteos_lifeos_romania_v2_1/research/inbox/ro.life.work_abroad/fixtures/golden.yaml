@@ -1,0 +1,595 @@
+batch_id: batch10.work_abroad
+defaults:
+  event_type_id: ro.life.work_abroad
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.direct.eu
+  desc: Angajare directă într-un stat UE
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+- id: fx.direct.non_eu
+  desc: Angajare directă în afara UE
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: non_eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    confirmations:
+    - confirm_destination_work_and_residence_right
+- id: fx.third_country.eu
+  desc: Cetățean din stat terț care merge într-un stat UE
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: third_country
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    confirmations:
+    - confirm_destination_work_and_residence_right
+- id: fx.regulated.ready
+  desc: Profesie reglementată cu recunoaștere
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: true
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+- id: fx.regulated.missing
+  desc: Profesie reglementată fără recunoaștere
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: true
+    qualification_recognition_ready: false
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    requirements:
+    - professional_qualification_recognition_in_destination
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+- id: fx.social.unknown
+  desc: Securitatea socială nu este confirmată
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: false
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    requirements:
+    - confirmed_social_security_coverage_and_required_portable_document
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+- id: fx.tax.unreviewed
+  desc: Rezidența fiscală la plecare nu a fost analizată
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: false
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    - review_z017_tax_residence_departure_applicability
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    - z017_is_departure_tax_residence_form
+- id: fx.posted.ready
+  desc: Detașare transnațională pregătită
+  facts:
+    employment_model: posted_by_ro_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    - verify_continued_relation_with_ro_employer
+    - verify_posting_contract_information
+    - record_transnational_posting_in_reges
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - posted_worker_may_remain_in_origin_social_system
+- id: fx.posted.no_terms
+  desc: Detașare fără termenii contractuali compleți
+  facts:
+    employment_model: posted_by_ro_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    - verify_continued_relation_with_ro_employer
+    - verify_posting_contract_information
+    - record_transnational_posting_in_reges
+    requirements:
+    - posting_duration_currency_payment_and_benefits_terms
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - posted_worker_may_remain_in_origin_social_system
+- id: fx.posted.no_reges
+  desc: Detașare fără datele REGES pregătite
+  facts:
+    employment_model: posted_by_ro_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: false
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    - verify_continued_relation_with_ro_employer
+    - verify_posting_contract_information
+    - record_transnational_posting_in_reges
+    requirements:
+    - posting_start_end_state_beneficiary_and_activity_for_reges
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - posted_worker_may_remain_in_origin_social_system
+- id: fx.posted.multiple
+  desc: Detașare cu termeni și REGES incomplete
+  facts:
+    employment_model: posted_by_ro_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: false
+    tax_residence_review_done: true
+    posting_reges_data_ready: false
+    posting_contract_terms_complete: false
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: resolved
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    - verify_continued_relation_with_ro_employer
+    - verify_posting_contract_information
+    - record_transnational_posting_in_reges
+    requirements:
+    - confirmed_social_security_coverage_and_required_portable_document
+    - posting_duration_currency_payment_and_benefits_terms
+    - posting_start_end_state_beneficiary_and_activity_for_reges
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - posted_worker_may_remain_in_origin_social_system
+- id: fx.other_county
+  desc: Solicitant din alt județ
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.cj.cluj_napoca
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - eures_romania_local_adviser
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    confirmations:
+    - confirm_local_eures_contact
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj_napoca
+- id: fx.missing.employment_model
+  desc: Lipsește faptul obligatoriu `employment_model`
+  facts:
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    missing_facts:
+    - employment_model
+- id: fx.missing.destination_scope
+  desc: Lipsește faptul obligatoriu `destination_scope`
+  facts:
+    employment_model: direct_host_employer
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    missing_facts:
+    - destination_scope
+- id: fx.missing.worker_citizenship_scope
+  desc: Lipsește faptul obligatoriu `worker_citizenship_scope`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    missing_facts:
+    - worker_citizenship_scope
+- id: fx.missing.profession_regulated
+  desc: Lipsește faptul obligatoriu `profession_regulated`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - profession_regulated
+- id: fx.missing.qualification_recognition_ready
+  desc: Lipsește faptul obligatoriu `qualification_recognition_ready`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - qualification_recognition_ready
+- id: fx.missing.social_security_status_confirmed
+  desc: Lipsește faptul obligatoriu `social_security_status_confirmed`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - social_security_status_confirmed
+- id: fx.missing.tax_residence_review_done
+  desc: Lipsește faptul obligatoriu `tax_residence_review_done`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - tax_residence_review_done
+- id: fx.missing.posting_reges_data_ready
+  desc: Lipsește faptul obligatoriu `posting_reges_data_ready`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_contract_terms_complete: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - posting_reges_data_ready
+- id: fx.missing.posting_contract_terms_complete
+  desc: Lipsește faptul obligatoriu `posting_contract_terms_complete`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    channels:
+    - ajofm_timis_eures_and_european_forms
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - posting_contract_terms_complete
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu `jurisdiction_id`
+  facts:
+    employment_model: direct_host_employer
+    destination_scope: eu
+    worker_citizenship_scope: romanian_or_eu
+    profession_regulated: false
+    qualification_recognition_ready: true
+    social_security_status_confirmed: true
+    tax_residence_review_done: true
+    posting_reges_data_ready: true
+    posting_contract_terms_complete: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    advice_tags:
+    - eu_citizen_generally_no_work_permit_in_eu
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - identify_employment_model_and_destination
+    - verify_work_right_and_profession_rules
+    - confirm_social_security_coverage
+    - review_tax_residence_departure
+    missing_facts:
+    - employment_model
+    - destination_scope
+    - worker_citizenship_scope
+    - profession_regulated
+    - qualification_recognition_ready
+    - social_security_status_confirmed
+    - tax_residence_review_done
+    - posting_reges_data_ready
+    - posting_contract_terms_complete
+    - jurisdiction_id

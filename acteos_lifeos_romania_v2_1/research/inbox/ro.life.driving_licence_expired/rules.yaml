@@ -1,0 +1,213 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B01_DRIVING_LICENCE_EXPIRED
+event_type_id: life.driving_licence_expired
+status: draft
+rules:
+- id: rule.dlexp.route
+  canonical_rule_id: driving_licence_expired.route
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_licence_new_validity
+  - type: attach_channel
+    channel_id: ch.any_spcrpciv
+  source_claim_ids:
+  - claim.dl.renew.anytime_any_service
+  status: draft
+- id: rule.dlexp.expired
+  canonical_rule_id: driving_licence_expired.expired_warning
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: date_before
+    field: licence_expiry_date
+    value: '2026-06-25'
+  effects:
+  - type: emit_warning
+    tag: licence_expired
+    message_ro: Permisul este expirat; acest traseu privește emiterea unui permis cu valabilitate nouă.
+  source_claim_ids:
+  - claim.dl.renew.anytime_any_service
+  status: draft
+  required_facts:
+  - licence_expiry_date
+- id: rule.dlexp.not_yet
+  canonical_rule_id: driving_licence_expired.renew_before_expiry
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2024-06-01'
+  when:
+    op: date_after
+    field: licence_expiry_date
+    value: '2026-06-25'
+  effects:
+  - type: emit_advice
+    tag: renew_anytime
+    message_ro: HUB permite solicitarea în orice moment, inclusiv înainte de expirare.
+  source_claim_ids:
+  - claim.dl.renew.anytime_any_service
+  status: draft
+- id: rule.dlexp.fee
+  canonical_rule_id: driving_licence_expired.fee_89
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2020-09-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.payment_89_ron
+  - type: emit_advice
+    tag: fee_89_ron
+    message_ro: Tariful publicat este 89 lei.
+  source_claim_ids:
+  - claim.dl.renew.fee
+  status: draft
+- id: rule.dlexp.counter
+  canonical_rule_id: driving_licence_expired.counter_flow
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: eq
+    field: request_channel
+    value: counter
+  effects:
+  - type: include_requirement
+    requirement_id: req.identity_and_signature_capture
+  source_claim_ids:
+  - claim.dl.renew.counter_flow
+  status: draft
+- id: rule.dlexp.email_block
+  canonical_rule_id: driving_licence_expired.no_email_route
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: eq
+    field: request_channel
+    value: email
+  effects:
+  - type: block
+    tag: email_not_supported_for_new_validity
+    message_ro: HUB nu gestionează documente electronice pentru acest serviciu.
+  source_claim_ids:
+  - claim.dl.renew.no_electronic_docs
+  status: draft
+- id: rule.dlexp.medical_tm
+  canonical_rule_id: driving_licence_expired.medical_for_new_validity_timisoara
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_new_validity
+      value: true
+    - op: eq
+      field: medical_document_present
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: medical_document_required_for_extension
+    message_ro: În pilotul Timiș, FAQ-ul oficial indică faptul că fără document medical nu se extinde valabilitatea.
+  source_claim_ids:
+  - claim.dl.renew.medical_timisoara
+  status: in_review
+- id: rule.dlexp.dossier
+  canonical_rule_id: driving_licence_expired.exact_dossier_confirmation
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2024-06-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: exact_dossier_pending
+    message_ro: Verifică lista exactă de documente în pagina DGPCI înainte de depunere.
+  source_claim_ids:
+  - claim.dl.renew.exact_dossier
+  status: in_review
+- id: rule.dlexp.delivery
+  canonical_rule_id: driving_licence_expired.delivery_window
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2025-03-18'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: delivery_5_to_14
+    message_ro: HUB publică 5 zile lucrătoare mediu și 14 zile calendaristice maxim.
+  source_claim_ids:
+  - claim.dl.renew.delivery
+  status: draft
+- id: rule.dlexp.cei_tm
+  canonical_rule_id: driving_licence_expired.cei_no_address_certificate_timisoara
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2025-07-24'
+  when:
+    op: eq
+    field: applicant_has_cei
+    value: true
+  effects:
+  - type: exclude_step
+    step_id: obtain_address_certificate
+  - type: emit_advice
+    tag: address_checked_at_counter
+    message_ro: În Timiș, adresa titularului CEI se verifică direct la ghișeu.
+  source_claim_ids:
+  - claim.dl.renew.cei_no_address_certificate
+  status: draft
+- id: rule.dlexp.timisoara
+  canonical_rule_id: driving_licence_expired.timisoara_channel
+  event_type_id: life.driving_licence_expired
+  jurisdiction_ids:
+  - ro.tm
+  severity: explanatory
+  effective_from: '2025-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timisoara_demetriade_1
+  - type: require_confirmation
+    tag: timisoara_schedule_conflict
+    message_ro: Pagina locală conține două intervale L-J; verifică programul înainte de deplasare.
+  source_claim_ids:
+  - claim.dl.renew.timisoara_contact
+  - claim.dl.renew.program_conflict_a
+  - claim.dl.renew.program_conflict_b
+  status: in_review

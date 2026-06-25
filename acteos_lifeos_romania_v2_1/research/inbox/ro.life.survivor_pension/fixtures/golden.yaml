@@ -1,0 +1,597 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.survivor_pension
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: copil sub 16 ani
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 12
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_survivor_application
+    requirements:
+    - annex_7_application
+    - death_certificate
+    - civil_status_documents
+    emitted_tags:
+    - child_age_condition_met
+    - survivor_percentage_table
+  id: ro.life.survivor_pension.F01
+- title: copil de 16 ani continuă studiile
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 16
+    continues_studies: true
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - study_certificate
+    emitted_tags:
+    - child_study_condition_met
+    - study_proof_10_days
+  id: ro.life.survivor_pension.F02
+- title: student de 25 ani
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 25
+    continues_studies: true
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - study_certificate
+    emitted_tags:
+    - child_study_condition_met
+  id: ro.life.survivor_pension.F03
+- title: copil de 25 ani fără studii
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 25
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - child_study_condition_not_met
+  id: ro.life.survivor_pension.F04
+- title: copil de 26 ani fără excepție
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 26
+    continues_studies: true
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+  id: ro.life.survivor_pension.F05
+- title: copil cu invaliditate apărută în perioada eligibilă
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 30
+    continues_studies: false
+    eligible_disability: true
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - medical_capacity_decision
+    emitted_tags:
+    - child_disability_route
+  id: ro.life.survivor_pension.F06
+- title: soț la vârsta standard cu 15 ani căsătorie
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: true
+    marriage_months: 180
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_survivor_application
+    emitted_tags:
+    - spouse_lifetime_full
+  id: ro.life.survivor_pension.F07
+- title: soț cu 12 ani căsătorie
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: true
+    marriage_months: 144
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - calculate_marriage_reduction
+    emitted_tags:
+    - spouse_marriage_reduction
+  id: ro.life.survivor_pension.F08
+- title: soț cu mai puțin de 10 ani fără alt temei
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: true
+    marriage_months: 100
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+  id: ro.life.survivor_pension.F09
+- title: soț sub vârsta standard cu invaliditate grad I
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 24
+    spouse_invalidity_grade: I
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_survivor_application
+    requirements:
+    - medical_capacity_decision
+    emitted_tags:
+    - spouse_invalidity_route
+  id: ro.life.survivor_pension.F10
+- title: soț cu invaliditate dar venit peste prag
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 24
+    spouse_invalidity_grade: II
+    income_condition_met: false
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+  id: ro.life.survivor_pension.F11
+- title: deces prin accident de muncă
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 2
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: work_accident
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - professional_death_evidence
+    emitted_tags:
+    - marriage_duration_waived
+  id: ro.life.survivor_pension.F12
+- title: drept temporar de șase luni
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: true
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_survivor_application
+    emitted_tags:
+    - six_month_entitlement_window
+  id: ro.life.survivor_pension.F13
+- title: îngrijește copil de 4 ani
+  facts:
+    beneficiary_type: spouse
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: true
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_survivor_application
+    emitted_tags:
+    - childcare_until_age_7
+  id: ro.life.survivor_pension.F14
+- title: un singur urmaș
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - determine_survivor_percentage
+    emitted_tags:
+    - survivor_percentage_table
+  id: ro.life.survivor_pension.F15
+- title: doi urmași
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 2
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - determine_survivor_percentage
+    emitted_tags:
+    - survivor_percentage_table
+  id: ro.life.survivor_pension.F16
+- title: trei urmași
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 3
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - determine_survivor_percentage
+    emitted_tags:
+    - survivor_percentage_table
+  id: ro.life.survivor_pension.F17
+- title: orfan de ambii părinți
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: true
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - calculate_rights_for_each_parent
+    emitted_tags:
+    - double_orphan_sum
+  id: ro.life.survivor_pension.F18
+- title: are și pensie proprie
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: true
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - compare_own_and_survivor_pension
+    emitted_tags:
+    - choose_more_advantageous_pension
+  id: ro.life.survivor_pension.F19
+- title: cerere în 30 zile după pensionar
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - derive_survivor_start_date
+    emitted_tags:
+    - survivor_start_date_by_deceased_status
+  id: ro.life.survivor_pension.F20
+- title: cerere tardivă
+  facts:
+    beneficiary_type: child
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-25'
+    application_within_30_days: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - survivor_rights_start_from_filing
+  id: ro.life.survivor_pension.F21
+- title: lipsește categoria beneficiarului
+  facts:
+    deceased_status: pensioner
+    child_age: 10
+    continues_studies: false
+    eligible_disability: false
+    standard_age_reached: false
+    marriage_months: 0
+    spouse_invalidity_grade: none
+    income_condition_met: true
+    death_cause: ordinary
+    temporary_six_month_route: false
+    cares_for_child_under_7: false
+    eligible_survivor_count: 1
+    double_orphan: false
+    has_own_pension: false
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - survivor_core_facts_missing
+    missing_facts:
+    - beneficiary_type
+  id: ro.life.survivor_pension.F22

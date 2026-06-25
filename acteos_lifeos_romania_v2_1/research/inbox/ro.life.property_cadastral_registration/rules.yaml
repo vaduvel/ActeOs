@@ -1,0 +1,373 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch08.property_cadastral_registration
+event_type_id: ro.life.property_cadastral_registration
+required_facts:
+- jurisdiction_id
+- registration_case
+- has_application
+- has_cadastral_documentation
+- has_title_document
+- has_completion_certificate
+- has_fiscal_certificate
+- superficies_act_applicable
+- superficies_act_available
+- has_fee_proof
+- urgent_service
+status: draft
+rules:
+- id: rule.cadastral.base.v1
+  canonical_rule_id: rule.cadastral.base
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - land_book_registration
+  legal_rank: regulament ANCPI / procedură OCPI
+  severity: operational
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_ocpi_registration_file
+  - type: include_step
+    step_id: submit_cadastral_and_land_book_request
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.missing_application.v1
+  canonical_rule_id: rule.cadastral.missing_application
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: eq
+    field: has_application
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: standard_ocpi_application
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.missing_cadastral_docs.v1
+  canonical_rule_id: rule.cadastral.missing_cadastral_docs
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: eq
+    field: has_cadastral_documentation
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: received_cadastral_documentation_if_applicable
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.missing_fee_proof.v1
+  canonical_rule_id: rule.cadastral.missing_fee_proof
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: eq
+    field: has_fee_proof
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: cadastral_tariff_payment_proof
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.ownership.missing_title.v1
+  canonical_rule_id: rule.cadastral.ownership.missing_title
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: ownership
+    - op: eq
+      field: has_title_document
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: ownership_title_documents
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.construction.missing_completion.v1
+  canonical_rule_id: rule.cadastral.construction.missing_completion
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: registration_case
+      values: &id001
+      - finished_individual_house
+      - finished_other_construction
+    - op: eq
+      field: has_completion_certificate
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: municipality_completion_or_edification_certificate
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.construction.missing_fiscal.v1
+  canonical_rule_id: rule.cadastral.construction.missing_fiscal
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: registration_case
+      values: *id001
+    - op: eq
+      field: has_fiscal_certificate
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: fiscal_certificate_with_tax_value
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.construction.missing_superficies.v1
+  canonical_rule_id: rule.cadastral.construction.missing_superficies
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: listă oficială de documente
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: in
+      field: registration_case
+      values: *id001
+    - op: eq
+      field: superficies_act_applicable
+      value: true
+    - op: eq
+      field: superficies_act_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: surface_right_or_superficies_act
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.house.normal.v1
+  canonical_rule_id: rule.cadastral.house.normal
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope:
+  - cadastral_tariff
+  - cadastral_term
+  legal_rank: ordin ANCPI
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: finished_individual_house
+    - op: eq
+      field: urgent_service
+      value: false
+  effects:
+  - type: emit_advice
+    tag: individual_house_tariff_0_05_percent
+    message_ro: 'Tarif: 0,05% din valoarea de impozitare a construcției.'
+  - type: emit_advice
+    tag: individual_house_normal_term_15_working_days
+    message_ro: 'Termen publicat: 15 zile lucrătoare.'
+  source_claim_ids:
+  - clm.cadastral_registration.ancpi_house_tariff_2026
+  - clm.cadastral_registration.ancpi_house_terms_2026
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.house.urgent.v1
+  canonical_rule_id: rule.cadastral.house.urgent
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope:
+  - cadastral_tariff
+  - cadastral_term
+  legal_rank: ordin ANCPI
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_case
+      value: finished_individual_house
+    - op: eq
+      field: urgent_service
+      value: true
+  effects:
+  - type: emit_advice
+    tag: individual_house_tariff_0_05_percent
+    message_ro: 'Tarif: 0,05% din valoarea de impozitare a construcției.'
+  - type: emit_advice
+    tag: individual_house_urgent_term_5_working_days
+    message_ro: 'Termen de urgență publicat: 5 zile lucrătoare.'
+  source_claim_ids:
+  - clm.cadastral_registration.ancpi_house_tariff_2026
+  - clm.cadastral_registration.ancpi_house_terms_2026
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.generic_fee_term_gap.v1
+  canonical_rule_id: rule.cadastral.generic_fee_term_gap
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: ordine ANCPI succesive
+  severity: critical
+  effective_from: '2026-03-08'
+  effective_to: null
+  when:
+    op: in
+    field: registration_case
+    values:
+    - ownership
+    - finished_other_construction
+  effects:
+  - type: require_confirmation
+    tag: confirm_current_generic_cadastral_tariff
+    message_ro: Tariful curent al serviciului generic trebuie confirmat în ordinul ANCPI aplicabil.
+  - type: require_confirmation
+    tag: confirm_current_generic_cadastral_term
+    message_ro: Termenul curent al serviciului generic trebuie confirmat în ordinul ANCPI aplicabil.
+  source_claim_ids:
+  - clm.cadastral_registration.ancpi_later_amendments
+  - clm.cadastral_registration.ocpi_old_tariffs
+  - clm.cadastral_registration.ocpi_old_terms
+  status: in_review
+  reviewer_id: null
+- id: rule.cadastral.timis_channel.v1
+  canonical_rule_id: rule.cadastral.timis_channel
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  competence_scope: []
+  legal_rank: pagină oficială OCPI
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm
+  effects:
+  - type: attach_channel
+    channel_id: ocpi_timis_documents_and_service_info
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  - clm.cadastral_registration.ocpi_construction_docs
+  status: active
+  reviewer_id: null
+- id: rule.cadastral.other_county.v1
+  canonical_rule_id: rule.cadastral.other_county
+  event_type_id: ro.life.property_cadastral_registration
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  competence_scope: []
+  legal_rank: procedură locală OCPI
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm
+  effects:
+  - type: include_step
+    step_id: identify_competent_ocpi
+  - type: require_confirmation
+    tag: confirm_local_ocpi_channel
+    message_ro: Canalul și eventualele cerințe operaționale ale OCPI competent trebuie confirmate.
+  - type: emit_advice
+    tag: verified_with_local_gap
+    message_ro: Lista operațională de documente verificată este cea a OCPI Timiș.
+  source_claim_ids:
+  - clm.cadastral_registration.ocpi_ownership_docs
+  status: in_review
+  reviewer_id: null

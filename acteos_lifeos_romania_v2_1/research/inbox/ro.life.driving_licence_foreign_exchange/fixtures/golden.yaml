@@ -1,0 +1,587 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.driving_licence_foreign_exchange
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: DLF01
+  desc: permis național eligibil, Timiș
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_current_timis_licence_fee
+- id: DLF02
+  desc: statul nu a fost verificat
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: false
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - country_and_licence_eligibility_unverified
+- id: DLF03
+  desc: permis internațional
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: international
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check
+- id: DLF04
+  desc: permis provizoriu
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: provisional
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check
+- id: DLF05
+  desc: document de learner
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: learner
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check
+- id: DLF06
+  desc: fără domiciliu/reședință în România
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: false
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - romania_domicile_or_residence_required
+- id: DLF07
+  desc: traducere necesară și disponibilă
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: true
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.dlf.translation
+- id: DLF08
+  desc: traducere necesară, lipsește
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: true
+    translation_available: false
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - required_translation_missing
+- id: DLF09
+  desc: cere valabilitate nouă și are fișă
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: true
+    medical_certificate_available: true
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.dlf.medical
+- id: DLF10
+  desc: cere valabilitate nouă fără fișă
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: true
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - medical_certificate_missing_for_new_validity
+- id: DLF11
+  desc: permis pierdut din stat UE
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: lost
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: false
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - loss_theft_evidence_required
+- id: DLF12
+  desc: permis furat
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: stolen
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: false
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - loss_theft_evidence_required
+- id: DLF13
+  desc: original lipsă fără pierdere/furt
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: false
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - original_licence_or_official_exception_missing
+- id: DLF14
+  desc: fără programare Timiș
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: false
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - book_timis_foreign_licence_exchange
+- id: DLF15
+  desc: carte electronică de identitate
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: true
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - eid_address_verified_at_counter
+- id: DLF16
+  desc: județ Arad
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: AR
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: verified_with_local_gap
+    confirmations:
+    - verify_county_submission_procedure
+- id: DLF17
+  desc: taxa Timiș verificată
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: true
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.dlf.timis
+- id: DLF18
+  desc: permis expirat
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: expired
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check
+- id: DLF19
+  desc: permis suspendat în statul emitent
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: suspended
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check
+- id: DLF20
+  desc: permis anulat
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: cancelled
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check
+- id: DLF21
+  desc: dovada adresei lipsește
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: false
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - romania_domicile_or_residence_required
+- id: DLF22
+  desc: ruta cazierului nu este pregătită
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: false
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_county_submission_procedure
+- id: DLF23
+  desc: stat eligibil, traducere, valabilitate nouă
+  facts:
+    issuing_country: Regatul Unit
+    country_eligibility_verified: true
+    licence_type: national
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: true
+    translation_available: true
+    new_administrative_validity_requested: true
+    medical_certificate_available: true
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_current_timis_licence_fee
+- id: DLF24
+  desc: tip document necunoscut
+  facts:
+    issuing_country: Italia
+    country_eligibility_verified: true
+    licence_type: unknown
+    licence_status: valid
+    residence_in_romania: true
+    target_county: TM
+    original_licence_available: true
+    translation_required: false
+    translation_available: true
+    new_administrative_validity_requested: false
+    medical_certificate_available: false
+    identity_and_residence_proof: true
+    criminal_record_route_ready: true
+    fee_verified_for_timis: false
+    electronic_id: false
+    appointment_booked: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - licence_type_requires_official_check

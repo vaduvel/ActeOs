@@ -1,0 +1,436 @@
+batch_id: batch18.radio_amateur_license
+event_type_id: ro.life.radio_amateur_license
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.radio_amateur_license.01
+  case_ro: Intenție lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.radio_amateur_license.02
+  case_ro: Examen clasa III adult, sesiune aleasă
+  facts:
+    goal: take_exam
+    desired_class: III
+    is_minor: false
+    applicant_age: 30
+    session_code: 2026-07-16-campina
+    region: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    - step.submit_by_2026_07_02
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+    warnings:
+    - session_deadline_2026_07_02
+- id: fx.radio_amateur_license.03
+  case_ro: Examen clasa II adult, altă sesiune
+  facts:
+    goal: take_exam
+    desired_class: II
+    is_minor: false
+    applicant_age: 35
+    session_code: other
+    region: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+- id: fx.radio_amateur_license.04
+  case_ro: Examen fără clasă
+  facts:
+    goal: take_exam
+    is_minor: false
+    applicant_age: 35
+    session_code: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    confirmations:
+    - confirm_radio_class
+- id: fx.radio_amateur_license.05
+  case_ro: Examen fără sesiune
+  facts:
+    goal: take_exam
+    desired_class: III
+    is_minor: false
+    applicant_age: 35
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    confirmations:
+    - confirm_exam_session
+- id: fx.radio_amateur_license.06
+  case_ro: Examen minor 16 ani
+  facts:
+    goal: take_exam
+    desired_class: III
+    is_minor: true
+    applicant_age: 16
+    session_code: other
+    region: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    - req.minor_identity_or_birth_document
+    - req.representative_identity_document
+    - req.parent_guardian_consent_declaration
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+- id: fx.radio_amateur_license.07
+  case_ro: Examen minor 13 ani clasa IV
+  facts:
+    goal: take_exam
+    desired_class: IV
+    is_minor: true
+    applicant_age: 13
+    session_code: other
+    region: timis
+  expect:
+    status: conflicting
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    - req.minor_identity_or_birth_document
+    - req.representative_identity_document
+    - req.parent_guardian_consent_declaration
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+    conflicts:
+    - radio_class_iv_vs_current_page
+    - under14_class_nomenclature_conflict
+- id: fx.radio_amateur_license.08
+  case_ro: Examen minor 13 ani clasa III restrâns
+  facts:
+    goal: take_exam
+    desired_class: III_restricted
+    is_minor: true
+    applicant_age: 13
+    session_code: other
+    region: other
+  expect:
+    status: conflicting
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    - req.minor_identity_or_birth_document
+    - req.representative_identity_document
+    - req.parent_guardian_consent_declaration
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    conflicts:
+    - radio_class_iii_restricted_vs_decision
+    - under14_class_nomenclature_conflict
+- id: fx.radio_amateur_license.09
+  case_ro: Examen adult clasa IV
+  facts:
+    goal: take_exam
+    desired_class: IV
+    is_minor: false
+    applicant_age: 25
+    session_code: other
+  expect:
+    status: conflicting
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    conflicts:
+    - radio_class_iv_vs_current_page
+- id: fx.radio_amateur_license.10
+  case_ro: Examen adult clasa III restrâns
+  facts:
+    goal: take_exam
+    desired_class: III_restricted
+    is_minor: false
+    applicant_age: 25
+    session_code: other
+  expect:
+    status: conflicting
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    conflicts:
+    - radio_class_iii_restricted_vs_decision
+- id: fx.radio_amateur_license.11
+  case_ro: Examen fără statut minor
+  facts:
+    goal: take_exam
+    desired_class: III
+    applicant_age: 25
+    session_code: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    confirmations:
+    - confirm_minor_status
+- id: fx.radio_amateur_license.12
+  case_ro: Examen fără vârstă
+  facts:
+    goal: take_exam
+    desired_class: III
+    is_minor: false
+    session_code: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.choose_radio_amateur_class
+    - step.choose_ancom_exam_session
+    - step.prepare_exam_application
+    - step.submit_exam_file_before_session_deadline
+    requirements:
+    - req.exam_application_form
+    - req.identity_document_copy
+    channels:
+    - channel.ancom_direct_post_or_digitally_signed_email
+    confirmations:
+    - confirm_applicant_age
+- id: fx.radio_amateur_license.13
+  case_ro: Autorizație individuală
+  facts:
+    goal: obtain_individual_authorization
+    region: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.prepare_individual_authorization_application
+    - step.submit_individual_authorization_to_ancom
+    requirements:
+    - req.radio_amateur_certificate_for_requested_class
+    - req.identity_document
+    - req.passport_photo
+    channels:
+    - channel.ancom_official_forms
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - authorization_five_years_30_days
+    - timisoara_regional_submission
+- id: fx.radio_amateur_license.14
+  case_ro: Prelungire autorizație
+  facts:
+    goal: renew_authorization
+    region: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.use_ancom_modification_extension_form
+    channels:
+    - channel.ancom_official_forms
+    confirmations:
+    - confirm_current_renewal_checklist
+- id: fx.radio_amateur_license.15
+  case_ro: Duplicat certificat
+  facts:
+    goal: duplicate_certificate
+    region: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.use_duplicate_certificate_form
+    requirements:
+    - req.duplicate_declaration
+    channels:
+    - channel.ancom_official_forms
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+    confirmations:
+    - confirm_duplicate_certificate_checklist
+- id: fx.radio_amateur_license.16
+  case_ro: Duplicat autorizație
+  facts:
+    goal: duplicate_authorization
+    region: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.use_duplicate_authorization_form
+    requirements:
+    - req.duplicate_declaration
+    channels:
+    - channel.ancom_official_forms
+    confirmations:
+    - confirm_duplicate_authorization_checklist
+- id: fx.radio_amateur_license.17
+  case_ro: Autorizare radioclub
+  facts:
+    goal: authorize_radioclub
+    region: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.prepare_radioclub_authorization_file
+    requirements:
+    - req.legal_person_registration_proof
+    - req.station_responsible_commitment
+    - req.assistant_responsible_commitment
+    channels:
+    - channel.ancom_official_forms
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+    confirmations:
+    - confirm_radioclub_current_checklist
+- id: fx.radio_amateur_license.18
+  case_ro: Autorizare repetor
+  facts:
+    goal: authorize_repeater_or_beacon
+    region: other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.prepare_repeater_beacon_file
+    requirements:
+    - req.technical_memorandum
+    channels:
+    - channel.ancom_official_forms
+    confirmations:
+    - confirm_repeater_current_checklist
+- id: fx.radio_amateur_license.19
+  case_ro: Contestație rezultat
+  facts:
+    goal: contest_exam_result
+    region: timis
+  expect:
+    status: resolved
+    included_steps:
+    - step.file_exam_result_contest
+    channels:
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - contest_response_30_working_days
+    - timisoara_regional_submission
+    warnings:
+    - contest_three_working_days
+- id: fx.radio_amateur_license.20
+  case_ro: Certificat după promovare
+  facts:
+    goal: obtain_certificate_after_pass
+    region: other
+  expect:
+    status: resolved
+    included_steps:
+    - step.submit_passport_photo_for_certificate
+    advice_tags:
+    - certificate_15_days_after_photo
+- id: fx.radio_amateur_license.21
+  case_ro: Folosește emailul vechi
+  facts:
+    goal: renew_authorization
+    uses_old_srs_email: true
+    region: timis
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.use_ancom_modification_extension_form
+    channels:
+    - channel.ancom_official_forms
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+    warnings:
+    - old_srs_email_closed
+    confirmations:
+    - confirm_current_renewal_checklist
+- id: fx.radio_amateur_license.22
+  case_ro: Procedură necunoscută
+  facts:
+    goal: foreign_ham_notification
+    region: timis
+  expect:
+    status: needs_confirmation
+    channels:
+    - channel.ancom_regional_timisoara
+    advice_tags:
+    - timisoara_regional_submission
+    confirmations:
+    - confirm_radio_amateur_procedure

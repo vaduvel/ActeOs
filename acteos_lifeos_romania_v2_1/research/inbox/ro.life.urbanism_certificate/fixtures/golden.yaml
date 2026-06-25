@@ -1,0 +1,438 @@
+batch_id: B09_URBANISM_CERTIFICATE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.urbanism_certificate
+  event_alias: ro.life.urbanism_certificate
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: cerere completă Timișoara, nestrimisă
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - define_purpose_and_property
+    - select_timisoara_case
+    - pay_issuance_fee
+    - submit_request
+    - download_certificate
+    warnings:
+    - certificate_not_building_authorisation
+    confirmations:
+    - case_specific_documents
+    - current_fee_amount
+  reference_date: '2026-06-25'
+- id: F02
+  desc: cerere înregistrată, termen 15 zile lucrătoare
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: true
+    consents_digital_delivery: true
+    request_registered_at: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - receive_certificate
+    confirmations:
+    - case_specific_documents
+    - current_fee_amount
+  reference_date: '2026-06-25'
+- id: F03
+  desc: livrare digitală acceptată
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: true
+    consents_digital_delivery: true
+    request_registered_at: '2026-06-01'
+  expect:
+    status: needs_confirmation
+    advice:
+    - digital_same_legal_value
+  reference_date: '2026-06-25'
+- id: F04
+  desc: livrare digitală neacceptată
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - ch.email.digital_certificate
+  reference_date: '2026-06-25'
+- id: F05
+  desc: lipsește scopul cererii
+  facts:
+    property_locality: Timișoara
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - request_purpose
+  reference_date: '2026-06-25'
+- id: F06
+  desc: lipsește localitatea imobilului
+  facts:
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - property_locality
+  reference_date: '2026-06-25'
+- id: F07
+  desc: date cadastrale aplicabile, număr cadastral lipsă
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - cadastral_number
+  reference_date: '2026-06-25'
+- id: F08
+  desc: date cadastrale neaplicabile
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: false
+    cadastral_number: null
+    land_book_number: null
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    not_included:
+    - cadastral_number
+    - land_book_number
+  reference_date: '2026-06-25'
+- id: F09
+  desc: UAT diferit de pilot
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.cj.cluj
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - local_uat_channel
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F10
+  desc: operațiune notarială enumerată
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: listed_notarial_operation
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: blocked
+    included_steps:
+    - obtain_certificate_before_notarial_operation
+    blocks:
+    - notarial_operation_without_certificate
+  reference_date: '2026-06-25'
+- id: F11
+  desc: ieșire din indiviziune fără scop de construire
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: exit_coownership_partition
+    construction_or_infrastructure_purpose: false
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    advice:
+    - certificate_optional_coownership_exit
+  reference_date: '2026-06-25'
+- id: F12
+  desc: ieșire din indiviziune cu scop de construire
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: exit_coownership_partition
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    not_included:
+    - certificate_optional_coownership_exit
+  reference_date: '2026-06-25'
+- id: F13
+  desc: PUZ în Timișoara
+  facts:
+    property_locality: Timișoara
+    request_purpose: elaborare PUZ
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: puz
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_timisoara_case
+  reference_date: '2026-06-25'
+- id: F14
+  desc: PUD în Timișoara
+  facts:
+    property_locality: Timișoara
+    request_purpose: elaborare PUD
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: pud
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_timisoara_case
+  reference_date: '2026-06-25'
+- id: F15
+  desc: alipire terenuri
+  facts:
+    property_locality: Timișoara
+    request_purpose: alipire
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: listed_notarial_operation
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: blocked
+    blocks:
+    - notarial_operation_without_certificate
+  reference_date: '2026-06-25'
+- id: F16
+  desc: servitute de trecere
+  facts:
+    property_locality: Timișoara
+    request_purpose: servitute
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: listed_notarial_operation
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: blocked
+    blocks:
+    - notarial_operation_without_certificate
+  reference_date: '2026-06-25'
+- id: F17
+  desc: solicitant persoană juridică
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+    applicant_type: legal_person
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - define_purpose_and_property
+  reference_date: '2026-06-25'
+- id: F18
+  desc: solicitant fără drept real, dar persoană interesată
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+    applicant_has_real_right: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - define_purpose_and_property
+    note: Regula nu blochează cererea doar pentru lipsa unui drept real.
+  reference_date: '2026-06-25'
+- id: F19
+  desc: utilizator crede că poate începe lucrările
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+    plans_to_start_work_after_certificate: true
+  expect:
+    status: needs_confirmation
+    warnings:
+    - certificate_not_building_authorisation
+  reference_date: '2026-06-25'
+- id: F20
+  desc: cerere viitoare
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: ro.tm.timisoara
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: true
+    consents_digital_delivery: true
+    request_registered_at: '2026-07-01'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - receive_certificate
+  reference_date: '2026-06-25'
+- id: F21
+  desc: lipsește jurisdicția
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+  reference_date: '2026-06-25'
+- id: F22
+  desc: imobil în afara României
+  facts:
+    property_locality: Timișoara
+    request_purpose: construire locuință
+    cadastral_data_applicable: true
+    cadastral_number: '123456'
+    land_book_number: 123456-C1
+    jurisdiction_id: it.mi.milano
+    purpose_class: construction
+    construction_or_infrastructure_purpose: true
+    request_submitted: false
+    consents_digital_delivery: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - local_uat_channel
+    note: Regulile locale române nu se aplică.
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - it
+  - it.mi
+  - it.mi.milano

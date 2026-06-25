@@ -1,0 +1,66 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_VEHICLE_CHANGE_ADDRESS
+event_type_id: life.vehicle_change_address
+status: draft
+rules:
+  - id: rule.vaddr.update_30d
+    canonical_rule_id: vehicle_change_address.update_30d
+    event_type_id: life.vehicle_change_address
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: domicile_changed
+      value: true
+    effects:
+      - { type: include_step, step_id: update_vehicle_registration }
+      - { type: set_deadline, step_id: update_vehicle_registration, value: { kind: relative_days, anchor: move_date, days: 30 } }
+      - { type: include_requirement, requirement_id: req.new_id_card }
+      - { type: include_requirement, requirement_id: req.old_registration_certificate }
+      - { type: require_confirmation, message_ro: 'Termenul de 30 de zile pentru actualizarea talonului se confirma din Ordinul 1501/2006 / OUG 195/2002.' }
+    source_claim_ids: [claim.vaddr.update_30d, claim.vaddr.procedure_exists, claim.vaddr.docs]
+    status: in_review
+  - id: rule.vaddr.require_rca
+    canonical_rule_id: vehicle_change_address.require_rca
+    event_type_id: life.vehicle_change_address
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: has_rca
+      value: false
+    effects:
+      - { type: include_requirement, requirement_id: req.rca_valid }
+      - { type: emit_warning, message_ro: 'Ai nevoie de RCA valabil pentru eliberarea noului certificat.' }
+    source_claim_ids: [claim.vaddr.docs]
+    status: in_review
+  - id: rule.vaddr.no_change_noop
+    canonical_rule_id: vehicle_change_address.no_change_noop
+    event_type_id: life.vehicle_change_address
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: domicile_changed
+      value: false
+    effects:
+      - { type: emit_warning, message_ro: 'Daca domiciliul din CI nu s-a schimbat, talonul nu trebuie actualizat pentru adresa.' }
+    source_claim_ids: [claim.vaddr.procedure_exists]
+    status: draft
+  - id: rule.vaddr.tm_channel
+    canonical_rule_id: vehicle_change_address.tm_channel
+    event_type_id: life.vehicle_change_address
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2006-11-13'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.spcrpciv_timis }
+    source_claim_ids: [claim.vaddr.tm_channel]
+    status: draft

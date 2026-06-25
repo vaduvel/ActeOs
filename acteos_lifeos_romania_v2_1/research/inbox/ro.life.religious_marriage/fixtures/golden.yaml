@@ -1,0 +1,961 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.religious_marriage
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.religious_marriage.01.orthodox_timisoara
+  purpose: Cununie ortodoxă Timișoara
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.02.catholic_timisoara
+  purpose: Căsătorie romano-catolică Timișoara
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: roman_catholic
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.03.other_recognized
+  purpose: Alt cult recunoscut
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: other_recognized
+      locality: ro.tm.timisoara
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.religious_marriage.04.religious_association
+  purpose: Asociație religioasă
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: religious_association
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.religious_marriage.05.cult_unknown
+  purpose: Cult neales
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: unknown
+      locality: ro.tm.timisoara
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - CULT_AND_PARISH_REQUIRED
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.06.civil_not_done
+  purpose: Căsătoria civilă nu este încheiată
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: false
+      civil_certificate_available: false
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - CIVIL_MARRIAGE_REQUIRED_FIRST
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.07.civil_done_no_proof
+  purpose: Căsătorie civilă fără dovadă pregătită
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: false
+      cult_id: roman_catholic
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.08.no_mutual_consent
+  purpose: Un partener nu consimte
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: false
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - RELIGIOUS_CONSENT_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.09.no_storage_consent
+  purpose: Fără acord de stocare a cultului
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: false
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - RELIGION_DATA_NOT_STORED
+    confidence: verified
+    notes: Traseul general poate continua, dar ActeOS nu păstrează data sensibilă.
+- id: fx.religious_marriage.10.no_parish
+  purpose: Parohie nealeasă
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.11.no_checklist
+  purpose: Checklist local neconfirmat
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: roman_catholic
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.12.mandatory_fee_claim
+  purpose: Contribuție prezentată ca taxă obligatorie
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: true
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - RELIGIOUS_CONTRIBUTION_NOT_PUBLIC_FEE
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.13.canonical_case
+  purpose: Situație canonică specială
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: roman_catholic
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - CANONICAL_REVIEW_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.14.no_date
+  purpose: Dată încă nealeasă
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: false
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.15.outside_timisoara
+  purpose: Ceremonie în alt UAT
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.lugoj
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.religious_marriage.16.different_county
+  purpose: Ceremonie în alt județ
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: roman_catholic
+      locality: ro.b
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.religious_marriage.17.civil_today
+  purpose: Căsătorie civilă încheiată recent
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.18.privacy_only_general
+  purpose: Ghid general fără stocare religie
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: unknown
+      locality: ro.tm.timisoara
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: false
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - RELIGION_DATA_NOT_STORED
+    - CULT_AND_PARISH_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.religious_marriage.19.parish_answer_verbal
+  purpose: Checklist doar verbal
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Se cere confirmare datată/scrisă pentru producție.
+- id: fx.religious_marriage.20.mixed_cult
+  purpose: Cuplu cu apartenențe diferite
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: unknown
+      locality: ro.tm.timisoara
+      parish_selected: false
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - CULT_AND_PARISH_REQUIRED
+    - CANONICAL_REVIEW_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.religious_marriage.21.schedule_changed
+  purpose: Programare schimbată
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Confirmarea programării este exclusiv locală.
+- id: fx.religious_marriage.22.document_list_from_blog
+  purpose: Listă găsită pe blog
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: roman_catholic
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes:
+    - LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Sursa neoficială nu poate activa cerințe.
+- id: fx.religious_marriage.23.civil_certificate_copy
+  purpose: Dovadă în copie, acceptarea neconfirmată
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: orthodox
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: false
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.religious_marriage.24.complete_local_confirmation
+  purpose: Checklist și programare confirmate local
+  input:
+    event_type_id: ro.life.religious_marriage
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      civil_marriage_completed: true
+      civil_certificate_available: true
+      cult_id: roman_catholic
+      locality: ro.tm.timisoara
+      parish_selected: true
+      desired_date_known: true
+      both_parties_consent: true
+      religion_data_storage_consent: true
+      local_checklist_confirmed: true
+      contribution_presented_as_mandatory_fee: false
+      special_canonical_situation: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.complete_civil_marriage
+    - step.select_cult_parish
+    - step.request_local_checklist
+    - step.prepare_local_dossier
+    - step.confirm_schedule
+    requirement_ids:
+    - req.civil_marriage_proof
+    - req.local_checklist_confirmation
+    - req.religion_data_consent
+    warning_codes: []
+    confidence: verified
+    notes: ''

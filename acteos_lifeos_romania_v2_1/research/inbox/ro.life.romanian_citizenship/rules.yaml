@@ -1,0 +1,816 @@
+schema_version: '1.0'
+schema_ref: contracts/rule.schema.json
+batch_id: B02_ROMANIAN_CITIZENSHIP
+event_type_id: ro.life.romanian_citizenship
+reference_date: '2026-06-25'
+status: in_review
+required_facts:
+- basis
+- age
+- former_romanian_citizen
+- descendant_degree
+- loss_context
+- residence_status
+- legal_residence_years
+- married_to_romanian_cohabiting
+- marriage_years
+- language_proof_status
+- annual_absence_over_6m
+- reduction_case_claimed
+rules:
+- id: rule.cit.classify_basis
+  canonical_rule_id: romanian_citizenship.classify_basis
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_citizenship_basis
+  - type: emit_warning
+    tag: application_not_entitlement
+    message_ro: Acordarea la cerere nu este automată; toate condițiile rutei alese trebuie probate.
+  source_claim_ids:
+  - claim.cit.modes_and_no_entitlement
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.birth_abroad
+  canonical_rule_id: romanian_citizenship.birth_abroad
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: basis
+    value: by_birth
+  effects:
+  - type: include_step
+    step_id: prove_citizenship_by_birth
+  - type: emit_advice
+    tag: born_abroad_romanian_parent
+    message_ro: Verifică dovada cetățeniei părintelui și transcrierea nașterii străine; nu porni o procedură de naturalizare.
+  - type: trigger_child_event
+    event_type_id: ro.life.transcribe_foreign_birth
+  source_claim_ids:
+  - claim.cit.birth_abroad
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.adoption_route
+  canonical_rule_id: romanian_citizenship.adoption_route
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: basis
+    value: adoption
+  effects:
+  - type: include_step
+    step_id: open_adoption_citizenship_route
+  - type: require_confirmation
+    tag: adoption_case_specific
+    message_ro: Verifică vârsta adoptatului, cetățenia adoptatorilor, consimțământul și hotărârea de adopție aplicabile cazului.
+  source_claim_ids:
+  - claim.cit.modes_and_no_entitlement
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_underage
+  canonical_rule_id: romanian_citizenship.art8_underage
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: lt
+      field: age
+      value: 18
+  effects:
+  - type: block
+    tag: art8_requires_adult
+    message_ro: Ruta art. 8 cere ca solicitantul să fi împlinit 18 ani.
+  source_claim_ids:
+  - claim.cit.art8_conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_status_missing
+  canonical_rule_id: romanian_citizenship.art8_status_missing
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: neq
+      field: residence_status
+      value: long_term_or_permanent
+  effects:
+  - type: block
+    tag: art8_residence_status_missing
+    message_ro: Art. 8 cere drept de ședere pe termen lung ori drept de rezidență permanentă la data cererii.
+  source_claim_ids:
+  - claim.cit.art8_conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_years_ok
+  canonical_rule_id: romanian_citizenship.art8_years_ok
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: gte
+      field: age
+      value: 18
+    - op: eq
+      field: residence_status
+      value: long_term_or_permanent
+    - op: gte
+      field: legal_residence_years
+      value: 8
+  effects:
+  - type: include_step
+    step_id: prepare_art8_application
+  - type: include_requirement
+    requirement_id: req.proof_long_term_or_permanent_residence
+  - type: include_requirement
+    requirement_id: req.proof_legal_means
+  - type: include_requirement
+    requirement_id: req.good_conduct_documents
+  - type: emit_advice
+    tag: art8_duration_met
+    message_ro: Pragul standard de 8 ani este îndeplinit factual; restul condițiilor rămân de probat.
+  source_claim_ids:
+  - claim.cit.art8_conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_marriage_ok
+  canonical_rule_id: romanian_citizenship.art8_marriage_ok
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: gte
+      field: age
+      value: 18
+    - op: eq
+      field: residence_status
+      value: long_term_or_permanent
+    - op: eq
+      field: married_to_romanian_cohabiting
+      value: true
+    - op: gte
+      field: marriage_years
+      value: 5
+  effects:
+  - type: include_step
+    step_id: prepare_art8_application
+  - type: include_requirement
+    requirement_id: req.proof_marriage_and_cohabitation
+  - type: emit_advice
+    tag: art8_marriage_duration_met
+    message_ro: Pragul de 5 ani de la căsătorie, cu conviețuire, este îndeplinit factual; restul condițiilor rămân de probat.
+  source_claim_ids:
+  - claim.cit.art8_conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_duration_not_met
+  canonical_rule_id: romanian_citizenship.art8_duration_not_met
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: lt
+      field: legal_residence_years
+      value: 8
+    - op: any
+      args:
+      - op: eq
+        field: married_to_romanian_cohabiting
+        value: false
+      - op: lt
+        field: marriage_years
+        value: 5
+    - op: eq
+      field: reduction_case_claimed
+      value: false
+  effects:
+  - type: block
+    tag: art8_duration_not_met
+    message_ro: Datele furnizate nu îndeplinesc pragul standard de rezidență și nici ruta de 5 ani prin căsătorie și conviețuire.
+  source_claim_ids:
+  - claim.cit.art8_conditions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_reduction
+  canonical_rule_id: romanian_citizenship.art8_reduction
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: eq
+      field: reduction_case_claimed
+      value: true
+  effects:
+  - type: include_step
+    step_id: document_art8_reduction_case
+  - type: require_confirmation
+    tag: art8_reduction_not_automatic
+    message_ro: Reducerea este de până la 3 ani, nu automată; confirmă categoria legală și probele contribuției sau integrării
+      invocate.
+  source_claim_ids:
+  - claim.cit.art8_reduction_absence
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art8_absence
+  canonical_rule_id: romanian_citizenship.art8_absence
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: naturalisation_art8
+    - op: eq
+      field: annual_absence_over_6m
+      value: true
+  effects:
+  - type: emit_warning
+    tag: year_excluded_over_6m_absence
+    message_ro: Anul în care absența din România depășește 6 luni nu se include la calculul perioadei art. 8.
+  source_claim_ids:
+  - claim.cit.art8_reduction_absence
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art10_eligible
+  canonical_rule_id: romanian_citizenship.art10_eligible
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: reacquisition_art10
+    - op: any
+      args:
+      - op: eq
+        field: former_romanian_citizen
+        value: true
+      - op: lte
+        field: descendant_degree
+        value: 2
+  effects:
+  - type: include_step
+    step_id: prepare_art10_application
+  - type: emit_advice
+    tag: art10_degree_ok
+    message_ro: Ruta art. 10 este posibilă factual pentru fost cetățean sau descendent până la gradul II; condițiile și filiația
+      trebuie documentate.
+  source_claim_ids:
+  - claim.cit.art10
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art10_not_eligible
+  canonical_rule_id: romanian_citizenship.art10_not_eligible
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: reacquisition_art10
+    - op: eq
+      field: former_romanian_citizen
+      value: false
+    - op: gt
+      field: descendant_degree
+      value: 2
+  effects:
+  - type: block
+    tag: art10_degree_exceeded
+    message_ro: Art. 10 nu acoperă un descendent dincolo de gradul II care nu este el însuși fost cetățean român.
+  source_claim_ids:
+  - claim.cit.art10
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art11_eligible
+  canonical_rule_id: romanian_citizenship.art11_eligible
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: restoration_art11
+    - op: eq
+      field: loss_context
+      value: involuntary
+    - op: any
+      args:
+      - op: eq
+        field: former_romanian_citizen
+        value: true
+      - op: lte
+        field: descendant_degree
+        value: 3
+  effects:
+  - type: include_step
+    step_id: prepare_art11_application
+  - type: emit_advice
+    tag: art11_degree_and_loss_ok
+    message_ro: Ruta art. 11 este posibilă factual; caracterul neimputabil al pierderii și lanțul de filiație trebuie probate.
+  source_claim_ids:
+  - claim.cit.art11
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art11_wrong_context
+  canonical_rule_id: romanian_citizenship.art11_wrong_context
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: restoration_art11
+    - op: neq
+      field: loss_context
+      value: involuntary
+  effects:
+  - type: block
+    tag: art11_loss_context_not_met
+    message_ro: Art. 11 cere pierderea cetățeniei din motive neimputabile sau ridicarea fără voia fostului cetățean.
+  source_claim_ids:
+  - claim.cit.art11
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.art11_degree_exceeded
+  canonical_rule_id: romanian_citizenship.art11_degree_exceeded
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: basis
+      value: restoration_art11
+    - op: gt
+      field: descendant_degree
+      value: 3
+    - op: eq
+      field: former_romanian_citizen
+      value: false
+  effects:
+  - type: block
+    tag: art11_degree_exceeded
+    message_ro: Art. 11 nu acoperă descendenții dincolo de gradul III care nu sunt ei înșiși foști cetățeni români.
+  source_claim_ids:
+  - claim.cit.art11
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.special_culture
+  canonical_rule_id: romanian_citizenship.special_culture
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: basis
+    value: cultural_art8_1
+  effects:
+  - type: include_step
+    step_id: prepare_art8_1_special_application
+  - type: require_confirmation
+    tag: art8_1_special_assessment
+    message_ro: Ruta cere evaluarea contribuțiilor regulate de minimum 3 ani și a condițiilor art. 8 aplicabile; nu este o
+      naturalizare simplificată generică.
+  source_claim_ids:
+  - claim.cit.special_routes
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.special_sport
+  canonical_rule_id: romanian_citizenship.special_sport
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: basis
+    value: sport_art8_2
+  effects:
+  - type: include_step
+    step_id: open_art8_2_government_route
+  - type: require_confirmation
+    tag: art8_2_institution_live_check
+    message_ro: Confirmă instituția inițiatoare și procedura operațională actuală înainte de depunere; denumirile instituționale
+      din textul legii pot necesita corelare.
+  source_claim_ids:
+  - claim.cit.special_routes
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.unknown_basis
+  canonical_rule_id: romanian_citizenship.unknown_basis
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: basis
+    value: unknown
+  effects:
+  - type: block
+    tag: citizenship_basis_unknown
+    message_ro: Fără o bază juridică identificată nu se poate genera un dosar determinist.
+  - type: require_confirmation
+    tag: anc_basis_classification
+    message_ro: Clarifică dacă este dovadă prin naștere, adopție, art. 8, art. 8^1, art. 8^2, art. 10 sau art. 11.
+  source_claim_ids:
+  - claim.cit.modes_and_no_entitlement
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.language_available
+  canonical_rule_id: romanian_citizenship.language_available
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: basis
+      values:
+      - reacquisition_art10
+      - restoration_art11
+    - op: eq
+      field: language_proof_status
+      value: available
+  effects:
+  - type: include_requirement
+    requirement_id: req.romanian_language_evidence
+  - type: emit_advice
+    tag: language_proof_available
+    message_ro: Atașează dovada lingvistică în forma acceptată de lege și de procedura ANC curentă.
+  source_claim_ids:
+  - claim.cit.language_and_exemptions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.language_exempt
+  canonical_rule_id: romanian_citizenship.language_exempt
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: basis
+      values:
+      - reacquisition_art10
+      - restoration_art11
+    - op: any
+      args:
+      - op: eq
+        field: former_romanian_citizen
+        value: true
+      - op: gte
+        field: age
+        value: 65
+  effects:
+  - type: emit_advice
+    tag: language_proof_exempt
+    message_ro: Fostul cetățean român sau solicitantul care a împlinit 65 de ani este exceptat de la obligația de a dovedi
+      limba în această rută.
+  source_claim_ids:
+  - claim.cit.language_and_exemptions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.language_transition
+  canonical_rule_id: romanian_citizenship.language_transition
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: basis
+      values:
+      - reacquisition_art10
+      - restoration_art11
+    - op: eq
+      field: language_proof_status
+      value: transition_pending
+    - op: eq
+      field: former_romanian_citizen
+      value: false
+    - op: lt
+      field: age
+      value: 65
+  effects:
+  - type: require_confirmation
+    tag: language_transition_date_check
+    message_ro: Verifică exact data depunerii și norma tranzitorie aplicabilă; nu calcula automat un termen final dintr-un
+      rezumat.
+  - type: emit_warning
+    tag: language_evidence_pending
+    message_ro: Dosarul poate deveni nesusținut dacă dovada nu este depusă în fereastra legală aplicabilă.
+  source_claim_ids:
+  - claim.cit.language_transition
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.language_missing
+  canonical_rule_id: romanian_citizenship.language_missing
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: basis
+      values:
+      - reacquisition_art10
+      - restoration_art11
+    - op: eq
+      field: language_proof_status
+      value: missing
+    - op: eq
+      field: former_romanian_citizen
+      value: false
+    - op: lt
+      field: age
+      value: 65
+  effects:
+  - type: block
+    tag: language_evidence_missing
+    message_ro: Pentru acest solicitant art. 10/11, dovada limbii este o condiție legală neîndeplinită în datele furnizate.
+  source_claim_ids:
+  - claim.cit.language_and_exemptions
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.filing_anc
+  canonical_rule_id: romanian_citizenship.filing_anc
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: residence_status
+    value: abroad
+  effects:
+  - type: include_step
+    step_id: file_personally_at_anc
+  - type: attach_channel
+    channel_id: ch.anc
+  - type: include_requirement
+    requirement_id: req.personal_presence_and_biometrics
+  source_claim_ids:
+  - claim.cit.filing_routes_biometrics
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.filing_consular
+  canonical_rule_id: romanian_citizenship.filing_consular
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: residence_status
+      value: abroad
+    - op: in
+      field: basis
+      values:
+      - cultural_art8_1
+      - reacquisition_art10
+      - restoration_art11
+  effects:
+  - type: include_step
+    step_id: file_at_romanian_mission_or_consulate
+  - type: attach_channel
+    channel_id: ch.romanian_mission
+  - type: include_requirement
+    requirement_id: req.personal_presence_and_biometrics
+  source_claim_ids:
+  - claim.cit.filing_routes_biometrics
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.foreign_documents
+  canonical_rule_id: romanian_citizenship.foreign_documents
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: basis
+    values:
+    - naturalisation_art8
+    - cultural_art8_1
+    - sport_art8_2
+    - reacquisition_art10
+    - restoration_art11
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_acts_apostilled_or_supralegalised
+  - type: include_requirement
+    requirement_id: req.civil_status_extracts_max_2y
+  - type: emit_advice
+    tag: foreign_document_formalities
+    message_ro: Verifică apostila/supralegalizarea și vechimea extraselor de stare civilă înainte de programare.
+  source_claim_ids:
+  - claim.cit.foreign_documents
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.supplement_art8
+  canonical_rule_id: romanian_citizenship.supplement_art8
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: basis
+    values:
+    - naturalisation_art8
+    - cultural_art8_1
+    - sport_art8_2
+  effects:
+  - type: emit_warning
+    tag: supplement_6m
+    message_ro: La solicitarea Comisiei, documentele lipsă trebuie transmise în cel mult 6 luni, altfel cererea poate fi respinsă
+      ca nesusținută.
+  source_claim_ids:
+  - claim.cit.supplement_terms
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.supplement_art10_11
+  canonical_rule_id: romanian_citizenship.supplement_art10_11
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: basis
+    values:
+    - reacquisition_art10
+    - restoration_art11
+  effects:
+  - type: emit_warning
+    tag: supplement_4m
+    message_ro: Pentru art. 10/11, completarea cerută se transmite în cel mult 4 luni, sub sancțiunea respingerii ca nesusținută.
+  source_claim_ids:
+  - claim.cit.supplement_terms
+  status: in_review
+  legal_rank: lege
+- id: rule.cit.post_approval
+  canonical_rule_id: romanian_citizenship.post_approval
+  event_type_id: ro.life.romanian_citizenship
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: basis
+    values:
+    - naturalisation_art8
+    - cultural_art8_1
+    - sport_art8_2
+    - reacquisition_art10
+    - restoration_art11
+  effects:
+  - type: include_step
+    step_id: track_decision_and_oath
+  - type: emit_advice
+    tag: appeal_rejection_15d
+    message_ro: Un ordin de respingere poate fi contestat în 15 zile de la comunicare.
+  - type: emit_warning
+    tag: oath_within_1y
+    message_ro: După aprobare, jurământul se depune în termen de un an; cetățenia se dobândește la depunerea jurământului.
+  - type: emit_advice
+    tag: provisional_and_card_60d
+    message_ro: După jurământ se eliberează certificat provizoriu valabil 60 de zile, iar cardul în cel mult 60 de zile.
+  source_claim_ids:
+  - claim.cit.decision_appeal
+  - claim.cit.oath_and_card
+  status: in_review
+  legal_rank: lege

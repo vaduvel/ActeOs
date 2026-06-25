@@ -1,0 +1,423 @@
+batch_id: batch08.renovation_authorisation_check
+defaults:
+  event_type_id: ro.life.renovation_authorisation_check
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.interior.clear
+  desc: Finisaje interioare fără modificări
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+- id: fx.roof.clear
+  desc: Reparație acoperiș în condițiile excepției
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: roof_repair
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+- id: fx.exterior.clear
+  desc: Finisaje exterioare fără schimbarea aspectului
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: exterior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+- id: fx.energy.clear
+  desc: Reabilitare energetică a casei mici în condițiile excepției
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: energy_rehabilitation_small_house
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+- id: fx.change_use.clear
+  desc: Schimbare de destinație fără lucrări autorizabile și conformă urbanistic
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: change_of_use_without_permit_work
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - document_change_of_use_assessment
+    advice_tags:
+    - change_of_use_no_permit_if_no_authorised_works
+- id: fx.structure_changed
+  desc: Lucrarea modifică structura
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: true
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - start_building_permit_route
+    warnings:
+    - permit_likely_required
+- id: fx.appearance_changed
+  desc: Lucrarea modifică aspectul arhitectural
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: true
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - start_building_permit_route
+    warnings:
+    - permit_likely_required
+- id: fx.other_work
+  desc: Lucrare neenumerată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: other
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - start_building_permit_route
+    warnings:
+    - permit_likely_required
+- id: fx.conditions_not_preserved
+  desc: Condițiile speciale ale excepției nu sunt păstrate
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: false
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - start_building_permit_route
+    warnings:
+    - permit_likely_required
+- id: fx.change_use.noncompliant
+  desc: Schimbare de destinație neconformă urbanistic
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: change_of_use_without_permit_work
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: false
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - start_building_permit_route
+    warnings:
+    - permit_likely_required
+- id: fx.protected_zone
+  desc: Clădire fără valoare arhitecturală în zonă protejată
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: roof_repair
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: protected_zone_non_monument
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - document_protected_zone_art11_assessment
+    advice_tags:
+    - protected_zone_exemption_strict_conditions
+    confirmations:
+    - confirm_protected_zone_art11_exemption
+- id: fx.monument
+  desc: Monument sau clădire cu valoare arhitecturală
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: monument_or_architectural_value
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - notify_local_authority_before_works
+    - notify_deconcentrated_culture_service
+    requirements:
+    - written_heritage_agreement
+    advice_tags:
+    - heritage_agreement_max_30_days
+    warnings:
+    - do_not_treat_as_ordinary_art11_exemption
+- id: fx.timisoara.position
+  desc: Se solicită poziție oficială în Timișoara
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: true
+  expect:
+    status: resolved
+    included_steps:
+    - document_art11_assessment
+    - prepare_art11_local_request
+    requirements:
+    - art11_standard_request
+    - title_document
+    - land_book_extract_max_30_days
+    - site_plan_photos_and_intervention_proposal
+    channels:
+    - pmt_art11_online_service
+    advice_tags:
+    - permit_not_required_under_art11
+- id: fx.other_uat.position
+  desc: Se solicită poziție oficială în alt UAT
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - document_art11_assessment
+    - identify_local_art11_contact
+    advice_tags:
+    - permit_not_required_under_art11
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_art11_position_procedure
+- id: fx.other_uat.clear
+  desc: Lucrare clar exceptată în alt UAT, fără cerere de poziție
+  facts:
+    jurisdiction_id: ro.cj.cluj_napoca
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: resolved
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu jurisdiction_id
+  facts:
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.work_kind
+  desc: Lipsește faptul obligatoriu work_kind
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - work_kind
+- id: fx.missing.changes_structure
+  desc: Lipsește faptul obligatoriu changes_structure
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - changes_structure
+- id: fx.missing.changes_architectural_appearance
+  desc: Lipsește faptul obligatoriu changes_architectural_appearance
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - changes_architectural_appearance
+- id: fx.missing.protected_status
+  desc: Lipsește faptul obligatoriu protected_status
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - protected_status
+- id: fx.missing.preserves_specific_conditions
+  desc: Lipsește faptul obligatoriu preserves_specific_conditions
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    local_urbanism_compliant: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - preserves_specific_conditions
+- id: fx.missing.local_urbanism_compliant
+  desc: Lipsește faptul obligatoriu local_urbanism_compliant
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    wants_official_position: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+    missing_facts:
+    - local_urbanism_compliant
+- id: fx.missing.wants_official_position
+  desc: Lipsește faptul obligatoriu wants_official_position
+  facts:
+    jurisdiction_id: ro.tm.timisoara
+    work_kind: interior_finishes
+    changes_structure: false
+    changes_architectural_appearance: false
+    protected_status: none
+    preserves_specific_conditions: true
+    local_urbanism_compliant: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - document_art11_assessment
+    advice_tags:
+    - permit_not_required_under_art11
+    missing_facts:
+    - wants_official_position
+- id: fx.missing.all
+  desc: Nu este furnizat niciun fapt
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - jurisdiction_id
+    - work_kind
+    - changes_structure
+    - changes_architectural_appearance
+    - protected_status
+    - preserves_specific_conditions
+    - local_urbanism_compliant
+    - wants_official_position

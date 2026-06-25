@@ -1,0 +1,326 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_PARENTAL_AUTHORITY_CHANGE
+event_type_id: ro.life.parental_authority_change
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- authority_basis
+- court_document_final
+- child_age
+- request_child_cei
+- parents_disagree
+- territory_id
+rules:
+- id: rule.b03.parental_authority.no_cei_request
+  canonical_rule_id: parental_authority.no_cei_request
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: request_child_cei
+    value: false
+  effects:
+  - type: emit_advice
+    tag: no_child_cei_action_requested
+    message_ro: Schimbarea autorității părintești este înregistrată ca fapt, dar nu s-a cerut încă un traseu CEI.
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  status: draft
+- id: rule.b03.parental_authority.under14_base
+  canonical_rule_id: parental_authority.cei_under14_base
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+  effects:
+  - type: include_step
+    step_id: request_child_cei_under14
+  - type: include_requirement
+    requirement_id: req.child_birth_certificate
+  - type: include_requirement
+    requirement_id: req.requesting_adult_identity_document
+  - type: attach_channel
+    step_id: request_child_cei_under14
+    channel_id: ch.mai.cei
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  - claim.b03.parental_authority.cei_channel
+  status: draft
+- id: rule.b03.parental_authority.joint_parents
+  canonical_rule_id: parental_authority.cei_joint_parents
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: eq
+      field: authority_basis
+      value: joint_parents
+    - op: eq
+      field: parents_disagree
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.both_parents_request_or_consent
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  status: draft
+- id: rule.b03.parental_authority.surviving_parent
+  canonical_rule_id: parental_authority.cei_surviving_parent
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: eq
+      field: authority_basis
+      value: surviving_parent
+  effects:
+  - type: include_requirement
+    requirement_id: req.other_parent_death_certificate
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  status: draft
+- id: rule.b03.parental_authority.final_judgment_basis
+  canonical_rule_id: parental_authority.cei_final_judgment_basis
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: in
+      field: authority_basis
+      values:
+      - sole_final_judgment
+      - custody_final_judgment
+    - op: eq
+      field: court_document_final
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.final_parental_authority_judgment
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  status: draft
+- id: rule.b03.parental_authority.nonfinal_judgment_basis
+  canonical_rule_id: parental_authority.cei_nonfinal_judgment_basis
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: in
+      field: authority_basis
+      values:
+      - sole_final_judgment
+      - custody_final_judgment
+      - presidential_order
+    - op: eq
+      field: court_document_final
+      value: false
+  effects:
+  - type: block
+    code: PARENTAL_AUTHORITY_DOCUMENT_NOT_USABLE
+    message_ro: Nu trata actul judiciar ca temei utilizabil până nu confirmi caracterul definitiv/executoriu cerut de ruta
+      aplicabilă.
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  - claim.b03.parental_authority.presidential_order
+  status: in_review
+- id: rule.b03.parental_authority.presidential_order
+  canonical_rule_id: parental_authority.cei_presidential_order
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: eq
+      field: authority_basis
+      value: presidential_order
+    - op: eq
+      field: court_document_final
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.presidential_order_express_cei_authorization
+  - type: require_confirmation
+    tag: confirm_presidential_order_express_clause
+    message_ro: Verifică dacă ordonanța menționează expres solicitarea CEI ori acordul necesar.
+  source_claim_ids:
+  - claim.b03.parental_authority.presidential_order
+  status: in_review
+- id: rule.b03.parental_authority.disagreement_no_judgment
+  canonical_rule_id: parental_authority.cei_disagreement_no_judgment
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: eq
+      field: parents_disagree
+      value: true
+    - op: eq
+      field: court_document_final
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.final_court_judgment_resolving_parental_disagreement
+  - type: emit_warning
+    tag: parental_disagreement_requires_final_judgment
+    message_ro: Neînțelegerea părinților nu se rezolvă prin presupunerea acordului; este necesar temeiul judiciar oficial.
+  - type: block
+    code: PARENTAL_DISAGREEMENT_UNRESOLVED
+    message_ro: Cererea CEI nu continuă în motor până la confirmarea hotărârii definitive.
+  source_claim_ids:
+  - claim.b03.parental_authority.disagreement
+  status: draft
+- id: rule.b03.parental_authority.disagreement_resolved
+  canonical_rule_id: parental_authority.cei_disagreement_resolved
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: eq
+      field: parents_disagree
+      value: true
+    - op: eq
+      field: court_document_final
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.final_court_judgment_resolving_parental_disagreement
+  source_claim_ids:
+  - claim.b03.parental_authority.disagreement
+  status: draft
+- id: rule.b03.parental_authority.age14plus
+  canonical_rule_id: parental_authority.identity_age14plus
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: gte
+      field: child_age
+      value: 14
+  effects:
+  - type: include_step
+    step_id: request_identity_document_age14plus
+  - type: attach_channel
+    step_id: request_identity_document_age14plus
+    channel_id: ch.mai.cei
+  - type: emit_advice
+    tag: use_age14plus_identity_route
+    message_ro: La 14 ani sau peste se folosește ruta documentului de identitate pentru minorul de această vârstă, nu ruta
+      opțională sub 14 ani.
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_channel
+  status: draft
+- id: rule.b03.parental_authority.other_basis
+  canonical_rule_id: parental_authority.cei_other_basis
+  event_type_id: ro.life.parental_authority_change
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: request_child_cei
+      value: true
+    - op: lt
+      field: child_age
+      value: 14
+    - op: eq
+      field: authority_basis
+      value: other
+  effects:
+  - type: require_confirmation
+    tag: confirm_parental_authority_basis
+    message_ro: Temeiul invocat nu este mapat; verifică documentul oficial și calitatea solicitantului.
+  source_claim_ids:
+  - claim.b03.parental_authority.cei_actors
+  status: in_review

@@ -1,0 +1,313 @@
+batch_id: B07_MOVE_ABROAD
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.move_abroad
+  event_alias: ro.life.move_abroad
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: rezident, plecare 200 zile, nu angajat stat
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 200
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z017
+    - verify_destination_entry_and_residence_rules
+    deadlines:
+      submit_z017: '2026-07-02'
+- id: F02
+  desc: rezident, exact 183 zile
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 183
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_z017
+- id: F03
+  desc: rezident, 184 zile
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 184
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z017
+- id: F04
+  desc: nerezident fără obligație Z015
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 300
+    fiscal_status_before_departure: nonresident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_z017
+- id: F05
+  desc: nerezident care a avut obligație Z015
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 300
+    fiscal_status_before_departure: nonresident
+    had_z015_obligation: true
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z017
+- id: F06
+  desc: angajat al statului român
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 365
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: true
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - submit_z017
+    advice:
+    - z017_state_employee_exception
+- id: F07
+  desc: schimbă statutul la CRDS
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 365
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z017
+    - replace_passport_for_crds_status
+- id: F08
+  desc: nu schimbă statutul de domiciliu
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 365
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - replace_passport_for_crds_status
+- id: F09
+  desc: plecare în 20 zile, termen Z017 deja depășit
+  facts:
+    departure_date: '2026-07-15'
+    expected_days_abroad_rolling_12m: 200
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - z017_overdue
+    included_steps:
+    - submit_z017
+- id: F10
+  desc: plecare în 30 zile exact
+  facts:
+    departure_date: '2026-07-25'
+    expected_days_abroad_rolling_12m: 200
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    deadlines:
+      submit_z017: '2026-06-25'
+- id: F11
+  desc: plecare temporară 90 zile
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 90
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_z017
+- id: F12
+  desc: ține locuință permanentă în România
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+    maintains_home_in_ro: true
+  expect:
+    status: needs_confirmation
+    advice:
+    - tax_residence_not_automatic
+- id: F13
+  desc: nu are certificat fiscal străin încă
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+    foreign_tax_residence_certificate_available: false
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.foreign_tax_residence_certificate_if_available
+- id: F14
+  desc: are certificat fiscal străin
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+    foreign_tax_residence_certificate_available: true
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.foreign_tax_residence_certificate_if_available
+- id: F15
+  desc: lipsește departure_date
+  facts:
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - departure_date
+- id: F16
+  desc: lipsește expected_days
+  facts:
+    departure_date: '2026-08-01'
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - expected_days_abroad_rolling_12m
+- id: F17
+  desc: fiscal status necunoscut
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: unknown
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - fiscal_status_before_departure
+- id: F18
+  desc: destinație Germania
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+    destination_country: DE
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - destination_country_rules
+- id: F19
+  desc: destinație non-UE
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: true
+    destination_country: US
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - replace_passport_for_crds_status
+    confirmations:
+    - destination_country_rules
+- id: F20
+  desc: alt UAT de domiciliu fiscal
+  facts:
+    departure_date: '2026-08-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z017
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.b
+  - ro.b.sector1
+- id: F21
+  desc: plecare deja produsă
+  facts:
+    departure_date: '2026-06-01'
+    expected_days_abroad_rolling_12m: 250
+    fiscal_status_before_departure: resident
+    had_z015_obligation: false
+    romanian_state_employee_abroad: false
+    changes_domicile_status_to_crds: false
+  expect:
+    status: needs_confirmation
+    warnings:
+    - z017_overdue
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - departure_date
+    - expected_days_abroad_rolling_12m
+    - fiscal_status_before_departure

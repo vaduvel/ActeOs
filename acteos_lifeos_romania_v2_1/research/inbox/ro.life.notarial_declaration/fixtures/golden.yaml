@@ -1,0 +1,423 @@
+batch_id: B09_NOTARIAL_DECLARATION
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.notarial_declaration
+  event_alias: ro.life.notarial_declaration
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: declarație autentică cu model de la instituție
+  facts: &id001
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_declaration_purpose_and_recipient
+    - book_notary_authentication
+    - appear_and_express_consent_before_notary
+    confirmations:
+    - notarial_declaration_documents
+    - notarial_declaration_fee
+    - notarial_declaration_turnaround
+    advice:
+    - bring_recipient_model_to_notary
+  reference_date: '2026-06-25'
+- id: F02
+  desc: forma cerută necunoscută
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: unknown
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - recipient_required_notarial_form
+    - notarial_declaration_documents
+    - notarial_declaration_fee
+    - notarial_declaration_turnaround
+  reference_date: '2026-06-25'
+- id: F03
+  desc: autentificare cerută, utilizator alege legalizare semnătură
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: signature_legalisation
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - signature_legalisation_not_substitute_for_authentication
+  reference_date: '2026-06-25'
+- id: F04
+  desc: legalizare de semnătură pe exemplare nesemnate
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: signature_legalisation
+    selected_procedure: signature_legalisation
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - bring_unsigned_copies_to_notary
+    - sign_before_notary
+  reference_date: '2026-06-25'
+- id: F05
+  desc: legalizare de semnătură, act deja semnat
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: signature_legalisation
+    selected_procedure: signature_legalisation
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - signature_legalisation_requires_unsigned_copy
+  reference_date: '2026-06-25'
+- id: F06
+  desc: fără model instituțional
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: false
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - declaration_wording_with_recipient_and_notary
+  reference_date: '2026-06-25'
+- id: F07
+  desc: declarație pentru folosire în Italia
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: true
+    recipient_country: IT
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - identify_declaration_purpose_and_recipient
+    confirmations:
+    - apostille_or_supralegalisation
+  reference_date: '2026-06-25'
+- id: F08
+  desc: declarație folosită în România
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    not_included:
+    - apostille_or_supralegalisation
+  reference_date: '2026-06-25'
+- id: F09
+  desc: act de identitate indisponibil
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: false
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - valid_identity_document_available
+  reference_date: '2026-06-25'
+- id: F10
+  desc: prezentarea personală imposibilă
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: false
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - personal_appearance_possible
+    note: Alternativa concretă necesită confirmare notarială; motorul nu o inventează.
+  reference_date: '2026-06-25'
+- id: F11
+  desc: declarație lipsa veniturilor
+  facts:
+    declaration_purpose: lipsa veniturilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    advice:
+    - bring_recipient_model_to_notary
+  reference_date: '2026-06-25'
+- id: F12
+  desc: declarație lipsa intabulării
+  facts:
+    declaration_purpose: lipsa intabulării
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+  reference_date: '2026-06-25'
+- id: F13
+  desc: acord construire la limita de proprietate
+  facts:
+    declaration_purpose: acord construire la limita proprietății
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+  reference_date: '2026-06-25'
+- id: F14
+  desc: lipsește scopul
+  facts:
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - declaration_purpose
+  reference_date: '2026-06-25'
+- id: F15
+  desc: lipsește destinatarul
+  facts:
+    declaration_purpose: lipsa litigiilor
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - recipient_institution
+  reference_date: '2026-06-25'
+- id: F16
+  desc: lipsește forma cerută
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - required_form
+  reference_date: '2026-06-25'
+- id: F17
+  desc: Timișoara — locator cameră notari
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - find_notary
+  reference_date: '2026-06-25'
+- id: F18
+  desc: Cluj — fără locator pilot
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: needs_confirmation
+    not_included:
+    - find_notary
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F19
+  desc: persoană juridică declarant
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+    declarant_type: legal_person
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - notarial_declaration_documents
+  reference_date: '2026-06-25'
+- id: F20
+  desc: model primit informal, neverificat
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: false
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+    unverified_model_present: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - declaration_wording_with_recipient_and_notary
+  reference_date: '2026-06-25'
+- id: F21
+  desc: destinatar furnizor utilități
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: furnizor utilități
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    advice:
+    - bring_recipient_model_to_notary
+  reference_date: '2026-06-25'
+- id: F22
+  desc: țara destinatară lipsă la utilizare externă
+  facts:
+    declaration_purpose: lipsa litigiilor
+    recipient_institution: primarie
+    required_form: authentic
+    selected_procedure: authentication
+    valid_identity_document_available: true
+    personal_appearance_possible: true
+    institution_model_available: true
+    document_already_signed: false
+    cross_border_use: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - recipient_country
+  reference_date: '2026-06-25'

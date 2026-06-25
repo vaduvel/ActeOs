@@ -1,0 +1,64 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_CHANGE_GAS_HOLDER
+event_type_id: life.change_gas_holder
+status: draft
+rules:
+  - id: rule.gas.docs
+    canonical_rule_id: change_gas_holder.docs
+    event_type_id: life.change_gas_holder
+    jurisdiction_ids: [ro]
+    authority_level: institution
+    severity: critical
+    effective_from: '2022-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: change_gas_holder }
+      - { type: include_requirement, requirement_id: req.valid_id }
+      - { type: include_requirement, requirement_id: req.declaratie_calitate_folosinta }
+      - { type: include_requirement, requirement_id: req.gas_meter_photo }
+      - { type: include_requirement, requirement_id: req.cod_loc_consum }
+    source_claim_ids: [claim.gas.docs, claim.gas.same_as_new]
+    status: draft
+  - id: rule.gas.owner_proof
+    canonical_rule_id: change_gas_holder.owner_proof
+    event_type_id: life.change_gas_holder
+    jurisdiction_ids: [ro]
+    authority_level: institution
+    severity: operational
+    effective_from: '2022-01-01'
+    when:
+      op: eq
+      field: is_owner
+      value: true
+    effects:
+      - { type: emit_advice, message_ro: 'Ca proprietar, poti folosi actul de proprietate in locul declaratiei pe propria raspundere.', tag: owner_proof }
+    source_claim_ids: [claim.gas.docs]
+    status: draft
+  - id: rule.gas.death_path
+    canonical_rule_id: change_gas_holder.death_path
+    event_type_id: life.change_gas_holder
+    jurisdiction_ids: [ro]
+    authority_level: institution
+    severity: operational
+    effective_from: '2022-01-01'
+    when:
+      op: eq
+      field: reason
+      value: inheritance_death
+    effects:
+      - { type: emit_warning, message_ro: 'La deces contractul de gaze inceteaza; se incheie contract nou cu copie certificat de deces al titularului.', tag: death_takeover }
+      - { type: include_requirement, requirement_id: req.death_certificate }
+    source_claim_ids: [claim.gas.death_terminates]
+    status: in_review
+  - id: rule.gas.distributor_channel
+    canonical_rule_id: change_gas_holder.distributor_channel
+    event_type_id: life.change_gas_holder
+    jurisdiction_ids: [ro.tm.timisoara]
+    severity: explanatory
+    effective_from: '2022-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_advice, message_ro: 'Furnizorul se alege liber; identifica operatorul de distributie gaz din zona ta (de confirmat pentru Timis).', tag: gas_distributor_tbd }
+      - { type: require_confirmation, message_ro: 'Operatorul de distributie gaz pentru Timis trebuie confirmat.' }
+    source_claim_ids: [claim.gas.docs]
+    status: in_review

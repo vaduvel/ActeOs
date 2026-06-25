@@ -1,0 +1,479 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_VEHICLE_DEREGISTRATION
+alias_event_type_id: ro.life.vehicle_deregistration
+event_type_id: life.vehicle_deregistration
+status: draft
+required_facts:
+- deregistration_reason
+- applicant_role
+- applicant_county
+- submission_mode
+- applicant_type
+- representation_type
+rules:
+- id: rule.vehicle_deregistration.base.valid_route
+  canonical_rule_id: vehicle_deregistration.base.valid_route
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: deregistration_reason
+    values:
+    - lawful_storage
+    - scrapped
+    - permanent_export
+    - stolen
+  effects:
+  - type: include_step
+    step_id: prepare_vehicle_deregistration_file
+  - type: include_step
+    step_id: submit_deregistration_to_registering_authority
+  - type: include_requirement
+    requirement_id: req.registration_certificate
+  - type: include_requirement
+    requirement_id: req.registration_plates_or_loss_retention_theft_proof
+  - type: include_requirement
+    requirement_id: req.valid_identity_or_entity_documents
+  - type: include_requirement
+    requirement_id: req.proof_of_deregistration_ground
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  - claim.vehicle_deregistration.deregistration_docs
+  - claim.vehicle_deregistration.competent_service
+  status: draft
+- id: rule.vehicle_deregistration.reason.storage
+  canonical_rule_id: vehicle_deregistration.reason.storage
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_reason
+    value: lawful_storage
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_of_lawfully_held_storage_space
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_deregistration.reason.scrapped
+  canonical_rule_id: vehicle_deregistration.reason.scrapped
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_reason
+    value: scrapped
+  effects:
+  - type: include_requirement
+    requirement_id: req.scrapping_dismantling_or_specialised_unit_evidence
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_deregistration.reason.export
+  canonical_rule_id: vehicle_deregistration.reason.export
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_reason
+    value: permanent_export
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_of_permanent_export
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_deregistration.reason.stolen
+  canonical_rule_id: vehicle_deregistration.reason.stolen
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_reason
+    value: stolen
+  effects:
+  - type: include_requirement
+    requirement_id: req.competent_authority_vehicle_theft_proof
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  - claim.vehicle_deregistration.deregistration_docs
+  status: draft
+- id: rule.vehicle_deregistration.reason.domestic_transfer
+  canonical_rule_id: vehicle_deregistration.reason.domestic_transfer
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_reason
+    value: domestic_transfer
+  effects:
+  - type: emit_warning
+    tag: domestic_transfer_does_not_require_deregistration
+    message_ro: Vânzarea către alt proprietar român se soluționează prin transcriere, fără radiere prealabilă.
+  - type: trigger_child_event
+    event_type_id: life.vehicle_registration
+  - type: block
+    code: wrong_deregistration_route_for_domestic_transfer
+    message_ro: Nu folosi ruta de radiere pentru simpla transmitere a proprietății în România.
+  source_claim_ids:
+  - claim.vehicle_deregistration.no_deregistration_domestic_transfer
+  status: draft
+- id: rule.vehicle_deregistration.reason.other
+  canonical_rule_id: vehicle_deregistration.reason.other
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_reason
+    value: other
+  effects:
+  - type: require_confirmation
+    tag: deregistration_ground_eligibility
+    message_ro: Confirmă temeiul legal al radierii; lista verificată cuprinde depozitarea legală, dezmembrarea/casarea,
+      exportul definitiv și furtul declarat.
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_deregistration.applicant.owner
+  canonical_rule_id: vehicle_deregistration.applicant.owner
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: owner
+  effects:
+  - type: emit_advice
+    tag: owner_may_request_deregistration
+    message_ro: Proprietarul poate solicita radierea în cazurile publicate.
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_deregistration.applicant.heir
+  canonical_rule_id: vehicle_deregistration.applicant.heir
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: legal_heir
+  effects:
+  - type: emit_advice
+    tag: legal_heir_may_request_deregistration
+    message_ro: Moștenitorul legal poate solicita radierea.
+  - type: require_confirmation
+    tag: proof_of_legal_heir_capacity
+    message_ro: Confirmă documentul actual prin care dovedești calitatea de moștenitor legal și, dacă sunt mai mulți
+      moștenitori, forma reprezentării.
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_deregistration.applicant.not_last_holder
+  canonical_rule_id: vehicle_deregistration.applicant.not_last_holder
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_role
+    value: owner_not_on_last_certificate
+  effects:
+  - type: include_requirement
+    requirement_id: req.ownership_document_registered_local_tax
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_not_last_holder
+  status: draft
+- id: rule.vehicle_deregistration.old_vehicle.statement
+  canonical_rule_id: vehicle_deregistration.old_vehicle.statement
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: vehicle_age_years
+      value: 30
+    - op: in
+      field: deregistration_reason
+      values:
+      - scrapped
+      - lawful_storage
+    - op: eq
+      field: uses_sworn_statement
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.sworn_statement_dismantled_or_permanently_withdrawn
+  - type: emit_advice
+    tag: over_30_year_vehicle_statement_route
+    message_ro: Pentru vehiculul mai vechi de 30 de ani, sursa publică permite declarația pe propria răspundere
+      în situația descrisă.
+  source_claim_ids:
+  - claim.vehicle_deregistration.deregistration_over_30_years
+  status: draft
+- id: rule.vehicle_deregistration.fiscal.unpaid
+  canonical_rule_id: vehicle_deregistration.fiscal.unpaid
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: all_local_obligations_paid
+    value: false
+  effects:
+  - type: block
+    code: local_obligations_unpaid
+    message_ro: La radierea la cerere trebuie achitate obligațiile locale până la data radierii.
+  source_claim_ids:
+  - claim.vehicle_deregistration.post_deregistration_tax
+  status: draft
+- id: rule.vehicle_deregistration.fiscal.post_declaration
+  canonical_rule_id: vehicle_deregistration.fiscal.post_declaration
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: exists
+    field: deregistration_date
+  effects:
+  - type: include_step
+    step_id: declare_deregistration_to_local_tax_authority
+  - type: set_deadline
+    step_id: declare_deregistration_to_local_tax_authority
+    value:
+      kind: relative_calendar_days
+      anchor: deregistration_date
+      days: 30
+  source_claim_ids:
+  - claim.vehicle_deregistration.post_deregistration_tax
+  status: draft
+- id: rule.vehicle_deregistration.timis.fiscal_certificate
+  canonical_rule_id: vehicle_deregistration.timis.fiscal_certificate
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_fiscal_clearance_certificate_all_obligations_paid
+  source_claim_ids:
+  - claim.vehicle_deregistration.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_deregistration.timis.online_certificate
+  canonical_rule_id: vehicle_deregistration.timis.online_certificate
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: applicant_county
+      value: TM
+    - op: eq
+      field: submission_mode
+      value: online
+  effects:
+  - type: emit_advice
+    tag: timis_online_deregistration_fiscal_certificate
+    message_ro: Pentru radierea solicitată online în Timiș este publicată cerința certificatului fiscal privind
+      toate obligațiile locale.
+  source_claim_ids:
+  - claim.vehicle_deregistration.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_deregistration.ex_officio
+  canonical_rule_id: vehicle_deregistration.ex_officio
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: deregistration_mode
+    value: ex_officio
+  effects:
+  - type: emit_advice
+    tag: ex_officio_fiscal_exception
+    message_ro: Clarificarea Timiș exceptează radierile din oficiu de la noua cerință fiscală; acest eveniment modelează
+      în principal radierea la cerere.
+  - type: require_confirmation
+    tag: ex_officio_route
+    message_ro: Confirmă dacă situația este într-adevăr radiere din oficiu și care autoritate o inițiază.
+  source_claim_ids:
+  - claim.vehicle_deregistration.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_deregistration.identity.individual
+  canonical_rule_id: vehicle_deregistration.identity.individual
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.vehicle_deregistration.representation_forms
+  status: draft
+- id: rule.vehicle_deregistration.identity.company
+  canonical_rule_id: vehicle_deregistration.identity.company
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.vehicle_deregistration.representation_forms
+  status: draft
+- id: rule.vehicle_deregistration.representation.lawyer
+  canonical_rule_id: vehicle_deregistration.representation.lawyer
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.vehicle_deregistration.representation_forms
+  status: draft
+- id: rule.vehicle_deregistration.representation.authorized_individual
+  canonical_rule_id: vehicle_deregistration.representation.authorized_individual
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.vehicle_deregistration.representation_forms
+  status: draft
+- id: rule.vehicle_deregistration.representation.company_delegate
+  canonical_rule_id: vehicle_deregistration.representation.company_delegate
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.vehicle_deregistration.representation_forms
+  status: draft
+- id: rule.vehicle_deregistration.channel.timis
+  canonical_rule_id: vehicle_deregistration.channel.timis
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_verified_channel
+    message_ro: Pentru pilotul Timiș este publicat canalul SPCRPCIV Timiș și legătura DGPCI pentru programare/informare.
+  source_claim_ids:
+  - claim.vehicle_deregistration.timis_contact
+  status: draft
+- id: rule.vehicle_deregistration.channel.other_county
+  canonical_rule_id: vehicle_deregistration.channel.other_county
+  event_type_id: life.vehicle_deregistration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și particularitățile locale pentru radiere în județul competent.
+  source_claim_ids:
+  - claim.vehicle_deregistration.competent_service
+  status: draft

@@ -1,0 +1,254 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_NAME_CHANGE_AFTER_MARRIAGE
+event_type_id: ro.life.name_change_after_marriage
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- name_changed
+- identity_document_type
+- has_passport
+- has_driving_licence
+- owns_vehicle
+- territory_id
+rules:
+- id: rule.b03.name.changed
+  canonical_rule_id: identity.name_change.replace_id
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: name_changed
+    value: true
+  effects:
+  - type: include_step
+    step_id: replace_identity_document
+  - type: include_requirement
+    requirement_id: req.current_identity_document
+  - type: include_requirement
+    requirement_id: req.marriage_certificate
+  - type: include_requirement
+    requirement_id: req.civil_status_documents_original
+  - type: set_deadline
+    step_id: replace_identity_document
+    value:
+      kind: relative_calendar_days
+      days: 15
+      anchor: marriage_date
+  - type: emit_warning
+    tag: identity_name_change_deadline_15d
+    message_ro: Solicită noul act de identitate în 15 zile de la schimbarea numelui.
+  - type: emit_advice
+    tag: old_id_kept_until_new
+    message_ro: Actul valabil rămâne la titular până la eliberarea noului document.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  - claim.b03.name.old_id_until_new
+  status: draft
+  authority_level: national_normative
+  legal_rank: oug
+- id: rule.b03.name.not_changed
+  canonical_rule_id: identity.name_change.not_applicable
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: explanatory
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: name_changed
+    value: false
+  effects:
+  - type: emit_advice
+    tag: no_identity_replacement_for_unchanged_name
+    message_ro: Dacă numele nu s-a schimbat, acest eveniment nu declanșează înlocuirea actului de identitate.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  status: draft
+- id: rule.b03.name.cei
+  canonical_rule_id: identity.name_change.cei_channel
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: eq
+      field: identity_document_type
+      value: cei
+  effects:
+  - type: attach_channel
+    step_id: replace_identity_document
+    channel_id: ch.mai.cei
+  - type: emit_advice
+    tag: cei_any_service
+    message_ro: Pentru CEI, verifică locurile disponibile în platforma oficială de programări.
+  source_claim_ids:
+  - claim.b03.name.cei_channel
+  status: draft
+  authority_level: national_operational
+- id: rule.b03.name.cis_timisoara
+  canonical_rule_id: identity.name_change.cis_timisoara
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO-TM-TIMISOARA
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: in
+      field: identity_document_type
+      values:
+      - cis
+      - ci_legacy
+    - op: eq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: attach_channel
+    step_id: replace_identity_document
+    channel_id: ch.timisoara.identity
+  source_claim_ids:
+  - claim.b03.name.cis_channel
+  status: draft
+  authority_level: institution
+- id: rule.b03.name.cis_other_uat
+  canonical_rule_id: identity.name_change.cis_other_uat
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: in
+      field: identity_document_type
+      values:
+      - cis
+      - ci_legacy
+    - op: neq
+      field: territory_id
+      value: RO-TM-TIMISOARA
+  effects:
+  - type: require_confirmation
+    tag: confirm_local_identity_service
+    message_ro: Confirmă serviciul competent și programarea la domiciliul tău.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  status: in_review
+- id: rule.b03.name.passport_review
+  canonical_rule_id: identity.name_change.review_passport
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: eq
+      field: has_passport
+      value: true
+  effects:
+  - type: include_step
+    step_id: review_passport_name_data
+  - type: require_confirmation
+    tag: confirm_passport_name_update
+    message_ro: Confirmă procedura și documentele actuale pentru pașaport după schimbarea numelui.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  status: in_review
+- id: rule.b03.name.licence_review
+  canonical_rule_id: identity.name_change.review_driving_licence
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: eq
+      field: has_driving_licence
+      value: true
+  effects:
+  - type: include_step
+    step_id: review_driving_licence_name_data
+  - type: require_confirmation
+    tag: confirm_driving_licence_name_update
+    message_ro: Confirmă procedura curentă DGPCI pentru actualizarea numelui din permis.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  status: in_review
+- id: rule.b03.name.vehicle_review
+  canonical_rule_id: identity.name_change.review_vehicle_documents
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: eq
+      field: owns_vehicle
+      value: true
+  effects:
+  - type: include_step
+    step_id: review_vehicle_holder_name_data
+  - type: require_confirmation
+    tag: confirm_vehicle_name_update
+    message_ro: Confirmă documentele și termenul DGPCI pentru actualizarea datelor titularului.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  status: in_review
+- id: rule.b03.name.unknown_id_type
+  canonical_rule_id: identity.name_change.unknown_document_type
+  event_type_id: ro.life.name_change_after_marriage
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: name_changed
+      value: true
+    - op: not_in
+      field: identity_document_type
+      values:
+      - cei
+      - cis
+      - ci_legacy
+  effects:
+  - type: require_confirmation
+    tag: confirm_identity_document_type
+    message_ro: Tipul documentului nu este recunoscut; confirmă ruta înainte de programare.
+  source_claim_ids:
+  - claim.b03.name.id_replacement_15d
+  status: in_review

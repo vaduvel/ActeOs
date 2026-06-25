@@ -1,0 +1,342 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B06_VACCINATION_RECORD
+alias_event_type_id: ro.life.vaccination_record
+event_type_id: life.vaccination_record
+status: draft
+rules:
+- id: rule.vaccination.required_facts
+  canonical_rule_id: vaccination.required_facts
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_vaccination_record_facts
+    message_ro: Precizează scopul, titularul și furnizorul care deține evidența.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+  required_facts:
+  - purpose
+  - record_holder_known
+  - subject_is_minor
+- id: rule.vaccination.personal_copy
+  canonical_rule_id: vaccination.personal_copy
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: purpose
+    value: personal_copy
+  effects:
+  - type: include_step
+    step_id: request_access_or_copy_from_medical_provider
+  - type: include_requirement
+    requirement_id: req.identity_or_representation_proof
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.minor_representative
+  canonical_rule_id: vaccination.minor_representative
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: subject_is_minor
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.parent_or_legal_representative_identity_and_authority
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.early_2025_2026
+  canonical_rule_id: vaccination.early_2025_2026
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose
+      value: early_education_entry
+    - op: eq
+      field: school_year
+      value: 2025-2026
+  effects:
+  - type: include_step
+    step_id: request_family_doctor_epidemiological_opinion_or_vaccination_proof
+  - type: set_deadline
+    code: early_education_vaccination_document_freshness
+    value:
+      max_days_before_attendance: 5
+      reference_fact: attendance_start_date
+    message_ro: Documentul este emis cu maximum 5 zile înainte de începerea frecventării.
+  source_claim_ids:
+  - claim.vaccination.early_education.2025_2026
+  - claim.vaccination.early_education.document_pair
+  status: draft
+- id: rule.vaccination.early_other_year
+  canonical_rule_id: vaccination.early_other_year
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose
+      value: early_education_entry
+    - op: neq
+      field: school_year
+      value: 2025-2026
+  effects:
+  - type: require_confirmation
+    tag: current_school_year_vaccination_document
+    message_ro: Confirmă ghidul și cerința exactă pentru anul școlar curent.
+  source_claim_ids:
+  - claim.vaccination.early_education.2025_2026
+  status: draft
+- id: rule.vaccination.provider_unknown
+  canonical_rule_id: vaccination.provider_unknown
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: record_holder_known
+    value: false
+  effects:
+  - type: include_step
+    step_id: contact_current_family_doctor_for_record_trace
+  - type: require_confirmation
+    tag: record_source_or_reconstruction
+    message_ro: Nu presupune că există un portal public de descărcare; stabilește furnizorul care deține datele.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.discrepancy
+  canonical_rule_id: vaccination.discrepancy
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: record_discrepancy
+    value: true
+  effects:
+  - type: include_step
+    step_id: request_provider_correction_or_clarification
+  - type: emit_warning
+    tag: do_not_self_edit_medical_record
+    message_ro: Nu modifica și nu completa pe cont propriu o dovadă medicală.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.tm_escalation
+  canonical_rule_id: vaccination.tm_escalation
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_public_health_guidance
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dsp_tm
+  - type: emit_advice
+    tag: dsp_tm_guidance_only
+    message_ro: DSP Timiș poate oferi îndrumare; emitentul documentului rămâne furnizorul medical competent.
+  source_claim_ids:
+  - claim.vaccination.dsp_tm.contact
+  status: draft
+- id: rule.vaccination.other_county
+  canonical_rule_id: vaccination.other_county
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: county
+    - op: neq
+      field: county
+      value: TM
+    - op: eq
+      field: needs_public_health_guidance
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: county_dsp_channel
+    message_ro: Confirmă DSP-ul județean și canalul oficial.
+  - type: set_freshness_state
+    value: verified_with_local_gap
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.early_window_missed
+  canonical_rule_id: vaccination.early_window_missed
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose
+      value: early_education_entry
+    - op: eq
+      field: school_year
+      value: 2025-2026
+    - op: eq
+      field: document_within_verified_5_day_window
+      value: false
+  effects:
+  - type: emit_warning
+    tag: document_outside_verified_5_day_window
+    message_ro: Documentul este în afara ferestrei de cel mult 5 zile verificată pentru acest an și scop.
+  source_claim_ids:
+  - claim.vaccination.early_education.2025_2026
+  status: draft
+- id: rule.vaccination.school_entry_scope
+  canonical_rule_id: vaccination.school_entry_scope
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: purpose
+    value: school_entry
+  effects:
+  - type: require_confirmation
+    tag: school_specific_accepted_document
+    message_ro: Confirmă documentul acceptat din metodologia și solicitarea oficială aplicabile școlii/anului curent.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.physical_record_duplicate
+  canonical_rule_id: vaccination.physical_record_duplicate
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: purpose
+    value: replace_physical_record
+  effects:
+  - type: require_confirmation
+    tag: provider_duplicate_format
+    message_ro: Confirmă emitentul, formatul și procedura duplicatului evidenței de vaccinare.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.international_travel
+  canonical_rule_id: vaccination.international_travel
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: purpose
+    value: international_travel
+  effects:
+  - type: require_confirmation
+    tag: destination_specific_vaccination_document
+    message_ro: Confirmă cerința și documentul oficial pentru statul/destinația concretă.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.employment
+  canonical_rule_id: vaccination.employment
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: purpose
+    value: employment
+  effects:
+  - type: require_confirmation
+    tag: occupational_requirement_and_issuer
+    message_ro: Confirmă obligația profesională, emitentul și formatul aplicabile postului.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.no_public_renv_self_service
+  canonical_rule_id: vaccination.no_public_renv_self_service
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: requested_channel
+    value: self_service_renv
+  effects:
+  - type: emit_warning
+    tag: no_verified_public_self_service_route
+    message_ro: Nu a fost verificată o rută publică self-service RENV pentru cetățean; folosește furnizorul medical sau canalul
+      oficial confirmat.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft
+- id: rule.vaccination.designated_person
+  canonical_rule_id: vaccination.designated_person
+  event_type_id: life.vaccination_record
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: requester
+    value: designated_person
+  effects:
+  - type: require_confirmation
+    tag: provider_authorization_form
+    message_ro: Confirmă forma împuternicirii acceptate de furnizorul care deține evidența.
+  source_claim_ids:
+  - claim.vaccination.patient_access
+  status: draft

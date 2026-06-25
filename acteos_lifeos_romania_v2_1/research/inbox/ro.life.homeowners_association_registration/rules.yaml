@@ -1,0 +1,291 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B07_HOMEOWNERS_ASSOCIATION_REGISTRATION
+event_alias: ro.life.homeowners_association_registration
+event_type_id: life.homeowners_association_registration
+status: research_inbox
+rules:
+- id: rule.association.owner_gate
+  canonical_rule_id: homeowners_association.membership.owner_gate
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: eq
+    field: is_owner
+    value: false
+  effects:
+  - type: block
+    tag: membership_owner_only
+    message_ro: Calitatea de membru al asociației este rezervată proprietarului; un chiriaș sau ocupant nu este înscris automat ca membru.
+  - type: exclude_step
+    step_id: submit_membership_request
+  source_claim_ids:
+  - claim.association.member_definition
+  status: draft
+  required_facts:
+  - is_owner
+- id: rule.association.wrong_scope_creation
+  canonical_rule_id: homeowners_association.membership.existing_association_gate
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: eq
+    field: is_existing_association
+    value: false
+  effects:
+  - type: block
+    tag: association_not_existing
+    message_ro: Acest traseu este pentru înscrierea într-o asociație existentă. Înființarea unei asociații are altă procedură și alte majorități/documente.
+  - type: exclude_step
+    step_id: submit_membership_request
+  source_claim_ids:
+  - claim.association.tm_information_channel
+  status: draft
+  required_facts:
+  - is_existing_association
+- id: rule.association.later_enrollment
+  canonical_rule_id: homeowners_association.membership.later_enrollment
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_owner
+      value: true
+    - op: eq
+      field: is_existing_association
+      value: true
+    - op: eq
+      field: previously_member
+      value: false
+    - op: eq
+      field: wants_membership
+      value: true
+  effects:
+  - type: include_step
+    step_id: submit_membership_request
+  - type: include_requirement
+    requirement_id: req.written_membership_request
+  - type: include_requirement
+    requirement_id: req.addendum_to_association_agreement
+  - type: emit_advice
+    tag: no_verified_membership_deadline
+    message_ro: Legea verificată descrie cererea scrisă și actul adițional, dar nu fixează în acest articol un termen pentru solicitarea voluntară
+      a calității de membru.
+  source_claim_ids:
+  - claim.association.later_enrollment
+  - claim.association.member_definition
+  status: draft
+  required_facts:
+  - is_owner
+  - is_existing_association
+  - previously_member
+  - wants_membership
+- id: rule.association.already_member
+  canonical_rule_id: homeowners_association.membership.already_member
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_owner
+      value: true
+    - op: eq
+      field: previously_member
+      value: true
+    - op: eq
+      field: ownership_lost
+      value: false
+  effects:
+  - type: exclude_step
+    step_id: submit_membership_request
+  - type: emit_advice
+    tag: already_member
+    message_ro: Ești deja membru; actualizează numai datele care s-au schimbat.
+  source_claim_ids:
+  - claim.association.member_definition
+  status: draft
+  required_facts:
+  - previously_member
+  - ownership_lost
+- id: rule.association.new_owner_10wd
+  canonical_rule_id: homeowners_association.owner.new_owner_information
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_owner
+      value: true
+    - op: eq
+      field: is_existing_association
+      value: true
+    - op: eq
+      field: is_new_owner
+      value: true
+  effects:
+  - type: include_step
+    step_id: provide_new_owner_information
+  - type: set_deadline
+    step_id: provide_new_owner_information
+    value:
+      kind: relative_business_days
+      days: 10
+      anchor: ownership_acquisition_date
+  - type: include_requirement
+    requirement_id: req.property_information_from_title
+  - type: include_requirement
+    requirement_id: req.owner_contact_details
+  - type: emit_warning
+    tag: new_owner_10_working_days
+    message_ro: Comunică asociației informațiile despre proprietate și datele de contact în 10 zile lucrătoare de la transfer.
+  source_claim_ids:
+  - claim.association.new_owner_10wd
+  status: draft
+  required_facts:
+  - is_owner
+  - is_existing_association
+  - is_new_owner
+  - ownership_acquisition_date
+- id: rule.association.occupancy_change_10d
+  canonical_rule_id: homeowners_association.owner.occupancy_change
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_owner
+      value: true
+    - op: eq
+      field: is_existing_association
+      value: true
+    - op: eq
+      field: has_occupancy_change
+      value: true
+  effects:
+  - type: include_step
+    step_id: notify_occupancy_change
+  - type: set_deadline
+    step_id: notify_occupancy_change
+    value:
+      kind: relative_calendar_days
+      days: 10
+      anchor: occupancy_change_date
+  - type: emit_warning
+    tag: occupancy_change_10_days
+    message_ro: Anunță în scris schimbarea ocupanților/chiriașilor/comodatarilor în 10 zile de la schimbare sau semnarea contractului.
+  source_claim_ids:
+  - claim.association.occupants_10d
+  status: draft
+  required_facts:
+  - has_occupancy_change
+  - occupancy_change_date
+- id: rule.association.membership_ends
+  canonical_rule_id: homeowners_association.membership.ends
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: previously_member
+      value: true
+    - op: eq
+      field: ownership_lost
+      value: true
+  effects:
+  - type: exclude_step
+    step_id: submit_membership_request
+  - type: emit_advice
+    tag: membership_ended
+    message_ro: Statutul de membru încetează odată cu pierderea calității de proprietar în condominiu.
+  source_claim_ids:
+  - claim.association.membership_ends
+  status: draft
+  required_facts:
+  - previously_member
+  - ownership_lost
+- id: rule.association.tm_forms
+  canonical_rule_id: homeowners_association.channel.timisoara_forms
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: is_existing_association
+      value: true
+  effects:
+  - type: attach_channel
+    step_id: submit_membership_request
+    channel_id: ch.primariatm.association_forms
+  - type: set_freshness_state
+    step_id: submit_membership_request
+    value: needs_confirmation
+  - type: require_confirmation
+    tag: tm_membership_form
+    message_ro: Primăria publică un canal de formulare pentru asociații, dar confirmă dacă cererea de aderare individuală se depune prin acest
+      canal sau direct la președinte.
+  source_claim_ids:
+  - claim.association.tm_forms_channel
+  status: in_review
+- id: rule.association.refusal_guidance
+  canonical_rule_id: homeowners_association.membership.refusal_guidance
+  event_type_id: life.homeowners_association_registration
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2018-09-28'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: association_refuses_application
+      value: true
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: request_local_association_guidance
+  - type: attach_channel
+    step_id: request_local_association_guidance
+    channel_id: ch.primariatm.association_information
+  - type: require_confirmation
+    tag: refusal_remedy
+    message_ro: Solicită îndrumare compartimentului local; calea juridică exactă pentru refuzul aderării trebuie confirmată după statutul și actele
+      asociației.
+  source_claim_ids:
+  - claim.association.local_information
+  - claim.association.tm_information_channel
+  status: in_review

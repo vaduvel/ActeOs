@@ -1,0 +1,350 @@
+batch_id: B07_MOVED_FROM_ABROAD_TO_RO
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.moved_from_abroad_to_ro
+  event_alias: ro.life.moved_from_abroad_to_ro
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: român, stabilește domiciliul, ziua 2
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: true
+    move_date: '2026-06-23'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 2
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - establish_domicile_and_update_identity
+    deadlines:
+      establish_domicile_and_update_identity: '2026-07-08'
+- id: F02
+  desc: român, domiciliu, fără dovada adresei
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: true
+    move_date: '2026-06-23'
+    has_address_proof: false
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 2
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - establish_domicile_and_update_identity
+    requirements:
+    - req.address_proof
+- id: F03
+  desc: român, nu schimbă domiciliul, stă 16 zile/lună la adresa secundară
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 16
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - register_residence
+    deadlines:
+      register_residence: '2026-07-05'
+- id: F04
+  desc: adresa secundară exact 15 zile/lună
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 15
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    not_included:
+    - register_residence
+- id: F05
+  desc: nerezident, 183 zile
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: employment
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 183
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    not_included:
+    - submit_z015
+    included_steps:
+    - prepare_igi_registration
+- id: F06
+  desc: nerezident, 184 zile, fără excepție
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: employment
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 184
+    day_183_date: '2026-05-30'
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z015
+    - prepare_igi_registration
+    deadlines:
+      submit_z015: '2026-06-29'
+- id: F07
+  desc: nerezident, 200 zile, diplomat
+  facts:
+    citizenship_status: third_country
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 200
+    day_183_date: '2026-05-01'
+    arrival_tax_exception: diplomatic_consular
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - submit_z015
+    triggered_events:
+    - life.residence_right_ro
+- id: F08
+  desc: nerezident, angajat organism internațional
+  facts:
+    citizenship_status: third_country
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 220
+    arrival_tax_exception: international_body_employee
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - submit_z015
+    triggered_events:
+    - life.residence_right_ro
+- id: F09
+  desc: nerezident, membru de familie al persoanei exceptate
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: family
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 190
+    arrival_tax_exception: family_of_exception
+  expect:
+    status: needs_confirmation
+    excluded_steps:
+    - submit_z015
+    included_steps:
+    - prepare_igi_registration
+- id: F10
+  desc: UE/SEE, muncă
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: employment
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 40
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_igi_registration
+    requirements:
+    - req.employment_contract_or_employer_certificate
+    - req.reges_extract
+- id: F11
+  desc: UE/SEE, studii
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: study
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 40
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.enrollment_proof
+    - req.means_of_support
+    - req.health_insurance
+- id: F12
+  desc: UE/SEE, mijloace proprii
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: self_sufficient
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 40
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    requirements:
+    - req.means_of_support
+    - req.health_insurance
+- id: F13
+  desc: cetățean stat terț
+  facts:
+    citizenship_status: third_country
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 20
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    triggered_events:
+    - life.residence_right_ro
+    not_included:
+    - prepare_igi_registration
+- id: F14
+  desc: fiscal status resident, 300 zile
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 300
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    not_included:
+    - submit_z015
+    advice:
+    - tax_residence_not_automatic
+- id: F15
+  desc: lipsește citizenship_status
+  facts:
+    establishes_romanian_domicile: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizenship_status
+- id: F16
+  desc: lipsește day_183_date la 184 zile
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: employment
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 184
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - day_183_date
+- id: F17
+  desc: arrival_tax_exception invalid
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: employment
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 184
+    day_183_date: '2026-05-30'
+    arrival_tax_exception: tourist
+  expect:
+    status: needs_facts
+    missing_facts:
+    - arrival_tax_exception
+- id: F18
+  desc: Cluj, reguli naționale fără canale Timișoara
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - establish_domicile_and_update_identity
+    channels_absent:
+    - ch.tm.local
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F19
+  desc: domiciliu și Z015 ambele aplicabile
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: true
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 190
+    day_183_date: '2026-06-10'
+    arrival_tax_exception: none
+  expect:
+    status: resolved
+    included_steps:
+    - establish_domicile_and_update_identity
+    - submit_z015
+- id: F20
+  desc: adresa secundară 31 zile/lună, valoare invalidă
+  facts:
+    citizenship_status: romanian
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 31
+    move_date: '2026-06-20'
+    fiscal_status_on_arrival: resident
+    days_present_in_rolling_12m: 5
+    arrival_tax_exception: none
+  expect:
+    status: needs_facts
+    missing_facts:
+    - lives_at_secondary_address_days_per_month
+- id: F21
+  desc: sosit în 2025, evaluare 2026 și prag deja depășit
+  facts:
+    citizenship_status: eu_eea_swiss
+    residence_basis: study
+    establishes_romanian_domicile: false
+    lives_at_secondary_address_days_per_month: 0
+    fiscal_status_on_arrival: nonresident
+    days_present_in_rolling_12m: 250
+    day_183_date: '2025-12-01'
+    arrival_tax_exception: none
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - submit_z015
+    - prepare_igi_registration
+    warnings:
+    - z015_overdue
+- id: F22
+  desc: fără fapte
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - citizenship_status
+    - fiscal_status_on_arrival
+    - days_present_in_rolling_12m

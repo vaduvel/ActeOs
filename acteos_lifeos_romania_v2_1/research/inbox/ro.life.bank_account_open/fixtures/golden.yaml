@@ -1,0 +1,806 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.bank_account_open
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.bank_account_open.01.ing_online_eligible
+  purpose: Adult eligibil pentru fluxul ING online
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: online
+      age: 34
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+      is_existing_customer: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    - step.submit_application
+    - step.receive_decision
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    - req.camera_device
+    - req.internet_connection
+    warning_codes: []
+    confidence: verified
+    notes: Eligibilitatea exactă rămâne supusă verificărilor băncii.
+- id: fx.bank_account_open.02.ing_underage
+  purpose: Minor care încearcă fluxul standard online ING
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: online
+      age: 17
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids: []
+    warning_codes:
+    - ONLINE_FLOW_MAY_BE_UNAVAILABLE
+    confidence: verified_with_local_gap
+    notes: Trebuie identificat produsul dedicat minorilor; nu se aplică automat fluxul adult.
+- id: fx.bank_account_open.03.ing_nonresident
+  purpose: Cetățean român nerezident pe flux online ING
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: online
+      age: 30
+      citizenship: romanian
+      residence_country: DE
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - ONLINE_FLOW_MAY_BE_UNAVAILABLE
+    confidence: verified
+    notes: Pagina ING indică alternative documentare la unitate pentru nerezidenți.
+- id: fx.bank_account_open.04.ing_expired_id
+  purpose: Act expirat
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: online
+      age: 30
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: false
+      can_complete_kyc: false
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - KYC_UNAVAILABLE
+    confidence: verified
+    notes: KYC nu poate fi finalizat cu act nevalabil.
+- id: fx.bank_account_open.05.bt_online_new_client
+  purpose: Client nou BT eligibil pentru onboarding
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: bt
+      channel_preference: online
+      age: 25
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+      is_existing_customer: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    - step.submit_application
+    - step.receive_decision
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    - req.camera_device
+    - req.internet_connection
+    warning_codes: []
+    confidence: verified
+    notes: Flux candidat conform paginii oficiale BT.
+- id: fx.bank_account_open.06.bt_existing_customer
+  purpose: Persoană deja client BT
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: bt
+      channel_preference: online
+      age: 40
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+      is_existing_customer: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Trebuie folosit fluxul din relația existentă; pagina de onboarding nu acoperă toate situațiile.
+- id: fx.bank_account_open.07.bt_no_camera
+  purpose: Fără cameră pentru onboarding online
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: bt
+      channel_preference: online
+      age: 28
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: false
+      has_internet: true
+      is_existing_customer: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - ONLINE_FLOW_MAY_BE_UNAVAILABLE
+    confidence: verified_with_local_gap
+    notes: Canalul fizic trebuie verificat.
+- id: fx.bank_account_open.08.cec_online_ready
+  purpose: Flux CEC cu prerechizite tehnice
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: cec
+      channel_preference: online
+      age: 45
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    - step.submit_application
+    - step.receive_decision
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    - req.camera_device
+    - req.internet_connection
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Condițiile de produs trebuie recapturate înainte de publicare.
+- id: fx.bank_account_open.09.cec_no_internet
+  purpose: Fără internet
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: cec
+      channel_preference: online
+      age: 45
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - ONLINE_FLOW_MAY_BE_UNAVAILABLE
+    confidence: verified
+    notes: Fluxul online nu poate fi finalizat; se caută unitate.
+- id: fx.bank_account_open.10.basic_account_complete
+  purpose: Cerere completă pentru cont de bază
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: basic_payment_account
+      provider_id: other
+      channel_preference: branch
+      age: 55
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    - step.submit_application
+    - step.receive_decision
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified
+    notes: Se aplică termenul de 10 zile lucrătoare, dar produsul/providerul trebuie confirmat.
+- id: fx.bank_account_open.11.basic_account_kyc_fail
+  purpose: Cont de bază fără posibilitatea KYC
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: basic_payment_account
+      provider_id: other
+      channel_preference: branch
+      age: 55
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: false
+      can_complete_kyc: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - KYC_UNAVAILABLE
+    confidence: verified
+    notes: Tipul contului nu înlătură obligația KYC.
+- id: fx.bank_account_open.12.provider_undecided
+  purpose: Utilizatorul nu a ales banca
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: undecided
+      channel_preference: either
+      age: 32
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids: []
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified
+    notes: Trebuie selectat furnizorul pentru cerințele exacte.
+- id: fx.bank_account_open.13.other_provider
+  purpose: Bancă neacoperită în seed
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: other
+      channel_preference: online
+      age: 32
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Regulile furnizorului nu sunt cartografiate.
+- id: fx.bank_account_open.14.foreign_citizen_online
+  purpose: Cetățean străin solicită online
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: online
+      age: 36
+      citizenship: eu_other
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - ONLINE_FLOW_MAY_BE_UNAVAILABLE
+    confidence: verified
+    notes: Fluxul ING cercetat online este formulat pentru cetățeni români; unitatea poate avea alt flux.
+- id: fx.bank_account_open.15.foreign_citizen_branch
+  purpose: Cetățean străin la unitate
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: branch
+      age: 36
+      citizenship: eu_other
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Documentele suplimentare trebuie confirmate la bancă.
+- id: fx.bank_account_open.16.unknown_tax_residence
+  purpose: Rezidență fiscală necunoscută
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: bt
+      channel_preference: branch
+      age: 40
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      tax_residency_known: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Banca stabilește informațiile suplimentare KYC.
+- id: fx.bank_account_open.17.missing_age
+  purpose: Vârsta lipsește
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: online
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: true
+      has_internet: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids: []
+    warning_codes: []
+    confidence: verified
+    notes: Age este necesar pentru evaluarea fluxului online.
+- id: fx.bank_account_open.18.missing_provider
+  purpose: Providerul lipsește
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      channel_preference: online
+      age: 30
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids: []
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified
+    notes: Selectarea băncii este necesară.
+- id: fx.bank_account_open.19.basic_unsure
+  purpose: Utilizatorul nu știe dacă vrea cont de bază
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: unsure
+      provider_id: cec
+      channel_preference: either
+      age: 67
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes: []
+    confidence: verified
+    notes: Trebuie explicată diferența dintre produse.
+- id: fx.bank_account_open.20.branch_valid
+  purpose: Deschidere la unitate cu act valid
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: ing
+      channel_preference: branch
+      age: 45
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    - step.submit_application
+    - step.receive_decision
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Programarea și documentele suplimentare depind de unitate.
+- id: fx.bank_account_open.21.online_no_device
+  purpose: Fără dispozitiv pentru online
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: cec
+      channel_preference: online
+      age: 45
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+      has_camera_device: false
+      has_internet: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    requirement_ids:
+    - req.valid_identity
+    warning_codes:
+    - ONLINE_FLOW_MAY_BE_UNAVAILABLE
+    confidence: verified
+    notes: Se recomandă canalul fizic oficial.
+- id: fx.bank_account_open.22.id_valid_kyc_refused
+  purpose: Act valid dar KYC nu poate fi încheiat
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: bt
+      channel_preference: branch
+      age: 42
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes:
+    - KYC_UNAVAILABLE
+    confidence: verified
+    notes: Banca nu deschide contul dacă nu poate aplica KYC.
+- id: fx.bank_account_open.23.non_eu_other_provider
+  purpose: Solicitant non-UE la provider necartografiat
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: standard
+      provider_id: other
+      channel_preference: branch
+      age: 29
+      citizenship: non_eu
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes:
+    - PROVIDER_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Permisul de ședere/documentele exacte nu sunt generalizate fără sursa furnizorului.
+- id: fx.bank_account_open.24.complete_basic_provider_cec
+  purpose: Cont de bază la CEC cu cerere completă
+  input:
+    event_type_id: ro.life.bank_account_open
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      account_type: basic_payment_account
+      provider_id: cec
+      channel_preference: branch
+      age: 61
+      citizenship: romanian
+      residence_country: RO
+      valid_identity_document: true
+      can_complete_kyc: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.choose_provider_product
+    - step.prepare_identity
+    - step.submit_application
+    - step.receive_decision
+    requirement_ids:
+    - req.valid_identity
+    - req.kyc_information
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Termenul legal este confirmat; disponibilitatea produsului concret se reverifică.

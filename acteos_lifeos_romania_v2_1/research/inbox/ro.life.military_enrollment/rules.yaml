@@ -1,0 +1,596 @@
+batch_id: batch18.military_enrollment
+event_type_id: ro.life.military_enrollment
+version: 2.1.0
+as_of: '2026-06-25'
+jurisdiction_ids:
+- ro
+- ro.county.timis
+- ro.uat.timisoara
+required_facts:
+- goal
+rules:
+- id: rule.b18.military_enrollment.sgp_base
+  canonical_rule_id: canonical.military_enrollment.sgp_base
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: soldier_professional
+  effects:
+  - type: include_step
+    step_id: step.identify_available_sgp_unit
+  - type: include_step
+    step_id: step.submit_sgp_application_at_unit
+  - type: include_step
+    step_id: step.complete_military_selection
+  - type: include_step
+    step_id: step.complete_medical_examination
+  - type: include_requirement
+    requirement_id: req.identity_card
+  - type: include_requirement
+    requirement_id: req.birth_certificate
+  - type: include_requirement
+    requirement_id: req.criminal_record_max_6_months
+  - type: include_requirement
+    requirement_id: req.education_proof_min_10_classes
+  - type: include_requirement
+    requirement_id: req.family_doctor_certificate_valid_90_days
+  - type: attach_channel
+    channel_id: channel.mapn_unit_with_available_sgp_posts
+  source_claim_ids:
+  - b18.military_enrollment.sgp_entry
+  - b18.military_enrollment.sgp_documents
+  - b18.military_enrollment.selection
+  status: active
+- id: rule.b18.military_enrollment.sgp_age_low
+  canonical_rule_id: canonical.military_enrollment.sgp_age_low
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: lt
+      field: age
+      value: 18
+  effects:
+  - type: block
+    code: sgp_age_below_18
+    message_ro: Vârsta este sub limita SGP.
+  source_claim_ids:
+  - b18.military_enrollment.sgp_entry
+  status: active
+- id: rule.b18.military_enrollment.sgp_age_high
+  canonical_rule_id: canonical.military_enrollment.sgp_age_high
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: gt
+      field: age
+      value: 45
+  effects:
+  - type: block
+    code: sgp_age_above_45
+    message_ro: Vârsta depășește limita SGP.
+  source_claim_ids:
+  - b18.military_enrollment.sgp_entry
+  status: active
+- id: rule.b18.military_enrollment.sgp_no_citizenship
+  canonical_rule_id: canonical.military_enrollment.sgp_no_citizenship
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: eq
+      field: romanian_citizen
+      value: false
+  effects:
+  - type: block
+    code: sgp_citizenship_missing
+    message_ro: Cetățenia română este necesară.
+  source_claim_ids:
+  - b18.military_enrollment.sgp_entry
+  status: active
+- id: rule.b18.military_enrollment.sgp_no_domicile
+  canonical_rule_id: canonical.military_enrollment.sgp_no_domicile
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: eq
+      field: stable_domicile_ro
+      value: false
+  effects:
+  - type: block
+    code: sgp_domicile_missing
+    message_ro: Domiciliul stabil în România este necesar.
+  source_claim_ids:
+  - b18.military_enrollment.sgp_entry
+  status: active
+- id: rule.b18.military_enrollment.sgp_low_education
+  canonical_rule_id: canonical.military_enrollment.sgp_low_education
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: lt
+      field: education_classes
+      value: 10
+  effects:
+  - type: block
+    code: sgp_education_below_10
+    message_ro: Sunt cerute cel puțin 10 clase.
+  source_claim_ids:
+  - b18.military_enrollment.sgp_entry
+  status: active
+- id: rule.b18.military_enrollment.sgp_auto_geniu
+  canonical_rule_id: canonical.military_enrollment.sgp_auto_geniu
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: in
+      field: branch
+      values:
+      - auto
+      - geniu
+  effects:
+  - type: include_requirement
+    requirement_id: req.driving_licence_categories_b_and_c
+  source_claim_ids:
+  - b18.military_enrollment.sgp_driving
+  status: active
+- id: rule.b18.military_enrollment.sgp_foreign
+  canonical_rule_id: canonical.military_enrollment.sgp_foreign
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: eq
+      field: foreign_studies
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_studies_recognition_document
+  source_claim_ids:
+  - b18.military_enrollment.sgp_documents
+  status: active
+- id: rule.b18.military_enrollment.sgp_reservist
+  canonical_rule_id: canonical.military_enrollment.sgp_reservist
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: eq
+      field: is_reservist
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.military_booklet_if_reservist
+  source_claim_ids:
+  - b18.military_enrollment.sgp_documents
+  status: active
+- id: rule.b18.military_enrollment.sgp_from_rv
+  canonical_rule_id: canonical.military_enrollment.sgp_from_rv
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: soldier_professional
+    - op: eq
+      field: comes_from_volunteer_reserve
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.mapn_contract_if_from_volunteer_reserve
+  source_claim_ids:
+  - b18.military_enrollment.sgp_documents
+  status: active
+- id: rule.b18.military_enrollment.sgp_campaign
+  canonical_rule_id: canonical.military_enrollment.sgp_campaign
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: soldier_professional
+  effects:
+  - type: emit_advice
+    tag: sgp_campaign_2026
+    message_ro: Seria afișată începe la 7 septembrie 2026 și are 12 săptămâni; reverifică.
+  source_claim_ids:
+  - b18.military_enrollment.campaign_2026
+  status: active
+- id: rule.b18.military_enrollment.rv_base
+  canonical_rule_id: canonical.military_enrollment.rv_base
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: eq
+    field: goal
+    value: volunteer_reservist
+  effects:
+  - type: include_step
+    step_id: step.contact_military_center_at_domicile
+  - type: include_step
+    step_id: step.submit_volunteer_reservist_file
+  - type: include_step
+    step_id: step.complete_military_selection
+  - type: include_step
+    step_id: step.complete_medical_examination
+  - type: include_requirement
+    requirement_id: req.application
+  - type: include_requirement
+    requirement_id: req.identity_card
+  - type: include_requirement
+    requirement_id: req.birth_certificate
+  - type: include_requirement
+    requirement_id: req.criminal_record_max_6_months
+  - type: include_requirement
+    requirement_id: req.education_and_competence_documents
+  - type: attach_channel
+    channel_id: channel.military_center_stable_domicile
+  source_claim_ids:
+  - b18.military_enrollment.rv_entry
+  - b18.military_enrollment.rv_documents
+  - b18.military_enrollment.selection
+  status: active
+- id: rule.b18.military_enrollment.rv_citizenship
+  canonical_rule_id: canonical.military_enrollment.rv_citizenship
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: romanian_citizen
+      value: false
+  effects:
+  - type: block
+    code: rv_citizenship_missing
+    message_ro: Cetățenia română este necesară.
+  source_claim_ids:
+  - b18.military_enrollment.rv_entry
+  status: active
+- id: rule.b18.military_enrollment.rv_domicile
+  canonical_rule_id: canonical.military_enrollment.rv_domicile
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: stable_domicile_ro
+      value: false
+  effects:
+  - type: block
+    code: rv_domicile_missing
+    message_ro: Domiciliul în România este necesar.
+  source_claim_ids:
+  - b18.military_enrollment.rv_entry
+  status: active
+- id: rule.b18.military_enrollment.rv_soldier_low
+  canonical_rule_id: canonical.military_enrollment.rv_soldier_low
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: soldier_or_ranked
+    - op: lt
+      field: age
+      value: 18
+  effects:
+  - type: block
+    code: rv_soldier_age_below_18
+    message_ro: Vârsta este sub limită.
+  source_claim_ids:
+  - b18.military_enrollment.rv_conditions
+  status: active
+- id: rule.b18.military_enrollment.rv_soldier_high
+  canonical_rule_id: canonical.military_enrollment.rv_soldier_high
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: soldier_or_ranked
+    - op: gt
+      field: age
+      value: 50
+  effects:
+  - type: block
+    code: rv_soldier_age_above_50
+    message_ro: Vârsta depășește limita.
+  source_claim_ids:
+  - b18.military_enrollment.rv_conditions
+  status: active
+- id: rule.b18.military_enrollment.rv_cadre_low
+  canonical_rule_id: canonical.military_enrollment.rv_cadre_low
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: cadre
+    - op: lt
+      field: age
+      value: 18
+  effects:
+  - type: block
+    code: rv_cadre_age_below_18
+    message_ro: Vârsta este sub limită.
+  source_claim_ids:
+  - b18.military_enrollment.rv_conditions
+  status: active
+- id: rule.b18.military_enrollment.rv_cadre_high
+  canonical_rule_id: canonical.military_enrollment.rv_cadre_high
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: rv_category
+      value: cadre
+    - op: gt
+      field: age
+      value: 55
+  effects:
+  - type: block
+    code: rv_cadre_age_above_55
+    message_ro: Vârsta depășește limita.
+  source_claim_ids:
+  - b18.military_enrollment.rv_conditions
+  status: active
+- id: rule.b18.military_enrollment.rv_conviction
+  canonical_rule_id: canonical.military_enrollment.rv_conviction
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: critical
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: final_conviction_unrehabilitated
+      value: true
+  effects:
+  - type: block
+    code: rv_final_conviction
+    message_ro: Condiția penală nu este îndeplinită.
+  source_claim_ids:
+  - b18.military_enrollment.rv_conditions
+  status: active
+- id: rule.b18.military_enrollment.rv_booklet
+  canonical_rule_id: canonical.military_enrollment.rv_booklet
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: is_reservist
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.military_booklet_if_reservist
+  source_claim_ids:
+  - b18.military_enrollment.rv_documents
+  status: active
+- id: rule.b18.military_enrollment.rv_driving
+  canonical_rule_id: canonical.military_enrollment.rv_driving
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: post_requires_driving
+      value: true
+    - op: eq
+      field: has_military_training
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.driving_licence_required_by_post
+  source_claim_ids:
+  - b18.military_enrollment.rv_documents
+  status: active
+- id: rule.b18.military_enrollment.rv_training
+  canonical_rule_id: canonical.military_enrollment.rv_training
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: goal
+      value: volunteer_reservist
+    - op: eq
+      field: has_military_training
+      value: false
+  effects:
+  - type: emit_advice
+    tag: initial_training_may_apply
+    message_ro: Se aplică pregătirea inițială corespunzătoare postului.
+  source_claim_ids:
+  - b18.military_enrollment.rv_entry
+  status: active
+- id: rule.b18.military_enrollment.other
+  canonical_rule_id: canonical.military_enrollment.other
+  event_type_id: ro.life.military_enrollment
+  jurisdiction_ids:
+  - ro
+  authority_level: national
+  severity: operational
+  effective_from: '2026-01-01'
+  when:
+    op: in
+    field: goal
+    values:
+    - military_school_or_other
+    - unknown
+  effects:
+  - type: include_step
+    step_id: step.identify_exact_military_career_route
+  - type: require_confirmation
+    tag: exact_military_route
+    message_ro: Alege ruta exactă înainte de dosar.
+  source_claim_ids:
+  - b18.military_enrollment.other_paths_gap
+  status: in_review

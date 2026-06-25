@@ -1,0 +1,391 @@
+batch_id: batch18.domestic_violence_protection_order
+event_type_id: ro.life.domestic_violence_protection_order
+defaults:
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - ro
+  - ro.county.timis
+  - ro.uat.timisoara
+fixtures:
+- id: fx.domestic_violence_protection_order.01
+  case_ro: Intenție lipsă
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - goal
+- id: fx.domestic_violence_protection_order.02
+  case_ro: Pericol imediat
+  facts:
+    goal: emergency_help
+    immediate_danger: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.call_112_now
+    warnings:
+    - immediate_safety_first
+    - immediate_danger_112
+- id: fx.domestic_violence_protection_order.03
+  case_ro: Ordin provizoriu cu risc iminent
+  facts:
+    goal: request_provisional_order
+    imminent_risk: true
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_police_for_risk_assessment
+    - step.provide_available_evidence_safely
+    channels:
+    - channel.police_or_112_if_emergency
+    advice_tags:
+    - provisional_120_hours
+    - police_may_issue_after_assessment
+- id: fx.domestic_violence_protection_order.04
+  case_ro: Ordin provizoriu fără risc iminent constatat
+  facts:
+    goal: request_provisional_order
+    imminent_risk: false
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_police_for_risk_assessment
+    - step.provide_available_evidence_safely
+    - step.prepare_court_protection_order_request
+    channels:
+    - channel.police_or_112_if_emergency
+    advice_tags:
+    - provisional_120_hours
+    - court_route_if_no_provisional_conditions
+- id: fx.domestic_violence_protection_order.05
+  case_ro: Ordin provizoriu fără evaluarea riscului
+  facts:
+    goal: request_provisional_order
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.contact_police_for_risk_assessment
+    - step.provide_available_evidence_safely
+    channels:
+    - channel.police_or_112_if_emergency
+    advice_tags:
+    - provisional_120_hours
+    confirmations:
+    - confirm_imminent_risk_assessment
+- id: fx.domestic_violence_protection_order.06
+  case_ro: Ordin provizoriu și pericol imediat
+  facts:
+    goal: request_provisional_order
+    imminent_risk: true
+    immediate_danger: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.call_112_now
+    - step.contact_police_for_risk_assessment
+    - step.provide_available_evidence_safely
+    channels:
+    - channel.police_or_112_if_emergency
+    advice_tags:
+    - provisional_120_hours
+    - police_may_issue_after_assessment
+    warnings:
+    - immediate_danger_112
+- id: fx.domestic_violence_protection_order.07
+  case_ro: Ordin judecătoresc fără ordin anterior
+  facts:
+    goal: request_court_order
+    prior_order_expired_within_5_years: false
+    competence_basis: victim_residence
+    county: other
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_competent_district_court
+    - step.complete_statutory_protection_order_form
+    - step.file_protection_order_request
+    requirements:
+    - req.statutory_protection_order_form
+    channels:
+    - channel.competent_district_court
+    advice_tags:
+    - no_stamp_duty
+    - mandatory_legal_assistance
+    - court_target_72_hours
+    - maximum_duration_12_months
+- id: fx.domestic_violence_protection_order.08
+  case_ro: Ordin judecătoresc cu ordin anterior recent
+  facts:
+    goal: request_court_order
+    prior_order_expired_within_5_years: true
+    competence_basis: place_of_violence
+    county: other
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.identify_competent_district_court
+    - step.complete_statutory_protection_order_form
+    - step.file_protection_order_request
+    requirements:
+    - req.statutory_protection_order_form
+    channels:
+    - channel.competent_district_court
+    advice_tags:
+    - no_stamp_duty
+    - mandatory_legal_assistance
+    - court_target_72_hours
+    - maximum_duration_24_months
+- id: fx.domestic_violence_protection_order.09
+  case_ro: Ordin judecătoresc fără istoric precizat
+  facts:
+    goal: request_court_order
+    competence_basis: victim_residence
+    county: other
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_competent_district_court
+    - step.complete_statutory_protection_order_form
+    - step.file_protection_order_request
+    requirements:
+    - req.statutory_protection_order_form
+    channels:
+    - channel.competent_district_court
+    advice_tags:
+    - no_stamp_duty
+    - mandatory_legal_assistance
+    - court_target_72_hours
+    confirmations:
+    - confirm_prior_order_history
+- id: fx.domestic_violence_protection_order.10
+  case_ro: Ordin judecătoresc fără baza competenței
+  facts:
+    goal: request_court_order
+    prior_order_expired_within_5_years: false
+    county: other
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_competent_district_court
+    - step.complete_statutory_protection_order_form
+    - step.file_protection_order_request
+    requirements:
+    - req.statutory_protection_order_form
+    channels:
+    - channel.competent_district_court
+    advice_tags:
+    - no_stamp_duty
+    - mandatory_legal_assistance
+    - court_target_72_hours
+    - maximum_duration_12_months
+    confirmations:
+    - confirm_competent_court_basis
+- id: fx.domestic_violence_protection_order.11
+  case_ro: Ordin judecătoresc în Timiș
+  facts:
+    goal: request_court_order
+    prior_order_expired_within_5_years: false
+    competence_basis: victim_residence
+    county: timis
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.identify_competent_district_court
+    - step.complete_statutory_protection_order_form
+    - step.file_protection_order_request
+    requirements:
+    - req.statutory_protection_order_form
+    channels:
+    - channel.competent_district_court
+    advice_tags:
+    - no_stamp_duty
+    - mandatory_legal_assistance
+    - court_target_72_hours
+    - maximum_duration_12_months
+    confirmations:
+    - confirm_timisoara_court_filing_mechanics
+- id: fx.domestic_violence_protection_order.12
+  case_ro: Ordin judecătoresc în Timiș cu pericol
+  facts:
+    goal: request_court_order
+    prior_order_expired_within_5_years: true
+    competence_basis: place_of_violence
+    county: timis
+    immediate_danger: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.call_112_now
+    - step.identify_competent_district_court
+    - step.complete_statutory_protection_order_form
+    - step.file_protection_order_request
+    requirements:
+    - req.statutory_protection_order_form
+    channels:
+    - channel.competent_district_court
+    advice_tags:
+    - no_stamp_duty
+    - mandatory_legal_assistance
+    - court_target_72_hours
+    - maximum_duration_24_months
+    warnings:
+    - immediate_danger_112
+    confirmations:
+    - confirm_timisoara_court_filing_mechanics
+- id: fx.domestic_violence_protection_order.13
+  case_ro: Contestație OPP cu comunicare
+  facts:
+    goal: contest_provisional_order
+    order_communicated: true
+    county: other
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.file_provisional_order_contest
+    channels:
+    - channel.competent_district_court
+    warnings:
+    - provisional_contest_48_hours
+- id: fx.domestic_violence_protection_order.14
+  case_ro: Contestație OPP fără ora comunicării
+  facts:
+    goal: contest_provisional_order
+    county: other
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.file_provisional_order_contest
+    channels:
+    - channel.competent_district_court
+    warnings:
+    - provisional_contest_48_hours
+    confirmations:
+    - confirm_provisional_communication_time
+- id: fx.domestic_violence_protection_order.15
+  case_ro: Contestație OPP în Timiș
+  facts:
+    goal: contest_provisional_order
+    order_communicated: true
+    county: timis
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.file_provisional_order_contest
+    channels:
+    - channel.competent_district_court
+    warnings:
+    - provisional_contest_48_hours
+    confirmations:
+    - confirm_timisoara_court_filing_mechanics
+- id: fx.domestic_violence_protection_order.16
+  case_ro: Apel cu părțile citate
+  facts:
+    goal: appeal_court_order
+    decision_with_parties_cited: true
+    county: other
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.file_protection_order_appeal
+    channels:
+    - channel.competent_appeal_court_via_procedural_route
+    warnings:
+    - court_order_appeal_3_days
+- id: fx.domestic_violence_protection_order.17
+  case_ro: Apel fără citarea părților
+  facts:
+    goal: appeal_court_order
+    decision_with_parties_cited: false
+    county: other
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.file_protection_order_appeal
+    channels:
+    - channel.competent_appeal_court_via_procedural_route
+    warnings:
+    - court_order_appeal_3_days
+- id: fx.domestic_violence_protection_order.18
+  case_ro: Apel fără ancora termenului
+  facts:
+    goal: appeal_court_order
+    county: other
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.file_protection_order_appeal
+    channels:
+    - channel.competent_appeal_court_via_procedural_route
+    warnings:
+    - court_order_appeal_3_days
+    confirmations:
+    - confirm_appeal_deadline_anchor
+- id: fx.domestic_violence_protection_order.19
+  case_ro: Apel în Timiș
+  facts:
+    goal: appeal_court_order
+    decision_with_parties_cited: true
+    county: timis
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - step.file_protection_order_appeal
+    channels:
+    - channel.competent_appeal_court_via_procedural_route
+    warnings:
+    - court_order_appeal_3_days
+    confirmations:
+    - confirm_timisoara_court_filing_mechanics
+- id: fx.domestic_violence_protection_order.20
+  case_ro: Raportez încălcarea ordinului
+  facts:
+    goal: report_order_breach
+    immediate_danger: false
+  expect:
+    status: resolved
+    included_steps:
+    - step.contact_police_about_order_breach
+    channels:
+    - channel.police_or_112_if_emergency
+    warnings:
+    - breach_is_criminal_offence
+- id: fx.domestic_violence_protection_order.21
+  case_ro: Raportez încălcarea cu pericol imediat
+  facts:
+    goal: report_order_breach
+    immediate_danger: true
+  expect:
+    status: resolved
+    included_steps:
+    - step.call_112_now
+    - step.contact_police_about_order_breach
+    channels:
+    - channel.police_or_112_if_emergency
+    warnings:
+    - immediate_danger_112
+    - breach_is_criminal_offence
+- id: fx.domestic_violence_protection_order.22
+  case_ro: Scop necunoscut
+  facts:
+    goal: divorce_proceeding
+    county: timis
+    immediate_danger: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - confirm_domestic_violence_protection_goal

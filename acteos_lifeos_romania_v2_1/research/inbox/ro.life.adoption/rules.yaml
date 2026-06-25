@@ -1,0 +1,279 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B03_ADOPTION
+event_type_id: ro.life.adoption
+status: in_review
+reference_date_floor: '2026-06-25'
+required_facts:
+- applicant_domicile_county
+- adoption_type
+- workflow_stage
+- has_valid_attestation
+- child_identified
+- territory_id
+rules:
+- id: rule.b03.adoption.timisoara_channel
+  canonical_rule_id: adoption.channel.timis
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO-TM
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_domicile_county
+    value: timis
+  effects:
+  - type: attach_channel
+    step_id: start_adoption_guidance
+    channel_id: ch.dgaspctm.adoption
+  source_claim_ids:
+  - claim.b03.adoption.dgaspc_role
+  status: draft
+  authority_level: county
+- id: rule.b03.adoption.other_county
+  canonical_rule_id: adoption.channel.other_county
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_domicile_county
+    value: other_ro
+  effects:
+  - type: require_confirmation
+    tag: confirm_competent_dgaspc
+    message_ro: Confirmă DGASPC-ul competent după domiciliu și canalul de programare.
+  source_claim_ids:
+  - claim.b03.adoption.legal_framework
+  status: in_review
+- id: rule.b03.adoption.abroad
+  canonical_rule_id: adoption.cross_border
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_domicile_county
+    value: abroad
+  effects:
+  - type: require_confirmation
+    tag: confirm_cross_border_adoption_route
+    message_ro: Confirmă autoritatea centrală, competența și procedura adopției internaționale.
+  source_claim_ids:
+  - claim.b03.adoption.legal_framework
+  status: in_review
+- id: rule.b03.adoption.information
+  canonical_rule_id: adoption.stage.information
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: workflow_stage
+    value: information
+  effects:
+  - type: include_step
+    step_id: start_adoption_guidance
+  - type: emit_advice
+    tag: adoption_information_and_preparation
+    message_ro: Începe cu informarea și pregătirea oferite de serviciul competent.
+  source_claim_ids:
+  - claim.b03.adoption.dgaspc_role
+  status: draft
+- id: rule.b03.adoption.evaluation
+  canonical_rule_id: adoption.stage.evaluation
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: workflow_stage
+    value: evaluation
+  effects:
+  - type: include_step
+    step_id: complete_adopter_evaluation
+  - type: require_confirmation
+    tag: confirm_attestation_dossier
+    message_ro: Confirmă dosarul, evaluările și calendarul pentru atestatul de persoană/familie aptă să adopte.
+  source_claim_ids:
+  - claim.b03.adoption.dgaspc_role
+  - claim.b03.adoption.legal_framework
+  status: in_review
+- id: rule.b03.adoption.matching_ready
+  canonical_rule_id: adoption.stage.matching_ready
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: matching
+    - op: eq
+      field: has_valid_attestation
+      value: true
+    - op: eq
+      field: child_identified
+      value: true
+  effects:
+  - type: include_step
+    step_id: participate_in_adoption_matching
+  - type: emit_advice
+    tag: matching_by_dgaspc
+    message_ro: Potrivirea este realizată în cadrul procedurii gestionate de autoritatea competentă.
+  source_claim_ids:
+  - claim.b03.adoption.dgaspc_role
+  status: draft
+- id: rule.b03.adoption.matching_no_attestation
+  canonical_rule_id: adoption.stage.matching_no_attestation
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: matching
+    - op: eq
+      field: has_valid_attestation
+      value: false
+  effects:
+  - type: include_step
+    step_id: complete_adopter_evaluation
+  - type: emit_warning
+    tag: valid_attestation_needed_before_matching
+    message_ro: Nu trata potrivirea ca etapă activă până la confirmarea atestatului valabil.
+  - type: require_confirmation
+    tag: confirm_attestation_status
+    message_ro: Confirmă statutul atestatului la DGASPC.
+  source_claim_ids:
+  - claim.b03.adoption.dgaspc_role
+  - claim.b03.adoption.legal_framework
+  status: in_review
+- id: rule.b03.adoption.matching_no_child
+  canonical_rule_id: adoption.stage.matching_no_child
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workflow_stage
+      value: matching
+    - op: eq
+      field: has_valid_attestation
+      value: true
+    - op: eq
+      field: child_identified
+      value: false
+  effects:
+  - type: emit_advice
+    tag: matching_waits_for_authority_process
+    message_ro: Urmează procesul de potrivire gestionat de autoritatea competentă; nu presupune identificarea privată a copilului.
+  source_claim_ids:
+  - claim.b03.adoption.dgaspc_role
+  status: draft
+- id: rule.b03.adoption.placement
+  canonical_rule_id: adoption.stage.placement
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: workflow_stage
+    value: placement
+  effects:
+  - type: include_step
+    step_id: complete_placement_monitoring
+  - type: emit_advice
+    tag: placement_monitoring_biweekly
+    message_ro: DGASPC Timiș publică monitorizare bilunară în perioada încredințării în vederea adopției.
+  source_claim_ids:
+  - claim.b03.adoption.placement_monitoring
+  status: draft
+  authority_level: county
+- id: rule.b03.adoption.post
+  canonical_rule_id: adoption.stage.post_adoption
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: workflow_stage
+    value: post_adoption
+  effects:
+  - type: include_step
+    step_id: complete_post_adoption_monitoring
+  - type: emit_advice
+    tag: post_adoption_monitoring_quarterly
+    message_ro: DGASPC Timiș publică monitorizare postadopție trimestrială.
+  source_claim_ids:
+  - claim.b03.adoption.post_monitoring
+  status: draft
+  authority_level: county
+- id: rule.b03.adoption.finalized
+  canonical_rule_id: adoption.stage.finalized
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: workflow_stage
+    value: finalized
+  effects:
+  - type: include_step
+    step_id: create_new_birth_record_after_adoption
+  - type: include_requirement
+    requirement_id: req.final_adoption_judgment
+  - type: require_confirmation
+    tag: confirm_adoption_birth_record_office
+    message_ro: Confirmă oficiul competent și transmiterea hotărârii definitive pentru noul act de naștere.
+  source_claim_ids:
+  - claim.b03.adoption.new_birth_act
+  status: in_review
+  authority_level: national_normative
+  legal_rank: lege
+- id: rule.b03.adoption.special_type
+  canonical_rule_id: adoption.type.special
+  event_type_id: ro.life.adoption
+  jurisdiction_ids:
+  - RO
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: adoption_type
+    values:
+    - spouse_child
+    - international
+    - unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_special_adoption_type_route
+    message_ro: Adopția copilului soțului, adopția internațională ori tipul neclar cer o rută juridică separată.
+  source_claim_ids:
+  - claim.b03.adoption.legal_framework
+  status: in_review
