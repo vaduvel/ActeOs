@@ -1,5 +1,13 @@
-# services/api
+# wb-api
 
-API public/curator (Python 3.13 + FastAPI, Pydantic v2, SQLAlchemy async). Route resolution fără call extern.
+Persistence layer for Waze-birocratie (P1).
 
-Status: schelet P0 — neimplementat. Vezi `08_API_SPEC.yaml` și P4.
+- `crypto.py` - envelope field encryption (AES-256-GCM, key id + AAD binding).
+- `audit.py` - append-only, hash-chained audit log (tamper-evident).
+- `idempotency.py` - request-fingerprinted idempotency (new / replay / conflict).
+- `models.py` - SQLAlchemy 2.0 models (journeys, route snapshots, audit, idempotency).
+- `migrations/` - Alembic; the initial migration installs a trigger that makes
+  `audit_events` reject UPDATE and DELETE at the database level.
+
+Pure logic (crypto, audit, idempotency) has no database dependency and is unit
+tested without Postgres. Models/migrations target PostgreSQL 17.
