@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acteos-rule-engine"
+version = "2.1.0"
+description = "Pure deterministic rule engine for ActeOS / LifeOS Romania. No network, DB, clock or LLM at evaluation time."
+requires-python = ">=3.13"
+dependencies = []
+
+[project.optional-dependencies]
+# The pure evaluator (ast/effects/ruleset/golden/orchestrator) needs no deps.
+# PyYAML is needed by the file loaders; jsonschema by the schema validator.
+authoring = ["pyyaml>=6", "jsonschema>=4.18"]
+dev = ["pytest>=8", "hypothesis>=6", "ruff>=0.5", "mypy>=1.10", "pyyaml>=6", "jsonschema>=4.18"]
+
+[project.scripts]
+acteos-golden = "acteos_rule_engine.authoring.cli:main"
+acteos-validate = "acteos_rule_engine.authoring.validate:validate_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
