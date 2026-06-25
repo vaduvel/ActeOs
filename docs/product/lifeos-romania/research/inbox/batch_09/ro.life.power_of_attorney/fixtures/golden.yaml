@@ -1,0 +1,417 @@
+batch_id: B09_POWER_OF_ATTORNEY
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.power_of_attorney
+  event_alias: ro.life.power_of_attorney
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: procură autentică pentru procedură administrativă
+  facts: &id001
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - define_power_of_attorney_scope
+    - book_notary_for_authentic_power_of_attorney
+    - principal_appears_and_consents_before_notary
+    confirmations:
+    - power_of_attorney_duration_and_termination
+    - power_of_attorney_supporting_documents
+    - power_of_attorney_notarial_fee
+    - power_of_attorney_turnaround
+    advice:
+    - bring_recipient_power_of_attorney_model
+  reference_date: '2026-06-25'
+- id: F02
+  desc: forma procurii necunoscută
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: unknown
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_form_required
+    - power_of_attorney_duration_and_termination
+  reference_date: '2026-06-25'
+- id: F03
+  desc: autentică cerută, legalizare semnătură selectată
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: signature_legalisation
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: blocked
+    blocks:
+    - legalised_signature_not_authentic_power_of_attorney
+  reference_date: '2026-06-25'
+- id: F04
+  desc: procură succesorală
+  facts:
+    underlying_act: succession_representation
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_authentic_succession_power_of_attorney
+    - book_notary_for_authentic_power_of_attorney
+  reference_date: '2026-06-25'
+- id: F05
+  desc: procură pentru folosire în Italia
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: true
+    recipient_country: IT
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_cross_border_formalities
+    - power_of_attorney_duration_and_termination
+  reference_date: '2026-06-25'
+- id: F06
+  desc: fără model de la destinatar
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: false
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - mandate_wording_with_recipient_and_notary
+  reference_date: '2026-06-25'
+- id: F07
+  desc: identitatea mandatarului necunoscută
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: false
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - attorney_identity_known
+  reference_date: '2026-06-25'
+- id: F08
+  desc: întinderea mandatului nedefinită
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: false
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - scope_defined
+  reference_date: '2026-06-25'
+- id: F09
+  desc: actul/procedura de bază lipsește
+  facts:
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - underlying_act
+  reference_date: '2026-06-25'
+- id: F10
+  desc: act de identitate principal indisponibil
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: false
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - principal_identity_document_available
+  reference_date: '2026-06-25'
+- id: F11
+  desc: principalul nu se poate prezenta
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: false
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - principal_personal_appearance_possible
+    note: Soluția alternativă trebuie confirmată de notar.
+  reference_date: '2026-06-25'
+- id: F12
+  desc: procură pentru vânzare imobil
+  facts:
+    underlying_act: real_estate_sale
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_supporting_documents
+    - mandate_wording_with_recipient_and_notary
+  reference_date: '2026-06-25'
+- id: F13
+  desc: procură pentru ridicare document
+  facts:
+    underlying_act: collect_document
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+  reference_date: '2026-06-25'
+- id: F14
+  desc: procură bancară
+  facts:
+    underlying_act: bank_operation
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_supporting_documents
+  reference_date: '2026-06-25'
+- id: F15
+  desc: durată cerută explicit 6 luni
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+    requested_duration: 6_months
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_duration_and_termination
+  reference_date: '2026-06-25'
+- id: F16
+  desc: durata nu este indicată
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_duration_and_termination
+  reference_date: '2026-06-25'
+- id: F17
+  desc: Timișoara — locator notar
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - find_notary
+  reference_date: '2026-06-25'
+- id: F18
+  desc: Cluj — în afara pilotului
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.cj.cluj
+  expect:
+    status: needs_confirmation
+    not_included:
+    - find_notary
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F19
+  desc: folosire în România
+  facts: *id001
+  expect:
+    status: needs_confirmation
+    not_included:
+    - power_of_attorney_cross_border_formalities
+  reference_date: '2026-06-25'
+- id: F20
+  desc: țara destinatară lipsește la folosire externă
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: true
+    jurisdiction_id: ro.tm.timisoara
+  expect:
+    status: needs_facts
+    missing_facts:
+    - recipient_country
+  reference_date: '2026-06-25'
+- id: F21
+  desc: mandatar persoană juridică
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: true
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+    attorney_type: legal_person
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - power_of_attorney_supporting_documents
+  reference_date: '2026-06-25'
+- id: F22
+  desc: utilizator cere procură „generală” fără scop
+  facts:
+    underlying_act: administrative_procedure
+    attorney_identity_known: true
+    scope_defined: false
+    required_form: authentic
+    selected_procedure: authentication
+    principal_identity_document_available: true
+    principal_personal_appearance_possible: true
+    recipient_model_available: true
+    cross_border_use: false
+    recipient_country: RO
+    jurisdiction_id: ro.tm.timisoara
+    requested_label: general_power
+  expect:
+    status: needs_facts
+    missing_facts:
+    - scope_defined
+    note: Eticheta „generală” nu înlocuiește definirea puterilor.
+  reference_date: '2026-06-25'

@@ -1,0 +1,403 @@
+batch_id: B09_ENERGY_PERFORMANCE_CERTIFICATE
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.energy_performance_certificate
+  event_alias: ro.life.energy_performance_certificate
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: vânzare, certificat inexistent
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_attested_energy_auditor
+    - obtain_energy_certificate
+    - give_copy_to_potential_buyer_before_contract
+    confirmations:
+    - auditor_fee_and_delivery_time
+  reference_date: '2026-06-25'
+- id: F02
+  desc: certificat valabil cu cod unic
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: false
+    needs_new_certificate: false
+  expect:
+    status: resolved
+    included_steps:
+    - give_copy_to_potential_buyer_before_contract
+  reference_date: '2026-06-25'
+- id: F03
+  desc: certificat fără cod unic
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: false
+  expect:
+    status: blocked
+    blocks:
+    - certificate_null_without_unique_code
+  reference_date: '2026-06-25'
+- id: F04
+  desc: certificat mai vechi de 10 ani
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: true
+    certificate_age_years_gte_10: true
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_energy_certificate
+    warnings:
+    - certificate_expired_10_years
+  reference_date: '2026-06-25'
+- id: F05
+  desc: renovare majoră
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: true
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - obtain_energy_certificate
+    warnings:
+    - major_renovation_invalidates_prior_certificate
+  reference_date: '2026-06-25'
+- id: F06
+  desc: închiriere înainte de contract
+  facts:
+    purpose_class: rent
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - give_copy_to_potential_tenant_before_contract
+    - obtain_energy_certificate
+  reference_date: '2026-06-25'
+- id: F07
+  desc: vânzare încheiată cu certificat valid
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: true
+    needs_new_certificate: false
+  expect:
+    status: resolved
+    included_steps:
+    - transfer_original_to_buyer
+    - deposit_copy_with_competent_tax_body
+  reference_date: '2026-06-25'
+- id: F08
+  desc: închiriere încheiată
+  facts:
+    purpose_class: rent
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: true
+    needs_new_certificate: false
+  expect:
+    status: resolved
+    included_steps:
+    - deposit_copy_with_competent_tax_body
+  reference_date: '2026-06-25'
+- id: F09
+  desc: recepție clădire nouă cu certificat
+  facts:
+    purpose_class: new_building_reception
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: false
+    needs_new_certificate: false
+  expect:
+    status: resolved
+    included_steps:
+    - present_certificate_at_reception
+    - attach_copy_to_reception_record_and_technical_book
+  reference_date: '2026-06-25'
+- id: F10
+  desc: recepție clădire nouă fără certificat
+  facts:
+    purpose_class: new_building_reception
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: blocked
+    blocks:
+    - reception_record_null_without_certificate_copy
+  reference_date: '2026-06-25'
+- id: F11
+  desc: clădire exceptată
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: true
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: false
+  expect:
+    status: resolved
+    not_included:
+    - obtain_energy_certificate
+  reference_date: '2026-06-25'
+- id: F12
+  desc: tip exceptare necunoscut
+  facts:
+    purpose_class: sale
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_exempt_building_type
+  reference_date: '2026-06-25'
+- id: F13
+  desc: scop necunoscut
+  facts:
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - purpose_class
+  reference_date: '2026-06-25'
+- id: F14
+  desc: starea certificatului necunoscută
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - has_valid_certificate
+  reference_date: '2026-06-25'
+- id: F15
+  desc: certificat există, cod necunoscut
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_facts
+    missing_facts:
+    - unique_registration_code_present
+  reference_date: '2026-06-25'
+- id: F16
+  desc: certificat de 9 ani
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: false
+    needs_new_certificate: false
+  expect:
+    status: resolved
+    not_included:
+    - certificate_expired_10_years
+  reference_date: '2026-06-25'
+- id: F17
+  desc: renovare fără modificarea consumurilor
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: false
+    needs_new_certificate: false
+  expect:
+    status: resolved
+  reference_date: '2026-06-25'
+- id: F18
+  desc: proprietar solicită pentru informare
+  facts:
+    purpose_class: information
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_attested_energy_auditor
+    - obtain_energy_certificate
+  reference_date: '2026-06-25'
+- id: F19
+  desc: administrator solicită
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+    applicant_role: administrator
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_attested_energy_auditor
+  reference_date: '2026-06-25'
+- id: F20
+  desc: potențial cumpărător fără copie
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: false
+    needs_new_certificate: false
+    copy_given_to_counterparty: false
+  expect:
+    status: resolved
+    included_steps:
+    - give_copy_to_potential_buyer_before_contract
+  reference_date: '2026-06-25'
+- id: F21
+  desc: contract de vânzare deja încheiat fără copie prealabilă
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: true
+    has_certificate: true
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: true
+    contract_concluded: true
+    needs_new_certificate: false
+    copy_was_given_before_contract: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - transfer_original_to_buyer
+    - deposit_copy_with_competent_tax_body
+    note: Remediul juridic concret necesită consiliere; motorul nu declară automat nulitatea.
+  reference_date: '2026-06-25'
+- id: F22
+  desc: clădire în alt stat UE
+  facts:
+    purpose_class: sale
+    is_exempt_building_type: false
+    has_valid_certificate: false
+    has_certificate: false
+    certificate_age_years_gte_10: false
+    major_renovation_changed_consumption: false
+    unique_registration_code_present: false
+    contract_concluded: false
+    needs_new_certificate: true
+    jurisdiction_id: it.mi.milano
+  expect:
+    status: needs_confirmation
+    note: Regulile române privind fiscalitatea și recepția nu sunt aplicate în afara României.
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - it
+  - it.mi
+  - it.mi.milano

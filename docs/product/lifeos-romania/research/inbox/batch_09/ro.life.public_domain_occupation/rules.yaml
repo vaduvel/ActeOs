@@ -1,0 +1,218 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_PUBLIC_DOMAIN_OCCUPATION
+event_alias: ro.life.public_domain_occupation
+event_type_id: life.public_domain_occupation
+status: research_inbox
+rules:
+- id: rule.domain.collect_case.rev1
+  canonical_rule_id: rule.domain.collect_case
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_public_domain_occupation
+  source_claim_ids:
+  - claim.tm.domain.case_facts
+  status: active
+  required_facts:
+  - jurisdiction_id
+  - applicant_type
+  - occupation_type
+  - has_building_authorisation
+  - is_historic_or_protected_area
+- id: rule.domain.timisoara_supported.rev1
+  canonical_rule_id: rule.domain.timisoara_supported
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: in
+      field: occupation_type
+      values:
+      - scaffold
+      - construction_site
+      - scaffold_and_construction_site
+  effects:
+  - type: include_step
+    step_id: select_timisoara_occupation_case
+  - type: include_step
+    step_id: upload_case_documents
+  - type: include_step
+    step_id: submit_occupation_request
+  - type: attach_channel
+    step_id: submit_occupation_request
+    channel_id: ch.pmt.public_domain_occupation
+  source_claim_ids:
+  - claim.tm.domain.supported_occupation_types
+  - claim.tm.domain.online_steps
+  status: active
+  required_facts:
+  - jurisdiction_id
+  - occupation_type
+- id: rule.domain.unsupported_type.rev1
+  canonical_rule_id: rule.domain.unsupported_type
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: not
+      arg:
+        op: in
+        field: occupation_type
+        values:
+        - scaffold
+        - construction_site
+        - scaffold_and_construction_site
+  effects:
+  - type: require_confirmation
+    tag: occupation_type_outside_portal_cases
+    message_ro: Tipul de ocupare nu este acoperit de cazurile verificate în pagina generică.
+  source_claim_ids:
+  - claim.tm.domain.supported_occupation_types
+  status: in_review
+  required_facts:
+  - occupation_type
+- id: rule.domain.case_documents.rev1
+  canonical_rule_id: rule.domain.case_documents
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: case_specific_occupation_documents
+    message_ro: Actele exacte trebuie preluate după selectarea cazului.
+  source_claim_ids:
+  - claim.tm.domain.dynamic_documents
+  status: in_review
+- id: rule.domain.payment_requested.rev1
+  canonical_rule_id: rule.domain.payment_requested
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: payment_requested_after_review
+      value: true
+    - op: eq
+      field: payment_completed
+      value: false
+  effects:
+  - type: include_step
+    step_id: pay_assessed_occupation_charge
+  - type: block
+    tag: agreement_waits_for_payment
+    message_ro: Acordul nu se eliberează înainte de plată.
+  source_claim_ids:
+  - claim.tm.domain.payment_after_check
+  status: active
+  required_facts:
+  - payment_requested_after_review
+  - payment_completed
+- id: rule.domain.payment_completed.rev1
+  canonical_rule_id: rule.domain.payment_completed
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: payment_completed
+      value: true
+  effects:
+  - type: include_step
+    step_id: download_public_domain_agreement
+  source_claim_ids:
+  - claim.tm.domain.payment_after_check
+  - claim.tm.domain.online_steps
+  status: active
+  required_facts:
+  - payment_completed
+- id: rule.domain.amount_deadline.rev1
+  canonical_rule_id: rule.domain.amount_deadline
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: current_occupation_charge
+    message_ro: Cuantumul se confirmă după verificarea dosarului și din reglementarea 2026 aplicabilă.
+  - type: require_confirmation
+    tag: occupation_processing_time
+    message_ro: Nu a fost verificat un termen universal de soluționare.
+  source_claim_ids:
+  - claim.tm.domain.2026_fee_basis
+  - claim.tm.domain.amount_deadline_gap
+  status: in_review
+- id: rule.domain.other_uat.rev1
+  canonical_rule_id: rule.domain.other_uat
+  event_type_id: life.public_domain_occupation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: other_uat_occupation_procedure
+    message_ro: Procedura, taxa și competența trebuie confirmate în UAT-ul respectiv.
+  source_claim_ids:
+  - claim.tm.domain.supported_occupation_types
+  status: in_review
+  required_facts:
+  - jurisdiction_id

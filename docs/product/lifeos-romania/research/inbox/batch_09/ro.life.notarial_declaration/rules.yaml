@@ -1,0 +1,269 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_NOTARIAL_DECLARATION
+event_alias: ro.life.notarial_declaration
+event_type_id: life.notarial_declaration
+status: research_inbox
+rules:
+- id: rule.notarial_declaration.identify_purpose.rev1
+  canonical_rule_id: rule.notarial_declaration.identify_purpose
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: identify_declaration_purpose_and_recipient
+  source_claim_ids:
+  - claim.notary.declarations_examples
+  status: active
+  required_facts:
+  - declaration_purpose
+  - recipient_institution
+  - required_form
+- id: rule.notarial_declaration.authentic.rev1
+  canonical_rule_id: rule.notarial_declaration.authentic
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: required_form
+    value: authentic
+  effects:
+  - type: include_step
+    step_id: book_notary_authentication
+  - type: include_requirement
+    requirement_id: valid_identity_document
+  - type: include_step
+    step_id: appear_and_express_consent_before_notary
+  source_claim_ids:
+  - claim.notary.form_words_route
+  - claim.notary.personal_findings
+  status: active
+  required_facts:
+  - required_form
+  - valid_identity_document_available
+  - personal_appearance_possible
+- id: rule.notarial_declaration.unknown_form.rev1
+  canonical_rule_id: rule.notarial_declaration.unknown_form
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: required_form
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: recipient_required_notarial_form
+    message_ro: Confirmă dacă destinatarul cere autentificare, legalizare de semnătură sau altă procedură.
+  source_claim_ids:
+  - claim.notary.form_words_route
+  - claim.notary.signature_legalisation_limit
+  status: in_review
+  required_facts:
+  - required_form
+- id: rule.notarial_declaration.wrong_legalisation.rev1
+  canonical_rule_id: rule.notarial_declaration.wrong_legalisation
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: required_form
+      value: authentic
+    - op: eq
+      field: selected_procedure
+      value: signature_legalisation
+  effects:
+  - type: block
+    tag: signature_legalisation_not_substitute_for_authentication
+    message_ro: Legalizarea semnăturii nu înlocuiește forma autentică cerută pentru valabilitate.
+  source_claim_ids:
+  - claim.notary.auth_required_nullity
+  - claim.notary.signature_legalisation_limit
+  status: active
+  required_facts:
+  - required_form
+  - selected_procedure
+- id: rule.notarial_declaration.signature_legalisation.rev1
+  canonical_rule_id: rule.notarial_declaration.signature_legalisation
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: required_form
+    value: signature_legalisation
+  effects:
+  - type: include_step
+    step_id: bring_unsigned_copies_to_notary
+  - type: include_step
+    step_id: sign_before_notary
+  source_claim_ids:
+  - claim.notary.signature_legalisation_limit
+  - claim.notary.signature_unsigned_copies
+  status: active
+  required_facts:
+  - required_form
+- id: rule.notarial_declaration.pre_signed.rev1
+  canonical_rule_id: rule.notarial_declaration.pre_signed
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: required_form
+      value: signature_legalisation
+    - op: eq
+      field: document_already_signed
+      value: true
+  effects:
+  - type: block
+    tag: signature_legalisation_requires_unsigned_copy
+    message_ro: Pentru procedura modelată, prezintă exemplare nesemnate și semnează în fața notarului.
+  source_claim_ids:
+  - claim.notary.signature_unsigned_copies
+  status: active
+  required_facts:
+  - required_form
+  - document_already_signed
+- id: rule.notarial_declaration.model.rev1
+  canonical_rule_id: rule.notarial_declaration.model
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: institution_model_available
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: recipient_institution_model
+  - type: emit_advice
+    tag: bring_recipient_model_to_notary
+    message_ro: Prezintă notarului modelul furnizat de instituția destinatară.
+  source_claim_ids:
+  - claim.notary.bring_institution_model
+  status: active
+  required_facts:
+  - institution_model_available
+- id: rule.notarial_declaration.no_model.rev1
+  canonical_rule_id: rule.notarial_declaration.no_model
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: institution_model_available
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: declaration_wording_with_recipient_and_notary
+    message_ro: Conținutul trebuie confirmat cu destinatarul și notarul; nu există un șablon universal.
+  source_claim_ids:
+  - claim.notary.purpose_docs_fee_gap
+  status: in_review
+  required_facts:
+  - institution_model_available
+- id: rule.notarial_declaration.cross_border.rev1
+  canonical_rule_id: rule.notarial_declaration.cross_border
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: cross_border_use
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.documents_legalisation_translation
+  - type: require_confirmation
+    tag: apostille_or_supralegalisation
+    message_ro: Formalitățile de folosire în străinătate depind de țară și act.
+  source_claim_ids:
+  - claim.notary.purpose_docs_fee_gap
+  status: in_review
+  required_facts:
+  - cross_border_use
+  - recipient_country
+- id: rule.notarial_declaration.timisoara_locator.rev1
+  canonical_rule_id: rule.notarial_declaration.timisoara_locator
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: find_notary
+  - type: attach_channel
+    step_id: find_notary
+    channel_id: ch.unnpr.cnp_timisoara
+  source_claim_ids:
+  - claim.notary.timisoara_chamber
+  status: active
+  required_facts:
+  - jurisdiction_id
+- id: rule.notarial_declaration.fee_docs.rev1
+  canonical_rule_id: rule.notarial_declaration.fee_docs
+  event_type_id: life.notarial_declaration
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: notarial_declaration_documents
+    message_ro: Documentele depind de scop, destinatar și conținut.
+  - type: require_confirmation
+    tag: notarial_declaration_fee
+    message_ro: Onorariul se confirmă la notar pentru actul concret.
+  - type: require_confirmation
+    tag: notarial_declaration_turnaround
+    message_ro: Termenul se confirmă la biroul notarial.
+  source_claim_ids:
+  - claim.notary.purpose_docs_fee_gap
+  status: in_review

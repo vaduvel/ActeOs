@@ -1,0 +1,291 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_EVENT_PUBLIC_SPACE_AUTHORISATION
+event_alias: ro.life.event_public_space_authorisation
+event_type_id: life.event_public_space_authorisation
+status: research_inbox
+rules:
+- id: rule.event.classify.rev1
+  canonical_rule_id: rule.event.classify
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: classify_event_and_public_space_use
+  source_claim_ids:
+  - claim.tm.event.generic_cases
+  status: active
+  required_facts:
+  - jurisdiction_id
+  - organizer_type
+  - event_type
+  - uses_public_domain
+- id: rule.event.timisoara_generic.rev1
+  canonical_rule_id: rule.event.timisoara_generic
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: uses_public_domain
+      value: true
+  effects:
+  - type: include_step
+    step_id: select_timisoara_event_case
+  - type: include_step
+    step_id: submit_timisoara_event_request
+  - type: attach_channel
+    step_id: submit_timisoara_event_request
+    channel_id: ch.pmt.organizare_evenimente
+  source_claim_ids:
+  - claim.tm.event.generic_cases
+  - claim.tm.event.generic_steps
+  status: active
+  required_facts:
+  - jurisdiction_id
+  - uses_public_domain
+- id: rule.event.special_tax_conditions.rev1
+  canonical_rule_id: rule.event.special_tax_conditions
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: is_outdoor_cultural_event
+      value: true
+    - op: eq
+      field: public_place_delimited
+      value: true
+    - op: eq
+      field: public_access_limited
+      value: true
+  effects:
+  - type: include_step
+    step_id: assess_limited_access_outdoor_event_tax
+  - type: attach_channel
+    step_id: assess_limited_access_outdoor_event_tax
+    channel_id: ch.pmt.taxa_evenimente_aer_liber
+  source_claim_ids:
+  - claim.tm.event.special_cumulative_conditions
+  status: active
+  required_facts:
+  - is_outdoor_cultural_event
+  - public_place_delimited
+  - public_access_limited
+- id: rule.event.special_tax_not_all_conditions.rev1
+  canonical_rule_id: rule.event.special_tax_not_all_conditions
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: is_outdoor_cultural_event
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: public_place_delimited
+        value: false
+      - op: eq
+        field: public_access_limited
+        value: false
+  effects:
+  - type: exclude_step
+    step_id: assess_limited_access_outdoor_event_tax
+  - type: emit_advice
+    tag: special_tax_cumulative_conditions_not_met
+    message_ro: Taxa specială modelată cere îndeplinirea cumulativă a celor trei condiții.
+  source_claim_ids:
+  - claim.tm.event.special_cumulative_conditions
+  status: active
+  required_facts:
+  - is_outdoor_cultural_event
+  - public_place_delimited
+  - public_access_limited
+- id: rule.event.submit_before.rev1
+  canonical_rule_id: rule.event.submit_before
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: special_event_branch
+      value: true
+  effects:
+  - type: include_step
+    step_id: submit_before_event_start
+  - type: set_deadline
+    step_id: submit_before_event_start
+    value:
+      type: fixed_window
+      latest_fact: event_start_date
+      relation: strictly_before
+  source_claim_ids:
+  - claim.tm.event.submit_before_start
+  status: active
+  required_facts:
+  - special_event_branch
+  - event_start_date
+- id: rule.event.2025_2026_conflict.rev1
+  canonical_rule_id: rule.event.2025_2026_conflict
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: special_event_branch
+      value: true
+  effects:
+  - type: flag_conflict
+    tag: event_documentation_basis_2025_2026
+    blocked_effect: publish_exact_special_event_documents
+    message_ro: Pagina 2026 trimite simultan la documentația unei hotărâri pentru 2025.
+  - type: block
+    tag: exact_special_event_documents_unconfirmed
+    message_ro: Nu publica lista exactă de acte sau cuantumul până la clarificarea temeiului 2026.
+  source_claim_ids:
+  - claim.tm.event.current_2026_basis
+  - claim.tm.event.stale_2025_document_reference
+  - claim.tm.event.hcl719_current
+  status: in_review
+- id: rule.event.public_assembly.rev1
+  canonical_rule_id: rule.event.public_assembly
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: event_type
+    value: public_assembly_or_protest
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.public_assembly_notice
+  - type: attach_channel
+    step_id: check_public_assembly_requirements
+    channel_id: ch.police.public_assemblies
+  - type: require_confirmation
+    tag: public_assembly_documents_and_deadline
+    message_ro: Termenul și actele naționale pentru adunarea publică trebuie confirmate din procedura oficială aplicabilă.
+  source_claim_ids:
+  - claim.police.public_assemblies_route
+  status: in_review
+  required_facts:
+  - event_type
+- id: rule.event.no_public_domain.rev1
+  canonical_rule_id: rule.event.no_public_domain
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: uses_public_domain
+    value: false
+  effects:
+  - type: exclude_step
+    step_id: submit_timisoara_event_request
+  - type: emit_advice
+    tag: public_space_authorisation_not_triggered
+    message_ro: Evenimentul fără utilizarea domeniului public trebuie reclasificat după celelalte autorizații necesare.
+  source_claim_ids:
+  - claim.tm.event.generic_cases
+  status: active
+  required_facts:
+  - uses_public_domain
+- id: rule.event.generic_gaps.rev1
+  canonical_rule_id: rule.event.generic_gaps
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: event_case_documents
+    message_ro: Documentele exacte se confirmă după selectarea cazului.
+  - type: require_confirmation
+    tag: event_processing_deadline
+    message_ro: Nu a fost verificat un termen numeric universal pentru toate evenimentele.
+  - type: require_confirmation
+    tag: event_fee_amount
+    message_ro: Taxa se confirmă pentru ramura și anul aplicabil.
+  source_claim_ids:
+  - claim.tm.event.deadline_docs_fee_gap
+  status: in_review
+- id: rule.event.other_uat.rev1
+  canonical_rule_id: rule.event.other_uat
+  event_type_id: life.event_public_space_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: other_uat_event_authorisation
+    message_ro: Procedura locală trebuie verificată la UAT-ul în care are loc evenimentul.
+  source_claim_ids:
+  - claim.tm.event.generic_cases
+  status: in_review
+  required_facts:
+  - jurisdiction_id

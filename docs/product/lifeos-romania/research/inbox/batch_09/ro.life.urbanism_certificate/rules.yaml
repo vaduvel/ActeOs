@@ -1,0 +1,253 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_URBANISM_CERTIFICATE
+event_alias: ro.life.urbanism_certificate
+event_type_id: life.urbanism_certificate
+status: research_inbox
+rules:
+- id: rule.urbanism.collect_request.rev1
+  canonical_rule_id: rule.urbanism.collect_request
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: define_purpose_and_property
+  - type: include_requirement
+    requirement_id: property_locality
+  - type: include_requirement
+    requirement_id: request_purpose
+  source_claim_ids:
+  - claim.urbanism.requester_identification_purpose
+  status: active
+  required_facts:
+  - property_locality
+  - request_purpose
+  legal_rank: Lege
+- id: rule.urbanism.cadastral_where_applicable.rev1
+  canonical_rule_id: rule.urbanism.cadastral_where_applicable
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: cadastral_data_applicable
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: cadastral_number
+  - type: include_requirement
+    requirement_id: land_book_number
+  source_claim_ids:
+  - claim.urbanism.requester_identification_purpose
+  status: active
+  required_facts:
+  - cadastral_data_applicable
+  legal_rank: Lege
+- id: rule.urbanism.timisoara_online.rev1
+  canonical_rule_id: rule.urbanism.timisoara_online
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: select_timisoara_case
+  - type: attach_channel
+    step_id: select_timisoara_case
+    channel_id: ch.pmt.certificat_urbanism
+  - type: include_step
+    step_id: pay_issuance_fee
+  - type: include_step
+    step_id: submit_request
+  - type: include_step
+    step_id: download_certificate
+  source_claim_ids:
+  - claim.tm.urbanism.online_cases
+  - claim.tm.urbanism.steps
+  status: active
+  required_facts:
+  - jurisdiction_id
+- id: rule.urbanism.other_uat_gap.rev1
+  canonical_rule_id: rule.urbanism.other_uat_gap
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: neq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: local_uat_channel
+    message_ro: Canalul, taxa și documentele trebuie confirmate la UAT-ul competent.
+  source_claim_ids:
+  - claim.urbanism.requester_identification_purpose
+  status: in_review
+  required_facts:
+  - jurisdiction_id
+- id: rule.urbanism.deadline.rev1
+  canonical_rule_id: rule.urbanism.deadline
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: request_submitted
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: receive_certificate
+    value:
+      type: relative_business_days
+      anchor_fact: request_registered_at
+      amount: 15
+  - type: include_step
+    step_id: receive_certificate
+  source_claim_ids:
+  - claim.urbanism.deadline_15wd
+  status: active
+  required_facts:
+  - request_submitted
+  - request_registered_at
+  legal_rank: Lege
+- id: rule.urbanism.digital.rev1
+  canonical_rule_id: rule.urbanism.digital
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: consents_digital_delivery
+    value: true
+  effects:
+  - type: attach_channel
+    step_id: receive_certificate
+    channel_id: ch.email.digital_certificate
+  - type: emit_advice
+    tag: digital_same_legal_value
+    message_ro: Certificatul semnat electronic are aceeași valoare juridică.
+  source_claim_ids:
+  - claim.urbanism.digital_delivery
+  - claim.urbanism.digital_same_value
+  status: active
+  required_facts:
+  - consents_digital_delivery
+  legal_rank: Lege
+- id: rule.urbanism.no_building_right.rev1
+  canonical_rule_id: rule.urbanism.no_building_right
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_warning
+    tag: certificate_not_building_authorisation
+    message_ro: Certificatul de urbanism nu permite executarea lucrărilor.
+  source_claim_ids:
+  - claim.urbanism.no_right_to_build
+  status: active
+  legal_rank: Lege
+- id: rule.urbanism.notarial_operation.rev1
+  canonical_rule_id: rule.urbanism.notarial_operation
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: purpose_class
+    value: listed_notarial_operation
+  effects:
+  - type: include_step
+    step_id: obtain_certificate_before_notarial_operation
+  - type: block
+    tag: notarial_operation_without_certificate
+    message_ro: Operațiunea enumerată de lege nu trebuie încheiată fără certificat.
+  source_claim_ids:
+  - claim.urbanism.notarial_operations
+  status: active
+  required_facts:
+  - purpose_class
+  legal_rank: Lege
+- id: rule.urbanism.coownership.rev1
+  canonical_rule_id: rule.urbanism.coownership
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: purpose_class
+      value: exit_coownership_partition
+    - op: eq
+      field: construction_or_infrastructure_purpose
+      value: false
+  effects:
+  - type: emit_advice
+    tag: certificate_optional_coownership_exit
+    message_ro: Pentru această ramură, legea califică solicitarea drept facultativă.
+  source_claim_ids:
+  - claim.urbanism.coownership_exception
+  status: active
+  required_facts:
+  - purpose_class
+  - construction_or_infrastructure_purpose
+  legal_rank: Lege
+- id: rule.urbanism.dynamic_docs.rev1
+  canonical_rule_id: rule.urbanism.dynamic_docs
+  event_type_id: life.urbanism_certificate
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: case_specific_documents
+    message_ro: Lista actelor se materializează după selectarea cazului în portal.
+  - type: require_confirmation
+    tag: current_fee_amount
+    message_ro: Cuantumul taxei trebuie preluat din fluxul curent sau hotărârea locală aplicabilă.
+  source_claim_ids:
+  - claim.tm.urbanism.dynamic_documents
+  - claim.tm.urbanism.fee_amount_gap
+  status: in_review

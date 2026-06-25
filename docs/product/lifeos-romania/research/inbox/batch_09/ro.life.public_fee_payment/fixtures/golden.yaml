@@ -1,0 +1,465 @@
+batch_id: B09_PUBLIC_FEE_PAYMENT
+engine_contract: docs/product/lifeos-romania/08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.public_fee_payment
+  event_alias: ro.life.public_fee_payment
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: taxă locală identificată și sumă cunoscută
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    included_steps:
+    - identify_public_fee_obligation
+    - pay_via_ghiseul_ro
+    - check_timisoara_atlas_obligation
+  reference_date: '2026-06-25'
+- id: F02
+  desc: sumă necunoscută
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: false
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: blocked
+    blocks:
+    - amount_not_verified
+    confirmations:
+    - obligation_amount_and_reference
+  reference_date: '2026-06-25'
+- id: F03
+  desc: referință necunoscută
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: false
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - payment_reference
+  reference_date: '2026-06-25'
+- id: F04
+  desc: instituție neconfirmată în Ghișeul.ro
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: false
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - institution_payment_channel
+  reference_date: '2026-06-25'
+- id: F05
+  desc: amendă contravențională
+  facts:
+    authority_id: dfmt
+    fee_type: contravention_fine
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    included_steps:
+    - pay_fine_without_ghiseul_login
+    - check_timisoara_atlas_obligation
+  reference_date: '2026-06-25'
+- id: F06
+  desc: plată fără autentificare, cuantum cunoscut
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: true
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    included_steps:
+    - pay_known_amount_without_authentication
+  reference_date: '2026-06-25'
+- id: F07
+  desc: SMS cu link de plată
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: true
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    warnings:
+    - verify_payment_prompt_out_of_band
+  reference_date: '2026-06-25'
+- id: F08
+  desc: persoană fizică fără cont Atlas
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: false
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    included_steps:
+    - create_portal_unic_account_for_atlas
+  reference_date: '2026-06-25'
+- id: F09
+  desc: persoană juridică fără cont Atlas
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: legal_person
+    atlas_account_exists: false
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    included_steps:
+    - request_legal_person_atlas_account
+  reference_date: '2026-06-25'
+- id: F10
+  desc: persoană juridică are deja cont
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: legal_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    not_included:
+    - request_legal_person_atlas_account
+  reference_date: '2026-06-25'
+- id: F11
+  desc: impozit clădire integral până la 31 martie
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: true
+    payment_date_on_or_before_2026_03_31: true
+  expect:
+    status: resolved
+    advice:
+    - timisoara_2026_10_percent_bonus
+  reference_date: '2026-06-25'
+- id: F12
+  desc: impozit teren integral până la 31 martie
+  facts:
+    authority_id: dfmt
+    fee_type: land_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: true
+    payment_date_on_or_before_2026_03_31: true
+  expect:
+    status: resolved
+    advice:
+    - timisoara_2026_10_percent_bonus
+  reference_date: '2026-06-25'
+- id: F13
+  desc: impozit auto integral până la 31 martie
+  facts:
+    authority_id: dfmt
+    fee_type: vehicle_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: true
+    payment_date_on_or_before_2026_03_31: true
+  expect:
+    status: resolved
+    advice:
+    - timisoara_2026_10_percent_bonus
+  reference_date: '2026-06-25'
+- id: F14
+  desc: plată după 31 martie
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: true
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    not_included:
+    - timisoara_2026_10_percent_bonus
+  reference_date: '2026-06-25'
+- id: F15
+  desc: plată parțială până la 31 martie
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: true
+  expect:
+    status: resolved
+    not_included:
+    - timisoara_2026_10_percent_bonus
+  reference_date: '2026-06-25'
+- id: F16
+  desc: taxă specială, nu impozit anual
+  facts:
+    authority_id: dfmt
+    fee_type: special_fee
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: true
+    payment_date_on_or_before_2026_03_31: true
+  expect:
+    status: resolved
+    not_included:
+    - timisoara_2026_10_percent_bonus
+  reference_date: '2026-06-25'
+- id: F17
+  desc: alt UAT
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.cj.cluj
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - local_fee_rules_outside_pilot
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj
+- id: F18
+  desc: lipsește autoritatea
+  facts:
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - authority_id
+  reference_date: '2026-06-25'
+- id: F19
+  desc: lipsește tipul taxei
+  facts:
+    authority_id: dfmt
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - fee_type
+  reference_date: '2026-06-25'
+- id: F20
+  desc: lipsește starea sumei
+  facts:
+    authority_id: dfmt
+    fee_type: building_tax
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro.tm.timisoara
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - amount_known
+  reference_date: '2026-06-25'
+- id: F21
+  desc: plată de pașaport cu cuantum oficial cunoscut
+  facts:
+    authority_id: dgep
+    fee_type: passport_fee
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: true
+    payment_prompt_received_by_message: false
+    jurisdiction_id: ro
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: resolved
+    included_steps:
+    - pay_known_amount_without_authentication
+  reference_date: '2026-06-25'
+- id: F22
+  desc: obligație în afara României
+  facts:
+    authority_id: it.authority
+    fee_type: building_tax
+    amount_known: true
+    payment_reference_known: true
+    institution_enrolled_ghiseul: true
+    prefer_no_authentication: false
+    payment_prompt_received_by_message: false
+    jurisdiction_id: it.mi.milano
+    payer_type: natural_person
+    atlas_account_exists: true
+    pays_full_2026_year: false
+    payment_date_on_or_before_2026_03_31: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - local_fee_rules_outside_pilot
+  reference_date: '2026-06-25'
+  jurisdiction_path:
+  - eu
+  - it
+  - it.mi
+  - it.mi.milano

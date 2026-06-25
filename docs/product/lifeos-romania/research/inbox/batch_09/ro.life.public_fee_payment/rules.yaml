@@ -1,0 +1,337 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_PUBLIC_FEE_PAYMENT
+event_alias: ro.life.public_fee_payment
+event_type_id: life.public_fee_payment
+status: research_inbox
+rules:
+- id: rule.payment.identify_obligation.rev1
+  canonical_rule_id: rule.payment.identify_obligation
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: identify_public_fee_obligation
+  - type: include_requirement
+    requirement_id: authority_id
+  - type: include_requirement
+    requirement_id: fee_type
+  source_claim_ids:
+  - claim.payment.generic_amount_deadline_gap
+  status: active
+  required_facts:
+  - authority_id
+  - fee_type
+- id: rule.payment.missing_amount.rev1
+  canonical_rule_id: rule.payment.missing_amount
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: amount_known
+    value: false
+  effects:
+  - type: block
+    tag: amount_not_verified
+    message_ro: Nu iniția plata până când cuantumul este confirmat în evidența sau actul oficial.
+  - type: require_confirmation
+    tag: obligation_amount_and_reference
+    message_ro: Confirmă suma și referința obligației la instituția emitentă.
+  source_claim_ids:
+  - claim.payment.generic_amount_deadline_gap
+  status: in_review
+  required_facts:
+  - amount_known
+- id: rule.payment.missing_reference.rev1
+  canonical_rule_id: rule.payment.missing_reference
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: payment_reference_known
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: payment_reference
+    message_ro: Confirmă identificatorul obligației înainte de plată.
+  source_claim_ids:
+  - claim.payment.generic_amount_deadline_gap
+  status: in_review
+  required_facts:
+  - payment_reference_known
+- id: rule.payment.ghiseul_enrolled.rev1
+  canonical_rule_id: rule.payment.ghiseul_enrolled
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: institution_enrolled_ghiseul
+      value: true
+    - op: eq
+      field: amount_known
+      value: true
+  effects:
+  - type: include_step
+    step_id: pay_via_ghiseul_ro
+  - type: attach_channel
+    step_id: pay_via_ghiseul_ro
+    channel_id: ch.ghiseul.ro
+  source_claim_ids:
+  - claim.payment.ghiseul.enrolled_institutions
+  status: active
+  required_facts:
+  - institution_enrolled_ghiseul
+  - amount_known
+- id: rule.payment.ghiseul_unknown.rev1
+  canonical_rule_id: rule.payment.ghiseul_unknown
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: institution_enrolled_ghiseul
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: institution_payment_channel
+    message_ro: Instituția nu este confirmată ca înrolată; folosește canalul oficial al emitentului.
+  source_claim_ids:
+  - claim.payment.ghiseul.enrolled_institutions
+  status: in_review
+  required_facts:
+  - institution_enrolled_ghiseul
+- id: rule.payment.fine_no_login.rev1
+  canonical_rule_id: rule.payment.fine_no_login
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: fee_type
+    value: contravention_fine
+  effects:
+  - type: include_step
+    step_id: pay_fine_without_ghiseul_login
+  source_claim_ids:
+  - claim.payment.ghiseul.fines_no_login
+  status: active
+  required_facts:
+  - fee_type
+- id: rule.payment.known_amount_no_auth.rev1
+  canonical_rule_id: rule.payment.known_amount_no_auth
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: amount_known
+      value: true
+    - op: eq
+      field: prefer_no_authentication
+      value: true
+  effects:
+  - type: include_step
+    step_id: pay_known_amount_without_authentication
+  source_claim_ids:
+  - claim.payment.ghiseul.known_amount_no_auth
+  status: active
+  required_facts:
+  - amount_known
+  - prefer_no_authentication
+- id: rule.payment.phishing.rev1
+  canonical_rule_id: rule.payment.phishing
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: payment_prompt_received_by_message
+    value: true
+  effects:
+  - type: emit_warning
+    tag: verify_payment_prompt_out_of_band
+    message_ro: Nu folosi linkul din SMS/e-mail; intră manual în canalul oficial.
+  source_claim_ids:
+  - claim.payment.ghiseul.phishing_warning
+  status: active
+  required_facts:
+  - payment_prompt_received_by_message
+- id: rule.payment.timisoara_atlas.rev1
+  canonical_rule_id: rule.payment.timisoara_atlas
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: check_timisoara_atlas_obligation
+  - type: attach_channel
+    step_id: check_timisoara_atlas_obligation
+    channel_id: ch.dfmt.atlas
+  source_claim_ids:
+  - claim.tm.payment.atlas_scope
+  status: active
+  required_facts:
+  - jurisdiction_id
+- id: rule.payment.timisoara_pf_account.rev1
+  canonical_rule_id: rule.payment.timisoara_pf_account
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: payer_type
+      value: natural_person
+    - op: eq
+      field: atlas_account_exists
+      value: false
+  effects:
+  - type: include_step
+    step_id: create_portal_unic_account_for_atlas
+  source_claim_ids:
+  - claim.tm.payment.pf_account
+  status: active
+  required_facts:
+  - payer_type
+  - atlas_account_exists
+- id: rule.payment.timisoara_pj_account.rev1
+  canonical_rule_id: rule.payment.timisoara_pj_account
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: payer_type
+      value: legal_person
+    - op: eq
+      field: atlas_account_exists
+      value: false
+  effects:
+  - type: include_step
+    step_id: request_legal_person_atlas_account
+  - type: include_requirement
+    requirement_id: electronically_signed_pdf_request
+  - type: include_requirement
+    requirement_id: cui_copy
+  source_claim_ids:
+  - claim.tm.payment.pj_account
+  status: active
+  required_facts:
+  - payer_type
+  - atlas_account_exists
+- id: rule.payment.timisoara_bonus.rev1
+  canonical_rule_id: rule.payment.timisoara_bonus
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: '2027-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+    - op: in
+      field: fee_type
+      values:
+      - building_tax
+      - land_tax
+      - vehicle_tax
+    - op: eq
+      field: pays_full_2026_year
+      value: true
+    - op: eq
+      field: payment_date_on_or_before_2026_03_31
+      value: true
+  effects:
+  - type: emit_advice
+    tag: timisoara_2026_10_percent_bonus
+    message_ro: Pentru condițiile modelate, HCL prevede bonificație de 10%.
+  source_claim_ids:
+  - claim.tm.payment.bonus_2026
+  status: active
+  required_facts:
+  - fee_type
+  - pays_full_2026_year
+  - payment_date_on_or_before_2026_03_31
+- id: rule.payment.other_uat.rev1
+  canonical_rule_id: rule.payment.other_uat
+  event_type_id: life.public_fee_payment
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: exists
+      field: jurisdiction_id
+    - op: neq
+      field: jurisdiction_id
+      value: ro.tm.timisoara
+  effects:
+  - type: require_confirmation
+    tag: local_fee_rules_outside_pilot
+    message_ro: Scadența, bonificația și canalul local trebuie confirmate la UAT-ul competent.
+  source_claim_ids:
+  - claim.tm.payment.bonus_2026
+  status: in_review

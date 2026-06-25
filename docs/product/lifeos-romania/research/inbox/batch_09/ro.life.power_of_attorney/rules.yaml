@@ -1,0 +1,288 @@
+schema_ref: docs/product/lifeos-romania/contracts/rule.schema.json
+batch_id: B09_POWER_OF_ATTORNEY
+event_alias: ro.life.power_of_attorney
+event_type_id: life.power_of_attorney
+status: research_inbox
+rules:
+- id: rule.poa.define_mandate.rev1
+  canonical_rule_id: rule.poa.define_mandate
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: define_power_of_attorney_scope
+  - type: include_requirement
+    requirement_id: underlying_act_or_procedure
+  - type: include_requirement
+    requirement_id: attorney_identity
+  - type: include_requirement
+    requirement_id: specific_authorised_actions
+  source_claim_ids:
+  - claim.poa.proxies_for_institutions
+  status: active
+  required_facts:
+  - underlying_act
+  - attorney_identity_known
+  - scope_defined
+  - required_form
+- id: rule.poa.authentic.rev1
+  canonical_rule_id: rule.poa.authentic
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: required_form
+    value: authentic
+  effects:
+  - type: include_step
+    step_id: book_notary_for_authentic_power_of_attorney
+  - type: include_requirement
+    requirement_id: principal_valid_identity_document
+  - type: include_step
+    step_id: principal_appears_and_consents_before_notary
+  source_claim_ids:
+  - claim.poa.notarial_form_route
+  - claim.poa.personal_identification_consent
+  status: active
+  required_facts:
+  - required_form
+  - principal_identity_document_available
+  - principal_personal_appearance_possible
+- id: rule.poa.unknown_form.rev1
+  canonical_rule_id: rule.poa.unknown_form
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: required_form
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: power_of_attorney_form_required
+    message_ro: Confirmă forma cerută de procedura pentru care vei fi reprezentat.
+  source_claim_ids:
+  - claim.poa.notarial_form_route
+  - claim.poa.signature_legalisation_not_auth
+  status: in_review
+  required_facts:
+  - required_form
+- id: rule.poa.wrong_legalisation.rev1
+  canonical_rule_id: rule.poa.wrong_legalisation
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: required_form
+      value: authentic
+    - op: eq
+      field: selected_procedure
+      value: signature_legalisation
+  effects:
+  - type: block
+    tag: legalised_signature_not_authentic_power_of_attorney
+    message_ro: Legalizarea semnăturii nu substituie procura autentică cerută.
+  source_claim_ids:
+  - claim.poa.notarial_form_route
+  - claim.poa.signature_legalisation_not_auth
+  status: active
+  required_facts:
+  - required_form
+  - selected_procedure
+- id: rule.poa.succession.rev1
+  canonical_rule_id: rule.poa.succession
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: underlying_act
+    value: succession_representation
+  effects:
+  - type: include_step
+    step_id: prepare_authentic_succession_power_of_attorney
+  - type: set_requirement_obligation
+    requirement_id: authentic_form
+    obligation: required
+  source_claim_ids:
+  - claim.poa.succession_authentic
+  status: active
+  required_facts:
+  - underlying_act
+- id: rule.poa.institution_model.rev1
+  canonical_rule_id: rule.poa.institution_model
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: recipient_model_available
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: recipient_power_of_attorney_model
+  - type: emit_advice
+    tag: bring_recipient_power_of_attorney_model
+    message_ro: Prezintă notarului modelul sau cerințele destinatarului.
+  source_claim_ids:
+  - claim.poa.model_useful
+  status: active
+  required_facts:
+  - recipient_model_available
+- id: rule.poa.no_model.rev1
+  canonical_rule_id: rule.poa.no_model
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: recipient_model_available
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: mandate_wording_with_recipient_and_notary
+    message_ro: Confirmă formularea și întinderea puterilor cu destinatarul și notarul.
+  source_claim_ids:
+  - claim.poa.scope_validity_docs_fee_gap
+  status: in_review
+  required_facts:
+  - recipient_model_available
+- id: rule.poa.validity.rev1
+  canonical_rule_id: rule.poa.validity
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: power_of_attorney_duration_and_termination
+    message_ro: Durata, revocarea și încetarea trebuie redactate pentru mandatul concret; nu se presupune o valabilitate universală.
+  source_claim_ids:
+  - claim.poa.scope_validity_docs_fee_gap
+  status: in_review
+- id: rule.poa.cross_border.rev1
+  canonical_rule_id: rule.poa.cross_border
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: cross_border_use
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.documents_legalisation_translation
+  - type: require_confirmation
+    tag: power_of_attorney_cross_border_formalities
+    message_ro: Verifică apostila/supralegalizarea, traducerea și acceptarea în țara destinatară.
+  source_claim_ids:
+  - claim.poa.scope_validity_docs_fee_gap
+  status: in_review
+  required_facts:
+  - cross_border_use
+  - recipient_country
+- id: rule.poa.timisoara_locator.rev1
+  canonical_rule_id: rule.poa.timisoara_locator
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: include_step
+    step_id: find_notary
+  - type: attach_channel
+    step_id: find_notary
+    channel_id: ch.unnpr.cnp_timisoara
+  source_claim_ids:
+  - claim.poa.timisoara_chamber
+  status: active
+  required_facts:
+  - jurisdiction_id
+- id: rule.poa.docs_fee.rev1
+  canonical_rule_id: rule.poa.docs_fee
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: power_of_attorney_supporting_documents
+    message_ro: Actele suport depind de operațiunea reprezentată.
+  - type: require_confirmation
+    tag: power_of_attorney_notarial_fee
+    message_ro: Onorariul se confirmă la biroul notarial.
+  - type: require_confirmation
+    tag: power_of_attorney_turnaround
+    message_ro: Programarea și eliberarea se confirmă la notar.
+  source_claim_ids:
+  - claim.poa.scope_validity_docs_fee_gap
+  status: in_review
+- id: rule.poa.real_estate_wording.rev1
+  canonical_rule_id: rule.poa.real_estate_wording
+  event_type_id: life.power_of_attorney
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: underlying_act
+    value: real_estate_sale
+  effects:
+  - type: require_confirmation
+    tag: mandate_wording_with_recipient_and_notary
+    message_ro: Confirmă formularea și întinderea puterilor pentru vânzarea imobilului cu destinatarul și notarul; nu folosi o procură generică.
+  source_claim_ids:
+  - claim.poa.scope_validity_docs_fee_gap
+  status: in_review
+  required_facts:
+  - underlying_act
