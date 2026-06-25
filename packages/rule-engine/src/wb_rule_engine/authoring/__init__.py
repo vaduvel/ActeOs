@@ -1,4 +1,4 @@
-"""Authoring-language rule evaluation.
+"""Authoring-language rule evaluation (rich contract).
 
 This subpackage evaluates governed rulesets written in the *authoring* contract
 shape (contracts/rule.schema.json + contracts/predicate.schema.json), i.e. the
@@ -12,7 +12,13 @@ dependency. The file loaders (loader, cli) need PyYAML and the schema validator
 """
 from __future__ import annotations
 
-from .ast import EvalContext, UnsupportedOperator, collect_fact_refs, evaluate
+from .ast import (
+    EvalContext,
+    UnsupportedOperator,
+    collect_fact_refs,
+    evaluate,
+    resolve_date_token,
+)
 from .effects import EFFECT_TYPES, effect_tag
 from .golden import FixtureFailure, GoldenReport, run_fixtures
 from .orchestrator import EventNode, resolve_event
@@ -23,6 +29,7 @@ __all__ = [
     "UnsupportedOperator",
     "collect_fact_refs",
     "evaluate",
+    "resolve_date_token",
     "EFFECT_TYPES",
     "effect_tag",
     "RouteResult",

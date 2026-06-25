@@ -13,8 +13,9 @@ EFFECT_TYPES = frozenset(
         "attach_channel",
         "emit_warning",
         "emit_advice",
-        "block",
         "require_confirmation",
+        "flag_conflict",
+        "block",
         "override_rule",
         "trigger_child_event",
         "set_freshness_state",
@@ -23,7 +24,7 @@ EFFECT_TYPES = frozenset(
 
 
 def effect_tag(effect: Mapping[str, Any], rule: Mapping[str, Any]) -> str:
-    """Stable short tag used to group advice / warnings / confirmations.
+    """Stable short tag used to group advice / warnings / confirmations / conflicts.
 
     Prefers an explicit ``tag`` on the effect; otherwise falls back to the last
     dotted segment of the rule's canonical_rule_id

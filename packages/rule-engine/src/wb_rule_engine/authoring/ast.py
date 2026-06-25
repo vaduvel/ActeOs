@@ -5,18 +5,30 @@ Mirrors contracts/predicate.schema.json exactly: predicates are objects with an
 ``arg`` for not. Three-valued logic is shared with the runtime engine via
 wb_rule_engine.trivalent: a missing fact is never silently coerced to False.
 
+Date-comparison ops (date_before/date_after/date_between/within_window) resolve
+both sides through ``resolve_date_token``, which understands:
+  * literal ISO dates ('2026-06-25')
+  * the ambient 'reference_date'
+  * fact names ('move_date', 'expiry_date')
+  * relative expressions '<token>_minus_<N>d' / '<token>_plus_<N>d'
+    (e.g. 'expiry_date_minus_180d', 'move_date_plus_15d').
+
 No dynamic code execution: every operator is matched explicitly.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import date
+import re
+from dataclasses import dataclass
+from datetime import date, timedelta
 from typing import Any, Mapping
 
 from ..dates import completed_years, parse_date
 from ..trivalent import Tri, from_bool, tri_all, tri_any, tri_not
 
 MISSING = object()
+
+_DELTA_RE = re.compile(r"^(.+)_(minus|plus)_(\d+)d$")
+DATE_CMP_OPS = frozenset({"date_before", "date_after", "date_between", "within_window"})
 
 
 class UnsupportedOperator(Exception):
@@ -42,6 +54,31 @@ def _num(value: Any):
         return None
 
 
+def resolve_date_token(token: Any, facts: Mapping[str, Any], ctx: EvalContext | None = None) -> date | None:
+    """Resolve a date token to a concrete date (or None if it cannot be resolved).
+
+    Supports literal ISO dates, 'reference_date', fact names, and relative
+    expressions like 'expiry_date_minus_180d' / 'move_date_plus_15d'.
+    """
+    if token is None:
+        return None
+    if isinstance(token, date):
+        return parse_date(token)
+    s = str(token)
+    m = _DELTA_RE.match(s)
+    if m:
+        base = resolve_date_token(m.group(1), facts, ctx)
+        if base is None:
+            return None
+        delta = timedelta(days=int(m.group(3)))
+        return base - delta if m.group(2) == "minus" else base + delta
+    if s == "reference_date":
+        return ctx.reference_date if ctx else None
+    if s in facts:
+        return parse_date(facts.get(s))
+    return parse_date(s)
+
+
 def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext | None = None) -> Tri:
     ctx = ctx or EvalContext()
     op = pred.get("op")
@@ -58,13 +95,33 @@ def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext
         return tri_not(evaluate(pred["arg"], facts, ctx))
 
     field_id = pred.get("field")
-    value = facts.get(field_id, MISSING) if field_id is not None else MISSING
 
     if op == "exists":
-        return from_bool(value is not MISSING and value is not None)
+        v = facts.get(field_id, MISSING) if field_id is not None else MISSING
+        return from_bool(v is not MISSING and v is not None)
     if op == "missing":
-        return from_bool(value is MISSING or value is None)
+        v = facts.get(field_id, MISSING) if field_id is not None else MISSING
+        return from_bool(v is MISSING or v is None)
 
+    # Date-comparison ops resolve tokens on both sides (field may be
+    # 'reference_date' or a relative expression), so they run before the
+    # generic missing-fact guard below.
+    if op in ("date_before", "date_after"):
+        a = resolve_date_token(field_id, facts, ctx)
+        b = resolve_date_token(pred.get("value"), facts, ctx)
+        if a is None or b is None:
+            return Tri.UNKNOWN
+        return from_bool(a < b) if op == "date_before" else from_bool(a > b)
+    if op in ("date_between", "within_window"):
+        vals = pred.get("values") or []
+        a = resolve_date_token(field_id, facts, ctx)
+        lo = resolve_date_token(vals[0], facts, ctx) if len(vals) > 0 else None
+        hi = resolve_date_token(vals[1], facts, ctx) if len(vals) > 1 else None
+        if a is None or lo is None or hi is None:
+            return Tri.UNKNOWN
+        return from_bool(lo <= a <= hi)
+
+    value = facts.get(field_id, MISSING) if field_id is not None else MISSING
     if value is MISSING or value is None:
         return Tri.UNKNOWN
 
@@ -91,19 +148,6 @@ def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any], ctx: EvalContext
         if op == "gt":
             return from_bool(a > b)
         return from_bool(a >= b)
-    if op in ("date_before", "date_after"):
-        a, b = parse_date(value), parse_date(pred.get("value"))
-        if a is None or b is None:
-            return Tri.UNKNOWN
-        return from_bool(a < b) if op == "date_before" else from_bool(a > b)
-    if op in ("date_between", "within_window"):
-        vals = pred.get("values") or []
-        d = parse_date(value)
-        lo = parse_date(vals[0]) if len(vals) > 0 else None
-        hi = parse_date(vals[1]) if len(vals) > 1 else None
-        if d is None or lo is None or hi is None:
-            return Tri.UNKNOWN
-        return from_bool(lo <= d <= hi)
     if op in ("age_on_date_gte", "age_on_date_lt"):
         birth = parse_date(value)
         on = ctx.reference_date
