@@ -1,0 +1,536 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.home_fire_flood
+status: draft
+rules:
+- id: rule.home.base
+  canonical_rule_id: home.base
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.home.ensure_safety
+  - type: attach_channel
+    channel_id: ch.home.fiipregatit
+  source_claim_ids:
+  - claim.home.emergency_official
+  - claim.home.safety_first
+  status: draft
+- id: rule.home.active_danger
+  canonical_rule_id: home.active_danger
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: any
+    args:
+    - op: eq
+      field: danger_active
+      value: true
+    - op: eq
+      field: people_safe
+      value: false
+  effects:
+  - type: attach_channel
+    channel_id: ch.home.emergency_112
+  - type: block
+    tag: safety_first_active_emergency
+    message_ro: Nu continua pașii administrativi cât timp există pericol imediat; mergi într-un loc sigur și contactează serviciile
+      de urgență.
+  source_claim_ids:
+  - claim.home.emergency_official
+  - claim.home.safety_first
+  status: draft
+- id: rule.home.pad_risk
+  canonical_rule_id: home.pad_risk
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: in
+    field: hazard
+    values:
+    - natural_flood
+    - earthquake
+    - landslide
+  effects:
+  - type: include_step
+    step_id: step.home.notify_pad
+  - type: include_step
+    step_id: step.home.prepare_documents
+  - type: include_step
+    step_id: step.home.wait_inspection
+  - type: include_requirement
+    requirement_id: req.home.valid_pad
+  - type: include_requirement
+    requirement_id: req.home.identity
+  - type: include_requirement
+    requirement_id: req.home.ownership
+  - type: attach_channel
+    channel_id: ch.home.pad_claim
+  source_claim_ids:
+  - claim.home.pad_scope
+  - claim.home.notify_60d
+  - claim.home.notice_contents
+  - claim.home.claim_documents
+  - claim.home.repair_after_inspection
+  status: draft
+- id: rule.home.natural_flood_landslide
+  canonical_rule_id: home.natural_flood_landslide
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: in
+    field: hazard
+    values:
+    - natural_flood
+    - landslide
+  effects:
+  - type: include_step
+    step_id: step.home.notify_authorities
+  - type: include_step
+    step_id: step.home.obtain_report
+  - type: include_requirement
+    requirement_id: req.home.authority_report
+  source_claim_ids:
+  - claim.home.authority_report
+  status: draft
+- id: rule.home.fire
+  canonical_rule_id: home.fire
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: eq
+    field: hazard
+    value: fire
+  effects:
+  - type: include_step
+    step_id: step.home.notify_facultative
+  - type: include_requirement
+    requirement_id: req.home.facultative_contract
+  - type: attach_channel
+    channel_id: ch.home.facultative_insurer
+  - type: require_confirmation
+    tag: fire_not_pad_check_facultative_policy
+    message_ro: Incendiul nu este unul dintre cele trei riscuri PAD afișate; verifică imediat polița facultativă și instrucțiunile
+      asigurătorului.
+  source_claim_ids:
+  - claim.home.pad_scope
+  status: draft
+- id: rule.home.plumbing
+  canonical_rule_id: home.plumbing
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: eq
+    field: hazard
+    value: plumbing_flood
+  effects:
+  - type: include_step
+    step_id: step.home.notify_facultative
+  - type: include_requirement
+    requirement_id: req.home.facultative_contract
+  - type: attach_channel
+    channel_id: ch.home.facultative_insurer
+  - type: require_confirmation
+    tag: plumbing_flood_not_natural_pad_risk
+    message_ro: Apa din instalații nu trebuie confundată cu inundația din cauze naturale acoperită de PAD; verifică polița
+      facultativă.
+  source_claim_ids:
+  - claim.home.pad_scope
+  status: draft
+- id: rule.home.unknown_hazard
+  canonical_rule_id: home.unknown_hazard
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: eq
+    field: hazard
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: hazard_classification_required
+    message_ro: Clarifică originea evenimentului înainte de a alege ruta PAD sau facultativă.
+  source_claim_ids:
+  - claim.home.pad_scope
+  status: draft
+- id: rule.home.pad_missing
+  canonical_rule_id: home.pad_missing
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: eq
+      field: pad_valid
+      value: false
+  effects:
+  - type: block
+    tag: no_valid_pad_for_pad_claim
+    message_ro: Ruta de despăgubire PAD nu poate fi confirmată fără o poliță valabilă la data evenimentului.
+  - type: emit_warning
+    tag: pad_is_mandatory_for_home
+    message_ro: PAD este obligatorie pentru locuințele aflate în sfera legală.
+  source_claim_ids:
+  - claim.home.pad_mandatory
+  - claim.home.notice_contents
+  status: draft
+- id: rule.home.pad_unknown
+  canonical_rule_id: home.pad_unknown
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: eq
+      field: pad_valid
+      value: null
+  effects:
+  - type: attach_channel
+    channel_id: ch.home.pad_verify
+  - type: require_confirmation
+    tag: verify_pad_validity_at_event_date
+    message_ro: Verifică existența și valabilitatea PAD la data producerii evenimentului.
+  source_claim_ids:
+  - claim.home.notice_contents
+  status: draft
+- id: rule.home.notify_deadline
+  canonical_rule_id: home.notify_deadline
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: lte
+      field: days_since_event
+      value: 60
+    - op: eq
+      field: insurer_notified
+      value: false
+  effects:
+  - type: set_deadline
+    step_id: step.home.notify_pad
+    value:
+      kind: calendar_days_from_event
+      days: 60
+  - type: emit_warning
+    tag: notify_pad_no_later_than_60_days
+    message_ro: Avizează cât mai repede; limita afișată de PAID este 60 de zile de la eveniment.
+  source_claim_ids:
+  - claim.home.notify_60d
+  status: draft
+- id: rule.home.notify_late
+  canonical_rule_id: home.notify_late
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: gt
+      field: days_since_event
+      value: 60
+    - op: eq
+      field: insurer_notified
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: pad_notice_over_60_days_requires_insurer_review
+    message_ro: Termenul de 60 de zile a fost depășit; contactează imediat asigurătorul, fără a presupune acceptarea dosarului.
+  source_claim_ids:
+  - claim.home.notify_60d
+  status: draft
+- id: rule.home.report_missing
+  canonical_rule_id: home.report_missing
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - landslide
+    - op: eq
+      field: authority_report_available
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.home.obtain_report
+  - type: block
+    tag: authority_event_report_missing
+    message_ro: Solicită documentul autorității care atestă evenimentul pentru dosarul PAD.
+  source_claim_ids:
+  - claim.home.authority_report
+  - claim.home.claim_documents
+  status: draft
+- id: rule.home.identity_missing
+  canonical_rule_id: home.identity_missing
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: eq
+      field: identity_document_available
+      value: false
+  effects:
+  - type: block
+    tag: identity_document_missing_for_pad_notice
+    message_ro: Actul de identitate este necesar pentru avizare/dosar.
+  source_claim_ids:
+  - claim.home.notice_contents
+  - claim.home.claim_documents
+  status: draft
+- id: rule.home.ownership_missing
+  canonical_rule_id: home.ownership_missing
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: eq
+      field: ownership_docs_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: ownership_proof_alternative_needed
+    message_ro: Verifică documentele alternative de proprietate acceptate de PAID sau asigurător.
+  source_claim_ids:
+  - claim.home.claim_documents
+  status: draft
+- id: rule.home.contents_only
+  canonical_rule_id: home.contents_only
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: contents_damage_only
+      value: true
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+  effects:
+  - type: include_step
+    step_id: step.home.notify_facultative
+  - type: include_requirement
+    requirement_id: req.home.facultative_contract
+  - type: emit_warning
+    tag: contents_not_covered_by_pad
+    message_ro: Bunurile din interior nu sunt acoperite de PAD; verifică polița facultativă.
+  source_claim_ids:
+  - claim.home.pad_exclusions
+  status: draft
+- id: rule.home.repair_before_inspection
+  canonical_rule_id: home.repair_before_inspection
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: eq
+      field: repairs_started
+      value: true
+    - op: eq
+      field: insurer_inspection_done
+      value: false
+  effects:
+  - type: block
+    tag: do_not_start_repairs_before_inspection
+    message_ro: Nu începe lucrările definitive înainte de constatarea asigurătorului, cu excepția măsurilor urgente de limitare
+      a pagubei documentate corespunzător.
+  source_claim_ids:
+  - claim.home.repair_after_inspection
+  status: draft
+- id: rule.home.inspection_pending
+  canonical_rule_id: home.inspection_pending
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - natural_flood
+      - earthquake
+      - landslide
+    - op: eq
+      field: insurer_notified
+      value: true
+    - op: eq
+      field: insurer_inspection_done
+      value: false
+  effects:
+  - type: emit_advice
+    tag: insurer_inspection_max_5_days_after_written_notice
+    message_ro: PAID indică sosirea reprezentantului asigurătorului în maximum 5 zile după înștiințarea scrisă.
+  source_claim_ids:
+  - claim.home.inspection_5d
+  status: draft
+- id: rule.home.facultative_unknown
+  canonical_rule_id: home.facultative_unknown
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - fire
+      - plumbing_flood
+    - op: eq
+      field: facultative_policy
+      value: unknown
+  effects:
+  - type: require_confirmation
+    tag: verify_facultative_policy_and_deadline
+    message_ro: Verifică polița, riscurile acoperite și termenul contractual de notificare la asigurător.
+  source_claim_ids: []
+  status: draft
+- id: rule.home.facultative_none
+  canonical_rule_id: home.facultative_none
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: hazard
+      values:
+      - fire
+      - plumbing_flood
+    - op: eq
+      field: facultative_policy
+      value: 'no'
+  effects:
+  - type: emit_warning
+    tag: no_confirmed_facultative_cover
+    message_ro: Nu există o acoperire facultativă confirmată; verifică separat ajutorul de urgență și răspunderea eventualului
+      terț.
+  source_claim_ids: []
+  status: draft
+- id: rule.home.other_uat
+  canonical_rule_id: home.other_uat
+  event_type_id: life.home_fire_flood
+  jurisdiction_ids:
+  - ro
+  authority_level: local
+  severity: operational
+  when:
+    op: neq
+    field: target_uat
+    value: Timișoara
+  effects:
+  - type: require_confirmation
+    tag: verify_local_emergency_authority_channel
+    message_ro: Verifică ISU/SVSU/CLSU și autoritatea locală competentă pentru localitatea locuinței.
+  source_claim_ids:
+  - claim.home.authority_report
+  status: draft

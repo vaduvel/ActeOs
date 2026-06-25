@@ -1,0 +1,230 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.vehicle_rca_due
+status: draft
+rules:
+- id: rule.rca.base
+  canonical_rule_id: rca.base
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: owner_or_user
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.rca.verify
+  - type: include_step
+    step_id: step.rca.compare_offers
+  - type: include_requirement
+    requirement_id: req.rca.valid_policy
+  - type: attach_channel
+    channel_id: ch.rca.aida
+  source_claim_ids:
+  - claim.rca.maintain
+  - claim.rca.duration
+  - claim.rca.aida_channel
+  status: draft
+- id: rule.rca.expiring
+  canonical_rule_id: rca.expiring
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: rca_status
+    value: expiring
+  effects:
+  - type: emit_warning
+    tag: rca_expiring_renew_before_end
+    message_ro: Încheie polița următoare înainte de expirare pentru a evita o perioadă fără acoperire.
+  source_claim_ids:
+  - claim.rca.maintain
+  - claim.rca.reminder_30d
+  status: draft
+- id: rule.rca.expired
+  canonical_rule_id: rca.expired
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: rca_status
+    value: expired
+  effects:
+  - type: include_step
+    step_id: step.rca.stop_road_use
+  - type: block
+    tag: do_not_drive_without_rca
+    message_ro: Nu utiliza vehiculul pe drum public fără RCA valabilă.
+  source_claim_ids:
+  - claim.rca.no_public_road
+  status: draft
+- id: rule.rca.unknown
+  canonical_rule_id: rca.unknown
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: rca_status
+    value: unknown
+  effects:
+  - type: require_confirmation
+    tag: verify_rca_status_aida
+    message_ro: Verifică polița în AIDA și în documentul emis de asigurător.
+  source_claim_ids:
+  - claim.rca.aida_channel
+  status: draft
+- id: rule.rca.suspend_eligible
+  canonical_rule_id: rca.suspend_eligible
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_suspended
+      value: true
+    - op: eq
+      field: parked_private_off_public
+      value: true
+  effects:
+  - type: include_step
+    step_id: step.rca.suspend_request
+  - type: include_requirement
+    requirement_id: req.rca.suspended_registration
+  - type: include_requirement
+    requirement_id: req.rca.private_immobilization
+  - type: emit_advice
+    tag: rca_suspension_may_be_requested
+    message_ro: Poți solicita asigurătorului suspendarea efectelor contractului în condițiile legale.
+  source_claim_ids:
+  - claim.rca.suspension_conditions
+  status: draft
+- id: rule.rca.suspend_not_eligible_registration
+  canonical_rule_id: rca.suspend_not_eligible_registration
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_suspended
+      value: false
+    - op: eq
+      field: parked_private_off_public
+      value: true
+  effects:
+  - type: block
+    tag: rca_suspension_requires_registration_suspension
+    message_ro: Simpla neutilizare a vehiculului nu îndeplinește condiția de suspendare a RCA.
+  source_claim_ids:
+  - claim.rca.suspension_conditions
+  status: draft
+- id: rule.rca.suspend_not_private
+  canonical_rule_id: rca.suspend_not_private
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: registration_suspended
+      value: true
+    - op: eq
+      field: parked_private_off_public
+      value: false
+  effects:
+  - type: block
+    tag: rca_suspension_requires_private_storage
+    message_ro: Vehiculul trebuie imobilizat într-un spațiu privat, în afara domeniului public.
+  source_claim_ids:
+  - claim.rca.suspension_conditions
+  status: draft
+- id: rule.rca.transfer_pending_notice
+  canonical_rule_id: rca.transfer_pending_notice
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: ownership_transferred
+      value: true
+    - op: eq
+      field: insurer_notified_transfer
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.rca.notify_transfer
+  - type: include_requirement
+    requirement_id: req.rca.transfer_documents
+  - type: emit_warning
+    tag: notify_insurer_transfer
+    message_ro: RCA nu încetează doar prin semnarea transferului; notifică asigurătorul cu actele justificative.
+  source_claim_ids:
+  - claim.rca.transfer_end
+  status: draft
+- id: rule.rca.transfer_notified
+  canonical_rule_id: rca.transfer_notified
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: ownership_transferred
+      value: true
+    - op: eq
+      field: insurer_notified_transfer
+      value: true
+  effects:
+  - type: emit_advice
+    tag: rca_transfer_end_triggered
+    message_ro: Verifică confirmarea asigurătorului privind încetarea după notificare.
+  source_claim_ids:
+  - claim.rca.transfer_end
+  status: draft
+- id: rule.rca.not_owner_user
+  canonical_rule_id: rca.not_owner_user
+  event_type_id: life.vehicle_rca_due
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: owner_or_user
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: identify_rca_obligated_person
+    message_ro: Clarifică cine este proprietarul sau utilizatorul legal obligat să mențină RCA.
+  source_claim_ids:
+  - claim.rca.maintain
+  status: draft

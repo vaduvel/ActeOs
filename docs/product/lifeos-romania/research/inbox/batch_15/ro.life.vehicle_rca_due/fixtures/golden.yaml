@@ -1,0 +1,399 @@
+batch_id: B15_VEHICLES_2_MISC
+defaults:
+  event_type_id: life.vehicle_rca_due
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: RCA01
+  desc: RCA expiră în curând
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_expiring_renew_before_end
+- id: RCA02
+  desc: RCA valabilă
+  facts:
+    owner_or_user: true
+    rca_status: valid
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.rca.aida
+- id: RCA03
+  desc: RCA expirată, vrea să circule
+  facts:
+    owner_or_user: true
+    rca_status: expired
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_without_rca
+- id: RCA04
+  desc: RCA expirată, nu vrea să circule
+  facts:
+    owner_or_user: true
+    rca_status: expired
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_without_rca
+- id: RCA05
+  desc: stare RCA necunoscută
+  facts:
+    owner_or_user: true
+    rca_status: unknown
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_rca_status_aida
+- id: RCA06
+  desc: înmatriculare suspendată și garaj privat
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: true
+    parked_private_off_public: true
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_suspension_may_be_requested
+- id: RCA07
+  desc: doar garaj privat, înmatriculare activă
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: true
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - rca_suspension_requires_registration_suspension
+- id: RCA08
+  desc: înmatriculare suspendată, vehicul pe domeniul public
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: true
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - rca_suspension_requires_private_storage
+- id: RCA09
+  desc: proprietate transferată, asigurător nenotificat
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: true
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - notify_insurer_transfer
+- id: RCA10
+  desc: proprietate transferată și notificată
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: true
+    insurer_notified_transfer: true
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_transfer_end_triggered
+- id: RCA11
+  desc: persoană care nu este proprietar/utilizator
+  facts:
+    owner_or_user: false
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - identify_rca_obligated_person
+- id: RCA12
+  desc: expirare exact azi
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-06-25'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_expiring_renew_before_end
+- id: RCA13
+  desc: expirare peste 30 de zile
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-25'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_expiring_renew_before_end
+- id: RCA14
+  desc: expirare în mai mult de 30 de zile
+  facts:
+    owner_or_user: true
+    rca_status: valid
+    rca_expiry_date: '2026-09-01'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    channels:
+    - ch.rca.aida
+- id: RCA15
+  desc: fără dată, dar polița apare valabilă
+  facts:
+    owner_or_user: true
+    rca_status: valid
+    rca_expiry_date: null
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_rca_status_aida
+- id: RCA16
+  desc: transfer și RCA deja expirată
+  facts:
+    owner_or_user: true
+    rca_status: expired
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: true
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_without_rca
+    warnings:
+    - notify_insurer_transfer
+- id: RCA17
+  desc: suspendare eligibilă, RCA valabilă
+  facts:
+    owner_or_user: true
+    rca_status: valid
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: true
+    parked_private_off_public: true
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    warnings:
+    - rca_suspension_may_be_requested
+- id: RCA18
+  desc: suspendare eligibilă, RCA expirată
+  facts:
+    owner_or_user: true
+    rca_status: expired
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: true
+    parked_private_off_public: true
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - do_not_drive_without_rca
+- id: RCA19
+  desc: vehicul staționat, înmatriculare activă
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: true
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: false
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - rca_suspension_requires_registration_suspension
+- id: RCA20
+  desc: transfer notificat, dar confirmarea lipsește
+  facts:
+    owner_or_user: true
+    rca_status: unknown
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: true
+    insurer_notified_transfer: true
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_rca_status_aida
+    warnings:
+    - rca_transfer_end_triggered
+- id: RCA21
+  desc: poliță valabilă și utilizare rutieră
+  facts:
+    owner_or_user: true
+    rca_status: valid
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    requirements:
+    - req.rca.valid_policy
+- id: RCA22
+  desc: dată de expirare trecută, status introdus expiring
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-06-20'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - verify_rca_status_aida
+- id: RCA23
+  desc: suspendare fără loc privat cunoscut
+  facts:
+    owner_or_user: true
+    rca_status: expiring
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: true
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: blocked
+    blocks:
+    - rca_suspension_requires_private_storage
+- id: RCA24
+  desc: utilizator prin leasing cu RCA validă
+  facts:
+    owner_or_user: true
+    rca_status: valid
+    rca_expiry_date: '2026-07-10'
+    registration_suspended: false
+    parked_private_off_public: false
+    ownership_transferred: false
+    insurer_notified_transfer: false
+    plans_public_road_use: true
+    reference_date: '2026-06-25'
+  expect:
+    status: ready
+    included_steps:
+    - step.rca.verify

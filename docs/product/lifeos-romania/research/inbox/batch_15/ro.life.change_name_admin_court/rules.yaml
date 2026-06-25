@@ -1,0 +1,470 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.change_name_admin_court
+status: draft
+rules:
+- id: rule.name.base
+  canonical_rule_id: name.base
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: in
+    field: citizenship_status
+    values:
+    - romanian
+    - stateless_with_ro_domicile
+  effects:
+  - type: include_step
+    step_id: step.name.check_route
+  - type: include_step
+    step_id: step.name.prepare_initial
+  - type: include_step
+    step_id: step.name.publish_mo
+  - type: include_step
+    step_id: step.name.wait_opposition
+  - type: include_step
+    step_id: step.name.submit_final
+  - type: include_step
+    step_id: step.name.receive_disposition
+  - type: include_requirement
+    requirement_id: req.name.identity_civil
+  - type: include_requirement
+    requirement_id: req.name.mo_extract
+  source_claim_ids:
+  - claim.name.admin_route
+  - claim.name.filing_place
+  - claim.name.documents
+  status: draft
+- id: rule.name.other_citizenship
+  canonical_rule_id: name.other_citizenship
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: citizenship_status
+    value: other
+  effects:
+  - type: block
+    tag: administrative_name_change_scope_not_verified
+    message_ro: Ruta din Legea nr. 119/1996 nu este confirmată pentru acest statut; verifică legea personală și autoritatea
+      competentă.
+  source_claim_ids:
+  - claim.name.admin_route
+  status: draft
+- id: rule.name.no_ground
+  canonical_rule_id: name.no_ground
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: serious_ground_documented
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: serious_ground_and_evidence_missing
+    message_ro: Procedura cere motive temeinice; completează justificarea și dovezile fără a presupune admiterea.
+  source_claim_ids:
+  - claim.name.admin_route
+  - claim.name.documents
+  status: draft
+- id: rule.name.age14_record
+  canonical_rule_id: name.age14_record
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: gte
+    field: applicant_age
+    value: 14
+  effects:
+  - type: include_requirement
+    requirement_id: req.name.criminal_record
+  source_claim_ids:
+  - claim.name.criminal_record_14
+  status: draft
+- id: rule.name.tutor_court
+  canonical_rule_id: name.tutor_court
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_minor
+      value: true
+    - op: eq
+      field: filed_by_tutor
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.name.court_approval
+  - type: attach_channel
+    channel_id: ch.name.court
+  source_claim_ids:
+  - claim.name.minor_court
+  status: draft
+- id: rule.name.parents_disagree
+  canonical_rule_id: name.parents_disagree
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_minor
+      value: true
+    - op: eq
+      field: parents_agree
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.name.court_approval
+  - type: block
+    tag: court_decision_required_for_parent_disagreement
+    message_ro: Instanța de tutelă trebuie să decidă înainte de ruta administrativă.
+  source_claim_ids:
+  - claim.name.minor_court
+  status: draft
+- id: rule.name.one_parent
+  canonical_rule_id: name.one_parent
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_minor
+      value: true
+    - op: eq
+      field: one_parent_application
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.name.other_parent_consent
+  source_claim_ids:
+  - claim.name.other_parent_consent
+  status: draft
+- id: rule.name.one_parent_no_consent
+  canonical_rule_id: name.one_parent_no_consent
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_minor
+      value: true
+    - op: eq
+      field: one_parent_application
+      value: true
+    - op: eq
+      field: other_parent_consent_available
+      value: false
+  effects:
+  - type: block
+    tag: other_parent_consent_or_exception_missing
+    message_ro: Acordul celuilalt părinte ori excepția legală trebuie demonstrată.
+  source_claim_ids:
+  - claim.name.other_parent_consent
+  status: draft
+- id: rule.name.minor14_signature
+  canonical_rule_id: name.minor14_signature
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_minor
+      value: true
+    - op: gte
+      field: applicant_age
+      value: 14
+  effects:
+  - type: include_requirement
+    requirement_id: req.name.minor_signature
+  source_claim_ids:
+  - claim.name.minor_14_signs
+  status: draft
+- id: rule.name.minor14_no_signature
+  canonical_rule_id: name.minor14_no_signature
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: is_minor
+      value: true
+    - op: gte
+      field: applicant_age
+      value: 14
+    - op: eq
+      field: minor_signed_if_14plus
+      value: false
+  effects:
+  - type: block
+    tag: minor_14_signature_missing
+    message_ro: Minorul de cel puțin 14 ani trebuie să semneze cererea.
+  source_claim_ids:
+  - claim.name.minor_14_signs
+  status: draft
+- id: rule.name.mo_missing
+  canonical_rule_id: name.mo_missing
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: mo_extract_published
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.name.publish_mo
+  - type: block
+    tag: official_gazette_extract_missing
+    message_ro: Publică extrasul cererii înainte de dosarul final, dacă nu se aplică o excepție verificată.
+  source_claim_ids:
+  - claim.name.documents
+  status: draft
+- id: rule.name.mo_older_year
+  canonical_rule_id: name.mo_older_year
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: gt
+    field: mo_extract_age_days
+    value: 365
+  effects:
+  - type: block
+    tag: official_gazette_extract_older_than_one_year
+    message_ro: Extrasul Monitorului Oficial nu mai îndeplinește limita de un an.
+  source_claim_ids:
+  - claim.name.documents
+  status: draft
+- id: rule.name.opposition_wait
+  canonical_rule_id: name.opposition_wait
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: opposition_period_elapsed
+    value: false
+  effects:
+  - type: include_step
+    step_id: step.name.wait_opposition
+  - type: set_deadline
+    step_id: step.name.wait_opposition
+    value:
+      kind: calendar_days_from_publication
+      days: 30
+  - type: block
+    tag: opposition_window_not_elapsed
+    message_ro: Așteaptă expirarea termenului de 30 de zile pentru opoziții.
+  source_claim_ids:
+  - claim.name.opposition_30
+  status: draft
+- id: rule.name.opposition_received
+  canonical_rule_id: name.opposition_received
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: critical
+  when:
+    op: eq
+    field: opposition_received
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: opposition_requires_case_review
+    message_ro: Opoziția trebuie analizată în dosar; rezultatul nu poate fi anticipat automat.
+  source_claim_ids:
+  - claim.name.opposition_30
+  status: draft
+- id: rule.name.disposition_term
+  canonical_rule_id: name.disposition_term
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: stage2_documents_complete
+    value: true
+  effects:
+  - type: set_deadline
+    step_id: step.name.receive_disposition
+    value:
+      kind: calendar_days_from_county_receipt
+      days: 30
+  source_claim_ids:
+  - claim.name.disposition_30
+  status: draft
+- id: rule.name.approved_90
+  canonical_rule_id: name.approved_90
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: disposition_result
+    value: approved
+  effects:
+  - type: set_deadline
+    step_id: step.name.receive_disposition
+    value:
+      kind: calendar_days_from_approval_notice
+      days: 90
+  - type: emit_warning
+    tag: confirm_approved_disposition_within_90_days
+    message_ro: Confirmă/primește dispoziția în 90 de zile pentru a produce efecte.
+  source_claim_ids:
+  - claim.name.pickup_90
+  status: draft
+- id: rule.name.approved_late
+  canonical_rule_id: name.approved_late
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: disposition_result
+      value: approved
+    - op: gt
+      field: days_since_approval_notice
+      value: 90
+  effects:
+  - type: block
+    tag: approval_confirmation_90_days_passed
+    message_ro: Dispoziția poate să nu mai producă efecte deoarece termenul de 90 de zile a trecut.
+  source_claim_ids:
+  - claim.name.pickup_90
+  status: draft
+- id: rule.name.rejected
+  canonical_rule_id: name.rejected
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: disposition_result
+    value: rejected
+  effects:
+  - type: include_step
+    step_id: step.name.challenge
+  - type: attach_channel
+    channel_id: ch.name.court
+  - type: emit_advice
+    tag: rejection_may_be_challenged
+    message_ro: Respingerea poate fi contestată potrivit contenciosului administrativ, pe baza comunicării.
+  source_claim_ids:
+  - claim.name.rejection_challenge
+  status: draft
+- id: rule.name.timis
+  canonical_rule_id: name.timis
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: local
+  severity: operational
+  when:
+    op: eq
+    field: domicile_uat
+    value: Timișoara
+  effects:
+  - type: include_step
+    step_id: step.name.book_timis
+  - type: attach_channel
+    channel_id: ch.name.timis_archive
+  - type: require_confirmation
+    tag: timisoara_current_procedure_must_be_reconfirmed
+    message_ro: Pagina locală este arhivată; confirmă programarea și documentele pe canalul curent.
+  source_claim_ids:
+  - claim.name.timis_appointment
+  - claim.name.local_no_fee_unverified
+  status: draft
+- id: rule.name.timis_sla_conflict
+  canonical_rule_id: name.timis_sla_conflict
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: local
+  severity: critical
+  when:
+    op: eq
+    field: domicile_uat
+    value: Timișoara
+  effects:
+  - type: require_confirmation
+    tag: conflicting_local_60_vs_national_30_days
+    message_ro: 'Nu promite un SLA local: pagina arhivată indică 60 de zile, iar legea consolidată indică 30 de zile de la
+      primirea județeană.'
+  source_claim_ids:
+  - claim.name.disposition_30
+  - claim.name.local_60_conflict
+  status: draft
+- id: rule.name.other_uat
+  canonical_rule_id: name.other_uat
+  event_type_id: life.change_name_admin_court
+  jurisdiction_ids:
+  - ro
+  authority_level: local
+  severity: operational
+  when:
+    op: neq
+    field: domicile_uat
+    value: Timișoara
+  effects:
+  - type: require_confirmation
+    tag: verify_local_name_change_route
+    message_ro: Verifică programarea și fluxul local al UAT-ului competent.
+  source_claim_ids:
+  - claim.name.filing_place
+  status: draft

@@ -1,0 +1,357 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.licence_suspended_recovery
+status: draft
+rules:
+- id: rule.lsr.base
+  canonical_rule_id: lsr.base
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.lsr.read_decision
+  - type: include_step
+    step_id: step.lsr.choose_test_authority
+  - type: include_step
+    step_id: step.lsr.recover
+  source_claim_ids:
+  - claim.lsr.mandatory_test
+  - claim.lsr.location_until_june
+  - claim.lsr.location_from_july
+  status: draft
+- id: rule.lsr.test_location_until
+  canonical_rule_id: lsr.test_location_until
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: date_before
+    field: reference_date
+    value: '2026-07-01'
+  effects:
+  - type: attach_channel
+    channel_id: ch.lsr.police
+  - type: emit_advice
+    tag: test_at_traffic_police_until_june_30
+    message_ro: La această dată testul se susține la un serviciu al poliției rutiere.
+  source_claim_ids:
+  - claim.lsr.location_until_june
+  status: draft
+  effective_to: '2026-06-30'
+- id: rule.lsr.test_location_from
+  canonical_rule_id: lsr.test_location_from
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: date_after
+    field: reference_date
+    value: '2026-06-30'
+  effects:
+  - type: attach_channel
+    channel_id: ch.lsr.timis_spcrpciv
+  - type: emit_advice
+    tag: test_at_spcrpciv_from_july_1
+    message_ro: La această dată testul se susține la un SPCRPCIV.
+  source_claim_ids:
+  - claim.lsr.location_from_july
+  status: draft
+  effective_from: '2026-07-01'
+- id: rule.lsr.mandatory_test
+  canonical_rule_id: lsr.mandatory_test
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: in
+    field: suspension_reason
+    values: &id001
+    - alcohol
+    - priority_accident
+    - overtaking_accident
+    - red_light_accident
+    - wrong_way_accident
+    - criminal_case_180
+  effects:
+  - type: include_step
+    step_id: step.lsr.test
+  - type: include_requirement
+    requirement_id: req.lsr.test
+  - type: emit_warning
+    tag: mandatory_test_before_suspension_end
+    message_ro: Testul trebuie promovat înainte de expirarea suspendării în cazul aplicabil.
+  source_claim_ids:
+  - claim.lsr.mandatory_test
+  status: draft
+- id: rule.lsr.mandatory_not_done
+  canonical_rule_id: lsr.mandatory_not_done
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: in
+      field: suspension_reason
+      values: *id001
+    - op: eq
+      field: mandatory_test_completed
+      value: false
+  effects:
+  - type: emit_warning
+    tag: risk_plus_30_days
+    message_ro: Neprezentarea sau nepromovarea testului obligatoriu poate majora suspendarea cu 30 de zile.
+  source_claim_ids:
+  - claim.lsr.plus_30
+  status: draft
+- id: rule.lsr.reduction_request
+  canonical_rule_id: lsr.reduction_request
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: wants_reduction
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.lsr.test
+  - type: include_step
+    step_id: step.lsr.pay_fines
+  - type: include_step
+    step_id: step.lsr.request_reduction
+  - type: include_requirement
+    requirement_id: req.lsr.test
+  - type: include_requirement
+    requirement_id: req.lsr.fines
+  - type: include_requirement
+    requirement_id: req.lsr.one_year_licence
+  - type: include_requirement
+    requirement_id: req.lsr.no_exclusion
+  source_claim_ids:
+  - claim.lsr.reduction_conditions
+  - claim.lsr.reduction_exclusions
+  status: draft
+- id: rule.lsr.reduction_under1y
+  canonical_rule_id: lsr.reduction_under1y
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_reduction
+      value: true
+    - op: lt
+      field: licence_age_years
+      value: 1
+  effects:
+  - type: block
+    tag: reduction_requires_one_year_licence
+    message_ro: Reducerea nu este pregătită deoarece permisul nu este deținut de cel puțin un an.
+  source_claim_ids:
+  - claim.lsr.reduction_conditions
+  status: draft
+- id: rule.lsr.reduction_test_missing
+  canonical_rule_id: lsr.reduction_test_missing
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_reduction
+      value: true
+    - op: eq
+      field: test_passed
+      value: false
+  effects:
+  - type: block
+    tag: reduction_requires_passed_test
+    message_ro: Promovează testul înainte de cererea de reducere.
+  source_claim_ids:
+  - claim.lsr.reduction_conditions
+  - claim.lsr.test_score
+  status: draft
+- id: rule.lsr.reduction_fines_ro
+  canonical_rule_id: lsr.reduction_fines_ro
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_reduction
+      value: true
+    - op: eq
+      field: no_ro_domicile
+      value: false
+    - op: eq
+      field: all_local_traffic_fines_paid
+      value: false
+  effects:
+  - type: block
+    tag: reduction_requires_local_fines_paid
+    message_ro: Achită amenzile rutiere datorate bugetului local pentru reducere.
+  source_claim_ids:
+  - claim.lsr.reduction_conditions
+  status: draft
+- id: rule.lsr.reduction_fine_nonresident
+  canonical_rule_id: lsr.reduction_fine_nonresident
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_reduction
+      value: true
+    - op: eq
+      field: no_ro_domicile
+      value: true
+    - op: eq
+      field: triggering_fine_paid
+      value: false
+  effects:
+  - type: block
+    tag: reduction_requires_triggering_fine_paid
+    message_ro: Pentru titularul fără domiciliu în România trebuie achitată amenda declanșatoare.
+  source_claim_ids:
+  - claim.lsr.no_ro_domicile_fine
+  status: draft
+- id: rule.lsr.excluded_points
+  canonical_rule_id: lsr.excluded_points
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: repeated_15_points_12m
+    value: true
+  effects:
+  - type: block
+    tag: reduction_excluded_repeated_points
+    message_ro: Cazul este exclus de la reducere prin repetarea cumulului de puncte.
+  source_claim_ids:
+  - claim.lsr.reduction_exclusions
+  status: draft
+- id: rule.lsr.excluded_increased
+  canonical_rule_id: lsr.excluded_increased
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: period_already_increased
+    value: true
+  effects:
+  - type: block
+    tag: reduction_excluded_period_increased
+    message_ro: Perioada deja majorată este exclusă de la reducere în cazul legal aplicabil.
+  source_claim_ids:
+  - claim.lsr.reduction_exclusions
+  status: draft
+- id: rule.lsr.excluded_aggregate
+  canonical_rule_id: lsr.excluded_aggregate
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: eq
+    field: aggregated_serious_period
+    value: true
+  effects:
+  - type: block
+    tag: reduction_excluded_serious_aggregate
+    message_ro: Cumulul unor suspendări grave este exclus de la reducere.
+  source_claim_ids:
+  - claim.lsr.reduction_exclusions
+  status: draft
+- id: rule.lsr.points_surrender
+  canonical_rule_id: lsr.points_surrender
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: suspension_reason
+      value: points
+    - op: eq
+      field: notice_received_for_points
+      value: true
+    - op: eq
+      field: licence_surrendered
+      value: false
+  effects:
+  - type: include_step
+    step_id: step.lsr.surrender
+  - type: include_requirement
+    requirement_id: req.lsr.surrender
+  - type: set_deadline
+    step_id: step.lsr.surrender
+    value:
+      kind: days_from_notice
+      days: 5
+  - type: emit_warning
+    tag: surrender_licence_within_5_days
+    message_ro: Predă permisul în termenul indicat de lege pentru a evita majorarea.
+  source_claim_ids:
+  - claim.lsr.surrender_5d
+  status: draft
+- id: rule.lsr.other_reason
+  canonical_rule_id: lsr.other_reason
+  event_type_id: life.licence_suspended_recovery
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  severity: operational
+  when:
+    op: eq
+    field: suspension_reason
+    value: other
+  effects:
+  - type: require_confirmation
+    tag: verify_suspension_decision_specifics
+    message_ro: Verifică actul de suspendare și temeiul exact înainte de a calcula condițiile.
+  source_claim_ids:
+  - claim.lsr.mandatory_test
+  - claim.lsr.reduction_exclusions
+  status: draft

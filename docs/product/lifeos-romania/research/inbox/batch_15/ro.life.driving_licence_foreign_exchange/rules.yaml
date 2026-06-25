@@ -1,0 +1,321 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B15_VEHICLES_2_MISC
+event_type_id: life.driving_licence_foreign_exchange
+status: draft
+rules:
+- id: rule.dlf.base
+  canonical_rule_id: dlf.base
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.dlf.verify_eligibility
+  - type: include_step
+    step_id: step.dlf.prepare_docs
+  - type: include_step
+    step_id: step.dlf.prepare_record
+  - type: include_step
+    step_id: step.dlf.submit_personally
+  - type: include_requirement
+    requirement_id: req.dlf.identity_residence
+  - type: include_requirement
+    requirement_id: req.dlf.application
+  - type: include_requirement
+    requirement_id: req.dlf.payment
+  source_claim_ids:
+  - claim.dlf.personal_county
+  - claim.dlf.identity_residence
+  - claim.dlf.application_record
+  - claim.dlf.fee_89
+  status: draft
+- id: rule.dlf.country_unverified
+  canonical_rule_id: dlf.country_unverified
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: country_eligibility_verified
+    value: false
+  effects:
+  - type: block
+    tag: country_and_licence_eligibility_unverified
+    message_ro: Nu presupune că permisul este preschimbabil; verifică statul și documentul în ordin și anexe.
+  source_claim_ids:
+  - claim.dlf.country_specific
+  status: draft
+- id: rule.dlf.non_national
+  canonical_rule_id: dlf.non_national
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: in
+    field: licence_type
+    values:
+    - international
+    - provisional
+    - learner
+    - unknown
+  effects:
+  - type: require_confirmation
+    tag: licence_type_requires_official_check
+    message_ro: Tipul documentului nu este confirmat ca permis național preschimbabil.
+  source_claim_ids:
+  - claim.dlf.country_specific
+  status: draft
+- id: rule.dlf.no_residence
+  canonical_rule_id: dlf.no_residence
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: residence_in_romania
+    value: false
+  effects:
+  - type: block
+    tag: romania_domicile_or_residence_required
+    message_ro: Ruta modelată cere domiciliu sau reședință în România.
+  source_claim_ids:
+  - claim.dlf.personal_county
+  - claim.dlf.identity_residence
+  status: draft
+- id: rule.dlf.lost_eu
+  canonical_rule_id: dlf.lost_eu
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: in
+    field: licence_status
+    values:
+    - lost
+    - stolen
+  effects:
+  - type: include_requirement
+    requirement_id: req.dlf.original
+  - type: emit_warning
+    tag: loss_theft_evidence_required
+    message_ro: Pentru permisul UE pierdut/furat trebuie documentul oficial corespunzător; pentru alte state verifică anexa.
+  source_claim_ids:
+  - claim.dlf.loss_eu
+  - claim.dlf.country_specific
+  status: draft
+- id: rule.dlf.original_missing
+  canonical_rule_id: dlf.original_missing
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: original_licence_available
+      value: false
+    - op: not_in
+      field: licence_status
+      values:
+      - lost
+      - stolen
+  effects:
+  - type: block
+    tag: original_licence_or_official_exception_missing
+    message_ro: Originalul lipsește și nu este modelată o excepție oficială aplicabilă.
+  source_claim_ids:
+  - claim.dlf.original_translation
+  status: draft
+- id: rule.dlf.translation_needed
+  canonical_rule_id: dlf.translation_needed
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: translation_required
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.dlf.translation
+  source_claim_ids:
+  - claim.dlf.original_translation
+  status: draft
+- id: rule.dlf.translation_missing
+  canonical_rule_id: dlf.translation_missing
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: translation_required
+      value: true
+    - op: eq
+      field: translation_available
+      value: false
+  effects:
+  - type: block
+    tag: required_translation_missing
+    message_ro: Obține traducerea conformă înainte de depunere.
+  source_claim_ids:
+  - claim.dlf.original_translation
+  status: draft
+- id: rule.dlf.new_validity
+  canonical_rule_id: dlf.new_validity
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: new_administrative_validity_requested
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.dlf.medical
+  - type: include_requirement
+    requirement_id: req.dlf.medical
+  source_claim_ids:
+  - claim.dlf.medical_new_validity
+  status: draft
+- id: rule.dlf.medical_missing
+  canonical_rule_id: dlf.medical_missing
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: new_administrative_validity_requested
+      value: true
+    - op: eq
+      field: medical_certificate_available
+      value: false
+  effects:
+  - type: block
+    tag: medical_certificate_missing_for_new_validity
+    message_ro: Fișa medicală este necesară pentru noua valabilitate administrativă.
+  source_claim_ids:
+  - claim.dlf.medical_new_validity
+  status: draft
+- id: rule.dlf.timis
+  canonical_rule_id: dlf.timis
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: target_county
+    value: TM
+  effects:
+  - type: include_step
+    step_id: step.dlf.book_timis
+  - type: attach_channel
+    channel_id: ch.dlf.timis
+  source_claim_ids:
+  - claim.dlf.timis_appointment
+  status: draft
+- id: rule.dlf.timis_no_appointment
+  canonical_rule_id: dlf.timis_no_appointment
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  when:
+    op: all
+    args:
+    - op: eq
+      field: target_county
+      value: TM
+    - op: eq
+      field: appointment_booked
+      value: false
+  effects:
+  - type: emit_warning
+    tag: book_timis_foreign_licence_exchange
+    message_ro: Fă programarea HUB MAI pentru preschimbarea permisului străin.
+  source_claim_ids:
+  - claim.dlf.timis_appointment
+  status: draft
+- id: rule.dlf.fee_unverified_timis
+  canonical_rule_id: dlf.fee_unverified_timis
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: critical
+  when:
+    op: eq
+    field: fee_verified_for_timis
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: verify_current_timis_licence_fee
+    message_ro: Suma de 89 lei este verificată pe pagina București; confirm-o pentru Timiș înainte de plată.
+  source_claim_ids:
+  - claim.dlf.fee_89
+  status: draft
+- id: rule.dlf.eid_timis
+  canonical_rule_id: dlf.eid_timis
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro.tm
+  authority_level: county
+  severity: operational
+  when:
+    op: eq
+    field: electronic_id
+    value: true
+  effects:
+  - type: emit_advice
+    tag: eid_address_verified_at_counter
+    message_ro: În Timiș nu se solicită separat certificatul de domiciliu pentru cartea electronică de identitate.
+  source_claim_ids:
+  - claim.dlf.eid_address
+  status: draft
+- id: rule.dlf.other_county
+  canonical_rule_id: dlf.other_county
+  event_type_id: life.driving_licence_foreign_exchange
+  jurisdiction_ids:
+  - ro
+  authority_level: county
+  severity: operational
+  when:
+    op: neq
+    field: target_county
+    value: TM
+  effects:
+  - type: require_confirmation
+    tag: verify_county_submission_procedure
+    message_ro: Verifică programarea și practica serviciului din județul competent.
+  source_claim_ids:
+  - claim.dlf.personal_county
+  status: draft
