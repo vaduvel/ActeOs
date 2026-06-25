@@ -1,0 +1,200 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_PASSPORT_FIRST_OR_RENEW
+event_type_id: life.passport_first_or_renew
+status: draft
+rules:
+  - id: rule.pass.docs
+    canonical_rule_id: passport.docs
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2021-03-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: apply_passport }
+      - { type: include_requirement, requirement_id: req.valid_id }
+      - { type: include_requirement, requirement_id: req.payment_proof }
+    source_claim_ids: [claim.pass.docs]
+    status: draft
+  - id: rule.pass.id_gate
+    canonical_rule_id: passport.id_gate
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2021-03-12'
+    when:
+      op: eq
+      field: has_valid_id
+      value: false
+    effects:
+      - { type: block, message_ro: 'Ai nevoie de un act de identitate valabil in original; reinnoieste intai CI.' }
+      - { type: trigger_child_event, event_type_id: life.id_card_expired }
+    source_claim_ids: [claim.pass.docs]
+    status: draft
+  - id: rule.pass.previous_passport
+    canonical_rule_id: passport.previous_passport
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2021-03-12'
+    when:
+      op: eq
+      field: has_previous_passport
+      value: true
+    effects:
+      - { type: include_requirement, requirement_id: req.previous_passport }
+    source_claim_ids: [claim.pass.docs]
+    status: draft
+  - id: rule.pass.validity_electronic_under12
+    canonical_rule_id: passport.validity_electronic_under12
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: lt, field: applicant_age, value: 12 }
+    effects:
+      - { type: emit_advice, message_ro: 'Valabilitate pasaport electronic: 3 ani (sub 12 ani).', tag: validity_3y }
+    source_claim_ids: [claim.pass.validity]
+    status: draft
+  - id: rule.pass.validity_electronic_12_18
+    canonical_rule_id: passport.validity_electronic_12_18
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: gte, field: applicant_age, value: 12 }
+        - { op: lt, field: applicant_age, value: 18 }
+    effects:
+      - { type: emit_advice, message_ro: 'Valabilitate pasaport electronic: 5 ani (12-18 ani).', tag: validity_5y }
+    source_claim_ids: [claim.pass.validity]
+    status: draft
+  - id: rule.pass.validity_electronic_adult
+    canonical_rule_id: passport.validity_electronic_adult
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: gte, field: applicant_age, value: 18 }
+    effects:
+      - { type: emit_advice, message_ro: 'Valabilitate pasaport electronic: 10 ani (peste 18 ani).', tag: validity_10y }
+    source_claim_ids: [claim.pass.validity]
+    status: draft
+  - id: rule.pass.validity_temporary
+    canonical_rule_id: passport.validity_temporary
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: eq
+      field: passport_type
+      value: temporary
+    effects:
+      - { type: emit_advice, message_ro: 'Pasaportul temporar are valabilitate 12 luni si se elibereaza, in cazurile prevazute, in cel mult 3 zile lucratoare.', tag: validity_12m }
+    source_claim_ids: [claim.pass.validity, claim.pass.temp_3_working_days]
+    status: draft
+  - id: rule.pass.fee_electronic_ge12
+    canonical_rule_id: passport.fee_electronic_ge12
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2018-07-20'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: gte, field: applicant_age, value: 12 }
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa pasaport electronic: 258 lei (peste 12 ani).', tag: fee_258 }
+    source_claim_ids: [claim.pass.fees]
+    status: draft
+  - id: rule.pass.fee_electronic_lt12
+    canonical_rule_id: passport.fee_electronic_lt12
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2018-07-20'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: lt, field: applicant_age, value: 12 }
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa pasaport electronic: 234 lei (sub 12 ani).', tag: fee_234 }
+    source_claim_ids: [claim.pass.fees]
+    status: draft
+  - id: rule.pass.fee_temporary
+    canonical_rule_id: passport.fee_temporary
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2018-07-20'
+    when:
+      op: eq
+      field: passport_type
+      value: temporary
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa pasaport temporar: 96 lei.', tag: fee_96 }
+    source_claim_ids: [claim.pass.fees]
+    status: draft
+  - id: rule.pass.booking_personal
+    canonical_rule_id: passport.booking_personal
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2023-03-20'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_advice, message_ro: 'Programarea se face doar pe HUB MAI; cererea se depune doar personal.', tag: booking_hub }
+    source_claim_ids: [claim.pass.booking_hub_only, claim.pass.personal_only]
+    status: draft
+  - id: rule.pass.minor_redirect
+    canonical_rule_id: passport.minor_redirect
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2021-03-12'
+    when:
+      op: lt
+      field: applicant_age
+      value: 18
+    effects:
+      - { type: trigger_child_event, event_type_id: life.minor_passport }
+      - { type: emit_warning, message_ro: 'Pentru minori se aplica reguli suplimentare (acordul parintilor); vezi minor_passport.', tag: minor_redirect }
+    source_claim_ids: [claim.pass.validity]
+    status: draft
+  - id: rule.pass.tm_channel
+    canonical_rule_id: passport.tm_channel
+    event_type_id: life.passport_first_or_renew
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.pasapoarte_timis }
+    source_claim_ids: [claim.pass.tm_channel]
+    status: draft

@@ -1,0 +1,100 @@
+batch_id: R1_PASSPORT_FIRST_OR_RENEW
+defaults:
+  event_type_id: life.passport_first_or_renew
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: P01
+    desc: adult, electronic, CI valida
+    facts: { applicant_age: 35, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, included_steps: [apply_passport], requirements: [req.valid_id, req.payment_proof], advice_tags: [validity_10y], fee_tags: [fee_258] }
+  - id: P02
+    desc: adult, electronic, are pasaport anterior
+    facts: { applicant_age: 40, passport_type: electronic, has_valid_id: true, has_previous_passport: true }
+    expect: { status: ok, requirements: [req.valid_id, req.payment_proof, req.previous_passport] }
+  - id: P03
+    desc: fara act de identitate valid - blocat + redirect CI
+    facts: { applicant_age: 30, passport_type: electronic, has_valid_id: false, has_previous_passport: false }
+    expect: { status: ok, blocked_effects: [apply_passport], triggered_events: [life.id_card_expired] }
+  - id: P04
+    desc: copil 8 ani electronic - 3 ani + 234 lei + redirect minor
+    facts: { applicant_age: 8, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_3y, minor_redirect], fee_tags: [fee_234], triggered_events: [life.minor_passport] }
+  - id: P05
+    desc: adolescent 15 ani electronic - 5 ani + 258 lei + redirect minor
+    facts: { applicant_age: 15, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_5y, minor_redirect], fee_tags: [fee_258], triggered_events: [life.minor_passport] }
+  - id: P06
+    desc: adult temporar - 12 luni + 96 lei
+    facts: { applicant_age: 45, passport_type: temporary, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_12m], fee_tags: [fee_96] }
+  - id: P07
+    desc: exact 12 ani electronic - 5 ani + 258 lei
+    facts: { applicant_age: 12, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_5y], fee_tags: [fee_258] }
+  - id: P08
+    desc: exact 18 ani electronic - 10 ani + 258 lei, fara redirect minor
+    facts: { applicant_age: 18, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_10y], fee_tags: [fee_258], events_absent: [life.minor_passport] }
+  - id: P09
+    desc: exact 11 ani electronic - 3 ani + 234 lei
+    facts: { applicant_age: 11, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_3y], fee_tags: [fee_234] }
+  - id: P10
+    desc: programare HUB + personal advice prezent
+    facts: { applicant_age: 30, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [booking_hub] }
+  - id: P11
+    desc: Timisoara - canal pasapoarte
+    facts: { applicant_age: 30, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, channels: [ch.pasapoarte_timis] }
+  - id: P12
+    desc: alt judet - canal Timis absent
+    facts: { applicant_age: 30, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.pasapoarte_timis] }
+  - id: P13
+    desc: lipseste applicant_age
+    facts: { passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: needs_facts, missing_facts: [applicant_age] }
+  - id: P14
+    desc: lipseste passport_type
+    facts: { applicant_age: 30, has_valid_id: true, has_previous_passport: false }
+    expect: { status: needs_facts, missing_facts: [passport_type] }
+  - id: P15
+    desc: lipseste has_valid_id
+    facts: { applicant_age: 30, passport_type: electronic, has_previous_passport: false }
+    expect: { status: needs_facts, missing_facts: [has_valid_id] }
+  - id: P16
+    desc: lipseste has_previous_passport
+    facts: { applicant_age: 30, passport_type: electronic, has_valid_id: true }
+    expect: { status: needs_facts, missing_facts: [has_previous_passport] }
+  - id: P17
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [applicant_age, passport_type, has_valid_id, has_previous_passport] }
+  - id: P18
+    desc: temporar pentru minor 10 ani - 12 luni + redirect minor
+    facts: { applicant_age: 10, passport_type: temporary, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_12m, minor_redirect], fee_tags: [fee_96], triggered_events: [life.minor_passport] }
+  - id: P19
+    desc: adult fara pasaport anterior - fara cerinta previous
+    facts: { applicant_age: 50, passport_type: electronic, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, requirements_absent: [req.previous_passport] }
+  - id: P20
+    desc: documente de baza mereu prezente
+    facts: { applicant_age: 30, passport_type: temporary, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, requirements: [req.valid_id, req.payment_proof] }
+  - id: P21
+    desc: adult electronic, fara CI - nu se aplica validitate/taxa (blocat)
+    facts: { applicant_age: 30, passport_type: electronic, has_valid_id: false, has_previous_passport: true }
+    expect: { status: ok, blocked_effects: [apply_passport], requirements: [req.previous_passport] }
+  - id: P22
+    desc: adolescent 17 ani temporar
+    facts: { applicant_age: 17, passport_type: temporary, has_valid_id: true, has_previous_passport: false }
+    expect: { status: ok, advice_tags: [validity_12m, minor_redirect], fee_tags: [fee_96] }
+  - id: P23
+    desc: senior 70 ani electronic - 10 ani
+    facts: { applicant_age: 70, passport_type: electronic, has_valid_id: true, has_previous_passport: true }
+    expect: { status: ok, advice_tags: [validity_10y], fee_tags: [fee_258], requirements: [req.previous_passport] }
