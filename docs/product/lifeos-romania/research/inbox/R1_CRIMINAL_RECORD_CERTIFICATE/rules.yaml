@@ -1,0 +1,136 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_CRIMINAL_RECORD_CERTIFICATE
+event_type_id: life.criminal_record_certificate
+status: draft
+rules:
+  - id: rule.cj.docs
+    canonical_rule_id: criminal_record.docs
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2004-06-24'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: request_criminal_record }
+      - { type: include_requirement, requirement_id: req.valid_id }
+      - { type: include_requirement, requirement_id: req.cerere_tip }
+    source_claim_ids: [claim.cj.docs_and_age]
+    status: draft
+  - id: rule.cj.age_gate
+    canonical_rule_id: criminal_record.age_gate
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2004-06-24'
+    when:
+      op: lt
+      field: applicant_age
+      value: 14
+    effects:
+      - { type: emit_warning, message_ro: 'Sub 14 ani cererea se depune prin reprezentant legal (parinte/tutore).', tag: under14_legal_rep }
+      - { type: include_requirement, requirement_id: req.legal_representative }
+    source_claim_ids: [claim.cj.docs_and_age]
+    status: draft
+  - id: rule.cj.issuance_ro
+    canonical_rule_id: criminal_record.issuance_ro
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2004-06-24'
+    when:
+      op: eq
+      field: citizen_type
+      value: ro_citizen
+    effects:
+      - { type: emit_advice, message_ro: 'Pentru cetateni romani: eliberare pe loc sau in cel mult 3 zile lucratoare.', tag: issue_ro_3d }
+    source_claim_ids: [claim.cj.issuance_terms]
+    status: draft
+  - id: rule.cj.issuance_foreign
+    canonical_rule_id: criminal_record.issuance_foreign
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2004-06-24'
+    when:
+      op: in
+      field: citizen_type
+      value: [eu_citizen, third_country]
+    effects:
+      - { type: emit_warning, message_ro: 'Pentru cetateni straini: eliberare in aproximativ 30 de zile (se ataseaza extrase din alte state).', tag: issue_foreign_30d }
+    source_claim_ids: [claim.cj.issuance_terms]
+    status: draft
+  - id: rule.cj.validity_6m
+    canonical_rule_id: criminal_record.validity_6m
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: operational
+    effective_from: '2004-06-24'
+    when: { op: const, value: true }
+    effects:
+      - { type: set_deadline, step_id: use_criminal_record, value: { kind: relative_days, anchor: issue_date, days: 180 } }
+      - { type: require_confirmation, message_ro: 'Valabilitatea de 6 luni se confirma din Legea 290/2004 (rep.).' }
+    source_claim_ids: [claim.cj.validity_6m]
+    status: in_review
+  - id: rule.cj.online_channel
+    canonical_rule_id: criminal_record.online_channel
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2024-02-01'
+    when:
+      op: eq
+      field: channel_pref
+      value: online
+    effects:
+      - { type: attach_channel, channel_id: ch.cazier_online }
+      - { type: emit_advice, message_ro: 'Online prin hub.mai.gov.ro / ghiseul.ro (cetateni romani neinscrisi in ROCRIS).', tag: online_cazier }
+    source_claim_ids: [claim.cj.online_channels]
+    status: draft
+  - id: rule.cj.fee_conflict
+    canonical_rule_id: criminal_record.fee_conflict
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2024-02-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa: online indicat gratuit, la ghiseu pot exista taxe (sursa neclara) - confirma tariful oficial curent.', tag: fee_conflict }
+    source_claim_ids: [claim.cj.fee_conflict]
+    status: in_review
+  - id: rule.cj.power_of_attorney
+    canonical_rule_id: criminal_record.power_of_attorney
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro]
+    authority_level: institution
+    severity: operational
+    effective_from: '2004-06-24'
+    when:
+      op: eq
+      field: is_for_third_party
+      value: true
+    effects:
+      - { type: include_requirement, requirement_id: req.notarial_power_of_attorney }
+      - { type: include_requirement, requirement_id: req.proxy_id_card }
+    source_claim_ids: [claim.cj.power_of_attorney]
+    status: in_review
+  - id: rule.cj.tm_channel
+    canonical_rule_id: criminal_record.tm_channel
+    event_type_id: life.criminal_record_certificate
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2004-06-24'
+    when:
+      op: eq
+      field: channel_pref
+      value: counter
+    effects:
+      - { type: attach_channel, channel_id: ch.cazier_timis }
+    source_claim_ids: [claim.cj.tm_channel]
+    status: draft
