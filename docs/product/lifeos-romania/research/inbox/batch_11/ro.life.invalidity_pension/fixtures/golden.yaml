@@ -1,0 +1,634 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.invalidity_pension
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: salariat sub vârsta standard cu stagiu și decizie
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_invalidity_pension_application
+    - derive_invalidity_start_date
+    requirements:
+    - annex_6_application
+    - medical_capacity_decision
+    - identity_and_stage_documents
+    emitted_tags:
+    - invalidity_standard_conditions_met
+    - invalidity_start_date_by_insured_status
+  id: ro.life.invalidity_pension.F01
+- title: boală profesională cu stagiu
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: occupational_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_invalidity_pension_application
+    emitted_tags:
+    - invalidity_standard_conditions_met
+  id: ro.life.invalidity_pension.F02
+- title: accident fără legătură cu munca
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_accident
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_invalidity_pension_application
+    emitted_tags:
+    - invalidity_standard_conditions_met
+  id: ro.life.invalidity_pension.F03
+- title: student accidentat în practica profesională fără stagiu
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: false
+    person_status: student
+    practice_professional_accident: true
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_invalidity_pension_application
+    emitted_tags:
+    - practice_exception_no_stage
+  id: ro.life.invalidity_pension.F04
+- title: elev cu accident în practică
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: false
+    person_status: pupil
+    practice_professional_accident: true
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - practice_exception_no_stage
+  id: ro.life.invalidity_pension.F05
+- title: fără stagiu și fără excepție
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: false
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - invalidity_stage_condition_not_met
+  id: ro.life.invalidity_pension.F06
+- title: a atins vârsta standard
+  facts:
+    below_standard_age: false
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: true
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - invalidity_age_condition_not_met
+  id: ro.life.invalidity_pension.F07
+- title: nu are încă decizie medicală
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: false
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - request_medical_capacity_evaluation
+    requirements:
+    - annex_9_expertise_application
+    - medical_documents
+    emitted_tags:
+    - medical_decision_required_before_pension
+  id: ro.life.invalidity_pension.F08
+- title: decizie grad I
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: I
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - medical_grade_from_expert_decision
+  id: ro.life.invalidity_pension.F09
+- title: decizie grad III
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: III
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - medical_grade_from_expert_decision
+  id: ro.life.invalidity_pension.F10
+- title: cerere în termen de 30 zile
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - derive_invalidity_start_date
+    emitted_tags:
+    - invalidity_start_date_by_insured_status
+  id: ro.life.invalidity_pension.F11
+- title: cerere după 30 zile
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: false
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - invalidity_rights_start_from_filing
+  id: ro.life.invalidity_pension.F12
+- title: contestă decizia medicală în termen
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: true
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - submit_medical_decision_appeal_to_issuing_office
+    emitted_tags:
+    - medical_appeal_30_days
+  id: ro.life.invalidity_pension.F13
+- title: contestă decizia medicală tardiv
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: true
+    medical_appeal_within_30_days: false
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - medical_appeal_deadline_expired
+  id: ro.life.invalidity_pension.F14
+- title: a primit decizia comisiei regionale
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: true
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - regional_medical_decision_court_30_days
+  id: ro.life.invalidity_pension.F15
+- title: beneficiar cu revizuire periodică
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: true
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_periodic_medical_review
+    emitted_tags:
+    - medical_review_1_to_3_years_no_notice
+  id: ro.life.invalidity_pension.F16
+- title: invaliditate ireversibilă
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: true
+    review_exempt: false
+    irreversible_invalidity: true
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - prepare_periodic_medical_review
+    emitted_tags:
+    - medical_review_exemption
+  id: ro.life.invalidity_pension.F17
+- title: a ajuns la vârsta standard
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: true
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: true
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - medical_review_exemption
+  id: ro.life.invalidity_pension.F18
+- title: în ultimii 5 ani și stagiu complet
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: true
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 4
+    full_contributory_stage_met: true
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - medical_review_exemption
+  id: ro.life.invalidity_pension.F19
+- title: nu se prezintă imputabil la revizuire
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: true
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - invalidity_payment_suspension_risk
+  id: ro.life.invalidity_pension.F20
+- title: domiciliu Timișoara
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_decision_exists: true
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - local_medical_expertise_location_confirmation
+  id: ro.life.invalidity_pension.F21
+- title: lipsește decizia medicală ca fapt
+  facts:
+    below_standard_age: true
+    has_qualifying_contributory_stage: true
+    person_status: employee
+    practice_professional_accident: false
+    risk_cause: ordinary_disease
+    medical_grade: II
+    application_within_30_days_of_medical_decision: true
+    insured_at_medical_decision: true
+    wants_to_contest_medical_decision: false
+    medical_appeal_within_30_days: true
+    regional_commission_decision_received: false
+    already_receives_invalidity_pension: false
+    review_exempt: false
+    irreversible_invalidity: false
+    standard_age_reached: false
+    years_to_standard_age: 12
+    full_contributory_stage_met: false
+    missed_review_imputably: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - invalidity_core_facts_missing
+    missing_facts:
+    - medical_decision_exists
+  id: ro.life.invalidity_pension.F22

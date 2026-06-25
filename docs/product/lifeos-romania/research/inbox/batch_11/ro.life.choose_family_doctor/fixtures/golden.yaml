@@ -1,0 +1,345 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.choose_family_doctor
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: asigurat adult cu card
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - select_contracted_family_doctor
+    - submit_registration_request_to_chosen_doctor
+    requirements:
+    - family_doctor_registration_request
+    - national_health_card
+    emitted_tags:
+    - first_registration_direct_to_doctor
+    - insured_registration_card_required
+  id: ro.life.choose_family_doctor.F01
+- title: neasigurat fără medic
+  facts:
+    insurance_status: uninsured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - present_national_health_card
+    requirements:
+    - family_doctor_registration_request
+    emitted_tags:
+    - uninsured_can_register
+  id: ro.life.choose_family_doctor.F02
+- title: copil de 0 ani
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 0
+    card_exception: true
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - present_national_health_card
+    emitted_tags:
+    - child_registration_request_only
+  id: ro.life.choose_family_doctor.F03
+- title: copil de 18 ani
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 18
+    card_exception: true
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - child_registration_request_only
+  id: ro.life.choose_family_doctor.F04
+- title: adult fără card emis
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: true
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - present_national_health_card
+    emitted_tags:
+    - registration_request_only_card_exception
+  id: ro.life.choose_family_doctor.F05
+- title: adult care refuză cardul din motive de conștiință
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: true
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - registration_request_only_card_exception
+  id: ro.life.choose_family_doctor.F06
+- title: card duplicat în curs
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: true
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - registration_request_only_card_exception
+  id: ro.life.choose_family_doctor.F07
+- title: medic verificat în contract
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - provider_contract_verified
+  id: ro.life.choose_family_doctor.F08
+- title: medic neconfirmat în contract
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: false
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    included_steps:
+    - search_official_provider_list
+    emitted_tags:
+    - choose_contracted_provider
+  id: ro.life.choose_family_doctor.F09
+- title: medic contractat dar capacitate neconfirmată
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - doctor_capacity_confirmation_needed
+  id: ro.life.choose_family_doctor.F10
+- title: cabinet confirmă că acceptă pacienți
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - submit_registration_request_to_chosen_doctor
+    emitted_tags:
+    - provider_contract_verified
+  id: ro.life.choose_family_doctor.F11
+- title: este deja pe lista altui medic
+  facts:
+    insurance_status: insured
+    already_on_gp_list: true
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - use_change_gp_route
+  id: ro.life.choose_family_doctor.F12
+- title: nu știe dacă este înscris
+  facts:
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - choose_gp_core_facts_missing
+    missing_facts:
+    - already_on_gp_list
+  id: ro.life.choose_family_doctor.F13
+- title: persoană asigurată de 19 ani
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 19
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - national_health_card
+    emitted_tags:
+    - insured_registration_card_required
+  id: ro.life.choose_family_doctor.F14
+- title: persoană neasigurată de 70 ani
+  facts:
+    insurance_status: uninsured
+    already_on_gp_list: false
+    age: 70
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - present_national_health_card
+    emitted_tags:
+    - uninsured_can_register
+  id: ro.life.choose_family_doctor.F15
+- title: Timișoara — suport CJAS
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - cjas_timisoara_support
+  id: ro.life.choose_family_doctor.F16
+- title: alt județ
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.bv.brasov
+  expected:
+    status: resolved
+    included_steps_absent:
+    - ch.cjas_timisoara.contact
+    emitted_tags:
+    - provider_contract_verified
+  id: ro.life.choose_family_doctor.F17
+- title: vrea pediatru specialist, nu medic de familie
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+  id: ro.life.choose_family_doctor.F18
+- title: vrea doar consultație de urgență
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+  id: ro.life.choose_family_doctor.F19
+- title: nu a ales încă medicul
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: null
+    doctor_accepts_new_patients_confirmed: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    included_steps:
+    - search_official_provider_list
+    emitted_tags:
+    - doctor_capacity_confirmation_needed
+  id: ro.life.choose_family_doctor.F20
+- title: card pierdut și duplicat încă neemis
+  facts:
+    insurance_status: insured
+    already_on_gp_list: false
+    age: 33
+    card_exception: true
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - registration_request_only_card_exception
+  id: ro.life.choose_family_doctor.F21
+- title: lipsește statutul de asigurat
+  facts:
+    already_on_gp_list: false
+    age: 33
+    card_exception: false
+    chosen_doctor_in_contract: true
+    doctor_accepts_new_patients_confirmed: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - choose_gp_core_facts_missing
+    missing_facts:
+    - insurance_status
+  id: ro.life.choose_family_doctor.F22

@@ -1,0 +1,553 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.early_retirement
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: exact 5 ani înainte, stagiu complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_early_retirement_application
+    - submit_early_retirement_application
+    requirements:
+    - req.annex4_early_retirement_application
+    emitted_tags:
+    - early_retirement_basic_conditions_met
+    - penalty_rate_0_40_per_month
+  id: ro.life.early_retirement.F01
+- title: 61 luni înainte de vârsta standard
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 61
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - more_than_five_years_early
+    - penalty_rate_0_40_per_month
+  id: ro.life.early_retirement.F02
+- title: stagiu contributiv sub complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 34.5
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - full_contributory_stage_not_met
+    - penalty_rate_0_40_per_month
+  id: ro.life.early_retirement.F03
+- title: stagiu complet exact, fără ani suplimentari
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_early_retirement_application
+    emitted_tags:
+    - early_retirement_basic_conditions_met
+    - penalty_rate_0_40_per_month
+  id: ro.life.early_retirement.F04
+- title: un an stagiu peste complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 36
+    total_stage_years: 35
+    excess_stage_years: 1
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - penalty_rate_0_40_per_month
+  id: ro.life.early_retirement.F05
+- title: un an și jumătate peste complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 36.5
+    total_stage_years: 35
+    excess_stage_years: 1.5
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - penalty_rate_0_35_per_month
+  id: ro.life.early_retirement.F06
+- title: doi ani și jumătate peste complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 37.5
+    total_stage_years: 35
+    excess_stage_years: 2.5
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - penalty_rate_0_30_per_month
+  id: ro.life.early_retirement.F07
+- title: trei ani și jumătate peste complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 38.5
+    total_stage_years: 35
+    excess_stage_years: 3.5
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - penalty_rate_0_25_per_month
+  id: ro.life.early_retirement.F08
+- title: patru ani și jumătate peste complet
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 39.5
+    total_stage_years: 35
+    excess_stage_years: 4.5
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - penalty_rate_0_20_per_month
+  id: ro.life.early_retirement.F09
+- title: contract voluntar inclus greșit în stagiu
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 2
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - recalculate_qualifying_stage_without_excluded_periods
+    emitted_tags:
+    - excluded_periods_do_not_open_right
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F10
+- title: stagiu retroactiv inclus greșit
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35.2
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 1.2
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - recalculate_qualifying_stage_without_excluded_periods
+    emitted_tags:
+    - excluded_periods_do_not_open_right
+  id: ro.life.early_retirement.F11
+- title: stagiu din sistem neintegrat folosit la deschidere
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 36
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 3
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+    excluded_period_type: non_integrated_system
+  expected:
+    status: resolved
+    included_steps:
+    - recalculate_qualifying_stage_without_excluded_periods
+    emitted_tags:
+    - excluded_periods_do_not_open_right
+  id: ro.life.early_retirement.F12
+- title: solicită simultan reducere pentru condiții speciale
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: true
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - age_reduction_cannot_cumulate
+    - penalty_rate_0_40_per_month
+  id: ro.life.early_retirement.F13
+- title: salariat încă activ — plata așteaptă încetarea calității
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: employee
+    insured_status_ended: false
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - payment_waits_for_insured_status_end
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F14
+- title: funcționar public încă activ
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: civil_servant
+    insured_status_ended: false
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - payment_waits_for_insured_status_end
+  id: ro.life.early_retirement.F15
+- title: salariat cu raportul de muncă încetat
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: employee
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_early_retirement_application
+    emitted_tags:
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F16
+- title: cerere în termenul de 30 zile
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - submit_early_retirement_application
+    emitted_tags:
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F17
+- title: cerere depusă tardiv
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-04-01'
+    application_date: '2026-06-25'
+    application_within_30_days: false
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_rights_start_from_filing
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F18
+- title: a ajuns ulterior la vârsta standard
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2026-06-01'
+    months_before_standard: 0
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - monitor_ex_officio_conversion_to_old_age
+    emitted_tags:
+    - penalty_removed_at_conversion
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F19
+- title: lipsește data standard din anexa nr. 5
+  facts:
+    birth_date: '1966-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - early_core_facts_missing
+    missing_facts:
+    - standard_retirement_date
+  id: ro.life.early_retirement.F20
+- title: lipsește stagiul contributiv eligibil
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - early_core_facts_missing
+    missing_facts:
+    - qualifying_contributory_years
+  id: ro.life.early_retirement.F21
+- title: domiciliu în alt județ
+  facts:
+    birth_date: '1966-06-01'
+    standard_retirement_date: '2031-06-01'
+    months_before_standard: 60
+    full_contributory_years_required: 35
+    qualifying_contributory_years: 35
+    total_stage_years: 35
+    excess_stage_years: 0
+    excluded_period_years: 0
+    uses_other_age_reduction: false
+    conditions_met_date: '2026-06-01'
+    application_date: '2026-06-20'
+    application_within_30_days: true
+    insured_category: not_currently_insured
+    insured_status_ended: true
+    standard_age_reached: false
+    jurisdiction_id: ro.bv.brasov
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_early_retirement_application
+    included_steps_absent:
+    - attach_local_timisoara_channel
+    emitted_tags:
+    - early_retirement_basic_conditions_met
+  id: ro.life.early_retirement.F22

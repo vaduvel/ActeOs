@@ -1,0 +1,283 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.change_family_doctor
+status: draft
+rules:
+- id: rule.change_gp.require_core_facts
+  canonical_rule_id: change_family_doctor.core_facts
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: months_since_registration
+    - op: missing
+      field: early_change_reason
+    - op: missing
+      field: new_doctor_in_contract
+  effects:
+  - type: require_confirmation
+    tag: change_gp_core_facts_missing
+    message_ro: Sunt necesare vechimea înscrierii, motivul schimbării și verificarea medicului nou.
+  source_claim_ids:
+  - claim.change_gp.six_month_rule
+  - claim.change_gp.provider_lists
+  status: draft
+  required_facts:
+  - months_since_registration
+  - early_change_reason
+  - new_doctor_in_contract
+- id: rule.change_gp.after_six_months
+  canonical_rule_id: change_family_doctor.after_six_months
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: gte
+    field: months_since_registration
+    value: 6
+  effects:
+  - type: include_step
+    step_id: submit_transfer_request_to_new_doctor
+  - type: include_requirement
+    requirement_id: family_doctor_transfer_request
+  - type: emit_advice
+    tag: six_month_condition_met
+    message_ro: Schimbarea este permisă după cel puțin 6 luni de la înscriere.
+  source_claim_ids:
+  - claim.change_gp.six_month_rule
+  - claim.change_gp.request_card_exceptions
+  status: draft
+- id: rule.change_gp.before_six_with_exception
+  canonical_rule_id: change_family_doctor.before_six_with_exception
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: lt
+      field: months_since_registration
+      value: 6
+    - op: in
+      field: early_change_reason
+      values:
+      - doctor_death
+      - doctor_contract_ended_or_suspended
+      - practice_taken_over
+      - moved_to_other_locality
+      - detention_transition
+      - special_system_service_move
+      - special_system_doctor_departure
+  effects:
+  - type: include_step
+    step_id: document_early_change_exception
+  - type: include_step
+    step_id: submit_transfer_request_to_new_doctor
+  - type: emit_advice
+    tag: early_change_exception_met
+    message_ro: Este identificată o excepție legală de la termenul de 6 luni.
+  source_claim_ids:
+  - claim.change_gp.early_exceptions
+  status: draft
+- id: rule.change_gp.before_six_no_exception
+  canonical_rule_id: change_family_doctor.before_six_no_exception
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: lt
+      field: months_since_registration
+      value: 6
+    - op: eq
+      field: early_change_reason
+      value: personal_preference
+  effects:
+  - type: block
+    code: SIX_MONTH_WAITING_PERIOD
+  - type: emit_warning
+    tag: six_month_condition_not_met
+    message_ro: Preferința personală singură nu apare între excepțiile pentru schimbarea înainte de 6 luni.
+  source_claim_ids:
+  - claim.change_gp.six_month_rule
+  - claim.change_gp.early_exceptions
+  status: draft
+- id: rule.change_gp.insured_card
+  canonical_rule_id: change_family_doctor.insured_card
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: insurance_status
+      value: insured
+    - op: eq
+      field: card_exception
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: national_health_card
+  - type: emit_advice
+    tag: transfer_card_required
+    message_ro: Persoana asigurată prezintă cardul împreună cu cererea de transfer.
+  source_claim_ids:
+  - claim.change_gp.request_card_exceptions
+  status: draft
+- id: rule.change_gp.card_exception
+  canonical_rule_id: change_family_doctor.card_exception
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: card_exception
+    value: true
+  effects:
+  - type: exclude_step
+    step_id: present_national_health_card
+  - type: emit_advice
+    tag: transfer_request_only_card_exception
+    message_ro: Pentru excepția de card se folosește cererea de transfer.
+  source_claim_ids:
+  - claim.change_gp.request_card_exceptions
+  status: draft
+- id: rule.change_gp.uninsured
+  canonical_rule_id: change_family_doctor.uninsured
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: insurance_status
+    value: uninsured
+  effects:
+  - type: exclude_step
+    step_id: present_national_health_card
+  - type: emit_advice
+    tag: uninsured_transfer_request
+    message_ro: Persoana neasigurată depune cererea de transfer fără card.
+  source_claim_ids:
+  - claim.change_gp.request_card_exceptions
+  status: draft
+- id: rule.change_gp.new_provider_not_contracted
+  canonical_rule_id: change_family_doctor.new_provider_not_contracted
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: new_doctor_in_contract
+    value: false
+  effects:
+  - type: block
+    code: NEW_DOCTOR_NOT_IN_CONTRACT
+  - type: include_step
+    step_id: search_official_provider_list
+  - type: emit_warning
+    tag: new_doctor_contract_not_verified
+    message_ro: Alegeți un medic aflat în contract cu casa de asigurări.
+  source_claim_ids:
+  - claim.change_gp.provider_lists
+  status: draft
+- id: rule.change_gp.new_provider_capacity
+  canonical_rule_id: change_family_doctor.new_provider_capacity
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: new_doctor_in_contract
+      value: true
+    - op: neq
+      field: new_doctor_accepts_transfer_confirmed
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: new_doctor_capacity_confirmation_needed
+    message_ro: Confirmați direct la cabinet acceptarea transferului.
+  source_claim_ids:
+  - claim.change_gp.capacity_local_gap
+  status: draft
+- id: rule.change_gp.transfer_records
+  canonical_rule_id: change_family_doctor.transfer_records
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: transfer_request_submitted
+    value: true
+  effects:
+  - type: include_step
+    step_id: monitor_medical_record_transfer
+  - type: set_deadline
+    tag: new_doctor_notice_15_working_days
+    value: 15_working_days_from_transfer
+  - type: set_deadline
+    tag: old_doctor_record_copy_15_working_days
+    value: 15_working_days_from_request
+  - type: emit_advice
+    tag: original_record_stays_old_cabinet
+    message_ro: Originalul fișei rămâne la cabinetul anterior; se transmite copie certificată.
+  source_claim_ids:
+  - claim.change_gp.records_transfer_15_working_days
+  status: draft
+- id: rule.change_gp.timisoara_support
+  canonical_rule_id: change_family_doctor.timisoara_support
+  event_type_id: life.change_family_doctor
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjas_timisoara.contact
+  - type: emit_advice
+    tag: cjas_timisoara_support
+    message_ro: CJAS Timiș poate fi folosită pentru lista oficială și clarificări locale.
+  source_claim_ids:
+  - claim.change_gp.cjas_timisoara_contact
+  status: draft

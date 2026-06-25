@@ -1,0 +1,483 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.retirement_age
+status: draft
+rules:
+- id: rule.retirement.require_core_facts
+  canonical_rule_id: retirement_age.core_facts
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: birth_date
+    - op: missing
+      field: sex_for_annex5
+    - op: missing
+      field: contributory_years
+  effects:
+  - type: require_confirmation
+    tag: retirement_core_facts_missing
+    message_ro: Sunt necesare data nașterii, sexul folosit de anexa nr. 5 și stagiul contributiv verificat.
+  source_claim_ids:
+  - claim.retirement.annex5_age_stage
+  - claim.retirement.eligibility_age_and_min_stage
+  status: draft
+  required_facts:
+  - birth_date
+  - sex_for_annex5
+  - contributory_years
+- id: rule.retirement.lookup_annex5
+  canonical_rule_id: retirement_age.annex5_lookup
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: missing
+    field: standard_retirement_date
+  effects:
+  - type: include_step
+    step_id: lookup_annex5_retirement_schedule
+  - type: require_confirmation
+    tag: annex5_lookup_required
+    message_ro: Data exactă se stabilește după luna și anul nașterii din anexa nr. 5; nu se aplică automat regula simplificată
+      de 65 de ani.
+  source_claim_ids:
+  - claim.retirement.annex5_age_stage
+  - claim.retirement.women_phasing
+  status: draft
+  required_facts:
+  - standard_retirement_date
+- id: rule.retirement.minimum_stage_block
+  canonical_rule_id: retirement_age.minimum_contributory_stage
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: lt
+    field: contributory_years
+    value: 15
+  effects:
+  - type: block
+    code: minimum_stage_not_met
+    tag: minimum_stage_not_met
+    message_ro: Stagiul minim contributiv de 15 ani nu este îndeplinit.
+  source_claim_ids:
+  - claim.retirement.nominal_age_and_stages
+  status: draft
+- id: rule.retirement.standard_eligible
+  canonical_rule_id: retirement_age.standard_eligibility
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: standard_age_reached
+      value: true
+    - op: gte
+      field: contributory_years
+      value: 15
+  effects:
+  - type: include_step
+    step_id: prepare_old_age_pension_application
+  - type: include_requirement
+    requirement_id: req.annex3_old_age_application
+  - type: emit_advice
+    tag: standard_retirement_conditions_met
+    message_ro: Condițiile generale privind vârsta standard și stagiul minim sunt îndeplinite la datele furnizate.
+  source_claim_ids:
+  - claim.retirement.eligibility_age_and_min_stage
+  - claim.retirement.official_form
+  status: draft
+- id: rule.retirement.not_yet_standard_age
+  canonical_rule_id: retirement_age.not_yet_standard_age
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: explanatory
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: standard_age_reached
+    value: false
+  effects:
+  - type: emit_advice
+    tag: standard_age_not_reached
+    message_ro: Vârsta standard rezultată din anexa nr. 5 nu este încă atinsă; se verifică separat eventualele reduceri.
+  source_claim_ids:
+  - claim.retirement.annex5_age_stage
+  status: draft
+- id: rule.retirement.article56
+  canonical_rule_id: retirement_age.article56_early_old_age
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: full_contributory_stage_met
+      value: true
+    - op: gte
+      field: extra_total_stage_years
+      value: 5
+    - op: lte
+      field: years_before_standard
+      value: 5
+    - op: eq
+      field: uses_other_age_reduction
+      value: false
+  effects:
+  - type: include_step
+    step_id: evaluate_article56_old_age_pension
+  - type: emit_advice
+    tag: article56_possible
+    message_ro: Poate fi analizată pensia pentru limită de vârstă cu până la 5 ani înainte, fără cumul cu alte reduceri.
+  source_claim_ids:
+  - claim.retirement.article56_up_to_5_years
+  status: draft
+- id: rule.retirement.article56_no_cumulation
+  canonical_rule_id: retirement_age.article56_no_cumulation
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: article56_route_requested
+      value: true
+    - op: eq
+      field: uses_other_age_reduction
+      value: true
+  effects:
+  - type: block
+    code: article56_cannot_cumulate
+    tag: article56_cannot_cumulate
+    message_ro: Reducerea art. 56 nu se cumulează cu altă reducere a vârstei standard.
+  source_claim_ids:
+  - claim.retirement.article56_up_to_5_years
+  status: draft
+- id: rule.retirement.mother_reduction
+  canonical_rule_id: retirement_age.mother_reduction
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: sex_for_annex5
+      value: female
+    - op: eq
+      field: full_contributory_stage_met
+      value: true
+    - op: gt
+      field: eligible_children_count
+      value: 0
+    - op: eq
+      field: child_raising_condition_met
+      value: true
+  effects:
+  - type: include_step
+    step_id: calculate_mother_age_reduction
+  - type: include_requirement
+    requirement_id: req.children_birth_or_adoption_proof
+  - type: include_requirement
+    requirement_id: req.child_raising_declaration
+  - type: emit_advice
+    tag: mother_reduction_applicable
+    message_ro: Se aplică tabelul legal de reducere în funcție de numărul copiilor eligibili.
+  source_claim_ids:
+  - claim.retirement.mother_reduction
+  status: draft
+- id: rule.retirement.mother_condition_not_met
+  canonical_rule_id: retirement_age.mother_reduction_raising_condition
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: children_count
+      value: 0
+    - op: eq
+      field: child_raising_condition_met
+      value: false
+  effects:
+  - type: emit_warning
+    tag: mother_raising_condition_not_met
+    message_ro: Numărul de copii singur nu este suficient; trebuie dovedită perioada legală de creștere.
+  source_claim_ids:
+  - claim.retirement.mother_reduction
+  status: draft
+- id: rule.retirement.disability_reduction
+  canonical_rule_id: retirement_age.disability_reduction
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: in
+    field: disability_degree
+    values:
+    - severe
+    - accentuated
+    - medium
+  effects:
+  - type: include_step
+    step_id: evaluate_disability_age_reduction
+  - type: include_requirement
+    requirement_id: req.permanent_disability_certificate
+  - type: emit_advice
+    tag: disability_stage_threshold_check
+    message_ro: Se verifică pragul de stagiu realizat în condiții de handicap și gradul înscris în certificatul permanent.
+  source_claim_ids:
+  - claim.retirement.disability_reductions
+  - claim.retirement.disability_certificate
+  status: draft
+- id: rule.retirement.disability_certificate_missing
+  canonical_rule_id: retirement_age.disability_certificate_required
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: disability_degree
+      values:
+      - severe
+      - accentuated
+      - medium
+    - op: eq
+      field: permanent_disability_certificate
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: permanent_disability_certificate_required
+    message_ro: Reducerea nu poate fi validată fără certificatul permanent cu mențiunile legale.
+  source_claim_ids:
+  - claim.retirement.disability_certificate
+  status: draft
+- id: rule.retirement.severe_visual
+  canonical_rule_id: retirement_age.severe_visual_route
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: disability_degree
+      value: severe_visual
+    - op: eq
+      field: visual_stage_one_third_met
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_severe_visual_old_age_pension
+  - type: emit_advice
+    tag: severe_visual_age_independent
+    message_ro: Condiția de vârstă nu se aplică, dacă pragul de stagiu în deficiență vizuală gravă este dovedit.
+  source_claim_ids:
+  - claim.retirement.severe_visual
+  status: draft
+- id: rule.retirement.reduction_cap
+  canonical_rule_id: retirement_age.reduction_cap_and_floor
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: gt
+      field: combined_reduction_years
+      value: 11
+    - op: lt
+      field: resulting_retirement_age
+      value: 52
+  effects:
+  - type: emit_warning
+    tag: reduction_cap_11_and_floor_52
+    message_ro: Pentru cumulurile permise reducerile sunt plafonate la 11 ani și nu pot coborî vârsta sub 52 de ani.
+  source_claim_ids:
+  - claim.retirement.mother_reduction_cap
+  status: draft
+- id: rule.retirement.continue_to_70_allowed
+  canonical_rule_id: retirement_age.continue_to_70_allowed
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_continue_to_70
+      value: true
+    - op: eq
+      field: met_conditions_before_2024
+      value: false
+    - op: eq
+      field: retired_before_2024
+      value: false
+    - op: eq
+      field: retirement_uses_reduced_age
+      value: false
+    - op: eq
+      field: post_retirement_other_contract
+      value: false
+  effects:
+  - type: include_step
+    step_id: request_annual_employer_agreement_to_continue
+  - type: emit_advice
+    tag: continue_to_70_option_available
+    message_ro: Opțiunea poate fi exercitată cu acordul anual al angajatorului.
+  source_claim_ids:
+  - claim.retirement.continue_to_70
+  - claim.retirement.continue_to_70_exclusions
+  status: draft
+- id: rule.retirement.continue_to_70_excluded
+  canonical_rule_id: retirement_age.continue_to_70_excluded
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: wants_continue_to_70
+      value: true
+    - op: any
+      args:
+      - op: eq
+        field: met_conditions_before_2024
+        value: true
+      - op: eq
+        field: retired_before_2024
+        value: true
+      - op: eq
+        field: retirement_uses_reduced_age
+        value: true
+      - op: eq
+        field: post_retirement_other_contract
+        value: true
+  effects:
+  - type: block
+    code: continue_to_70_excluded
+    tag: continue_to_70_excluded
+    message_ro: Cazul se află într-o categorie exclusă de la opțiunea legală până la 70 de ani.
+  source_claim_ids:
+  - claim.retirement.continue_to_70_exclusions
+  status: draft
+- id: rule.retirement.application_window
+  canonical_rule_id: retirement_age.application_30_day_window
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: exists
+    field: conditions_met_date
+  effects:
+  - type: set_deadline
+    step_id: submit_old_age_pension_application
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: conditions_met_date
+  - type: include_step
+    step_id: submit_old_age_pension_application
+  source_claim_ids:
+  - claim.retirement.application_30_days
+  status: draft
+- id: rule.retirement.late_application
+  canonical_rule_id: retirement_age.late_application_effect
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: application_within_30_days
+    value: false
+  effects:
+  - type: emit_warning
+    tag: rights_start_from_filing_when_late
+    message_ro: Depunerea peste termen mută începutul drepturilor la data înregistrării cererii.
+  source_claim_ids:
+  - claim.retirement.late_application_effect
+  status: draft
+- id: rule.retirement.timisoara_channel
+  canonical_rule_id: retirement_age.timisoara_pilot_contact
+  event_type_id: life.retirement_age
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: jurisdiction_is
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjp_timisoara.contact
+  - type: emit_advice
+    tag: local_submission_channel_confirm
+    message_ro: CJP Timiș este instituția teritorială; programarea și acceptarea canalului concret de depunere trebuie reconfirmate.
+  source_claim_ids:
+  - claim.retirement.cjp_timisoara_contact
+  status: draft

@@ -1,0 +1,260 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.choose_family_doctor
+status: draft
+rules:
+- id: rule.choose_gp.require_person_status
+  canonical_rule_id: choose_family_doctor.person_status
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: insurance_status
+    - op: missing
+      field: already_on_gp_list
+    - op: missing
+      field: chosen_doctor_in_contract
+  effects:
+  - type: require_confirmation
+    tag: choose_gp_core_facts_missing
+    message_ro: Sunt necesare statutul de asigurat, existența unei înscrieri și statutul contractual al medicului ales.
+  source_claim_ids:
+  - claim.choose_gp.request_to_chosen_doctor
+  - claim.choose_gp.provider_lists
+  status: draft
+  required_facts:
+  - insurance_status
+  - already_on_gp_list
+  - chosen_doctor_in_contract
+- id: rule.choose_gp.first_registration
+  canonical_rule_id: choose_family_doctor.first_registration
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: already_on_gp_list
+    value: false
+  effects:
+  - type: include_step
+    step_id: select_contracted_family_doctor
+  - type: include_step
+    step_id: submit_registration_request_to_chosen_doctor
+  - type: include_requirement
+    requirement_id: family_doctor_registration_request
+  - type: emit_advice
+    tag: first_registration_direct_to_doctor
+    message_ro: Cererea se adresează direct medicului de familie ales.
+  source_claim_ids:
+  - claim.choose_gp.request_to_chosen_doctor
+  status: draft
+- id: rule.choose_gp.already_registered
+  canonical_rule_id: choose_family_doctor.already_registered
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: already_on_gp_list
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.change_family_doctor
+  - type: emit_advice
+    tag: use_change_gp_route
+    message_ro: Persoana este deja înscrisă; se folosește traseul de schimbare a medicului.
+  source_claim_ids:
+  - claim.choose_gp.request_to_chosen_doctor
+  status: draft
+- id: rule.choose_gp.insured_with_card
+  canonical_rule_id: choose_family_doctor.insured_with_card
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: insurance_status
+      value: insured
+    - op: eq
+      field: card_exception
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: national_health_card
+  - type: emit_advice
+    tag: insured_registration_card_required
+    message_ro: Pentru persoana asigurată fără excepție se prezintă și cardul național.
+  source_claim_ids:
+  - claim.choose_gp.insured_card_and_exceptions
+  status: draft
+- id: rule.choose_gp.card_exception
+  canonical_rule_id: choose_family_doctor.card_exception
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: card_exception
+    value: true
+  effects:
+  - type: exclude_step
+    step_id: present_national_health_card
+  - type: emit_advice
+    tag: registration_request_only_card_exception
+    message_ro: În situația de excepție înscrierea se face pe baza cererii.
+  source_claim_ids:
+  - claim.choose_gp.insured_card_and_exceptions
+  status: draft
+- id: rule.choose_gp.child_0_18
+  canonical_rule_id: choose_family_doctor.child_0_18
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: age
+      value: 0
+    - op: lte
+      field: age
+      value: 18
+  effects:
+  - type: exclude_step
+    step_id: present_national_health_card
+  - type: emit_advice
+    tag: child_registration_request_only
+    message_ro: Pentru copiii 0–18 ani înscrierea se face pe baza cererii.
+  source_claim_ids:
+  - claim.choose_gp.insured_card_and_exceptions
+  status: draft
+- id: rule.choose_gp.uninsured
+  canonical_rule_id: choose_family_doctor.uninsured
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: insurance_status
+    value: uninsured
+  effects:
+  - type: exclude_step
+    step_id: present_national_health_card
+  - type: emit_advice
+    tag: uninsured_can_register
+    message_ro: Persoana neasigurată se poate înscrie pe baza cererii, în condițiile normelor.
+  source_claim_ids:
+  - claim.choose_gp.request_to_chosen_doctor
+  - claim.choose_gp.insured_card_and_exceptions
+  status: draft
+- id: rule.choose_gp.provider_not_contracted
+  canonical_rule_id: choose_family_doctor.provider_not_contracted
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: chosen_doctor_in_contract
+    value: false
+  effects:
+  - type: block
+    code: DOCTOR_NOT_CONFIRMED_IN_CONTRACT
+  - type: include_step
+    step_id: search_official_provider_list
+  - type: emit_warning
+    tag: choose_contracted_provider
+    message_ro: Medicul ales trebuie verificat în lista oficială a furnizorilor contractați.
+  source_claim_ids:
+  - claim.choose_gp.provider_lists
+  status: draft
+- id: rule.choose_gp.provider_search
+  canonical_rule_id: choose_family_doctor.provider_search
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: chosen_doctor_in_contract
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.cnas.provider_lists
+  - type: emit_advice
+    tag: provider_contract_verified
+    message_ro: Furnizorul apare în lista oficială; disponibilitatea pentru înscriere se confirmă la cabinet.
+  source_claim_ids:
+  - claim.choose_gp.provider_lists
+  - claim.choose_gp.capacity_not_published_centrally
+  status: draft
+- id: rule.choose_gp.capacity_confirmation
+  canonical_rule_id: choose_family_doctor.capacity_confirmation
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: neq
+    field: doctor_accepts_new_patients_confirmed
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: doctor_capacity_confirmation_needed
+    message_ro: Confirmați direct dacă medicul acceptă înscrieri noi.
+  source_claim_ids:
+  - claim.choose_gp.capacity_not_published_centrally
+  status: draft
+- id: rule.choose_gp.timisoara_support
+  canonical_rule_id: choose_family_doctor.timisoara_support
+  event_type_id: life.choose_family_doctor
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjas_timisoara.contact
+  - type: emit_advice
+    tag: cjas_timisoara_support
+    message_ro: Pentru lista locală și clarificări poate fi consultată CJAS Timiș.
+  source_claim_ids:
+  - claim.choose_gp.cjas_timisoara_contact
+  status: draft

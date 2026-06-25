@@ -1,0 +1,390 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.change_family_doctor
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: schimbare după 8 luni
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - submit_transfer_request_to_new_doctor
+    requirements:
+    - family_doctor_transfer_request
+    - national_health_card
+    emitted_tags:
+    - six_month_condition_met
+    - transfer_card_required
+  id: ro.life.change_family_doctor.F01
+- title: exact 6 luni
+  facts:
+    months_since_registration: 6
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - submit_transfer_request_to_new_doctor
+    emitted_tags:
+    - six_month_condition_met
+  id: ro.life.change_family_doctor.F02
+- title: 5 luni doar preferință personală
+  facts:
+    months_since_registration: 5
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - six_month_condition_not_met
+  id: ro.life.change_family_doctor.F03
+- title: medicul a decedat înainte de 6 luni
+  facts:
+    months_since_registration: 2
+    early_change_reason: doctor_death
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - document_early_change_exception
+    - submit_transfer_request_to_new_doctor
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F04
+- title: medicul nu mai are contract
+  facts:
+    months_since_registration: 3
+    early_change_reason: doctor_contract_ended_or_suspended
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F05
+- title: praxis preluat
+  facts:
+    months_since_registration: 1
+    early_change_reason: practice_taken_over
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F06
+- title: mutare în altă localitate
+  facts:
+    months_since_registration: 2
+    early_change_reason: moved_to_other_locality
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F07
+- title: ieșire din detenție
+  facts:
+    months_since_registration: 1
+    early_change_reason: detention_transition
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F08
+- title: mutare în interes de serviciu sistem special
+  facts:
+    months_since_registration: 2
+    early_change_reason: special_system_service_move
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F09
+- title: medicul din sistem special își încetează colaborarea
+  facts:
+    months_since_registration: 2
+    early_change_reason: special_system_doctor_departure
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - early_change_exception_met
+  id: ro.life.change_family_doctor.F10
+- title: asigurat adult cu card
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - national_health_card
+    emitted_tags:
+    - transfer_card_required
+  id: ro.life.change_family_doctor.F11
+- title: copil de 10 ani
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 10
+    card_exception: true
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - present_national_health_card
+    emitted_tags:
+    - transfer_request_only_card_exception
+  id: ro.life.change_family_doctor.F12
+- title: card neemis
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: true
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - transfer_request_only_card_exception
+  id: ro.life.change_family_doctor.F13
+- title: persoană neasigurată
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: uninsured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps_absent:
+    - present_national_health_card
+    emitted_tags:
+    - uninsured_transfer_request
+  id: ro.life.change_family_doctor.F14
+- title: medic nou neconfirmat în contract
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: false
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    included_steps:
+    - search_official_provider_list
+    emitted_tags:
+    - new_doctor_contract_not_verified
+  id: ro.life.change_family_doctor.F15
+- title: medic contractat, acceptare neconfirmată
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: false
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - new_doctor_capacity_confirmation_needed
+  id: ro.life.change_family_doctor.F16
+- title: cerere de transfer depusă
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - monitor_medical_record_transfer
+    emitted_tags:
+    - new_doctor_notice_15_working_days
+    - old_doctor_record_copy_15_working_days
+    - original_record_stays_old_cabinet
+  id: ro.life.change_family_doctor.F17
+- title: vechiul cabinet nu trimite copia în 15 zile
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - old_doctor_record_copy_15_working_days
+  id: ro.life.change_family_doctor.F18
+- title: solicită originalul fișei
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - original_record_stays_old_cabinet
+  id: ro.life.change_family_doctor.F19
+- title: Timișoara — suport CJAS
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - cjas_timisoara_support
+  id: ro.life.change_family_doctor.F20
+- title: alt județ
+  facts:
+    months_since_registration: 8
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.bv.brasov
+  expected:
+    status: resolved
+    included_steps_absent:
+    - ch.cjas_timisoara.contact
+    emitted_tags:
+    - six_month_condition_met
+  id: ro.life.change_family_doctor.F21
+- title: lipsește data/vechimea înscrierii
+  facts:
+    early_change_reason: personal_preference
+    insurance_status: insured
+    age: 33
+    card_exception: false
+    new_doctor_in_contract: true
+    new_doctor_accepts_transfer_confirmed: true
+    transfer_request_submitted: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - change_gp_core_facts_missing
+    missing_facts:
+    - months_since_registration
+  id: ro.life.change_family_doctor.F22

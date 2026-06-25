@@ -1,0 +1,529 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.survivor_pension
+status: draft
+rules:
+- id: rule.survivor.require_core_facts
+  canonical_rule_id: survivor.core_facts
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: beneficiary_type
+    - op: missing
+      field: deceased_status
+    - op: missing
+      field: application_date
+  effects:
+  - type: require_confirmation
+    tag: survivor_core_facts_missing
+    message_ro: Sunt necesare categoria urmașului, statutul susținătorului și data cererii.
+  source_claim_ids:
+  - claim.survivor.eligible_relatives
+  status: draft
+  required_facts:
+  - beneficiary_type
+  - deceased_status
+  - application_date
+- id: rule.survivor.child_under_16
+  canonical_rule_id: survivor.child_under_16
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: child
+    - op: lt
+      field: child_age
+      value: 16
+  effects:
+  - type: include_step
+    step_id: prepare_survivor_application
+  - type: emit_advice
+    tag: child_age_condition_met
+    message_ro: Condiția de vârstă pentru copil este îndeplinită.
+  source_claim_ids:
+  - claim.survivor.child_conditions
+  - claim.survivor.application_and_documents
+  status: draft
+- id: rule.survivor.child_studies_16_26
+  canonical_rule_id: survivor.child_studies_16_26
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: child
+    - op: gte
+      field: child_age
+      value: 16
+    - op: lt
+      field: child_age
+      value: 26
+    - op: eq
+      field: continues_studies
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: study_certificate
+  - type: emit_advice
+    tag: child_study_condition_met
+    message_ro: Este necesară dovada continuării studiilor.
+  source_claim_ids:
+  - claim.survivor.child_conditions
+  - claim.survivor.application_and_documents
+  status: draft
+- id: rule.survivor.child_studies_missing
+  canonical_rule_id: survivor.child_studies_missing
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: child
+    - op: gte
+      field: child_age
+      value: 16
+    - op: lt
+      field: child_age
+      value: 26
+    - op: neq
+      field: continues_studies
+      value: true
+    - op: neq
+      field: eligible_disability
+      value: true
+  effects:
+  - type: block
+    code: CHILD_STUDY_CONDITION_NOT_MET
+  - type: emit_warning
+    tag: child_study_condition_not_met
+    message_ro: Între 16 și 26 de ani este necesară continuarea studiilor, în lipsa excepției de invaliditate.
+  source_claim_ids:
+  - claim.survivor.child_conditions
+  status: draft
+- id: rule.survivor.child_disability
+  canonical_rule_id: survivor.child_disability
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: child
+    - op: eq
+      field: eligible_disability
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: medical_capacity_decision
+  - type: emit_advice
+    tag: child_disability_route
+    message_ro: Invaliditatea trebuie dovedită prin decizie medicală și să fi apărut în perioada legală.
+  source_claim_ids:
+  - claim.survivor.child_conditions
+  - claim.survivor.application_and_documents
+  status: draft
+- id: rule.survivor.spouse_lifetime_full
+  canonical_rule_id: survivor.spouse_lifetime_full
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: spouse
+    - op: eq
+      field: standard_age_reached
+      value: true
+    - op: gte
+      field: marriage_months
+      value: 180
+  effects:
+  - type: include_step
+    step_id: prepare_survivor_application
+  - type: emit_advice
+    tag: spouse_lifetime_full
+    message_ro: Durata căsătoriei îndeplinește pragul de 15 ani.
+  source_claim_ids:
+  - claim.survivor.spouse_lifetime_marriage
+  status: draft
+- id: rule.survivor.spouse_lifetime_reduced
+  canonical_rule_id: survivor.spouse_lifetime_reduced
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: spouse
+    - op: eq
+      field: standard_age_reached
+      value: true
+    - op: gte
+      field: marriage_months
+      value: 120
+    - op: lt
+      field: marriage_months
+      value: 180
+  effects:
+  - type: include_step
+    step_id: calculate_marriage_reduction
+  - type: emit_warning
+    tag: spouse_marriage_reduction
+    message_ro: Cuantumul se diminuează cu 0,5% pentru fiecare lună lipsă până la 15 ani.
+  source_claim_ids:
+  - claim.survivor.spouse_lifetime_marriage
+  status: draft
+- id: rule.survivor.spouse_invalidity_route
+  canonical_rule_id: survivor.spouse_invalidity_route
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: spouse
+    - op: eq
+      field: standard_age_reached
+      value: false
+    - op: in
+      field: spouse_invalidity_grade
+      values:
+      - I
+      - II
+    - op: gte
+      field: marriage_months
+      value: 12
+    - op: eq
+      field: income_condition_met
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_survivor_application
+  - type: include_requirement
+    requirement_id: medical_capacity_decision
+  - type: emit_advice
+    tag: spouse_invalidity_route
+    message_ro: Sunt aplicabile condițiile speciale pentru soțul cu invaliditate grad I sau II.
+  source_claim_ids:
+  - claim.survivor.spouse_invalidity
+  status: draft
+- id: rule.survivor.work_accident_route
+  canonical_rule_id: survivor.work_accident_route
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: spouse
+    - op: in
+      field: death_cause
+      values:
+      - work_accident
+      - occupational_disease
+    - op: eq
+      field: standard_age_reached
+      value: false
+    - op: eq
+      field: income_condition_met
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: professional_death_evidence
+  - type: include_step
+    step_id: prepare_survivor_application
+  - type: emit_advice
+    tag: marriage_duration_waived
+    message_ro: Durata căsătoriei nu este cerută pentru deces profesional.
+  source_claim_ids:
+  - claim.survivor.work_accident
+  - claim.survivor.application_and_documents
+  status: draft
+- id: rule.survivor.six_month_route
+  canonical_rule_id: survivor.six_month_route
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: spouse
+    - op: eq
+      field: temporary_six_month_route
+      value: true
+    - op: eq
+      field: income_condition_met
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_survivor_application
+  - type: set_deadline
+    tag: six_month_entitlement_window
+    value: 6_months_from_death
+    message_ro: Dreptul temporar este limitat la 6 luni de la deces.
+  source_claim_ids:
+  - claim.survivor.temporary_six_months_and_childcare
+  status: draft
+- id: rule.survivor.childcare_route
+  canonical_rule_id: survivor.childcare_route
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: spouse
+    - op: eq
+      field: cares_for_child_under_7
+      value: true
+    - op: eq
+      field: income_condition_met
+      value: true
+  effects:
+  - type: include_step
+    step_id: prepare_survivor_application
+  - type: emit_advice
+    tag: childcare_until_age_7
+    message_ro: Dreptul poate continua până la împlinirea vârstei de 7 ani de ultimul copil.
+  source_claim_ids:
+  - claim.survivor.temporary_six_months_and_childcare
+  status: draft
+- id: rule.survivor.required_documents
+  canonical_rule_id: survivor.required_documents
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: exists
+    field: beneficiary_type
+  effects:
+  - type: include_requirement
+    requirement_id: annex_7_application
+  - type: include_requirement
+    requirement_id: death_certificate
+  - type: include_requirement
+    requirement_id: civil_status_documents
+  - type: attach_channel
+    channel_id: ch.cnpp.online_forms
+  source_claim_ids:
+  - claim.survivor.application_and_documents
+  - claim.survivor.official_form
+  status: draft
+- id: rule.survivor.percentage
+  canonical_rule_id: survivor.percentage
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: exists
+    field: eligible_survivor_count
+  effects:
+  - type: include_step
+    step_id: determine_survivor_percentage
+  - type: emit_advice
+    tag: survivor_percentage_table
+    message_ro: Se aplică 50%, 75% sau 100% după numărul urmașilor eligibili.
+  source_claim_ids:
+  - claim.survivor.percentages_and_double_orphan
+  status: draft
+- id: rule.survivor.double_orphan
+  canonical_rule_id: survivor.double_orphan
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: double_orphan
+    value: true
+  effects:
+  - type: include_step
+    step_id: calculate_rights_for_each_parent
+  - type: emit_advice
+    tag: double_orphan_sum
+    message_ro: Drepturile se calculează separat și se însumează.
+  source_claim_ids:
+  - claim.survivor.percentages_and_double_orphan
+  status: draft
+- id: rule.survivor.option_own_pension
+  canonical_rule_id: survivor.option_own_pension
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: has_own_pension
+    value: true
+  effects:
+  - type: include_step
+    step_id: compare_own_and_survivor_pension
+  - type: emit_advice
+    tag: choose_more_advantageous_pension
+    message_ro: Solicitantul poate opta pentru pensia mai avantajoasă.
+  source_claim_ids:
+  - claim.survivor.option_own_pension
+  status: draft
+- id: rule.survivor.start_date_in_time
+  canonical_rule_id: survivor.start_date_in_time
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: application_within_30_days
+    value: true
+  effects:
+  - type: include_step
+    step_id: derive_survivor_start_date
+  - type: emit_advice
+    tag: survivor_start_date_by_deceased_status
+    message_ro: Data de început se stabilește după statutul susținătorului și momentul dobândirii condițiilor.
+  source_claim_ids:
+  - claim.survivor.start_dates
+  status: draft
+- id: rule.survivor.start_date_late
+  canonical_rule_id: survivor.start_date_late
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: application_within_30_days
+    value: false
+  effects:
+  - type: emit_warning
+    tag: survivor_rights_start_from_filing
+    message_ro: Cererea tardivă produce drepturi de la data înregistrării.
+  source_claim_ids:
+  - claim.survivor.start_dates
+  status: draft
+- id: rule.survivor.study_proof_10_days
+  canonical_rule_id: survivor.study_proof_10_days
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: beneficiary_type
+      value: child
+    - op: gte
+      field: child_age
+      value: 16
+    - op: lt
+      field: child_age
+      value: 26
+    - op: eq
+      field: continues_studies
+      value: true
+  effects:
+  - type: set_deadline
+    tag: study_proof_10_days
+    value: 10_days_from_school_year_start
+    message_ro: Dovada studiilor se transmite în 10 zile de la începerea anului.
+  source_claim_ids:
+  - claim.survivor.study_proof_deadline
+  status: draft
+- id: rule.survivor.timisoara_channel
+  canonical_rule_id: survivor.timisoara_channel
+  event_type_id: life.survivor_pension
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjp_timisoara.contact
+  - type: require_confirmation
+    tag: local_submission_channel_confirmation
+    message_ro: Confirmați modalitatea concretă de depunere la CJP Timiș.
+  source_claim_ids:
+  - claim.survivor.cjp_timisoara_contact
+  status: draft

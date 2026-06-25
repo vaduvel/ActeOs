@@ -1,0 +1,380 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+event_type_id: life.early_retirement
+status: draft
+rules:
+- id: rule.early.require_core_facts
+  canonical_rule_id: early_retirement.core_facts
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: any
+    args:
+    - op: missing
+      field: standard_retirement_date
+    - op: missing
+      field: months_before_standard
+    - op: missing
+      field: qualifying_contributory_years
+    - op: missing
+      field: full_contributory_years_required
+  effects:
+  - type: require_confirmation
+    tag: early_core_facts_missing
+    message_ro: Sunt necesare data standard din anexa nr. 5 și stagiul contributiv eligibil după excluderi.
+  source_claim_ids:
+  - claim.early.stage_condition
+  - claim.early.max_five_years
+  status: draft
+  required_facts:
+  - standard_retirement_date
+  - months_before_standard
+  - qualifying_contributory_years
+  - full_contributory_years_required
+- id: rule.early.more_than_five_years
+  canonical_rule_id: early_retirement.maximum_anticipation
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: gt
+    field: months_before_standard
+    value: 60
+  effects:
+  - type: block
+    code: more_than_five_years_early
+    tag: more_than_five_years_early
+    message_ro: Pensia anticipată nu poate începe cu mai mult de 5 ani înainte de vârsta standard.
+  source_claim_ids:
+  - claim.early.max_five_years
+  status: draft
+- id: rule.early.stage_not_met
+  canonical_rule_id: early_retirement.full_stage_required
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: lt
+    field: qualifying_contributory_years
+    value: 35
+  effects:
+  - type: block
+    code: full_contributory_stage_not_met
+    tag: full_contributory_stage_not_met
+    message_ro: Stagiul contributiv eligibil este sub stagiul complet; valoarea exactă trebuie comparată cu anexa nr. 5.
+  source_claim_ids:
+  - claim.early.stage_condition
+  status: draft
+  note: În producție, pragul 35 se înlocuiește cu full_contributory_years_required derivat din anexa nr. 5.
+- id: rule.early.eligible
+  canonical_rule_id: early_retirement.eligibility
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: lte
+      field: months_before_standard
+      value: 60
+    - op: gte
+      field: qualifying_contributory_years
+      value: 35
+    - op: eq
+      field: uses_other_age_reduction
+      value: false
+  effects:
+  - type: include_step
+    step_id: prepare_early_retirement_application
+  - type: include_requirement
+    requirement_id: req.annex4_early_retirement_application
+  - type: emit_advice
+    tag: early_retirement_basic_conditions_met
+    message_ro: Condițiile de bază sunt îndeplinite, sub rezerva validării stagiului de către CNPP.
+  source_claim_ids:
+  - claim.early.max_five_years
+  - claim.early.stage_condition
+  - claim.early.official_form
+  status: draft
+- id: rule.early.excluded_periods
+  canonical_rule_id: early_retirement.excluded_opening_periods
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: gt
+    field: excluded_period_years
+    value: 0
+  effects:
+  - type: include_step
+    step_id: recalculate_qualifying_stage_without_excluded_periods
+  - type: emit_warning
+    tag: excluded_periods_do_not_open_right
+    message_ro: Perioadele indicate nu se folosesc la deschiderea dreptului; stagiul trebuie recalculat.
+  source_claim_ids:
+  - claim.early.excluded_opening_periods
+  status: draft
+- id: rule.early.no_cumulation
+  canonical_rule_id: early_retirement.no_age_reduction_cumulation
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: uses_other_age_reduction
+    value: true
+  effects:
+  - type: block
+    code: age_reduction_cannot_cumulate
+    tag: age_reduction_cannot_cumulate
+    message_ro: Pensia anticipată nu se cumulează cu altă reducere a vârstei standard.
+  source_claim_ids:
+  - claim.early.no_cumulation
+  status: draft
+- id: rule.early.penalty_tier_1
+  canonical_rule_id: early_retirement.penalty.up_to_1
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: lte
+    field: excess_stage_years
+    value: 1
+  effects:
+  - type: emit_advice
+    tag: penalty_rate_0_40_per_month
+    message_ro: Tabelul indică diminuare de 0,40% pentru fiecare lună de anticipare.
+  source_claim_ids:
+  - claim.early.penalty_table
+  status: draft
+- id: rule.early.penalty_tier_2
+  canonical_rule_id: early_retirement.penalty.1_to_2
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: excess_stage_years
+      value: 1
+    - op: lte
+      field: excess_stage_years
+      value: 2
+  effects:
+  - type: emit_advice
+    tag: penalty_rate_0_35_per_month
+    message_ro: Tabelul indică diminuare de 0,35% pentru fiecare lună de anticipare.
+  source_claim_ids:
+  - claim.early.penalty_table
+  status: draft
+- id: rule.early.penalty_tier_3
+  canonical_rule_id: early_retirement.penalty.2_to_3
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: excess_stage_years
+      value: 2
+    - op: lte
+      field: excess_stage_years
+      value: 3
+  effects:
+  - type: emit_advice
+    tag: penalty_rate_0_30_per_month
+    message_ro: Tabelul indică diminuare de 0,30% pentru fiecare lună de anticipare.
+  source_claim_ids:
+  - claim.early.penalty_table
+  status: draft
+- id: rule.early.penalty_tier_4
+  canonical_rule_id: early_retirement.penalty.3_to_4
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: excess_stage_years
+      value: 3
+    - op: lte
+      field: excess_stage_years
+      value: 4
+  effects:
+  - type: emit_advice
+    tag: penalty_rate_0_25_per_month
+    message_ro: Tabelul indică diminuare de 0,25% pentru fiecare lună de anticipare.
+  source_claim_ids:
+  - claim.early.penalty_table
+  status: draft
+- id: rule.early.penalty_tier_5
+  canonical_rule_id: early_retirement.penalty.4_to_5
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: gt
+      field: excess_stage_years
+      value: 4
+    - op: lte
+      field: excess_stage_years
+      value: 5
+  effects:
+  - type: emit_advice
+    tag: penalty_rate_0_20_per_month
+    message_ro: Tabelul indică diminuare de 0,20% pentru fiecare lună de anticipare.
+  source_claim_ids:
+  - claim.early.penalty_table
+  status: draft
+- id: rule.early.application_window
+  canonical_rule_id: early_retirement.application_window
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: exists
+    field: conditions_met_date
+  effects:
+  - type: set_deadline
+    step_id: submit_early_retirement_application
+    value:
+      kind: relative_calendar_days
+      days: 30
+      anchor: conditions_met_date
+  - type: include_step
+    step_id: submit_early_retirement_application
+  source_claim_ids:
+  - claim.early.application_start
+  status: draft
+- id: rule.early.late_application
+  canonical_rule_id: early_retirement.late_application_effect
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: application_within_30_days
+    value: false
+  effects:
+  - type: emit_warning
+    tag: early_rights_start_from_filing
+    message_ro: Cererea tardivă produce drepturi de la data înregistrării.
+  source_claim_ids:
+  - claim.early.application_start
+  status: draft
+- id: rule.early.payment_employed
+  canonical_rule_id: early_retirement.payment_after_insured_status
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2024-09-01'
+  when:
+    op: all
+    args:
+    - op: in
+      field: insured_category
+      values:
+      - employee
+      - civil_servant
+      - elected_or_appointed
+      - cooperative_member
+    - op: eq
+      field: insured_status_ended
+      value: false
+  effects:
+  - type: emit_warning
+    tag: payment_waits_for_insured_status_end
+    message_ro: Decizia poate fi emisă, dar plata pentru această categorie începe la încetarea calității de asigurat.
+  source_claim_ids:
+  - claim.early.payment_after_insured_status
+  status: draft
+- id: rule.early.conversion
+  canonical_rule_id: early_retirement.ex_officio_conversion
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: eq
+    field: standard_age_reached
+    value: true
+  effects:
+  - type: include_step
+    step_id: monitor_ex_officio_conversion_to_old_age
+  - type: emit_advice
+    tag: penalty_removed_at_conversion
+    message_ro: La transformarea din oficiu în pensie pentru limită de vârstă se elimină diminuarea.
+  source_claim_ids:
+  - claim.early.ex_officio_conversion
+  status: draft
+- id: rule.early.timisoara_channel
+  canonical_rule_id: early_retirement.timisoara_pilot_contact
+  event_type_id: life.early_retirement
+  jurisdiction_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: national_operational
+  severity: operational
+  effective_from: '2024-09-01'
+  when:
+    op: jurisdiction_is
+    field: jurisdiction_id
+    value: ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ch.cjp_timisoara.contact
+  - type: require_confirmation
+    tag: early_local_submission_confirm
+    message_ro: Confirmați programarea și canalul concret de depunere la CJP Timiș.
+  source_claim_ids:
+  - claim.early.cjp_timisoara_contact
+  status: draft

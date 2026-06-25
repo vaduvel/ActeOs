@@ -1,0 +1,405 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.bank_account_change_admin
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: pensie CNPP de la poștă în cont
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - select_cnpp_payment_change_form
+    - prepare_cnpp_payment_change_request
+    - switch_cnpp_payment_to_bank
+    requirements:
+    - cnpp_payment_method_change_form
+    emitted_tags:
+    - cnpp_payment_change_route
+    - cnpp_post_to_bank
+    - payment_change_attachments_need_confirmation
+  id: ro.life.bank_account_change_admin.F01
+- title: pensie CNPP din cont la poștă
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: card_account
+    new_payment_method: post
+    old_iban: null
+    new_iban: null
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - switch_cnpp_payment_to_post
+    emitted_tags:
+    - cnpp_bank_to_post
+  id: ro.life.bank_account_change_admin.F02
+- title: schimbă IBAN-ul pensiei
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: card_account
+    new_payment_method: card_account
+    old_iban: RO11OLD
+    new_iban: RO22NEW
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - replace_cnpp_payment_account
+    emitted_tags:
+    - cnpp_bank_account_replacement
+  id: ro.life.bank_account_change_admin.F03
+- title: cont curent în loc de card
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: card_account
+    new_payment_method: current_account
+    old_iban: RO11OLD
+    new_iban: RO22NEW
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - cnpp_bank_account_replacement
+  id: ro.life.bank_account_change_admin.F04
+- title: schimbă și adresa beneficiarului
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: true
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    requirements:
+    - cnpp_beneficiary_data_change_form
+    emitted_tags:
+    - beneficiary_data_form_separate
+  id: ro.life.bank_account_change_admin.F05
+- title: indemnizație plătită prin casa de pensii
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: indemnity
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    included_steps:
+    - select_cnpp_payment_change_form
+    emitted_tags:
+    - cnpp_payment_change_route
+  id: ro.life.bank_account_change_admin.F06
+- title: pensie de serviciu administrată prin CNPP
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: service_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - cnpp_payment_change_route
+  id: ro.life.bank_account_change_admin.F07
+- title: alocație copil — altă instituție
+  facts:
+    paying_authority: anpis
+    payment_type: child_allowance
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - institution_specific_payment_change_required
+  id: ro.life.bank_account_change_admin.F08
+- title: indemnizație concediu creștere copil
+  facts:
+    paying_authority: ajpis
+    payment_type: parental_benefit
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - institution_specific_payment_change_required
+  id: ro.life.bank_account_change_admin.F09
+- title: plată ANAF
+  facts:
+    paying_authority: anaf
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - institution_specific_payment_change_required
+  id: ro.life.bank_account_change_admin.F10
+- title: plată de la primărie
+  facts:
+    paying_authority: uat
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - institution_specific_payment_change_required
+  id: ro.life.bank_account_change_admin.F11
+- title: nu știe instituția plătitoare
+  facts:
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - paying_authority_missing
+    missing_facts:
+    - paying_authority
+  id: ro.life.bank_account_change_admin.F12
+- title: cont pe numele beneficiarului
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - payment_change_attachments_need_confirmation
+  id: ro.life.bank_account_change_admin.F13
+- title: cont pe numele soțului
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: false
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - third_party_account_not_verified
+  id: ro.life.bank_account_change_admin.F14
+- title: cont comun — titularitatea neclară
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: false
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: blocked
+    emitted_tags:
+    - third_party_account_not_verified
+  id: ro.life.bank_account_change_admin.F15
+- title: cont în alt stat
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: foreign
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - foreign_account_route_needs_confirmation
+  id: ro.life.bank_account_change_admin.F16
+- title: vrea să trimită cererea online
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - cnpp_payment_change_route
+  id: ro.life.bank_account_change_admin.F17
+- title: întreabă data-limită pentru luna următoare
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - payment_change_attachments_need_confirmation
+  id: ro.life.bank_account_change_admin.F18
+- title: nu are încă dovada contului
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - payment_change_attachments_need_confirmation
+  id: ro.life.bank_account_change_admin.F19
+- title: Timișoara — CJP Timiș
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: resolved
+    emitted_tags:
+    - local_payment_change_submission_confirmation
+  id: ro.life.bank_account_change_admin.F20
+- title: alt județ
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: post
+    new_payment_method: card_account
+    old_iban: null
+    new_iban: ROXXBANK0000000000000000
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.bv.brasov
+  expected:
+    status: resolved
+    included_steps_absent:
+    - ch.cjp_timisoara.contact
+    emitted_tags:
+    - cnpp_payment_change_route
+  id: ro.life.bank_account_change_admin.F21
+- title: același IBAN, doar card reemis
+  facts:
+    paying_authority: cnpp_or_territorial_pension_house
+    payment_type: public_pension
+    old_payment_method: card_account
+    new_payment_method: card_account
+    old_iban: RO11SAME
+    new_iban: RO11SAME
+    account_holder_is_beneficiary: true
+    account_country: romania
+    also_changes_identity_or_contact_data: false
+    jurisdiction_id: ro.tm.timisoara
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - payment_change_attachments_need_confirmation
+  id: ro.life.bank_account_change_admin.F22

@@ -1,0 +1,925 @@
+batch_id: BATCH_11_PENSIONS_HEALTH_ADMIN
+engine_contract: see 08_RULE_ENGINE_DEEP_SPEC.md
+defaults:
+  event_type_id: life.administrative_decision_contest
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- title: destinatar, ziua 10 de la comunicare
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_prior_complaint
+    emitted_tags:
+    - prior_complaint_30_days_from_communication
+  id: ro.life.administrative_decision_contest.F01
+- title: destinatar, exact ziua 30
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 30
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_prior_complaint
+    emitted_tags:
+    - prior_complaint_30_days_from_communication
+  id: ro.life.administrative_decision_contest.F02
+- title: destinatar după 30 de zile, cu motive temeinice
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 45
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: true
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_prior_complaint
+    emitted_tags:
+    - late_prior_complaint_requires_justified_reasons
+  id: ro.life.administrative_decision_contest.F03
+- title: destinatar după 30 de zile, fără motive temeinice
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 45
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - justified_late_reasons_required
+    missing_facts:
+    - justified_late_reasons_documentation
+  id: ro.life.administrative_decision_contest.F04
+- title: destinatar peste limita de 6 luni de la emitere
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 210
+    days_since_knowledge: null
+    within_6_months_of_issue: false
+    within_6_months_of_knowledge: null
+    justified_late_reasons: true
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - prior_complaint_outer_limit_exceeded
+  id: ro.life.administrative_decision_contest.F05
+- title: act normativ contestat
+  facts:
+    act_type: normative
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 900
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: false
+    within_1_year_of_court_anchor: false
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_prior_complaint
+    - prepare_court_action
+    requirements:
+    - court_fee_50_lei_for_annulment_or_recognition
+    emitted_tags:
+    - normative_prior_complaint_anytime
+    - normative_court_action_anytime
+  id: ro.life.administrative_decision_contest.F06
+- title: terț, ziua 20 de la luarea la cunoștință
+  facts:
+    act_type: individual
+    recipient_role: third_party
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: '2026-06-05'
+    days_since_communication: 10
+    days_since_knowledge: 20
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: true
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_prior_complaint
+    emitted_tags:
+    - third_party_prior_30_days_from_knowledge
+  id: ro.life.administrative_decision_contest.F07
+- title: terț după 30 de zile, cu motive temeinice
+  facts:
+    act_type: individual
+    recipient_role: third_party
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: '2026-05-10'
+    days_since_communication: 10
+    days_since_knowledge: 46
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: true
+    justified_late_reasons: true
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_prior_complaint
+    emitted_tags:
+    - third_party_late_prior_requires_justified_reasons
+  id: ro.life.administrative_decision_contest.F08
+- title: terț după 30 de zile, fără motive temeinice
+  facts:
+    act_type: individual
+    recipient_role: third_party
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: '2026-05-10'
+    days_since_communication: 10
+    days_since_knowledge: 46
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: true
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: needs_facts
+    emitted_tags:
+    - third_party_justified_late_reasons_required
+    missing_facts:
+    - justified_late_reasons_documentation
+  id: ro.life.administrative_decision_contest.F09
+- title: terț peste 6 luni de la luarea la cunoștință
+  facts:
+    act_type: individual
+    recipient_role: third_party
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: '2025-11-01'
+    days_since_communication: 10
+    days_since_knowledge: 236
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: false
+    justified_late_reasons: true
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - third_party_prior_outer_limit_exceeded
+  id: ro.life.administrative_decision_contest.F10
+- title: excepție legală de la plângerea prealabilă confirmată
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: true
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps_absent:
+    - prepare_prior_complaint
+    emitted_tags:
+    - prior_complaint_not_required_confirmed_exception
+  id: ro.life.administrative_decision_contest.F11
+- title: procedura judiciară specială nu a fost verificată
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: false
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: needs_facts
+    included_steps:
+    - verify_special_judicial_procedure
+    emitted_tags:
+    - special_judicial_procedure_check_required
+    missing_facts:
+    - special_judicial_procedure_checked
+  id: ro.life.administrative_decision_contest.F12
+- title: există procedură judiciară specială
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: true
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: blocked
+    included_steps:
+    - route_to_special_judicial_procedure
+    emitted_tags:
+    - special_procedure_overrides_general_route
+  id: ro.life.administrative_decision_contest.F13
+- title: act al autorității locale, acțiune cu despăgubiri
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: true
+    claimed_damages_lei: 10000
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_administrative_fiscal_tribunal
+    - select_court_at_claimant_domicile_or_seat
+    - prepare_court_action
+    requirements:
+    - copy_of_contested_act_or_refusal_or_registered_request
+    - proof_of_prior_complaint_when_required
+    - court_fee_50_lei_for_annulment_or_recognition
+    - damage_claim_fee_10_percent_max_300_lei
+    emitted_tags:
+    - material_venue_tribunal
+    - private_claimant_own_domicile_or_seat
+    - court_action_within_6_months
+    - damage_claim_fee_formula
+  id: ro.life.administrative_decision_contest.F14
+- title: act al autorității județene
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: county
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_administrative_fiscal_tribunal
+    emitted_tags:
+    - material_venue_tribunal
+  id: ro.life.administrative_decision_contest.F15
+- title: act al autorității centrale
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: central
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_administrative_fiscal_court_of_appeal
+    emitted_tags:
+    - material_venue_court_of_appeal
+  id: ro.life.administrative_decision_contest.F16
+- title: litigiu fiscal de 2.000.000 lei
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: true
+    fiscal_amount_lei: 2000000
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_administrative_fiscal_tribunal
+    emitted_tags:
+    - fiscal_material_venue_tribunal
+  id: ro.life.administrative_decision_contest.F17
+- title: litigiu fiscal de 4.000.000 lei
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: true
+    fiscal_amount_lei: 4000000
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - identify_administrative_fiscal_court_of_appeal
+    emitted_tags:
+    - fiscal_material_venue_court_of_appeal
+  id: ro.life.administrative_decision_contest.F18
+- title: acțiune individuală în interiorul celor 6 luni
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_court_action
+    emitted_tags:
+    - court_action_within_6_months
+  id: ro.life.administrative_decision_contest.F19
+- title: acțiune după 6 luni, dar în interiorul unui an, cu motive temeinice
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: false
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: true
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_court_action
+    emitted_tags:
+    - late_court_action_requires_justified_reasons
+  id: ro.life.administrative_decision_contest.F20
+- title: acțiune după limita exterioară de un an
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: true
+    within_6_months_of_court_anchor: false
+    within_1_year_of_court_anchor: false
+    justified_court_delay_reasons: true
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: false
+    well_justified_case: false
+    imminent_damage: false
+    suspension_procedural_trigger_met: false
+    suspension_mode: none
+    days_since_main_action: null
+    main_action_filed_within_60_days: true
+  expected:
+    status: blocked
+    emitted_tags:
+    - court_action_one_year_outer_limit_exceeded
+  id: ro.life.administrative_decision_contest.F21
+- title: suspendare înaintea acțiunii principale, condiții îndeplinite
+  facts:
+    act_type: individual
+    recipient_role: addressee
+    special_judicial_procedure_checked: true
+    special_judicial_procedure_exists: false
+    prior_complaint_exception_confirmed: false
+    communication_date: '2026-06-15'
+    issue_date: '2026-06-10'
+    knowledge_date: null
+    days_since_communication: 10
+    days_since_knowledge: null
+    within_6_months_of_issue: true
+    within_6_months_of_knowledge: null
+    justified_late_reasons: false
+    prior_complaint_submitted: false
+    court_action_planned: false
+    within_6_months_of_court_anchor: true
+    within_1_year_of_court_anchor: true
+    justified_court_delay_reasons: false
+    authority_level: local
+    fiscal_case: false
+    fiscal_amount_lei: null
+    claimant_type: private
+    claimant_jurisdiction_id: ro.tm.timisoara
+    requests_damages: false
+    claimed_damages_lei: null
+    requests_suspension: true
+    well_justified_case: true
+    imminent_damage: true
+    suspension_procedural_trigger_met: true
+    suspension_mode: before_main_action
+    days_since_main_action: null
+    main_action_filed_within_60_days: false
+  expected:
+    status: resolved
+    included_steps:
+    - prepare_suspension_request
+    emitted_tags:
+    - suspension_substantive_conditions_met
+    - main_action_60_day_safeguard
+  id: ro.life.administrative_decision_contest.F22
