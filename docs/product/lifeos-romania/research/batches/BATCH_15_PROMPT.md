@@ -31,6 +31,19 @@ Evenimente de cercetat (toate 10 in aceeasi rulare):
 - ro.life.administrative_petition
 - ro.life.home_fire_flood
 
-TOTAL: 50 fisiere pentru acest batch.
+TOTAL: 60 fisiere pentru acest batch (10 evenimente × 6 fisiere).
+
+## CERINTA V2.1 — Intent-first discovery
+Pentru FIECARE din cele 10 evenimente de mai jos, in plus fata de cele 5 fisiere (event_card.md, source_claims.yaml, rules.yaml, fixtures/golden.yaml, gaps.md), vei intoarce si un fisier intent_proposal.yaml cu:
+- id: ro.intent.<domeniu>.<actiune> (propus)
+- title_ro: "Vreau să..." (orientat pe actiune)
+- outcome_ro: rezultatul pe care il urmareste utilizatorul
+- aliases_ro: [formulari si cautari tipice]
+- negative_aliases_ro: [expresii care NU trebuie sa se potriveasca]
+- linked_event_ids: [ro.life.<slug>]
+- category_id: categoria din taxonomie (identity_documents, home_address_utilities, vehicles_mobility, family_civil_status, education, work_social, health_care, tax_money_penalties, business_self_employment, property_construction, international_citizenship, legal_emergency_civic)
+- kind: direct_goal (daca e o singura procedura) / bundle_goal (daca coordoneaza mai multe)
+
+Porneste de la principiul: omul nu spune "ce s-a intamplat" ci "ce vrei sa rezolvi?". Titlul incepe cu un verb sau exprima clar obiectivul.
 
 IMPORTANT: Nu sari peste niciun eveniment. Toate 10 trebuie livrate cu cate 20+ fixtures fiecare. Respecta schemele si enum-urile din documentatia de referinta.
