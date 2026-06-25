@@ -1,0 +1,73 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_CHANGE_ELECTRICITY_HOLDER
+event_type_id: life.change_electricity_holder
+status: draft
+rules:
+  - id: rule.elec.base_docs
+    canonical_rule_id: change_electricity_holder.base_docs
+    event_type_id: life.change_electricity_holder
+    jurisdiction_ids: [ro]
+    authority_level: institution
+    severity: critical
+    effective_from: '2022-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: change_electricity_holder }
+      - { type: include_requirement, requirement_id: req.valid_id }
+      - { type: include_requirement, requirement_id: req.proof_of_space }
+      - { type: include_requirement, requirement_id: req.meter_index }
+    source_claim_ids: [claim.elec.base_docs, claim.elec.same_as_new]
+    status: in_review
+  - id: rule.elec.death_path
+    canonical_rule_id: change_electricity_holder.death_path
+    event_type_id: life.change_electricity_holder
+    jurisdiction_ids: [ro]
+    authority_level: institution
+    severity: operational
+    effective_from: '2022-01-01'
+    when:
+      op: eq
+      field: reason
+      value: inheritance_death
+    effects:
+      - { type: emit_warning, message_ro: 'La deces contractul inceteaza; se depune copie act identitate solicitant + copie certificat de deces al titularului.', tag: death_takeover }
+      - { type: include_requirement, requirement_id: req.death_certificate }
+    source_claim_ids: [claim.elec.death_terminates, claim.elec.death_docs]
+    status: in_review
+  - id: rule.elec.switch_free
+    canonical_rule_id: change_electricity_holder.switch_free
+    event_type_id: life.change_electricity_holder
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: explanatory
+    effective_from: '2022-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_advice, message_ro: 'Schimbarea furnizorului este gratuita (ANRE); nu se percep taxe pentru proces.', tag: switch_free }
+    source_claim_ids: [claim.elec.switch_free]
+    status: draft
+  - id: rule.elec.activation_term
+    canonical_rule_id: change_electricity_holder.activation_term
+    event_type_id: life.change_electricity_holder
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2022-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_advice, message_ro: 'Noul contract intra in vigoare in ~21 zile de la cerere (de confirmat pentru titular).', tag: activation_21d }
+      - { type: require_confirmation, message_ro: 'Termenul de 21 zile trebuie confirmat pentru schimbarea titularului.' }
+    source_claim_ids: [claim.elec.21d]
+    status: in_review
+  - id: rule.elec.distributor_channel
+    canonical_rule_id: change_electricity_holder.distributor_channel
+    event_type_id: life.change_electricity_holder
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2022-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.deer_banat }
+      - { type: emit_advice, message_ro: 'Furnizorul se alege liber; distributia in Banat este operata de DEER Sucursala Banat.', tag: free_market }
+    source_claim_ids: [claim.elec.switch_free]
+    status: draft
