@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:18.4
+    environment:
+      POSTGRES_DB: acteos
+      POSTGRES_USER: acteos
+      POSTGRES_PASSWORD: acteos
+    ports:
+      - "5432:5432"
+    volumes:
+      - acteos_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acteos -d acteos"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  acteos_pg:

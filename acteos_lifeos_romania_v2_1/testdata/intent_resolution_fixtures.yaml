@@ -1,0 +1,36 @@
+schema_version: 1.0.0
+locale: ro-RO
+fixtures:
+- query: buletin expirat
+  expected_top_intent_id: ro.intent.identity.renew_expired_id
+  expected_state: high
+- query: schimb buletin
+  expected_candidate_ids:
+  - ro.intent.identity.renew_expired_id
+  - ro.intent.identity.change_address_on_id
+  - ro.intent.identity.replace_lost_id
+  expected_state: ambiguous
+- query: pasaport copil
+  expected_top_intent_id: ro.intent.identity.obtain_minor_passport
+  expected_state: high
+- query: cazier
+  expected_top_intent_id: ro.intent.identity.obtain_criminal_record
+  expected_state: high
+- query: cazier fiscal
+  forbidden_intent_ids:
+  - ro.intent.identity.obtain_criminal_record
+  expected_state: no_result
+- query: trec masina pe numele meu
+  expected_top_intent_id: ro.intent.vehicle.register_used_purchase_ro
+  expected_state: high
+- query: scot masina de la impozit
+  expected_top_intent_id: ro.intent.tax.remove_vehicle_local
+  expected_state: high
+- query: m-am mutat ce trebuie sa fac
+  expected_top_intent_id: ro.intent.home.complete_move_formalities
+  expected_state: high
+- query: acte gradinita
+  expected_top_intent_id: ro.intent.education.enroll_preschool
+  expected_state: high
+- query: vreau ceva de la primarie dar nu stiu ce
+  expected_state: no_result

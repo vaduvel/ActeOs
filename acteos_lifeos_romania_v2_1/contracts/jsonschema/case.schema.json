@@ -1,0 +1,92 @@
+{
+  "$id": "https://acteos.example/schemas/case.schema.json",
+  "title": "Case",
+  "type": "object",
+  "required": [
+    "id",
+    "intent_type_id",
+    "reference_date",
+    "timezone",
+    "jurisdiction_path",
+    "status",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reference_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "timezone": {
+      "type": "string",
+      "const": "Europe/Bucharest"
+    },
+    "jurisdiction_path": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      }
+    },
+    "subject_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "facts": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "needs_facts",
+        "resolved",
+        "needs_confirmation",
+        "conflicting",
+        "blocked",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "intent_type_id": {
+      "type": "string",
+      "pattern": "^ro\\.intent\\.[a-z0-9_.-]+$"
+    },
+    "event_context_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^ro\\.life\\.[a-z0-9_.-]+$"
+      }
+    },
+    "discovery_source": {
+      "type": "string",
+      "enum": [
+        "search",
+        "category",
+        "quick_action",
+        "related_intent",
+        "deep_link",
+        "legacy_event"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

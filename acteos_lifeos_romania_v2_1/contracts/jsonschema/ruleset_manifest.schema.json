@@ -1,0 +1,79 @@
+{
+  "$id": "https://acteos.example/schemas/ruleset_manifest.schema.json",
+  "title": "Ruleset Manifest",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "scope",
+    "schema_version",
+    "engine_compatibility",
+    "rule_revision_ids",
+    "manifest_sha256",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "version": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "engine_compatibility": {
+      "type": "string"
+    },
+    "rule_revision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "approved_by": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "validating",
+        "approved",
+        "active",
+        "superseded",
+        "withdrawn"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -1,0 +1,30 @@
+# 24 — Glossary
+
+- **Intent type:** obiectiv administrativ canonic selectat și confirmat de utilizator.
+- **Intent alias:** formulare naturală care poate rezolva către un intent, fără a crea un ID nou.
+- **Intent Resolver:** normalizare, ranking și disambiguare către catalogul publicat.
+- **Event type:** context canonic de viață folosit pentru bundle-uri și recomandări conexe.
+- **Case:** instanța concretă începută de utilizator pentru un intent confirmat.
+- **Fact:** răspuns tipat care poate modifica ruta.
+- **Gate:** regulă cu efect allow/block/warn/needs_confirmation.
+- **Rule:** condiție tipată și efect declarativ.
+- **Ruleset:** colecție imutabilă de reguli publicate împreună.
+- **Journey:** traseul materializat pentru un caz.
+- **Step:** acțiune ordonată din Journey.
+- **Requirement:** act/informație/condiție necesară unui Step.
+- **Readiness:** verificarea formală a unei cerințe; nu autenticitate implicită.
+- **Source:** document/pagină/registru emitent.
+- **Snapshot:** copia/fingerprint-ul sursei la un moment dat.
+- **Source claim:** afirmație atomică susținută de excerpt din snapshot.
+- **Freshness:** starea temporală a claim-ului față de review/hard expiry.
+- **Rule rot:** degradarea regulii prin schimbarea sau expirarea sursei.
+- **Conflict:** două efecte incompatibile active pentru același context.
+- **Jurisdiction path:** lanț EU/RO/județ/UAT/instituție.
+- **Competence scope:** domeniul în care emitentul poate stabili cerințe.
+- **Semantic key:** identificator stabil al unui pas pentru migrarea progresului.
+- **Official channel:** destinație oficială web/fizică/telefon/email.
+- **Partner:** furnizor opțional de ajutor, separat de ruta oficială.
+- **Local-first:** datele sunt păstrate/procesate pe dispozitiv implicit.
+- **Resolution trace:** explicația completă a regulilor și faptelor folosite.
+- **Gap:** informație necesară care nu a putut fi confirmată oficial.
+- **Production bundle:** setul de rules/claims permis în runtime production.

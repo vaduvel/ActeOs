@@ -1,0 +1,44 @@
+version: 2.1.0
+roles:
+  researcher:
+  - source.read
+  - source.create
+  - snapshot.create
+  - claim.create
+  - claim.edit_own
+  - gap.create
+  curator:
+  - source.read
+  - claim.read
+  - claim.edit
+  - rule.create
+  - rule.edit
+  - simulation.run
+  reviewer:
+  - source.read
+  - claim.read
+  - claim.approve
+  - rule.review
+  - simulation.run
+  publisher:
+  - ruleset.publish
+  - ruleset.withdraw
+  - rule.read
+  - audit.read_limited
+  support:
+  - journey.read_redacted
+  - feedback.read
+  - feedback.triage
+  security_admin:
+  - audit.read
+  - session.revoke
+  - feature.kill
+  - incident.manage
+  platform_admin:
+  - deployment.manage
+  - secret.rotate
+  - database.manage
+separation_of_duties:
+- critical_rule_author_cannot_be_only_reviewer
+- publisher_requires_approved_manifest
+- support_cannot_access_document_bytes_by_default

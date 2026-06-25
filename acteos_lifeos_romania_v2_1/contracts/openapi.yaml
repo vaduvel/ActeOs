@@ -1,0 +1,2674 @@
+openapi: 3.1.1
+info:
+  title: ActeOS API
+  version: 1.1.0
+  description: API contract pentru ActeOS / LifeOS România v2.1. Discovery este intent-first; regulile administrative critice
+    sunt determinate de rulesets aprobate, nu de LLM runtime.
+servers:
+- url: https://api.example.invalid
+  description: placeholder; configure per environment
+tags:
+- name: Intents
+- name: Discovery
+- name: Catalog
+- name: Cases
+- name: Resolver
+- name: Journeys
+- name: Documents
+- name: Channels
+- name: Households
+- name: Notifications
+- name: Feedback
+- name: ContentAdmin
+- name: Health
+paths:
+  /v1/discovery/home:
+    get:
+      summary: Returnează configurația publică pentru Home discovery
+      operationId: getDiscoveryHome
+      tags:
+      - Discovery
+      parameters:
+      - name: jurisdiction_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryHomeResponse'
+        '400': &id001
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401': &id002
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403': &id003
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404': &id004
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409': &id005
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422': &id006
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429': &id007
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500': &id008
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security: []
+  /v1/categories:
+    get:
+      summary: Listează categoriile care au intenturi disponibile
+      operationId: listIntentCategories
+      tags:
+      - Discovery
+      parameters:
+      - name: jurisdiction_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListResponse'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
+        '429': *id007
+        '500': *id008
+      security: []
+  /v1/intents:
+    get:
+      summary: Caută sau listează intenturi canonice publicate
+      operationId: listIntents
+      tags:
+      - Intents
+      parameters:
+      - name: query
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+          maxLength: 200
+      - name: category_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      - name: jurisdiction_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      - name: cursor
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntentListResponse'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
+        '429': *id007
+        '500': *id008
+      security: []
+  /v1/intents/resolve-query:
+    post:
+      summary: Rezolvă un query în maximum trei intenturi canonice
+      operationId: resolveIntentQuery
+      tags:
+      - Intents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveIntentQueryRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveIntentQueryResponse'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
+        '429': *id007
+        '500': *id008
+      security: []
+  /v1/intents/{intent_type_id}:
+    get:
+      summary: Returnează fișa publică a intentului
+      operationId: getIntent
+      tags:
+      - Intents
+      parameters:
+      - name: intent_type_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: jurisdiction_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntentSummary'
+        '400': *id001
+        '401': *id002
+        '403': *id003
+        '404': *id004
+        '409': *id005
+        '422': *id006
+        '429': *id007
+        '500': *id008
+      security: []
+  /v1/life-events:
+    get:
+      summary: Listează evenimentele disponibile
+      operationId: listLifeEvents
+      tags:
+      - Catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifeEventListResponse'
+        '400': &id009
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401': &id010
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403': &id011
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404': &id012
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409': &id013
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422': &id014
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429': &id015
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500': &id016
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      parameters:
+      - name: query
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      - name: category_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      - name: cursor
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      security: []
+  /v1/life-events/classify:
+    post:
+      summary: 'Compatibilitate legacy: clasifică textul în evenimente; nu se folosește pentru Home v2.1'
+      operationId: classifyLifeEvent
+      tags:
+      - Catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassifyEventResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassifyEventRequest'
+      security: []
+      deprecated: true
+  /v1/life-events/{event_type_id}:
+    get:
+      summary: Returnează definiția publică a evenimentului
+      operationId: getLifeEvent
+      tags:
+      - Catalog
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifeEventSummary'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: event_type_id
+        in: path
+        required: true
+        schema:
+          type: string
+      security: []
+  /v1/cases:
+    post:
+      summary: Creează un caz/eveniment al utilizatorului
+      operationId: createCase
+      tags:
+      - Cases
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCaseRequest'
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/cases/{case_id}:
+    get:
+      summary: Returnează cazul
+      operationId: getCase
+      tags:
+      - Cases
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: case_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/cases/{case_id}/facts:
+    put:
+      summary: Înlocuiește setul de fapte tipate
+      operationId: updateCaseFacts
+      tags:
+      - Cases
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFactsRequest'
+      parameters:
+      - name: case_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/cases/{case_id}/resolve:
+    post:
+      summary: Rulează motorul determinist și materializează Journey
+      operationId: resolveCase
+      tags:
+      - Resolver
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: case_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/journeys/{journey_id}:
+    get:
+      summary: Returnează o revizie de Journey
+      operationId: getJourney
+      tags:
+      - Journeys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneyResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: journey_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/journeys/{journey_id}/recalculate:
+    post:
+      summary: Creează o revizie nouă folosind un ruleset activ
+      operationId: recalculateJourney
+      tags:
+      - Journeys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneyResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecalculateRequest'
+      parameters:
+      - name: journey_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/journeys/{journey_id}/steps/{step_id}/status:
+    put:
+      summary: Actualizează progresul unui pas
+      operationId: updateJourneyStepStatus
+      tags:
+      - Journeys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneyResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      parameters:
+      - name: journey_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: step_id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/journeys/{journey_id}/requirements/{requirement_id}/status:
+    put:
+      summary: Actualizează starea unei cerințe
+      operationId: updateRequirementStatus
+      tags:
+      - Journeys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneyResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      parameters:
+      - name: journey_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: requirement_id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/documents/metadata:
+    post:
+      summary: Creează metadata unui document fără a încărca bytes
+      operationId: createDocumentMetadata
+      tags:
+      - Documents
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentMetadataRequest'
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/documents/{document_id}/processing-session:
+    post:
+      summary: Creează sesiune temporară de procesare cloud cu consimțământ
+      operationId: createDocumentProcessingSession
+      tags:
+      - Documents
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingSessionResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - bearerAuth: []
+  /v1/documents/{document_id}/readiness:
+    post:
+      summary: Înregistrează sau rulează verificări formale
+      operationId: runDocumentReadiness
+      tags:
+      - Documents
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadinessRequest'
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/documents/{document_id}:
+    delete:
+      summary: Șterge documentul și artefactele derivate
+      operationId: deleteDocument
+      tags:
+      - Documents
+      responses:
+        '204':
+          description: Deleted
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/official-channels:
+    get:
+      summary: Listează canalele oficiale aplicabile
+      operationId: listOfficialChannels
+      tags:
+      - Channels
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficialChannelListResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: jurisdiction_id
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: step_semantic_key
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      - name: event_type_id
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      security: []
+  /v1/households:
+    post:
+      summary: Creează household opțional
+      operationId: createHousehold
+      tags:
+      - Households
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHouseholdRequest'
+      security:
+      - bearerAuth: []
+  /v1/households/{household_id}/members:
+    post:
+      summary: Adaugă un membru household
+      operationId: createHouseholdMember
+      tags:
+      - Households
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HouseholdResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemberRequest'
+      parameters:
+      - name: household_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - bearerAuth: []
+  /v1/assets:
+    post:
+      summary: Creează un activ administrativ
+      operationId: createAsset
+      tags:
+      - Households
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssetRequest'
+      security:
+      - bearerAuth: []
+  /v1/notification-preferences:
+    get:
+      summary: Returnează preferințele de notificare
+      operationId: getNotificationPreferences
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      security:
+      - bearerAuth: []
+    put:
+      summary: Actualizează preferințele de notificare
+      operationId: updateNotificationPreferences
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferences'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferences'
+      security:
+      - bearerAuth: []
+  /v1/feedback/rejections:
+    post:
+      summary: Raportează respingere sau cerință diferită
+      operationId: createRejectionFeedback
+      tags:
+      - Feedback
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRejectionRequest'
+      security:
+      - anonymousToken: []
+      - bearerAuth: []
+  /v1/admin/sources:
+    post:
+      summary: Înregistrează o sursă oficială
+      operationId: adminCreateSource
+      tags:
+      - ContentAdmin
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceCreateRequest'
+      security:
+      - adminBearer: []
+  /v1/admin/sources/{source_id}/snapshots:
+    post:
+      summary: Creează snapshot manual/programat
+      operationId: adminCreateSnapshot
+      tags:
+      - ContentAdmin
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnapshotCreateRequest'
+      parameters:
+      - name: source_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - adminBearer: []
+  /v1/admin/claims:
+    post:
+      summary: Creează un claim atomic
+      operationId: adminCreateClaim
+      tags:
+      - ContentAdmin
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimCreateRequest'
+      security:
+      - adminBearer: []
+  /v1/admin/claims/{claim_id}/approve:
+    post:
+      summary: Aprobă un claim
+      operationId: adminApproveClaim
+      tags:
+      - ContentAdmin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: claim_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - adminBearer: []
+  /v1/admin/rules:
+    post:
+      summary: Creează o revizie de regulă
+      operationId: adminCreateRule
+      tags:
+      - ContentAdmin
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleCreateRequest'
+      security:
+      - adminBearer: []
+  /v1/admin/rules/simulate:
+    post:
+      summary: Simulează reguli candidate fără publicare
+      operationId: adminSimulateRules
+      tags:
+      - ContentAdmin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationRequest'
+      security:
+      - adminBearer: []
+  /v1/admin/rulesets/publish:
+    post:
+      summary: Publică un ruleset imutabil după gate-uri
+      operationId: adminPublishRuleset
+      tags:
+      - ContentAdmin
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRulesetRequest'
+      security:
+      - adminBearer: []
+  /v1/admin/rulesets/{ruleset_id}/withdraw:
+    post:
+      summary: Retrage ruleset-ul din producție
+      operationId: adminWithdrawRuleset
+      tags:
+      - ContentAdmin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesetResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      parameters:
+      - name: ruleset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security:
+      - adminBearer: []
+  /v1/admin/conflicts:
+    get:
+      summary: Listează conflictele nerezolvate
+      operationId: adminListConflicts
+      tags:
+      - ContentAdmin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictListResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      security:
+      - adminBearer: []
+  /v1/admin/gaps:
+    get:
+      summary: Listează gap-urile de research
+      operationId: adminListGaps
+      tags:
+      - ContentAdmin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GapListResponse'
+        '400': *id009
+        '401': *id010
+        '403': *id011
+        '404': *id012
+        '409': *id013
+        '422': *id014
+        '429': *id015
+        '500': *id016
+      security:
+      - adminBearer: []
+  /health/live:
+    get:
+      summary: Liveness
+      operationId: healthLive
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+      security: []
+  /health/ready:
+    get:
+      summary: Readiness
+      operationId: healthReady
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '503':
+          description: Not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    adminBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    anonymousToken:
+      type: apiKey
+      in: header
+      name: X-Anonymous-Token
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          - request_id
+          - retryable
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+            request_id:
+              type: string
+            retryable:
+              type: boolean
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    PageInfo:
+      type: object
+      required:
+      - has_more
+      properties:
+        next_cursor:
+          type:
+          - string
+          - 'null'
+        has_more:
+          type: boolean
+    LifeEventSummary:
+      type: object
+      required:
+      - id
+      - title_ro
+      - category_id
+      - production_status
+      properties:
+        id:
+          type: string
+        title_ro:
+          type: string
+        category_id:
+          type: string
+        description_ro:
+          type:
+          - string
+          - 'null'
+        release_wave:
+          type: string
+        production_status:
+          type: string
+    LifeEventListResponse:
+      type: object
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LifeEventSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    ClassifyEventRequest:
+      type: object
+      required:
+      - text
+      - locale
+      properties:
+        text:
+          type: string
+          minLength: 2
+          maxLength: 500
+        locale:
+          type: string
+          const: ro-RO
+        jurisdiction_hint:
+          type:
+          - string
+          - 'null'
+    EventCandidate:
+      type: object
+      required:
+      - event_type_id
+      - title_ro
+      - reason_ro
+      - rank
+      properties:
+        event_type_id:
+          type: string
+        title_ro:
+          type: string
+        reason_ro:
+          type: string
+        rank:
+          type: integer
+          minimum: 1
+          maximum: 3
+        requires_user_confirmation:
+          type: boolean
+    ClassifyEventResponse:
+      type: object
+      required:
+      - candidates
+      - classification_mode
+      properties:
+        candidates:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/EventCandidate'
+        classification_mode:
+          type: string
+          enum:
+          - deterministic
+          - ai_assisted
+          - user_search
+        request_id:
+          type: string
+    CreateCaseRequest:
+      type: object
+      required:
+      - intent_type_id
+      - reference_date
+      - timezone
+      - jurisdiction_path
+      properties:
+        event_type_id:
+          type:
+          - string
+          - 'null'
+        reference_date:
+          type: string
+          format: date
+        timezone:
+          type: string
+          const: Europe/Bucharest
+        jurisdiction_path:
+          type: array
+          minItems: 2
+          items:
+            type: string
+        subject_ref:
+          type:
+          - string
+          - 'null'
+        source_text:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        intent_type_id:
+          type: string
+        event_context_ids:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        discovery_source:
+          type: string
+          enum:
+          - search
+          - category
+          - quick_action
+          - related_intent
+          - deep_link
+          - legacy_event
+    CaseResponse:
+      type: object
+      required:
+      - id
+      - intent_type_id
+      - reference_date
+      - timezone
+      - jurisdiction_path
+      - facts
+      - status
+      - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_type_id:
+          type:
+          - string
+          - 'null'
+        reference_date:
+          type: string
+          format: date
+        timezone:
+          type: string
+        jurisdiction_path:
+          type: array
+          items:
+            type: string
+        subject_ref:
+          type:
+          - string
+          - 'null'
+        facts:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+        version:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        intent_type_id:
+          type: string
+        event_context_ids:
+          type: array
+          items:
+            type: string
+        discovery_source:
+          type: string
+    UpdateFactsRequest:
+      type: object
+      required:
+      - facts
+      - version
+      properties:
+        facts:
+          type: object
+          additionalProperties: true
+        version:
+          type: integer
+          minimum: 1
+    FactQuestion:
+      type: object
+      required:
+      - id
+      - type
+      - label_ro
+      - reason_ro
+      - sensitive
+      - required_for_resolution
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+          - boolean
+          - string
+          - enum
+          - integer
+          - decimal
+          - date
+          - datetime
+          - jurisdiction_ref
+        label_ro:
+          type: string
+        reason_ro:
+          type: string
+        sensitive:
+          type: boolean
+        required_for_resolution:
+          type: boolean
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              value: {}
+              label_ro:
+                type: string
+    ResolveResponse:
+      type: object
+      required:
+      - status
+      - resolution_id
+      - ruleset_version
+      - missing_facts
+      - warnings
+      - conflicts
+      properties:
+        status:
+          type: string
+          enum:
+          - resolved
+          - needs_facts
+          - needs_confirmation
+          - conflicting
+          - blocked
+          - no_active_ruleset
+        resolution_id:
+          type: string
+          format: uuid
+        ruleset_version:
+          type:
+          - string
+          - 'null'
+        journey:
+          oneOf:
+          - $ref: '#/components/schemas/JourneyResponse'
+          - type: 'null'
+        missing_facts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FactQuestion'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResolutionNotice'
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResolutionNotice'
+    ResolutionNotice:
+      type: object
+      required:
+      - code
+      - message_ro
+      - severity
+      properties:
+        code:
+          type: string
+        message_ro:
+          type: string
+        severity:
+          type: string
+          enum:
+          - info
+          - warning
+          - critical
+        source_claim_ids:
+          type: array
+          items:
+            type: string
+        recovery_actions_ro:
+          type: array
+          items:
+            type: string
+    RequirementResponse:
+      type: object
+      required:
+      - id
+      - title_ro
+      - obligation
+      - timing
+      - status
+      properties:
+        id:
+          type: string
+        title_ro:
+          type: string
+        description_ro:
+          type:
+          - string
+          - 'null'
+        obligation:
+          type: string
+          enum:
+          - mandatory
+          - conditional
+          - optional
+        timing:
+          type: string
+          enum:
+          - now
+          - later
+        accepted_forms:
+          type: array
+          items:
+            type: string
+        readiness_checks:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        source_claim_ids:
+          type: array
+          items:
+            type: string
+    JourneyStepResponse:
+      type: object
+      required:
+      - id
+      - semantic_key
+      - title_ro
+      - instruction_ro
+      - sequence
+      - status
+      - requirements
+      properties:
+        id:
+          type: string
+        semantic_key:
+          type: string
+        title_ro:
+          type: string
+        instruction_ro:
+          type: string
+        sequence:
+          type: integer
+        status:
+          type: string
+        depends_on:
+          type: array
+          items:
+            type: string
+        deadline:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        completion_evidence_ro:
+          type: array
+          items:
+            type: string
+        recovery_actions_ro:
+          type: array
+          items:
+            type: string
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementResponse'
+        official_channel_ids:
+          type: array
+          items:
+            type: string
+        source_claim_ids:
+          type: array
+          items:
+            type: string
+    JourneyResponse:
+      type: object
+      required:
+      - id
+      - case_id
+      - revision
+      - event_type_id
+      - ruleset_version
+      - reference_date
+      - status
+      - steps
+      - trust_state
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+        event_type_id:
+          type: string
+        ruleset_version:
+          type: string
+        reference_date:
+          type: string
+          format: date
+        status:
+          type: string
+        trust_state:
+          type: string
+          enum:
+          - verified
+          - stale
+          - needs_confirmation
+          - conflicting
+          - blocked
+        next_step_id:
+          type:
+          - string
+          - 'null'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/JourneyStepResponse'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResolutionNotice'
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResolutionNotice'
+        created_at:
+          type: string
+          format: date-time
+    RecalculateRequest:
+      type: object
+      required:
+      - reference_date
+      properties:
+        reference_date:
+          type: string
+          format: date
+        target_ruleset_version:
+          type:
+          - string
+          - 'null'
+    UpdateStatusRequest:
+      type: object
+      required:
+      - status
+      - version
+      properties:
+        status:
+          type: string
+        version:
+          type: integer
+        evidence_note:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+    CreateDocumentMetadataRequest:
+      type: object
+      required:
+      - owner_subject_ref
+      - document_type_id
+      - storage_mode
+      properties:
+        owner_subject_ref:
+          type: string
+        document_type_id:
+          type: string
+        storage_mode:
+          type: string
+          enum:
+          - local_only
+          - encrypted_backup
+          - cloud_processing_consented
+          - human_review_consented
+        expires_on:
+          type:
+          - string
+          - 'null'
+          format: date
+        client_local_ref:
+          type:
+          - string
+          - 'null'
+    DocumentMetadataResponse:
+      type: object
+      required:
+      - id
+      - document_type_id
+      - storage_mode
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        document_type_id:
+          type: string
+        storage_mode:
+          type: string
+        status:
+          type: string
+        expires_on:
+          type:
+          - string
+          - 'null'
+          format: date
+        created_at:
+          type: string
+          format: date-time
+    ProcessingSessionResponse:
+      type: object
+      required:
+      - session_id
+      - upload_url
+      - expires_at
+      - retention_delete_at
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        upload_url:
+          type: string
+          format: uri
+        expires_at:
+          type: string
+          format: date-time
+        retention_delete_at:
+          type: string
+          format: date-time
+    ReadinessRequest:
+      type: object
+      required:
+      - requirement_id
+      - checks
+      properties:
+        requirement_id:
+          type: string
+        checks:
+          type: array
+          items:
+            type: string
+        processing_mode:
+          type: string
+          enum:
+          - local_result_upload
+          - cloud_consented
+    ReadinessResponse:
+      type: object
+      required:
+      - document_id
+      - run_id
+      - status
+      - checks
+      - engine_version
+      - limitations
+      - authenticity_verified
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        run_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              check_type:
+                type: string
+              status:
+                type: string
+              message_ro:
+                type: string
+              confidence:
+                type:
+                - number
+                - 'null'
+        engine_version:
+          type: string
+        limitations:
+          type: array
+          items:
+            type: string
+        authenticity_verified:
+          type: boolean
+          const: false
+    OfficialChannelResponse:
+      type: object
+      required:
+      - id
+      - type
+      - label_ro
+      - integration_status
+      - status
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        label_ro:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        address:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        phone:
+          type:
+          - string
+          - 'null'
+        email:
+          type:
+          - string
+          - 'null'
+        integration_status:
+          type: string
+        official_domain:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+        last_verified_at:
+          type:
+          - string
+          - 'null'
+          format: date
+    OfficialChannelListResponse:
+      type: object
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfficialChannelResponse'
+    CreateHouseholdRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+    HouseholdResponse:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        member_count:
+          type: integer
+    CreateMemberRequest:
+      type: object
+      required:
+      - display_name
+      - relationship
+      properties:
+        display_name:
+          type: string
+          maxLength: 100
+        relationship:
+          type: string
+        birth_date:
+          type:
+          - string
+          - 'null'
+          format: date
+    CreateAssetRequest:
+      type: object
+      required:
+      - asset_type
+      - label
+      properties:
+        asset_type:
+          type: string
+          enum:
+          - vehicle
+          - property
+          - company
+        label:
+          type: string
+        attributes:
+          type: object
+          additionalProperties: true
+    AssetResponse:
+      type: object
+      required:
+      - id
+      - asset_type
+      - label
+      properties:
+        id:
+          type: string
+          format: uuid
+        asset_type:
+          type: string
+        label:
+          type: string
+        attributes:
+          type: object
+          additionalProperties: true
+    NotificationPreferences:
+      type: object
+      properties:
+        deadline_reminders:
+          type: boolean
+        document_expiry:
+          type: boolean
+        rule_changes:
+          type: boolean
+        push_enabled:
+          type: boolean
+        email_enabled:
+          type: boolean
+    FeedbackRejectionRequest:
+      type: object
+      required:
+      - journey_id
+      - step_id
+      - occurred_on
+      - institution_label
+      - category
+      properties:
+        journey_id:
+          type: string
+          format: uuid
+        step_id:
+          type: string
+        occurred_on:
+          type: string
+          format: date
+        institution_label:
+          type: string
+        category:
+          type: string
+          enum:
+          - missing_document
+          - different_form
+          - different_deadline
+          - different_fee
+          - channel_invalid
+          - other
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+        evidence_document_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+    FeedbackResponse:
+      type: object
+      required:
+      - id
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        message_ro:
+          type: string
+    SourceCreateRequest:
+      type: object
+      required:
+      - canonical_url
+      - publisher
+      - authority_level
+      - territory_ids
+      properties:
+        canonical_url:
+          type: string
+          format: uri
+        publisher:
+          type: string
+        authority_level:
+          type: string
+        territory_ids:
+          type: array
+          items:
+            type: string
+        fetch_mode:
+          type: string
+          enum:
+          - manual
+          - scheduled
+          - api
+    SourceResponse:
+      type: object
+      required:
+      - id
+      - canonical_url
+      - publisher
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        canonical_url:
+          type: string
+          format: uri
+        publisher:
+          type: string
+        status:
+          type: string
+        last_checked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    SnapshotCreateRequest:
+      type: object
+      required:
+      - source_id
+      properties:
+        source_id:
+          type: string
+          format: uuid
+        force:
+          type: boolean
+    SnapshotResponse:
+      type: object
+      required:
+      - id
+      - source_id
+      - sha256
+      - captured_at
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        source_id:
+          type: string
+          format: uuid
+        sha256:
+          type: string
+        captured_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+        change_detected:
+          type: boolean
+    ClaimCreateRequest:
+      type: object
+      required:
+      - snapshot_id
+      - statement
+      - evidence_excerpt
+      - locator
+      - authority_level
+      - freshness_class
+      properties:
+        snapshot_id:
+          type: string
+          format: uuid
+        statement:
+          type: string
+        evidence_excerpt:
+          type: string
+        locator:
+          type: string
+        authority_level:
+          type: string
+        territory_ids:
+          type: array
+          items:
+            type: string
+        effective_from:
+          type:
+          - string
+          - 'null'
+          format: date
+        effective_to:
+          type:
+          - string
+          - 'null'
+          format: date
+        freshness_class:
+          type: string
+    ClaimResponse:
+      type: object
+      required:
+      - id
+      - statement
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        statement:
+          type: string
+        status:
+          type: string
+        review_due_at:
+          type:
+          - string
+          - 'null'
+          format: date
+        hard_expiry_at:
+          type:
+          - string
+          - 'null'
+          format: date
+    RuleCreateRequest:
+      type: object
+      required:
+      - canonical_rule_id
+      - event_type_id
+      - jurisdiction_ids
+      - severity
+      - effective_from
+      - when
+      - effects
+      - source_claim_ids
+      properties:
+        canonical_rule_id:
+          type: string
+        event_type_id:
+          type: string
+        jurisdiction_ids:
+          type: array
+          items:
+            type: string
+        severity:
+          type: string
+        effective_from:
+          type: string
+          format: date
+        effective_to:
+          type:
+          - string
+          - 'null'
+          format: date
+        when:
+          type: object
+          additionalProperties: true
+        effects:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        source_claim_ids:
+          type: array
+          items:
+            type: string
+    RuleResponse:
+      type: object
+      required:
+      - id
+      - canonical_rule_id
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        canonical_rule_id:
+          type: string
+        status:
+          type: string
+        validation_errors:
+          type: array
+          items:
+            type: string
+    SimulationRequest:
+      type: object
+      required:
+      - event_type_id
+      - reference_date
+      - jurisdiction_path
+      - facts
+      properties:
+        event_type_id:
+          type: string
+        reference_date:
+          type: string
+          format: date
+        jurisdiction_path:
+          type: array
+          items:
+            type: string
+        facts:
+          type: object
+          additionalProperties: true
+        candidate_rule_ids:
+          type: array
+          items:
+            type: string
+    PublishRulesetRequest:
+      type: object
+      required:
+      - scope
+      - rule_revision_ids
+      - manifest_sha256
+      - approval_ids
+      properties:
+        scope:
+          type: array
+          items:
+            type: string
+        rule_revision_ids:
+          type: array
+          items:
+            type: string
+        manifest_sha256:
+          type: string
+        approval_ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        activate_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    RulesetResponse:
+      type: object
+      required:
+      - id
+      - version
+      - status
+      - manifest_sha256
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: string
+        status:
+          type: string
+        manifest_sha256:
+          type: string
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    ConflictListResponse:
+      type: object
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    GapListResponse:
+      type: object
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    CategorySummary:
+      type: object
+      required:
+      - id
+      - title_ro
+      - intent_count
+      properties:
+        id:
+          type: string
+        title_ro:
+          type: string
+        icon_key:
+          type:
+          - string
+          - 'null'
+        intent_count:
+          type: integer
+          minimum: 0
+        order:
+          type: integer
+    CategoryListResponse:
+      type: object
+      required:
+      - items
+      - catalog_version
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategorySummary'
+        catalog_version:
+          type: string
+    IntentSummary:
+      type: object
+      required:
+      - id
+      - category_id
+      - kind
+      - title_ro
+      - outcome_ro
+      - production_status
+      - available
+      properties:
+        id:
+          type: string
+        category_id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - direct_goal
+          - bundle_goal
+        title_ro:
+          type: string
+        outcome_ro:
+          type: string
+        production_status:
+          type: string
+        available:
+          type: boolean
+        availability_message_ro:
+          type:
+          - string
+          - 'null'
+        release_wave:
+          type: string
+    IntentListResponse:
+      type: object
+      required:
+      - items
+      - catalog_version
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntentSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+        catalog_version:
+          type: string
+    ResolveIntentQueryRequest:
+      type: object
+      required:
+      - query
+      - locale
+      properties:
+        query:
+          type: string
+          minLength: 2
+          maxLength: 200
+        locale:
+          type: string
+          const: ro-RO
+        jurisdiction_hint:
+          type:
+          - string
+          - 'null'
+        category_hint:
+          type:
+          - string
+          - 'null'
+        client_catalog_version:
+          type:
+          - string
+          - 'null'
+        allow_semantic_fallback:
+          type: boolean
+          default: false
+    IntentCandidate:
+      type: object
+      required:
+      - intent
+      - score
+      - match_mode
+      - requires_confirmation
+      properties:
+        intent:
+          $ref: '#/components/schemas/IntentSummary'
+        score:
+          type: number
+          minimum: 0
+        match_mode:
+          type: string
+          enum:
+          - exact_title
+          - exact_alias
+          - prefix
+          - lexical
+          - semantic_fallback
+        requires_confirmation:
+          type: boolean
+          const: true
+        matched_alias:
+          type:
+          - string
+          - 'null'
+    ResolveIntentQueryResponse:
+      type: object
+      required:
+      - resolution_state
+      - candidates
+      - catalog_version
+      - resolver_version
+      - normalization_version
+      - fallback_used
+      - request_id
+      properties:
+        resolution_state:
+          type: string
+          enum:
+          - high
+          - ambiguous
+          - low
+          - no_result
+        candidates:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/IntentCandidate'
+        catalog_version:
+          type: string
+        resolver_version:
+          type: string
+        normalization_version:
+          type: string
+        fallback_used:
+          type: boolean
+        request_id:
+          type: string
+    DiscoveryHomeResponse:
+      type: object
+      required:
+      - headline_ro
+      - search_placeholder_ro
+      - quick_actions
+      - categories
+      - catalog_version
+      properties:
+        headline_ro:
+          type: string
+        search_placeholder_ro:
+          type: string
+        quick_actions:
+          type: array
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/IntentSummary'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategorySummary'
+        catalog_version:
+          type: string
+        resolver_version:
+          type: string

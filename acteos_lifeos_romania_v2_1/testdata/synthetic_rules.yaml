@@ -1,0 +1,39 @@
+data_class: synthetic_test_only
+schema_version: 2.0.0
+sources:
+- id: test.source.move
+  url: https://authority.invalid/move
+  publisher: Autoritate Fictivă Test
+  authority_level: uat
+  snapshot_sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+claims:
+- id: test.claim.move.identity
+  source_id: test.source.move
+  statement: Pentru test, schimbarea domiciliului declanșează pasul de identitate.
+  confidence: verified
+  freshness_class: critical
+  effective_from: '2026-01-01'
+  effective_to: '2027-01-01'
+rules:
+- id: test.rule.move.identity.v1
+  canonical_rule_id: test.rule.move.identity
+  event_type_id: ro.life.moved_home
+  jurisdiction_id: ro.tm.timisoara
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: '2027-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: test.step.update_identity
+  source_claim_ids:
+  - test.claim.move.identity
+steps:
+- id: test.step.update_identity
+  semantic_key: identity.update_address
+  title_ro: Actualizează actul de identitate (TEST)
+  instruction_ro: Acesta este un pas sintetic folosit exclusiv în teste.
+  sequence_hint: 10
+  depends_on: []

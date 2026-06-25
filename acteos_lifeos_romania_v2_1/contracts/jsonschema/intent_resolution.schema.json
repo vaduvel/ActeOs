@@ -1,0 +1,88 @@
+{
+  "$id": "https://acteos.example/schemas/intent_resolution.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Intent Query Resolution",
+  "type": "object",
+  "required": [
+    "query_fingerprint",
+    "resolution_state",
+    "candidates",
+    "catalog_version",
+    "resolver_version",
+    "normalization_version"
+  ],
+  "properties": {
+    "query_fingerprint": {
+      "type": "string",
+      "minLength": 8
+    },
+    "resolution_state": {
+      "type": "string",
+      "enum": [
+        "high",
+        "ambiguous",
+        "low",
+        "no_result"
+      ]
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "intent_id",
+          "score",
+          "match_mode",
+          "requires_confirmation"
+        ],
+        "properties": {
+          "intent_id": {
+            "type": "string",
+            "pattern": "^ro\\.intent\\."
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1.5
+          },
+          "match_mode": {
+            "type": "string",
+            "enum": [
+              "exact_title",
+              "exact_alias",
+              "prefix",
+              "lexical",
+              "semantic_fallback"
+            ]
+          },
+          "requires_confirmation": {
+            "type": "boolean",
+            "const": true
+          },
+          "matched_alias": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "catalog_version": {
+      "type": "string"
+    },
+    "resolver_version": {
+      "type": "string"
+    },
+    "normalization_version": {
+      "type": "string"
+    },
+    "fallback_used": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,47 @@
+version: 2.1.0
+locale: ro-RO
+normalization:
+  unicode_form: NFKC
+  casefold: true
+  diacritics_insensitive_lookup: true
+  collapse_whitespace: true
+  punctuation_to_space: true
+  min_query_chars: 2
+  approved_short_tokens:
+  - ci
+  - cei
+  - itp
+  - rca
+  - pfa
+  - srl
+signals:
+  exact_title: 1.0
+  exact_alias: 0.96
+  prefix_title_or_alias: 0.82
+  lexical_token_coverage: 0.55
+  category_hint_bonus: 0.12
+  jurisdiction_available_bonus: 0.1
+  local_recent_or_favorite_max_bonus: 0.06
+  aggregate_popularity_max_bonus: 0.04
+  negative_alias_penalty: -0.4
+thresholds:
+  high_min_score: 0.82
+  high_min_margin: 0.08
+  ambiguous_min_score: 0.55
+  no_result_below: 0.35
+  max_candidates: 3
+  always_require_user_confirmation: true
+hard_filters:
+- production_status == active
+- available_for_jurisdiction == true
+- not withdrawn
+semantic_fallback:
+  enabled_by_default: false
+  canonical_ids_only: true
+  redact_sensitive_tokens: true
+  max_adapter_candidates: 5
+  fallback_to_local_on_error: true
+prohibited_signals:
+- partner_payment
+- sponsorship
+- commission_value
