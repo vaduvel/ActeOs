@@ -1,0 +1,170 @@
+version: 1.0.0
+locale: ro-RO
+categories:
+- id: home_housing
+  label: Casa si locuinta
+  frequency_tier: A
+- id: auto_mobility
+  label: Auto si mobilitate
+  frequency_tier: A
+- id: identity_documents
+  label: Identitate si acte
+  frequency_tier: A
+- id: family_children
+  label: Copii si familie
+  frequency_tier: B
+- id: work_benefits
+  label: Munca si beneficii
+  frequency_tier: B
+- id: business_tax
+  label: Firma si fiscal
+  frequency_tier: B
+- id: health_admin
+  label: Sanatate administrativa
+  frequency_tier: B
+- id: education
+  label: Educatie
+  frequency_tier: B
+- id: legal_notarial
+  label: Juridic si notarial
+  frequency_tier: C
+- id: construction_urbanism
+  label: Constructii si urbanism
+  frequency_tier: C
+- id: emergencies
+  label: Urgente
+  frequency_tier: A
+- id: civic_local
+  label: Cetatean si local
+  frequency_tier: A
+event_types:
+- id: life.moved
+  category_id: home_housing
+  label: M-am mutat
+  frequency_tier: A
+  r1_scope: true
+  example_queries:
+  - m-am mutat
+  - mi-am schimbat domiciliul
+  - am alta adresa
+  related_obligations:
+  - identity.change_domicile
+  - vehicle.update_registration_address
+  - local_taxes.update_address
+  - utilities.change_contract_holder
+  - business.update_admin_or_company_records
+- id: life.bought_vehicle
+  category_id: auto_mobility
+  label: Mi-am cumparat masina
+  frequency_tier: A
+  r1_scope: true
+  example_queries:
+  - am cumparat masina
+  - vreau sa inscriu masina
+  - transcriere auto
+  related_obligations:
+  - vehicle.transcribe_ownership
+  - local_taxes.register_vehicle
+  - insurance.rca_check
+  - vehicle.temporary_authorization
+- id: life.sold_vehicle
+  category_id: auto_mobility
+  label: Vand masina
+  frequency_tier: A
+  r1_scope: false
+  example_queries:
+  - vand masina
+  - scot masina de la taxe
+  related_obligations:
+  - vehicle.sale_documents
+  - local_taxes.deregister_vehicle
+- id: life.lost_documents
+  category_id: identity_documents
+  label: Mi-am pierdut actele
+  frequency_tier: A
+  r1_scope: true
+  example_queries:
+  - mi-am pierdut buletinul
+  - mi-au furat actele
+  - am pierdut talonul
+  related_obligations:
+  - identity.replace_id_card
+  - passport.replace
+  - driver_license.replace
+  - vehicle.registration_certificate_replace
+  - health_card_replace
+- id: life.id_expiring
+  category_id: identity_documents
+  label: Imi expira buletinul
+  frequency_tier: A
+  r1_scope: false
+  example_queries:
+  - imi expira buletinul
+  - carte identitate expirata
+  related_obligations:
+  - identity.renew_id_card
+- id: life.child_born
+  category_id: family_children
+  label: Mi s-a nascut copilul
+  frequency_tier: B
+  r1_scope: false
+  example_queries:
+  - mi s-a nascut copilul
+  - certificat nastere copil
+  - alocatie copil
+  related_obligations:
+  - civil_status.register_birth
+  - benefits.child_allowance
+  - benefits.parental_leave
+  - health.register_child_family_doctor
+- id: life.school_start
+  category_id: education
+  label: Incep scoala / inscriu copilul
+  frequency_tier: B
+  r1_scope: false
+  example_queries:
+  - inscriu copilul la gradinita
+  - clasa pregatitoare
+  - admitere liceu
+  related_obligations:
+  - education.preschool_enrollment
+  - education.primary_enrollment
+  - education.highschool_admission
+- id: life.local_taxes_certificate
+  category_id: civic_local
+  label: Am nevoie de certificat fiscal / taxe locale
+  frequency_tier: A
+  r1_scope: true
+  example_queries:
+  - certificat fiscal
+  - platesc taxe locale
+  - declar masina la taxe
+  related_obligations:
+  - local_taxes.pay
+  - local_taxes.request_certificate
+  - local_taxes.register_asset
+- id: life.marriage
+  category_id: legal_notarial
+  label: Ma casatoresc
+  frequency_tier: C
+  r1_scope: false
+  example_queries:
+  - ma casatoresc
+  - schimb nume dupa casatorie
+  related_obligations:
+  - civil_status.marriage
+  - identity.change_name
+  - vehicle.update_name
+  - bank_employer_update
+- id: life.open_company
+  category_id: business_tax
+  label: Imi deschid firma
+  frequency_tier: B
+  r1_scope: false
+  example_queries:
+  - deschid SRL
+  - infiintez PFA
+  related_obligations:
+  - business.register_company
+  - tax.register_company
+  - business.open_bank_account

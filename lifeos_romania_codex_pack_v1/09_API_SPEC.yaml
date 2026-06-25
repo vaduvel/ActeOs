@@ -1,0 +1,122 @@
+openapi: 3.1.0
+info:
+  title: LifeOS Romania API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Healthcheck
+      responses:
+        '200':
+          description: OK
+  /v1/events/interpret:
+    post:
+      summary: Interpret text into life event candidates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - text
+              properties:
+                text:
+                  type: string
+                locale:
+                  type: string
+                  default: ro-RO
+                jurisdiction_hint:
+                  type: string
+      responses:
+        '200':
+          description: Candidates
+  /v1/event-types:
+    get:
+      summary: List event types
+      responses:
+        '200':
+          description: Event types
+  /v1/event-sessions:
+    post:
+      summary: Create event session
+      responses:
+        '201':
+          description: Created
+  /v1/event-sessions/{session_id}/facts:
+    patch:
+      summary: Update facts
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Updated
+  /v1/event-sessions/{session_id}/resolve:
+    post:
+      summary: Resolve session into obligations and routes
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Route run
+  /v1/routes/{route_id}:
+    get:
+      summary: Get route
+      parameters:
+      - name: route_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Route
+  /v1/documents/classify:
+    post:
+      summary: Classify a document
+      responses:
+        '200':
+          description: Document type candidate
+  /v1/documents/readiness:
+    post:
+      summary: Check document readiness against requirements
+      responses:
+        '200':
+          description: Readiness report
+  /v1/feedback/rejections:
+    post:
+      summary: Report rejected dossier
+      responses:
+        '201':
+          description: Incident created
+  /v1/curator/sources:
+    get:
+      summary: List sources
+      responses:
+        '200':
+          description: Sources
+    post:
+      summary: Create source
+      responses:
+        '201':
+          description: Created
+  /v1/curator/bundles/{bundle_id}/publish:
+    post:
+      summary: Publish bundle
+      parameters:
+      - name: bundle_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Published

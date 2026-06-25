@@ -1,0 +1,27 @@
+fixtures:
+- id: fixture_moved_with_vehicle
+  event_type_id: life.moved
+  facts:
+    user.owns_vehicle: true
+    user.is_company_admin: false
+    move.domicile_changed: true
+  expected_obligations:
+  - identity.change_domicile
+  - vehicle.update_registration_address
+  - local_taxes.update_address
+- id: fixture_bought_vehicle_ro
+  event_type_id: life.bought_vehicle
+  facts:
+    vehicle.origin: RO
+    buyer.type: individual
+  expected_obligations:
+  - vehicle.transcribe_ownership
+  - local_taxes.register_vehicle
+- id: fixture_lost_docs
+  event_type_id: life.lost_documents
+  facts:
+    lost.id_card: true
+    lost.driver_license: true
+  expected_obligations:
+  - identity.replace_id_card
+  - driver_license.replace
