@@ -97,3 +97,31 @@ def evaluate(pred: Mapping[str, Any], facts: Mapping[str, Any]) -> Tri:
     if op in ("gt", "gte", "lt", "lte", "date_before", "date_on_or_before", "date_after", "date_on_or_after"):
         return _compare(op, value, pred.get("value"))
     raise UnsupportedOperator(op)
+
+
+def collect_fact_refs(pred: Mapping[str, Any]) -> set[str]:
+    """Return every fact id referenced anywhere inside a predicate tree.
+
+    Used to determine which facts a citizen must supply when a decision cannot
+    be evaluated. Boolean combinators recurse; leaf predicates contribute their
+    ``fact``. Constants contribute nothing.
+    """
+    if not isinstance(pred, Mapping):
+        return set()
+    if "constant" in pred:
+        return set()
+    if "all" in pred:
+        refs: set[str] = set()
+        for p in pred["all"]:
+            refs |= collect_fact_refs(p)
+        return refs
+    if "any" in pred:
+        refs = set()
+        for p in pred["any"]:
+            refs |= collect_fact_refs(p)
+        return refs
+    if "not" in pred:
+        return collect_fact_refs(pred["not"])
+    if "fact" in pred:
+        return {pred["fact"]}
+    return set()

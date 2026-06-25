@@ -5,6 +5,12 @@ select an applicable rule (jurisdiction/temporal specificity, then lawful
 precedence), canonicalize facts, evaluate typed gates/steps with three-valued
 logic, resolve deadlines, order steps with a stable topological sort, and
 compute a reproducible route_hash that excludes route_id and evaluated_at.
+
+The resolver also reports ``missing_facts``: the user-answerable facts required
+to turn an UNKNOWN decision into a definite one. Derived facts are expanded
+back to their input facts so every surfaced question is one a citizen can
+actually answer. ``missing_facts`` is reported outside the hashed core so it
+does not perturb route_hash reproducibility.
 """
 from __future__ import annotations
 
@@ -20,7 +26,7 @@ from .facts import resolve_derived_facts
 from .freshness import freshness_state, on_expiry_effect
 from .graph import stable_topo_sort
 from .precedence import resolve_precedence
-from .predicates import evaluate
+from .predicates import collect_fact_refs, evaluate
 from .trivalent import Tri
 from .version import ENGINE_VERSION
 
@@ -78,6 +84,56 @@ def _resolve_deadline(deadline: Mapping[str, Any], facts: Mapping[str, Any]) -> 
         else:
             result["ends_at"] = None
             result["pending"] = True
+    return result
+
+
+def _missing_facts(rule: Mapping[str, Any], facts: Mapping[str, Any]) -> list[dict]:
+    """Collect user-answerable facts needed to resolve UNKNOWN decisions."""
+    derive_inputs = {
+        fd["id"]: fd.get("derive", {}).get("inputs", [])
+        for fd in rule.get("facts", [])
+        if fd.get("derive")
+    }
+
+    def expand(fact_id: str, seen: frozenset[str]) -> set[str]:
+        if fact_id in seen:
+            return set()
+        if fact_id in derive_inputs:
+            out: set[str] = set()
+            for inp in derive_inputs[fact_id]:
+                if facts.get(inp) is None:
+                    out |= expand(inp, seen | {fact_id})
+            return out
+        return {fact_id}
+
+    missing_ids: set[str] = set()
+
+    def scan(pred: Mapping[str, Any]) -> None:
+        if evaluate(pred, facts) is Tri.UNKNOWN:
+            for ref in collect_fact_refs(pred):
+                if facts.get(ref) is None:
+                    missing_ids |= expand(ref, frozenset())
+
+    for gate in rule.get("gates", []):
+        if gate.get("effect") in ("block", "needs_confirmation"):
+            scan(gate["when"])
+    for step in rule.get("steps", []):
+        scan(step.get("applies_when", {"constant": True}))
+        for req in step.get("requirements", []):
+            scan(req.get("applies_when", {"constant": True}))
+
+    question_meta = rule.get("fact_questions", {})
+    result: list[dict] = []
+    for fid in sorted(missing_ids):
+        meta = question_meta.get(fid, {})
+        result.append({
+            "fact_id": fid,
+            "label": meta.get("label", fid),
+            "value_type": meta.get("value_type", "string"),
+            "options": meta.get("options"),
+            "reason": meta.get("reason", "Informatie necesara pentru a continua."),
+            "sensitive": bool(meta.get("sensitive", False)),
+        })
     return result
 
 
@@ -224,4 +280,5 @@ def resolve(request: Mapping[str, Any], bundle: Mapping[str, Any], *, now: datet
     output["route_id"] = str(uuid.uuid4())
     output["evaluated_at"] = now.astimezone(timezone.utc).isoformat()
     output["route_hash"] = route_hash
+    output["missing_facts"] = _missing_facts(rule, facts)
     return output
