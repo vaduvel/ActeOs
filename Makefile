@@ -1,63 +1,63 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
+PY_PACKAGES := packages/contracts packages/rule-engine
 
-.PHONY: help doctor bootstrap up down format lint typecheck migrate seed-verified \
-	test-unit test-contract test-integration test-android test-web test-security \
-	test-all build-all smoke-local
+.PHONY: help doctor bootstrap up down format lint typecheck migrate seed-verified test-unit test-contract test-integration test-android test-web test-security test-all build-all smoke-local
 
-help: ## Afișează țintele disponibile
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+help:
+	@echo "Targets: doctor bootstrap up down format lint typecheck migrate seed-verified"
+	@echo "         test-unit test-contract test-integration test-android test-web test-security test-all build-all smoke-local"
 
-doctor: ## Verifică prerechizitele de toolchain (JDK 17, Python 3.13, Node, Docker)
-	@echo "[doctor] TODO P0: verifică versiunile de toolchain"
+doctor:
+	@echo "[doctor] TODO P0: verify toolchains (JDK 17, Python 3.13, Node 22, Docker)"
 
-bootstrap: ## Instalează dependențele pentru toate workspace-urile
-	@echo "[bootstrap] TODO P0: instalează deps android/services/packages/curator-web"
+bootstrap:
+	@for p in $(PY_PACKAGES); do echo "== $$p =="; (cd $$p && python -m pip install -e '.[dev]'); done
 
-up: ## Pornește infrastructura locală (Postgres + MinIO)
+up:
 	docker compose up -d
 
-down: ## Oprește infrastructura locală
+down:
 	docker compose down
 
-format: ## Rulează formatatoarele
-	@echo "[format] TODO"
+format:
+	@for p in $(PY_PACKAGES); do (cd $$p && python -m ruff format .); done
 
-lint: ## Rulează linterele
-	@echo "[lint] TODO"
+lint:
+	@for p in $(PY_PACKAGES); do (cd $$p && python -m ruff check .); done
 
-typecheck: ## Rulează verificările de tipuri
-	@echo "[typecheck] TODO"
+typecheck:
+	@for p in $(PY_PACKAGES); do (cd $$p && python -m mypy src); done
 
-migrate: ## Aplică migrațiile de bază de date
+migrate:
 	@echo "[migrate] TODO P1: alembic upgrade head"
 
-seed-verified: ## Încarcă doar seed-urile oficiale verificate
+seed-verified:
 	@echo "[seed-verified] TODO P8"
 
-test-unit: ## Teste unitare
-	@echo "[test-unit] TODO"
+test-unit:
+	@for p in $(PY_PACKAGES); do echo "== $$p =="; (cd $$p && python -m pytest -q); done
 
-test-contract: ## Teste de contract
-	@echo "[test-contract] TODO"
+test-contract:
+	@echo "[test-contract] TODO P4"
 
-test-integration: ## Teste de integrare
+test-integration:
 	@echo "[test-integration] TODO"
 
-test-android: ## Teste Android
-	@echo "[test-android] TODO"
+test-android:
+	@echo "[test-android] TODO P6"
 
-test-web: ## Teste portal curator
-	@echo "[test-web] TODO"
+test-web:
+	@echo "[test-web] TODO P5"
 
-test-security: ## Gate-uri de securitate (SAST/deps/secret scan)
-	@echo "[test-security] TODO"
+test-security:
+	@echo "[test-security] TODO P9"
 
-test-all: ## Rulează toate testele
-	@echo "[test-all] TODO"
+test-all: test-unit
+	@echo "[test-all] ran unit suites; other suites pending"
 
-build-all: ## Build pentru toate artefactele deployabile
+build-all:
 	@echo "[build-all] TODO"
 
-smoke-local: ## Smoke test pe mediul local
+smoke-local:
 	@echo "[smoke-local] TODO P0"
