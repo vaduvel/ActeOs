@@ -1,0 +1,67 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_CHANGE_WATER_HOLDER
+event_type_id: life.change_water_holder
+status: draft
+rules:
+  - id: rule.water.contract
+    canonical_rule_id: change_water_holder.contract
+    event_type_id: life.change_water_holder
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: critical
+    effective_from: '2000-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: change_water_holder }
+      - { type: include_requirement, requirement_id: req.valid_id }
+      - { type: include_requirement, requirement_id: req.proof_of_space }
+      - { type: attach_channel, channel_id: ch.aquatim_timisoara }
+      - { type: emit_advice, message_ro: 'La Timisoara operatorul unic este Aquatim; contractul se incheie cu formularul F-01.00.06-3.', tag: aquatim_only }
+    source_claim_ids: [claim.water.aquatim_operator, claim.water.contract_process, claim.water.contract_form]
+    status: draft
+  - id: rule.water.existing_branch
+    canonical_rule_id: change_water_holder.existing_branch
+    event_type_id: life.change_water_holder
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: operational
+    effective_from: '2000-01-01'
+    when:
+      op: eq
+      field: has_existing_branch
+      value: true
+    effects:
+      - { type: emit_advice, message_ro: 'Exista deja bransament/racord: depui documentele si Aquatim te contacteaza pentru semnare.', tag: branch_exists }
+    source_claim_ids: [claim.water.contract_process]
+    status: draft
+  - id: rule.water.no_branch
+    canonical_rule_id: change_water_holder.no_branch
+    event_type_id: life.change_water_holder
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: operational
+    effective_from: '2000-01-01'
+    when:
+      op: eq
+      field: has_existing_branch
+      value: false
+    effects:
+      - { type: emit_warning, message_ro: 'Fara bransament/racord existent este nevoie intai de aviz tehnic de bransare/racordare (alt proces).', tag: needs_branch_connection }
+    source_claim_ids: [claim.water.contract_process]
+    status: draft
+  - id: rule.water.death_path
+    canonical_rule_id: change_water_holder.death_path
+    event_type_id: life.change_water_holder
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: operational
+    effective_from: '2000-01-01'
+    when:
+      op: eq
+      field: reason
+      value: inheritance_death
+    effects:
+      - { type: include_requirement, requirement_id: req.death_certificate }
+      - { type: require_confirmation, message_ro: 'Procedura de preluare dupa deces la Aquatim trebuie confirmata.' }
+    source_claim_ids: [claim.water.death_terminates]
+    status: in_review
