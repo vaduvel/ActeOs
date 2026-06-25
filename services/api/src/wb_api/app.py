@@ -7,16 +7,27 @@ has no side effects beyond defining ``create_app``; the ASGI instance lives in
 """
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import Settings, get_settings
 from .errors import install_exception_handlers
-from .logging import configure_logging, get_request_id, log_event, new_request_id, set_request_id
+from .logging import configure_logging, log_event, new_request_id, set_request_id
 from .routers import api_router
 
 REQUEST_ID_HEADER = "X-Request-Id"
+_access_logger = logging.getLogger("wb_api.access")
+
+CURATOR_SCOPES = {
+    "sources:read": "Read source registry",
+    "sources:write": "Create and edit sources",
+    "rules:write": "Author rule versions",
+    "rules:review": "Review rule versions (two-person rule)",
+    "rules:publish": "Publish and roll back rule bundles",
+}
 
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
@@ -29,13 +40,12 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
         except Exception:
-            log_event("request.error", method=request.method, path=request.url.path)
+            log_event(_access_logger, logging.ERROR, "request.error",
+                      method=request.method, path=request.url.path)
             raise
         response.headers[REQUEST_ID_HEADER] = request_id
-        log_event(
-            "request.access", method=request.method, path=request.url.path,
-            status=response.status_code,
-        )
+        log_event(_access_logger, logging.INFO, "request.access",
+                  method=request.method, path=request.url.path, status=response.status_code)
         return response
 
 
@@ -52,9 +62,13 @@ def _custom_openapi(app: FastAPI, settings: Settings):
             routes=app.routes,
             servers=[{"url": settings.public_base_url}],
         )
+        token_url = settings.curator_token_url or (
+            f"{settings.curator_jwt_issuer}/protocol/openid-connect/token"
+            if settings.curator_jwt_issuer else "https://auth.invalid/token"
+        )
         schema.setdefault("components", {}).setdefault("securitySchemes", {})["curatorBearer"] = {
             "type": "oauth2",
-            "flows": {"clientCredentials": {"tokenUrl": settings.oidc_token_url or "", "scopes": {}}},
+            "flows": {"clientCredentials": {"tokenUrl": token_url, "scopes": CURATOR_SCOPES}},
         }
         app.openapi_schema = schema
         return schema
@@ -64,13 +78,13 @@ def _custom_openapi(app: FastAPI, settings: Settings):
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
-    configure_logging(level=settings.log_level, json_output=settings.json_logs)
+    configure_logging(level=settings.log_level)
     app = FastAPI(
         title="Waze pentru Birocratie API",
         version=settings.service_version,
         docs_url=None if settings.is_production else "/docs",
         redoc_url=None if settings.is_production else "/redoc",
-        openapi_url="/openapi.json" if not settings.is_production else None,
+        openapi_url=None if settings.is_production else "/openapi.json",
     )
     app.add_middleware(RequestContextMiddleware)
     if settings.cors_origins:

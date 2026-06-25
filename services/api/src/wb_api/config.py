@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     app_env: str = Field(default="development", validation_alias=AliasChoices("WB_APP_ENV", "APP_ENV"))
     service_version: str = Field(default="1.0.0", validation_alias=AliasChoices("WB_SERVICE_VERSION", "SERVICE_VERSION"))
     log_level: str = Field(default="INFO", validation_alias=AliasChoices("WB_LOG_LEVEL", "LOG_LEVEL"))
+    public_base_url: str = Field(default="http://localhost:8000", validation_alias=AliasChoices("WB_PUBLIC_BASE_URL"))
 
     database_url: str = Field(
         default="postgresql+psycopg://wb:wb@localhost:5432/wb",
@@ -44,6 +45,7 @@ class Settings(BaseSettings):
     curator_jwt_issuer: str = Field(default="", validation_alias=AliasChoices("WB_CURATOR_JWT_ISSUER"))
     curator_jwt_audience: str = Field(default="", validation_alias=AliasChoices("WB_CURATOR_JWT_AUDIENCE"))
     curator_jwks_url: str = Field(default="", validation_alias=AliasChoices("WB_CURATOR_JWKS_URL"))
+    curator_token_url: str = Field(default="", validation_alias=AliasChoices("WB_CURATOR_TOKEN_URL"))
 
     cors_allow_origins: str = Field(default="", validation_alias=AliasChoices("WB_CORS_ALLOW_ORIGINS"))
 
