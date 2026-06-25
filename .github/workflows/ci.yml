@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repo sanity
+        run: |
+          test -f Makefile
+          test -d docs/product/waze-birocratie || echo "WARN: spec pack not yet relocated"
+      - name: Secret scan guard
+        run: |
+          if git grep -nE '(AKIA|-----BEGIN [A-Z ]*PRIVATE KEY-----)' -- . ':(exclude).github/workflows/ci.yml'; then
+            echo "Potential secret detected"; exit 1;
+          fi
+          echo "No obvious secrets found"
+      - name: Smoke (placeholder)
+        run: echo "P0 smoke OK"
