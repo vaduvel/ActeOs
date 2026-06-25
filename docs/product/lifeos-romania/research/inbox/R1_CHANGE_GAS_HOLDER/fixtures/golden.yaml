@@ -1,0 +1,92 @@
+batch_id: R1_CHANGE_GAS_HOLDER
+defaults:
+  event_type_id: life.change_gas_holder
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: G01
+    desc: cumparare locuinta
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, included_steps: [change_gas_holder], requirements: [req.valid_id, req.declaratie_calitate_folosinta, req.gas_meter_photo, req.cod_loc_consum] }
+  - id: G02
+    desc: chirias devine titular
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, requirements: [req.valid_id, req.declaratie_calitate_folosinta, req.gas_meter_photo, req.cod_loc_consum] }
+  - id: G03
+    desc: proprietar - advisory act proprietate
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, advice_tags: [owner_proof] }
+  - id: G04
+    desc: deces titular
+    facts: { reason: inheritance_death, is_owner: true }
+    expect: { status: ok, requirements: [req.death_certificate], warnings_present: [death_takeover] }
+  - id: G05
+    desc: poza contor mereu necesara
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, requirements: [req.gas_meter_photo] }
+  - id: G06
+    desc: cod loc consum mereu necesar
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, requirements: [req.cod_loc_consum] }
+  - id: G07
+    desc: distribuitor de confirmat
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, warnings_present: [gas_distributor_tbd], needs_confirmation: [gas_distributor_tbd] }
+  - id: G08
+    desc: non-deces - fara certificat deces
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: G09
+    desc: chirias non-deces - fara certificat deces
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, requirements_absent: [req.death_certificate] }
+  - id: G10
+    desc: chirias - fara advisory proprietar
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, advice_absent: [owner_proof] }
+  - id: G11
+    desc: deces chirias
+    facts: { reason: inheritance_death, is_owner: false }
+    expect: { status: ok, requirements: [req.death_certificate] }
+  - id: G12
+    desc: declaratie calitate folosinta inclusa
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, requirements: [req.declaratie_calitate_folosinta] }
+  - id: G13
+    desc: act identitate mereu necesar
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, requirements: [req.valid_id] }
+  - id: G14
+    desc: lipseste reason
+    facts: { is_owner: true }
+    expect: { status: needs_facts, missing_facts: [reason] }
+  - id: G15
+    desc: lipseste is_owner
+    facts: { reason: purchase }
+    expect: { status: needs_facts, missing_facts: [is_owner] }
+  - id: G16
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [reason, is_owner] }
+  - id: G17
+    desc: documentele de baza prezente la inchiriere
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, included_steps: [change_gas_holder] }
+  - id: G18
+    desc: deces + distribuitor tbd
+    facts: { reason: inheritance_death, is_owner: true }
+    expect: { status: ok, requirements: [req.death_certificate], warnings_present: [gas_distributor_tbd] }
+  - id: G19
+    desc: proprietar cumparare - toate cele 4 documente
+    facts: { reason: purchase, is_owner: true }
+    expect: { status: ok, requirements: [req.valid_id, req.declaratie_calitate_folosinta, req.gas_meter_photo, req.cod_loc_consum] }
+  - id: G20
+    desc: alt judet - regula distribuitor tot tbd
+    facts: { reason: purchase, is_owner: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, warnings_present: [gas_distributor_tbd] }
+  - id: G21
+    desc: chirias - advisory proprietar absent + cod loc consum
+    facts: { reason: rent, is_owner: false }
+    expect: { status: ok, advice_absent: [owner_proof], requirements: [req.cod_loc_consum] }
