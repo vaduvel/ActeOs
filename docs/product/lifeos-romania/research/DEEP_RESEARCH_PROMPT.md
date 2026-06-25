@@ -4,7 +4,7 @@ Scop: externalizezi cercetarea pe evenimente, GPT-ul returneaza FISIERE in forma
 
 ## Cum se foloseste
 
-1. Alegi UN eveniment din `06_LIFE_EVENT_CATALOG.md` (ID canonic `ro.life.<slug>`).
+1. Alegi UN eveniment — din `06_LIFE_EVENT_CATALOG.md` (R1) sau din `research/RESEARCH_QUEUE.md` (toate 176). ID canonic `ro.life.<slug>`.
 2. Lipesti prompt-ul de mai jos + numele evenimentului.
 3. Primesti 5 fisiere; le pui in `research/inbox/<EVENT>/` si rulezi validatorul de scheme + golden fixtures.
 4. Promovarea in `active` se face DOAR dupa review uman (gating din `01_SCOPE_RELEASES.md` sectiunea 7).
