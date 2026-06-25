@@ -251,9 +251,14 @@ def check_traceability() -> None:
 
 
 def check_markdown_hygiene() -> None:
+    # Markers for citation/sandbox artifacts that must never leak into the pack.
+    # NOTE: do NOT use a bare "cite" substring — it false-positives on Romanian
+    # words such as "solicite". The real ChatGPT/Notion citation leaks always
+    # contain one of the explicit tokens below (e.g. ":contentReference[oaicite:0]").
+    leaked_markers = ("turn0search", "oaicite", "contentReference", "sandbox:/")
     for path in ROOT.rglob("*.md"):
         text = path.read_text(encoding="utf-8")
-        if "turn0search" in text or "cite" in text or "sandbox:/" in text:
+        if any(marker in text for marker in leaked_markers):
             error(f"Internal citation token leaked into {path.relative_to(ROOT)}")
         if len(text.strip()) < 80 and path.name not in {"README.md"}:
             warn(f"Very short documentation file: {path.relative_to(ROOT)}")
