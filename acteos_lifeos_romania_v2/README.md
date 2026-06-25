@@ -1,7 +1,11 @@
+> **⚠️ STACK OVERRIDE (2026-06-25).** Acest pachet v2 este folosit ca **DONATOR**, nu ca sursa unică de adevăr. Sursa canonică este `docs/product/lifeos-romania/`. Deciziile de **stack** din v2 (Expo/React Native, ADR-012) sunt **suprascrise**: produsul rămâne pe **Android nativ Kotlin + FastAPI `wb_api` + `wb_rule_engine`** din cauza dependențelor native de OCR. Vezi `docs/product/lifeos-romania/27_V2_DONOR_INTEGRATION.md` (ADR-027..030). Conținutul independent de stack (motor, contracte, doctrină, Data Bible, research, backlog) rămâne valabil și a fost transplantat în super-book.
+
+---
+
 # ActeOS / LifeOS România — Master Execution Pack v2.0.0
 
 **Data pachetului:** 2026-06-25  
-**Scop:** sursa unică de adevăr pentru produs, design, arhitectură, cercetare, implementare și operare.
+**Scop:** donator de referință pentru produs, design, arhitectură, cercetare, implementare și operare (sursa canonică: `docs/product/lifeos-romania/`).
 
 ActeOS transformă un eveniment exprimat de utilizator — „m-am mutat”, „mi-am cumpărat o mașină”, „mi-am pierdut actele” — într-un traseu administrativ personalizat, determinist, temporal, teritorial și verificabil.
 

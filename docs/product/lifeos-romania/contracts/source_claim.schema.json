@@ -1,17 +1,33 @@
 {
+  "$id": "https://acteos/schemas/source_claim.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "SourceClaim",
+  "title": "Source Claim",
   "type": "object",
-  "required": ["id", "source_id", "quote", "locator", "confidence"],
+  "required": ["id", "source_id", "snapshot_id", "statement", "url", "publisher", "authority_level", "evidence_excerpt", "locator", "accessed_at", "confidence", "freshness_class", "status"],
   "properties": {
-    "id": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]+$" },
     "source_id": { "type": "string" },
     "snapshot_id": { "type": "string" },
-    "claim_type": { "type": "string" },
-    "quote": { "type": "string" },
+    "statement": { "type": "string", "minLength": 5 },
+    "url": { "type": "string", "format": "uri" },
+    "publisher": { "type": "string" },
+    "authority_level": { "type": "string", "enum": ["eu", "national_normative", "national_operational", "county", "uat", "institution", "official_response"] },
+    "legal_rank": { "type": ["string", "null"] },
+    "territory_ids": { "type": "array", "items": { "type": "string" } },
+    "competence_scope": { "type": "array", "items": { "type": "string" } },
+    "evidence_excerpt": { "type": "string", "minLength": 1 },
     "locator": { "type": "string" },
-    "effective_from": { "type": "string", "format": "date" },
-    "effective_to": { "type": "string", "format": "date" },
-    "confidence": { "enum": ["verified", "verified_with_local_gap", "needs_confirmation", "conflicting", "expired", "withdrawn"] }
-  }
+    "published_at": { "type": ["string", "null"], "format": "date" },
+    "accessed_at": { "type": "string", "format": "date" },
+    "effective_from": { "type": ["string", "null"], "format": "date" },
+    "effective_to": { "type": ["string", "null"], "format": "date" },
+    "confidence": { "type": "string", "enum": ["verified", "verified_with_local_gap", "needs_confirmation", "conflicting", "expired"] },
+    "freshness_class": { "type": "string", "enum": ["critical", "operational", "explanatory"] },
+    "review_due_at": { "type": ["string", "null"], "format": "date" },
+    "hard_expiry_at": { "type": ["string", "null"], "format": "date" },
+    "status": { "type": "string", "enum": ["draft", "in_review", "approved", "active", "stale", "hard_expired", "withdrawn", "superseded", "conflicting"] },
+    "snapshot_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "contradiction_claim_ids": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
 }

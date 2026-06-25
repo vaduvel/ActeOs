@@ -1,13 +1,26 @@
-# Clase de freshness (A=critical, B=operational, C=explanatory). A nu se confunda cu frequency_tier (high/medium/low).
-critical:        # clasa A
-  review_due_days: 14
-  hard_expiry_days: 45
-  on_expiry: needs_confirmation
-operational:     # clasa B
-  review_due_days: 30
-  hard_expiry_days: 90
-  on_expiry: warn
-explanatory:     # clasa C
-  review_due_days: 90
-  hard_expiry_days: 180
-  on_expiry: warn
+# Transplant din v2: clase critical/operational/explanatory. Inlocuieste varianta anterioara.
+version: 2.0.0
+timezone: Europe/Bucharest
+classes:
+  critical:
+    review_after_days: 30
+    hard_expiry_after_days: 60
+    on_review_due: needs_confirmation
+    on_hard_expiry: block
+    examples: [eligibility, deadline, mandatory_document, fee, selection_criterion]
+  operational:
+    review_after_days: 30
+    hard_expiry_after_days: 90
+    on_review_due: warn
+    on_hard_expiry: needs_confirmation
+    examples: [office_hours, phone, appointment_url, address]
+  explanatory:
+    review_after_days: 180
+    hard_expiry_after_days: 365
+    on_review_due: warn
+    on_hard_expiry: warn
+    examples: [definition, general_explanation]
+rules:
+  - event calendars may define shorter hard expiry
+  - publisher withdrawal overrides dates
+  - source unavailable does not automatically extend validity

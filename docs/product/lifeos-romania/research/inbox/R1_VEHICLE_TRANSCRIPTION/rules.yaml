@@ -1,0 +1,101 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_VEHICLE_TRANSCRIPTION
+event_type_id: life.vehicle_transcription
+status: draft
+rules:
+  - id: rule.trans.docs_art8
+    canonical_rule_id: vehicle_transcription.docs_art8
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2006-11-13'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: transcribe_vehicle }
+      - { type: include_requirement, requirement_id: req.ownership_document }
+      - { type: include_requirement, requirement_id: req.fiscal_declaration_proof }
+    source_claim_ids: [claim.trans.docs_art8, claim.trans.fiscal_proof_required]
+    status: draft
+  - id: rule.trans.90d
+    canonical_rule_id: vehicle_transcription.deadline_90d
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2017-06-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: set_deadline, step_id: transcribe_vehicle, value: { kind: relative_days, anchor: contract_date, days: 90 } }
+      - { type: require_confirmation, message_ro: 'Termenul de 90 de zile se confirma din articolul exact al Ordinului 1501/2006 inainte de afisare ferma.' }
+    source_claim_ids: [claim.trans.90d]
+    status: in_review
+  - id: rule.trans.itp_gate
+    canonical_rule_id: vehicle_transcription.itp_gate
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: has_valid_itp
+      value: false
+    effects:
+      - { type: block, message_ro: 'Fara ITP in termen nu se poate transcrie; efectueaza ITP intai.' }
+      - { type: include_step, step_id: do_itp }
+    source_claim_ids: [claim.trans.itp_civ_required]
+    status: draft
+  - id: rule.trans.civ_gate
+    canonical_rule_id: vehicle_transcription.civ_gate
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2006-11-13'
+    when:
+      op: eq
+      field: has_valid_civ
+      value: false
+    effects:
+      - { type: block, message_ro: 'CIV valabil este obligatoriu pentru transcriere.' }
+    source_claim_ids: [claim.trans.itp_civ_required]
+    status: draft
+  - id: rule.trans.fiscal_proof_gate
+    canonical_rule_id: vehicle_transcription.fiscal_proof_gate
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2016-05-05'
+    when:
+      op: eq
+      field: has_fiscal_proof
+      value: false
+    effects:
+      - { type: block, message_ro: 'Declara intai vehiculul la taxele locale; dovada fiscala este obligatorie la transcriere.' }
+    source_claim_ids: [claim.trans.fiscal_proof_required]
+    status: draft
+  - id: rule.trans.solve_time_info
+    canonical_rule_id: vehicle_transcription.solve_time_info
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2006-11-13'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Cererea se solutioneaza in pana la 20 de zile lucratoare (de confirmat).' }
+    source_claim_ids: [claim.trans.solve_20_working_days]
+    status: in_review
+  - id: rule.trans.tm_channel
+    canonical_rule_id: vehicle_transcription.tm_channel
+    event_type_id: life.vehicle_transcription
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2006-11-13'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.spcrpciv_timis }
+    source_claim_ids: [claim.trans.tm_channel]
+    status: draft

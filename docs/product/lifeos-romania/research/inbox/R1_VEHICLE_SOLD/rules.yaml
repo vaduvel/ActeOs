@@ -1,0 +1,73 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_VEHICLE_SOLD
+event_type_id: life.vehicle_sold
+status: draft
+rules:
+  - id: rule.sold.fiscal_certificate_before
+    canonical_rule_id: vehicle_sold.fiscal_certificate_before
+    event_type_id: life.vehicle_sold
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2016-01-01'
+    when:
+      op: eq
+      field: has_fiscal_certificate
+      value: false
+    effects:
+      - { type: include_step, step_id: obtain_fiscal_certificate }
+      - { type: include_requirement, requirement_id: req.contract_5_copies }
+      - { type: emit_warning, message_ro: 'Inainte de vanzare ai nevoie de certificatul de atestare fiscala / viza pe contract (valabil 30 de zile).' }
+    source_claim_ids: [claim.sold.contract_5_copies_visa, claim.sold.fiscal_certificate_30d_validity]
+    status: draft
+  - id: rule.sold.removal_from_evidence
+    canonical_rule_id: vehicle_sold.removal_from_evidence
+    event_type_id: life.vehicle_sold
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2016-01-01'
+    when:
+      op: eq
+      field: sale_completed
+      value: true
+    effects:
+      - { type: include_step, step_id: remove_vehicle_from_fiscal_evidence }
+      - { type: set_deadline, step_id: remove_vehicle_from_fiscal_evidence, value: { kind: relative_days, anchor: contract_date, days: 30 } }
+      - { type: require_confirmation, message_ro: 'Termenul de 30 de zile pentru scoaterea din evidenta de catre vanzator se confirma din Codul Fiscal.' }
+    source_claim_ids: [claim.sold.removal_from_evidence, claim.sold.removal_deadline_30d]
+    status: in_review
+  - id: rule.sold.fiscal_risk_warning
+    canonical_rule_id: vehicle_sold.fiscal_risk_warning
+    event_type_id: life.vehicle_sold
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Pana cand vehiculul nu este scos din evidenta fiscala, impozitul ramane pe numele tau.' }
+    source_claim_ids: [claim.sold.removal_from_evidence]
+    status: draft
+  - id: rule.sold.visa_48h_advice
+    canonical_rule_id: vehicle_sold.visa_48h_advice
+    event_type_id: life.vehicle_sold
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2006-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_advice, message_ro: 'Recomandare: nu lasa mai mult de ~48 de ore intre viza fiscala si semnarea contractului.' }
+    source_claim_ids: [claim.sold.contract_visa_48h]
+    status: in_review
+  - id: rule.sold.tm_fiscal_channel
+    canonical_rule_id: vehicle_sold.tm_fiscal_channel
+    event_type_id: life.vehicle_sold
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.dfmt_timisoara }
+    source_claim_ids: [claim.sold.tm_fiscal_channel]
+    status: in_review

@@ -1,0 +1,93 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_ID_CARD_EXPIRED
+event_type_id: life.id_card_expired
+status: draft
+rules:
+  - id: rule.exp.renew_window
+    canonical_rule_id: id_card_expired.renew_window
+    event_type_id: life.id_card_expired
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2005-07-20'
+    when:
+      op: within_window
+      field: reference_date
+      values: [expiry_minus_180d, expiry_minus_15d]
+    effects:
+      - { type: include_step, step_id: renew_identity_card }
+      - { type: set_deadline, step_id: renew_identity_card, value: { kind: window, from: expiry_minus_180d, to: expiry_minus_15d } }
+      - { type: emit_warning, message_ro: 'Poti solicita noul act cu cel mult 180 de zile inainte de expirare, dar nu mai putin de 15 zile inainte.' }
+    source_claim_ids: [claim.exp.window_180_15]
+    status: draft
+  - id: rule.exp.too_early
+    canonical_rule_id: id_card_expired.too_early
+    event_type_id: life.id_card_expired
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2005-07-20'
+    when:
+      op: date_before
+      field: reference_date
+      value: expiry_minus_180d
+    effects:
+      - { type: emit_warning, message_ro: 'Esti mai devreme de 180 de zile fata de expirare; cererea se poate depune incepand cu acel moment.' }
+    source_claim_ids: [claim.exp.window_180_15]
+    status: draft
+  - id: rule.exp.overdue
+    canonical_rule_id: id_card_expired.overdue
+    event_type_id: life.id_card_expired
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2005-07-20'
+    when:
+      op: date_after
+      field: reference_date
+      value: expiry_minus_15d
+    effects:
+      - { type: emit_warning, message_ro: 'Termenul de solicitare este depasit sau aproape depasit; prezinta-te urgent la DEP.' }
+      - { type: require_confirmation, message_ro: 'Sanctiunea contraventionala difera intre sursele oficiale (40-80 lei vs 500-1000 lei). Confirma cuantumul curent inainte de afisare.' }
+    source_claim_ids: [claim.exp.window_180_15, claim.exp.sanction_40_80, claim.exp.sanction_500_1000]
+    status: in_review
+  - id: rule.exp.sanction_conflict
+    canonical_rule_id: id_card_expired.sanction_conflict
+    event_type_id: life.id_card_expired
+    jurisdiction_ids: [ro]
+    severity: critical
+    effective_from: '2005-07-20'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Cuantumul amenzii pentru act expirat este in conflict intre surse oficiale; nu este afisat un cuantum unic.' }
+      - { type: block, message_ro: 'Nu se afiseaza un cuantum unic de amenda pana la rezolvarea conflictului de surse.' }
+    source_claim_ids: [claim.exp.sanction_40_80, claim.exp.sanction_500_1000]
+    status: in_review
+    note: ilustreaza politica de conflict - efectul critic este blocat pentru cuantum, nu se alege arbitrar.
+  - id: rule.exp.provisional
+    canonical_rule_id: id_card_expired.provisional_card
+    event_type_id: life.id_card_expired
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: operational
+    effective_from: '2005-07-20'
+    when:
+      op: eq
+      field: has_all_documents
+      value: false
+    effects:
+      - { type: include_step, step_id: issue_provisional_card }
+      - { type: include_requirement, requirement_id: req.three_photos }
+      - { type: emit_warning, message_ro: 'Daca nu ai toate documentele, se poate elibera o carte de identitate provizorie (valabila intre 30 de zile si 1 an).' }
+    source_claim_ids: [claim.prov.when, claim.prov.validity_30d_1y, claim.prov.docs]
+    status: draft
+  - id: rule.exp.keep_old
+    canonical_rule_id: id_card_expired.keep_old
+    event_type_id: life.id_card_expired
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2005-07-20'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Pastrezi actul vechi pana la ridicarea celui nou, cand il predai.' }
+    source_claim_ids: [claim.exp.keep_old_until_issue]
+    status: draft

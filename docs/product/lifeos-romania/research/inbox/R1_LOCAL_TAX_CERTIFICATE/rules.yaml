@@ -1,0 +1,101 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_LOCAL_TAX_CERTIFICATE
+event_type_id: life.local_tax_certificate
+status: draft
+rules:
+  - id: rule.fc.form_itl010
+    canonical_rule_id: local_tax_certificate.form_itl010
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: request_fiscal_certificate }
+      - { type: include_requirement, requirement_id: req.form_itl010 }
+      - { type: include_requirement, requirement_id: req.id_card }
+    source_claim_ids: [claim.fc.form_itl010]
+    status: draft
+  - id: rule.fc.issue_term
+    canonical_rule_id: local_tax_certificate.issue_term
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Certificatul se elibereaza orientativ in cel mult 2 zile lucratoare (de confirmat).' }
+      - { type: require_confirmation, message_ro: 'Termenul de eliberare se confirma pentru Timisoara / din Codul de procedura fiscala.' }
+    source_claim_ids: [claim.fc.issue_2_working_days]
+    status: in_review
+  - id: rule.fc.validity
+    canonical_rule_id: local_tax_certificate.validity
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: set_deadline, step_id: use_fiscal_certificate, value: { kind: relative_days, anchor: issue_date, days: 30 } }
+      - { type: require_confirmation, message_ro: 'Valabilitatea de 30 de zile (PF) se confirma din articolul exact al Codului de procedura fiscala (L207/2015).' }
+    source_claim_ids: [claim.fc.validity_30d_pf]
+    status: in_review
+  - id: rule.fc.succession_docs
+    canonical_rule_id: local_tax_certificate.succession_docs
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro]
+    authority_level: uat
+    severity: operational
+    effective_from: '2016-01-01'
+    when:
+      op: eq
+      field: is_succession
+      value: true
+    effects:
+      - { type: include_requirement, requirement_id: req.death_certificate }
+      - { type: include_requirement, requirement_id: req.notary_request }
+    source_claim_ids: [claim.fc.succession_docs]
+    status: draft
+  - id: rule.fc.power_of_attorney
+    canonical_rule_id: local_tax_certificate.power_of_attorney
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro]
+    authority_level: uat
+    severity: operational
+    effective_from: '2016-01-01'
+    when:
+      op: eq
+      field: is_for_third_party
+      value: true
+    effects:
+      - { type: include_requirement, requirement_id: req.power_of_attorney }
+      - { type: include_requirement, requirement_id: req.proxy_id_card }
+    source_claim_ids: [claim.fc.power_of_attorney]
+    status: draft
+  - id: rule.fc.tm_channel_online
+    canonical_rule_id: local_tax_certificate.tm_channel_online
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: uat
+    severity: explanatory
+    effective_from: '2025-09-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.dfmt_timisoara }
+      - { type: emit_advice, message_ro: 'La Timisoara poti solicita online prin plata.dfmt.ro; unele certificate se emit automat.' }
+    source_claim_ids: [claim.fc.tm_channel_online]
+    status: draft
+  - id: rule.fc.fee_info
+    canonical_rule_id: local_tax_certificate.fee_info
+    event_type_id: life.local_tax_certificate
+    jurisdiction_ids: [ro]
+    severity: explanatory
+    effective_from: '2016-01-01'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Se poate percepe o taxa de timbru (variaza pe UAT); confirma tariful pentru Timisoara.' }
+    source_claim_ids: [claim.fc.fee]
+    status: in_review

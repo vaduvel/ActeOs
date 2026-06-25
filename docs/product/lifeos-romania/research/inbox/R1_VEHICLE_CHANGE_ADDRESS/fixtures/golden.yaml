@@ -1,0 +1,92 @@
+batch_id: R1_VEHICLE_CHANGE_ADDRESS
+defaults:
+  event_type_id: life.vehicle_change_address
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: W01
+    desc: domiciliu schimbat, RCA ok - actualizare 30 zile
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: true }
+    expect: { status: ok, included_steps: [update_vehicle_registration], deadline_days: 30, requirements: [req.new_id_card, req.old_registration_certificate] }
+  - id: W02
+    desc: domiciliu schimbat, fara RCA - cerinta RCA
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: false }
+    expect: { status: ok, requirements: [req.rca_valid] }
+  - id: W03
+    desc: domiciliul nu s-a schimbat - noop
+    facts: { move_date: '2026-06-20', domicile_changed: false, has_rca: true }
+    expect: { status: ok, steps_absent: [update_vehicle_registration], warnings_present: [no_change] }
+  - id: W04
+    desc: exact la 30 zile
+    facts: { move_date: '2026-05-26', domicile_changed: true, has_rca: true }
+    expect: { status: ok, included_steps: [update_vehicle_registration] }
+  - id: W05
+    desc: depasit (45 zile)
+    facts: { move_date: '2026-05-11', domicile_changed: true, has_rca: true }
+    expect: { status: ok, overdue: true }
+  - id: W06
+    desc: termen 30d ramane in_review
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: true }
+    expect: { status: ok, needs_confirmation: [update_30d] }
+  - id: W07
+    desc: lipseste move_date
+    facts: { domicile_changed: true, has_rca: true }
+    expect: { status: needs_facts, missing_facts: [move_date] }
+  - id: W08
+    desc: lipseste domicile_changed - regula principala nu se evalueaza
+    facts: { move_date: '2026-06-20', has_rca: true }
+    expect: { status: needs_facts, missing_facts: [domicile_changed] }
+  - id: W09
+    desc: lipseste has_rca - regula RCA nu se evalueaza
+    facts: { move_date: '2026-06-20', domicile_changed: true }
+    expect: { status: needs_facts, missing_facts: [has_rca] }
+  - id: W10
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [move_date, domicile_changed, has_rca] }
+  - id: W11
+    desc: Timisoara - canal SPCRPCIV
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: true }
+    expect: { status: ok, channels: [ch.spcrpciv_timis] }
+  - id: W12
+    desc: alt judet - canal Timis absent
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.spcrpciv_timis] }
+  - id: W13
+    desc: mutare in viitor
+    facts: { move_date: '2026-12-01', domicile_changed: true, has_rca: true }
+    expect: { status: ok, warnings: [future_move_date] }
+  - id: W14
+    desc: domiciliu schimbat - cerinte documente prezente
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: true }
+    expect: { status: ok, requirements: [req.new_id_card, req.old_registration_certificate] }
+  - id: W15
+    desc: noop - fara cerinte documente
+    facts: { move_date: '2026-06-20', domicile_changed: false, has_rca: true }
+    expect: { status: ok, requirements_absent: [req.new_id_card] }
+  - id: W16
+    desc: mutare azi - termen plin
+    facts: { move_date: '2026-06-25', domicile_changed: true, has_rca: true }
+    expect: { status: ok, deadline_days: 30 }
+  - id: W17
+    desc: domiciliu schimbat + fara RCA + Timisoara
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: false }
+    expect: { status: ok, requirements: [req.rca_valid], channels: [ch.spcrpciv_timis] }
+  - id: W18
+    desc: noop - fara deadline
+    facts: { move_date: '2026-06-20', domicile_changed: false, has_rca: true }
+    expect: { status: ok, steps_absent: [update_vehicle_registration] }
+  - id: W19
+    desc: depasit mult (90 zile)
+    facts: { move_date: '2026-03-27', domicile_changed: true, has_rca: true }
+    expect: { status: ok, overdue: true }
+  - id: W20
+    desc: are RCA - fara cerinta RCA suplimentara
+    facts: { move_date: '2026-06-20', domicile_changed: true, has_rca: true }
+    expect: { status: ok, requirements_absent: [req.rca_valid] }
+  - id: W21
+    desc: domiciliu schimbat la limita 30 zile + RCA ok
+    facts: { move_date: '2026-05-26', domicile_changed: true, has_rca: true }
+    expect: { status: ok, included_steps: [update_vehicle_registration], deadline_days: 30 }

@@ -1,0 +1,93 @@
+batch_id: R1_VEHICLE_LOCAL_TAX_DECLARATION
+defaults:
+  event_type_id: life.vehicle_local_tax_declare
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: T01
+    desc: cumparat in RO, sub 12t - declarare 30 zile + certificat vanzator
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, included_steps: [file_vehicle_tax_declaration], deadline_days: 30, requirements: [req.vehicle_tax_form, req.seller_fiscal_certificate] }
+  - id: T02
+    desc: peste 12t - formular distinct
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: over_12t }
+    expect: { status: ok, requirements: [req.vehicle_tax_form_over_12t] }
+  - id: T03
+    desc: mostenit - fara certificat fiscal vanzator
+    facts: { acquisition_date: '2026-06-20', acquisition_type: inherited, weight_class: under_12t }
+    expect: { status: ok, included_steps: [file_vehicle_tax_declaration], requirements_absent: [req.seller_fiscal_certificate] }
+  - id: T04
+    desc: donat sub 12t
+    facts: { acquisition_date: '2026-06-20', acquisition_type: donated, weight_class: under_12t }
+    expect: { status: ok, included_steps: [file_vehicle_tax_declaration] }
+  - id: T05
+    desc: cumparat din UE
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_eu, weight_class: under_12t }
+    expect: { status: ok, included_steps: [file_vehicle_tax_declaration] }
+  - id: T06
+    desc: exact la 30 zile
+    facts: { acquisition_date: '2026-05-26', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, included_steps: [file_vehicle_tax_declaration] }
+  - id: T07
+    desc: depasit (40 zile)
+    facts: { acquisition_date: '2026-05-16', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, overdue: true }
+  - id: T08
+    desc: info impozit 31 dec prezent
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, warnings_present: [owner_dec31] }
+  - id: T09
+    desc: lipseste acquisition_date
+    facts: { acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: needs_facts, missing_facts: [acquisition_date] }
+  - id: T10
+    desc: lipseste acquisition_type - regula certificat vanzator nu se evalueaza
+    facts: { acquisition_date: '2026-06-20', weight_class: under_12t }
+    expect: { status: needs_facts, missing_facts: [acquisition_type] }
+  - id: T11
+    desc: lipseste weight_class - regula formular peste 12t nu se evalueaza
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro }
+    expect: { status: needs_facts, missing_facts: [weight_class] }
+  - id: T12
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [acquisition_date, acquisition_type, weight_class] }
+  - id: T13
+    desc: Timisoara - canal fiscal
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, channels: [ch.dfmt_timisoara] }
+  - id: T14
+    desc: alt judet - canal Timisoara absent
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.dfmt_timisoara] }
+  - id: T15
+    desc: Timisoara NU cere salubritate (regula Bucuresti)
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, requirements_absent: [req.salubritate_contract] }
+  - id: T16
+    desc: Bucuresti - cerinta salubritate (in_review)
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    jurisdiction_path: [eu, ro, ro.b, ro.b.s4]
+    expect: { status: ok, requirements: [req.salubritate_contract], needs_confirmation: [salubritate_local] }
+  - id: T17
+    desc: dobandire in viitor
+    facts: { acquisition_date: '2026-12-01', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, warnings: [future_acquisition_date] }
+  - id: T18
+    desc: sub 12t - formular standard, nu cel de peste 12t
+    facts: { acquisition_date: '2026-06-20', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, requirements_absent: [req.vehicle_tax_form_over_12t] }
+  - id: T19
+    desc: dobandit azi - termen plin
+    facts: { acquisition_date: '2026-06-25', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, deadline_days: 30 }
+  - id: T20
+    desc: mostenit peste 12t
+    facts: { acquisition_date: '2026-06-20', acquisition_type: inherited, weight_class: over_12t }
+    expect: { status: ok, requirements: [req.vehicle_tax_form_over_12t], requirements_absent: [req.seller_fiscal_certificate] }
+  - id: T21
+    desc: cumparat RO sub 12t Timisoara - caz complet
+    facts: { acquisition_date: '2026-06-18', acquisition_type: bought_ro, weight_class: under_12t }
+    expect: { status: ok, included_steps: [file_vehicle_tax_declaration], requirements: [req.vehicle_tax_form, req.seller_fiscal_certificate], channels: [ch.dfmt_timisoara] }
