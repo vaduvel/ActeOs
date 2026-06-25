@@ -11,26 +11,31 @@ Each *event batch* is a directory that holds the six authoring artifacts:
     fixtures/golden.yaml
 
 The research was authored under a legacy tree nested as
-``<inbox>/batch_NN/<event>/`` while the v2.1 loader (``discover_batches``)
-expects each batch directory directly under ``research/inbox/``. This tool
-bridges the gap deterministically:
+``<inbox>/batch_NN/<event>/`` (and ``<inbox>/r1a/<event>/`` etc.) while the v2.1
+loader (``discover_batches``) expects each batch directory directly under
+``research/inbox/``. This tool bridges the gap deterministically:
 
   * discovers event batches recursively (any depth, so batch_NN/<event>/ works);
   * validates each batch against the v2.1 JSON Schemas, reusing the SAME
     validator the engine uses (acteos_rule_engine.authoring.validate) so an
     import that passes here will load and validate identically in the engine;
   * copies the artifacts VERBATIM (byte-for-byte) into
-    research/inbox/<event_type_id>/ so loader.discover_batches finds them flat;
+    research/inbox/<event_dir>/ so loader.discover_batches finds them flat;
   * writes IMPORT_MANIFEST.json (SHA-256 + size per file) and a human-readable
     IMPORT_REPORT.md (counts + every rejected/skipped batch with reasons).
 
+The destination directory is named after the SOURCE directory (e.g.
+``ro.life.moved_home``), which is unique, rather than after ``event_type_id``
+(several legacy events share an event_type_id such as ``life.moved`` and would
+otherwise collide).
+
 Governance (skill: acteos-research-import):
-  * the inbox is STAGING ONLY — this tool NEVER promotes anything to the active
+  * the inbox is STAGING ONLY -- this tool NEVER promotes anything to the active
     ruleset. Promotion requires a separate four-eyes review + release gate.
   * any rule/claim ``status: active`` present in the source is copied verbatim
     but has no runtime effect until that governed promotion happens.
   * only batches that PASS schema validation are copied; invalid batches are
-    reported as rejected and left untouched.
+    reported as rejected and left untouched. Run normalize_research.py first.
 
 Usage (from the pack root; defaults wire the standard repo layout)::
 
@@ -80,7 +85,7 @@ PACK_FILES = (
     "gaps.md",
     "fixtures/golden.yaml",
 )
-# A directory is a batch iff it contains at least these (loader contract).
+# A directory is a batch iff it directly contains at least these (loader contract).
 BATCH_MARKERS = ("rules.yaml", "fixtures/golden.yaml")
 
 
@@ -112,12 +117,14 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
-def event_type_id_of(batch_dir: Path) -> str:
-    doc = yaml.safe_load((batch_dir / "rules.yaml").read_text(encoding="utf-8")) or {}
-    event_type_id = doc.get("event_type_id")
-    if not event_type_id or not isinstance(event_type_id, str):
-        raise ValueError(f"{batch_dir}/rules.yaml is missing a string 'event_type_id'")
-    return event_type_id
+def event_type_id_of(batch_dir: Path) -> str | None:
+    """Best-effort event_type_id from rules.yaml (manifest metadata only)."""
+    try:
+        doc = yaml.safe_load((batch_dir / "rules.yaml").read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return None
+    etid = doc.get("event_type_id")
+    return etid if isinstance(etid, str) else None
 
 
 def validate_event(batch_dir: Path, schemas: dict[str, Any]) -> list[str]:
@@ -158,8 +165,7 @@ def _render_report(manifest: dict[str, Any]) -> str:
     if manifest["rejected"]:
         lines += ["## Rejected (NOT imported)", ""]
         for item in manifest["rejected"]:
-            label = item.get("event_type_id") or item["source"]
-            lines.append(f"### {label}")
+            lines.append(f"### {item['event_id']}")
             lines.append(f"- source: `{item['source']}`")
             for err in item["errors"]:
                 lines.append(f"  - {err}")
@@ -167,9 +173,7 @@ def _render_report(manifest: dict[str, Any]) -> str:
     if manifest["skipped"]:
         lines += ["## Skipped", ""]
         for item in manifest["skipped"]:
-            lines.append(
-                f"- `{item['source']}` ({item.get('event_type_id')}): {item['reason']}"
-            )
+            lines.append(f"- `{item['source']}` ({item['event_id']}): {item['reason']}")
         lines.append("")
     lines += [
         "## Governance",
@@ -184,7 +188,9 @@ def _render_report(manifest: dict[str, Any]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
         "--source",
         type=Path,
@@ -227,44 +233,65 @@ def main(argv: list[str] | None = None) -> int:
     seen: dict[str, Path] = {}
 
     for batch_dir in batches:
-        try:
-            event_type_id = event_type_id_of(batch_dir)
-        except (ValueError, yaml.YAMLError) as exc:
-            rejected.append({"source": str(batch_dir), "event_type_id": None, "errors": [str(exc)]})
-            continue
+        event_id = batch_dir.name  # unique, canonical dest id (e.g. ro.life.moved_home)
+        event_type_id = event_type_id_of(batch_dir)  # manifest metadata only
 
-        if event_type_id in seen:
+        if event_id in seen:
             skipped.append({
                 "source": str(batch_dir),
-                "event_type_id": event_type_id,
-                "reason": f"duplicate event_type_id (already imported from {seen[event_type_id]})",
+                "event_id": event_id,
+                "reason": f"duplicate directory name (already from {seen[event_id]})",
             })
             continue
 
-        errors = validate_event(batch_dir, schemas)
-        if errors:
-            rejected.append({"source": str(batch_dir), "event_type_id": event_type_id, "errors": errors})
+        try:
+            errors = validate_event(batch_dir, schemas)
+        except Exception as exc:  # unparseable rules.yaml / golden.yaml, etc.
+            rejected.append({
+                "source": str(batch_dir),
+                "event_id": event_id,
+                "event_type_id": event_type_id,
+                "errors": [f"load/validate failed: {exc}"],
+            })
             continue
 
-        dest_dir = dest / event_type_id
+        if errors:
+            rejected.append({
+                "source": str(batch_dir),
+                "event_id": event_id,
+                "event_type_id": event_type_id,
+                "errors": errors,
+            })
+            continue
+
+        dest_dir = dest / event_id
         if not args.check_only and dest_dir.exists() and not args.overwrite:
             skipped.append({
                 "source": str(batch_dir),
-                "event_type_id": event_type_id,
+                "event_id": event_id,
                 "reason": "destination already exists (use --overwrite)",
             })
             continue
 
         files_meta = [
-            {"path": f"{event_type_id}/{rel}", "sha256": sha256_of(batch_dir / rel), "bytes": (batch_dir / rel).stat().st_size}
+            {
+                "path": f"{event_id}/{rel}",
+                "sha256": sha256_of(batch_dir / rel),
+                "bytes": (batch_dir / rel).stat().st_size,
+            }
             for rel in PACK_FILES
             if (batch_dir / rel).is_file()
         ]
         if not args.check_only:
             copy_pack(batch_dir, dest_dir)
 
-        seen[event_type_id] = batch_dir
-        imported.append({"event_type_id": event_type_id, "source": str(batch_dir), "files": files_meta})
+        seen[event_id] = batch_dir
+        imported.append({
+            "event_id": event_id,
+            "event_type_id": event_type_id,
+            "source": str(batch_dir),
+            "files": files_meta,
+        })
 
     manifest = {
         "generated_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
