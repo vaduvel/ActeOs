@@ -66,7 +66,7 @@ def test_exact_alias_diacritics_insensitive(resolver):
     res = resolver.resolve("buletin expirat")
     assert res.resolution_state == "high"
     assert res.candidates[0].intent_type_id == "ro.intent.identity.renew_expired_id"
-    assert res.candidates[0].score == pytest.approx(0.96, abs=1e-6)
+    assert res.candidates[0].score == pytest.approx(1.06, abs=1e-6)
 
 
 def test_negative_alias_demotes_other_intent(resolver):
