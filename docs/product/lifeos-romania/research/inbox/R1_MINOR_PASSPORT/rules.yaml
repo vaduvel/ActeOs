@@ -1,0 +1,203 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_MINOR_PASSPORT
+event_type_id: life.minor_passport
+status: draft
+rules:
+  - id: rule.mp.docs
+    canonical_rule_id: minor_passport.docs
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2021-03-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: include_step, step_id: apply_minor_passport }
+      - { type: include_requirement, requirement_id: req.minor_birth_certificate }
+      - { type: include_requirement, requirement_id: req.parents_id }
+      - { type: include_requirement, requirement_id: req.payment_proof }
+    source_claim_ids: [claim.mp.docs]
+    status: draft
+  - id: rule.mp.single_parent_gate
+    canonical_rule_id: minor_passport.single_parent_gate
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: both_parents_consent, value: false }
+        - { op: eq, field: has_single_parent_doc, value: false }
+    effects:
+      - { type: block, message_ro: 'Fara ambii parinti ai nevoie de procura speciala/acord scris, hotarare de incredintare sau act de deces al celuilalt parinte.' }
+      - { type: include_requirement, requirement_id: req.single_parent_doc }
+    source_claim_ids: [claim.mp.under14_both_parents, claim.mp.single_parent_docs]
+    status: draft
+  - id: rule.mp.single_parent_doc_required
+    canonical_rule_id: minor_passport.single_parent_doc_required
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: both_parents_consent, value: false }
+        - { op: eq, field: has_single_parent_doc, value: true }
+    effects:
+      - { type: include_requirement, requirement_id: req.single_parent_doc }
+    source_claim_ids: [claim.mp.single_parent_docs]
+    status: draft
+  - id: rule.mp.presence
+    canonical_rule_id: minor_passport.presence
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2021-03-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: emit_warning, message_ro: 'Prezenta minorului si a parintilor este obligatorie la depunere.', tag: presence_required }
+    source_claim_ids: [claim.mp.presence_required]
+    status: draft
+  - id: rule.mp.photos_if_absent
+    canonical_rule_id: minor_passport.photos_if_absent
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2021-03-12'
+    when:
+      op: eq
+      field: minor_present
+      value: false
+    effects:
+      - { type: include_requirement, requirement_id: req.two_photos_minor }
+      - { type: emit_warning, message_ro: 'Daca minorul nu este prezent, sunt necesare 2 fotografii 3,5x4,5 cm.', tag: photos_required }
+    source_claim_ids: [claim.mp.docs]
+    status: draft
+  - id: rule.mp.over14_personal_pickup
+    canonical_rule_id: minor_passport.over14_personal_pickup
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: gte
+      field: minor_age
+      value: 14
+    effects:
+      - { type: emit_advice, message_ro: 'Minorul peste 14 ani isi ridica pasaportul personal, insotit de un parinte, cu CI valabila.', tag: over14_pickup }
+      - { type: include_requirement, requirement_id: req.minor_id_card }
+    source_claim_ids: [claim.mp.over14_personal_pickup]
+    status: draft
+  - id: rule.mp.validity_under12
+    canonical_rule_id: minor_passport.validity_under12
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: lt, field: minor_age, value: 12 }
+    effects:
+      - { type: emit_advice, message_ro: 'Valabilitate: 3 ani (sub 12 ani).', tag: validity_3y }
+    source_claim_ids: [claim.mp.validity]
+    status: draft
+  - id: rule.mp.validity_12_18
+    canonical_rule_id: minor_passport.validity_12_18
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: gte, field: minor_age, value: 12 }
+    effects:
+      - { type: emit_advice, message_ro: 'Valabilitate: 5 ani (12-18 ani).', tag: validity_5y }
+    source_claim_ids: [claim.mp.validity]
+    status: draft
+  - id: rule.mp.validity_temporary
+    canonical_rule_id: minor_passport.validity_temporary
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when:
+      op: eq
+      field: passport_type
+      value: temporary
+    effects:
+      - { type: emit_advice, message_ro: 'Pasaport temporar minor: valabilitate 12 luni.', tag: validity_12m }
+    source_claim_ids: [claim.mp.validity]
+    status: draft
+  - id: rule.mp.fee_under12
+    canonical_rule_id: minor_passport.fee_under12
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2018-07-20'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: lt, field: minor_age, value: 12 }
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa: 234 lei (electronic, sub 12 ani).', tag: fee_234 }
+    source_claim_ids: [claim.mp.validity]
+    status: draft
+  - id: rule.mp.fee_ge12
+    canonical_rule_id: minor_passport.fee_ge12
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2018-07-20'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: passport_type, value: electronic }
+        - { op: gte, field: minor_age, value: 12 }
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa: 258 lei (electronic, peste 12 ani).', tag: fee_258 }
+    source_claim_ids: [claim.mp.validity]
+    status: draft
+  - id: rule.mp.fee_temporary
+    canonical_rule_id: minor_passport.fee_temporary
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: operational
+    effective_from: '2018-07-20'
+    when:
+      op: eq
+      field: passport_type
+      value: temporary
+    effects:
+      - { type: emit_warning, message_ro: 'Taxa: 96 lei (temporar).', tag: fee_96 }
+    source_claim_ids: [claim.mp.validity]
+    status: draft
+  - id: rule.mp.tm_channel
+    canonical_rule_id: minor_passport.tm_channel
+    event_type_id: life.minor_passport
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2021-03-12'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.pasapoarte_timis }
+    source_claim_ids: [claim.mp.over14_personal_pickup]
+    status: draft

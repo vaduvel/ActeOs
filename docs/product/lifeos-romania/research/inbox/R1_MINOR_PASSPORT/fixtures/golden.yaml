@@ -1,0 +1,100 @@
+batch_id: R1_MINOR_PASSPORT
+defaults:
+  event_type_id: life.minor_passport
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: N01
+    desc: copil 8 ani electronic, ambii parinti, prezent
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, included_steps: [apply_minor_passport], requirements: [req.minor_birth_certificate, req.parents_id, req.payment_proof], advice_tags: [validity_3y], fee_tags: [fee_234] }
+  - id: N02
+    desc: un singur parinte fara documente - blocat
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: false, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, blocked_effects: [apply_minor_passport], requirements: [req.single_parent_doc] }
+  - id: N03
+    desc: un singur parinte cu procura/acord - ok cu cerinta doc
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: false, has_single_parent_doc: true, minor_present: true }
+    expect: { status: ok, included_steps: [apply_minor_passport], requirements: [req.single_parent_doc] }
+  - id: N04
+    desc: minor 15 ani electronic - 5 ani + 258 + ridicare personala
+    facts: { minor_age: 15, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_tags: [validity_5y, over14_pickup], fee_tags: [fee_258], requirements: [req.minor_id_card] }
+  - id: N05
+    desc: minor neprezent - 2 fotografii
+    facts: { minor_age: 6, passport_type: temporary, both_parents_consent: true, has_single_parent_doc: false, minor_present: false }
+    expect: { status: ok, requirements: [req.two_photos_minor], warnings_present: [photos_required] }
+  - id: N06
+    desc: temporar minor - 12 luni + 96 lei
+    facts: { minor_age: 10, passport_type: temporary, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_tags: [validity_12m], fee_tags: [fee_96] }
+  - id: N07
+    desc: exact 12 ani electronic - 5 ani + 258
+    facts: { minor_age: 12, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_tags: [validity_5y], fee_tags: [fee_258] }
+  - id: N08
+    desc: exact 11 ani electronic - 3 ani + 234
+    facts: { minor_age: 11, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_tags: [validity_3y], fee_tags: [fee_234] }
+  - id: N09
+    desc: exact 14 ani - ridicare personala
+    facts: { minor_age: 14, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_tags: [over14_pickup], requirements: [req.minor_id_card] }
+  - id: N10
+    desc: 13 ani - fara ridicare personala
+    facts: { minor_age: 13, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_absent: [over14_pickup] }
+  - id: N11
+    desc: prezenta obligatorie - warning mereu
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, warnings_present: [presence_required] }
+  - id: N12
+    desc: Timisoara - canal pasapoarte
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, channels: [ch.pasapoarte_timis] }
+  - id: N13
+    desc: alt judet - canal Timis absent
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.pasapoarte_timis] }
+  - id: N14
+    desc: lipseste minor_age
+    facts: { passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: needs_facts, missing_facts: [minor_age] }
+  - id: N15
+    desc: lipseste passport_type
+    facts: { minor_age: 8, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: needs_facts, missing_facts: [passport_type] }
+  - id: N16
+    desc: lipseste both_parents_consent
+    facts: { minor_age: 8, passport_type: electronic, has_single_parent_doc: false, minor_present: true }
+    expect: { status: needs_facts, missing_facts: [both_parents_consent] }
+  - id: N17
+    desc: lipseste has_single_parent_doc
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: false, minor_present: true }
+    expect: { status: needs_facts, missing_facts: [has_single_parent_doc] }
+  - id: N18
+    desc: lipseste minor_present
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false }
+    expect: { status: needs_facts, missing_facts: [minor_present] }
+  - id: N19
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [minor_age, passport_type, both_parents_consent, has_single_parent_doc, minor_present] }
+  - id: N20
+    desc: minor prezent - fara cerinta fotografii
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, requirements_absent: [req.two_photos_minor] }
+  - id: N21
+    desc: 16 ani temporar neprezent - personal pickup + foto + 96
+    facts: { minor_age: 16, passport_type: temporary, both_parents_consent: true, has_single_parent_doc: false, minor_present: false }
+    expect: { status: ok, advice_tags: [over14_pickup, validity_12m], fee_tags: [fee_96], requirements: [req.two_photos_minor] }
+  - id: N22
+    desc: ambii parinti - fara cerinta single_parent_doc
+    facts: { minor_age: 8, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, requirements_absent: [req.single_parent_doc] }
+  - id: N23
+    desc: 17 ani electronic ambii parinti - 5 ani + 258 + personal
+    facts: { minor_age: 17, passport_type: electronic, both_parents_consent: true, has_single_parent_doc: false, minor_present: true }
+    expect: { status: ok, advice_tags: [validity_5y, over14_pickup], fee_tags: [fee_258] }
