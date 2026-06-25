@@ -1,29 +1,38 @@
-# Prompt master pentru Codex — LifeOS România
+# Prompt master pentru Codex — LifeOS România (canonic)
 
-Ești agentul de implementare pentru LifeOS România. Construiești un sistem real, gata de producție. Nu produci demo sau MVP de umplutură.
+Construiești LifeOS România din acest super-book unic. Sistem real, gata de producție. Fără demo de umplutură.
 
-## Reguli inviolabile
+## Misiune
 
-1. **Nu inventa** instituții, documente, termene, taxe, coduri, adrese sau URL-uri. Folosești doar sursele din `19_SOURCE_REGISTRY.json`; restul rămâne `REQUIRES_HUMAN_CURATION`.
-2. **Determinism la runtime:** motorul de procedură și orchestratorul de evenimente nu apelează LLM, internet sau OCR la evaluare. Toată cunoașterea vine din bundle-uri publicate.
-3. **Reutilizezi codul existent:** `packages/rule-engine` (`wb_rule_engine`), `packages/contracts`, `services/api/src/wb_api`. Nu rescrii motorul; construiești orchestratorul deasupra lui.
-4. **Tri-valued:** fapt lipsă ≠ fals. `unknown` → `needs_confirmation`, nu omisiune tăcută.
-5. **Reproductibilitate:** același (eveniment + context + jurisdicție + dată + bundle-uri) ⇒ același `event_plan_hash`.
-6. **Fail-closed** pe clase critice stale.
-7. **Two-person rule** pentru promovarea conținutului la `verified`.
-8. **EU-region, GDPR, local-first** pentru documentele utilizatorului.
+Transformă „mi s-a întâmplat X" în trasee administrative deterministe, personalizate, verificate și explicabile: eveniment → obligații → trasee → documente → canale oficiale → notificări.
 
-## Ce construiești
+## Non-negociabile
 
-- Stratul `LifeEvent` + `EventPlan` + orchestrator (vezi `04_DOMAIN_MODEL.md`, `05_RULE_ENGINE_SPEC.md` partea B).
-- Endpoint-uri pentru: clasificare NL → eveniment (assist-only, catalog controlat), planificare eveniment, parcurgere noduri (reutilizând rutele de procedură existente).
-- Catalogul R1 din `06_LIFE_EVENT_CATALOG.md`, cu fixture-uri de plan pozitive și negative.
-- Migrări DB pentru `life_event`, `procedure_ref`, `event_plan_session`.
+- Nu inventa reguli juridice/administrative. Regulile critice de producție cer `source_claim_ids`.
+- `demo_mode` doar pentru fixture de test, marcat explicit; default `false`.
+- LLM/AI poate clasifica text sau redacta conținut **offline**, dar nu decide niciodată eligibilitate sau documente la runtime.
+- Motorul determinist + orchestratorul sunt sursa deciziilor de runtime (fără LLM/net/OCR).
+- Ofertele de parteneri nu pot modifica traseele oficiale.
+- Reproductibilitate prin `route_hash` și `event_plan_hash`.
+
+## Stack (reconciliat — vezi ADR-022)
+
+- Mobil: Android nativ Kotlin/Compose (minSdk 26). NU React Native.
+- API: FastAPI existent (`services/api/src/wb_api`).
+- Motor: `packages/rule-engine` (`wb_rule_engine`) + orchestrator de evenimente.
+- Persistență: PostgreSQL. Curator: Next.js/React.
+
+## Ce construiești nou peste codul existent
+
+- Stratul `LifeEvent` + `EventSession` + `EventPlan` + orchestrator (`04`, `05`).
+- Endpoint-uri eveniment (interpret, sessions, facts, resolve/plan) — `09_API_SPEC.yaml`.
+- Catalogul R1 ca date (`06_LIFE_EVENT_CATALOG.md`, `seed/`), cu fixture-uri pozitive și negative.
+- Migrări pentru tabelele noi (`10_DATABASE_SCHEMA.sql`).
 
 ## Definiția lui „gata"
 
-Cod tipat, testat (unit + fixture de plan + golden hash), containerizat, cu migrări, fără TODO-uri în căile critice, cu trasabilitate înapoi la acest workbook și la surse.
+Cod tipat, testat (unit + fixture de rută/plan + golden hash), containerizat, cu migrări, fără TODO în căi critice, trasabil înapoi la acest super-book și la surse.
 
-## Ordine de lucru
+## Execuție
 
-Urmează `16_PHASE_PROMPTS.md`. Nu sări faze. Fiecare fază se încheie cu teste verzi și un raport scurt.
+Urmează `16_PHASE_PROMPTS.md` (P0–P12). La finalul fiecărei faze: teste verzi + actualizare status.

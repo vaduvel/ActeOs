@@ -1,42 +1,33 @@
-# CODEX START HERE — LifeOS România
+# START HERE — LifeOS România (Super-Book)
 
-## Misiune
+Acesta este pachetul canonic unic. Citește în ordine și nu sări peste contracte.
 
-Construiește **LifeOS România**: o platformă care pornește de la un **eveniment de viață** descris de utilizator în limbaj natural și produce graful complet, personalizat și verificat de obligații administrative (proceduri atomice cu pași, termene, dovezi și canale oficiale). Livrează cod funcțional, teste, migrații, documentație de operare și un istoric clar al deciziilor. Nu transforma produsul într-un chatbot care răspunde liber din internet.
+## Ordine de citire
 
-## Modelul în trei straturi (obligatoriu de respectat)
+1. `15_CODEX_MASTER_PROMPT.md` — misiunea și regulile inviolabile.
+2. `MERGE_PROVENANCE.md` — deciziile de fuziune (stack, ID-uri, demo vs producție, tier vs freshness).
+3. `01_SCOPE_RELEASES.md`, `02_PRD.md`, `04_DOMAIN_MODEL.md`, `05_RULE_ENGINE_SPEC.md`, `06_LIFE_EVENT_CATALOG.md`.
+4. Contractele tehnice sunt sursa de adevăr: `contracts/*.schema.json`, `09_API_SPEC.yaml`, `10_DATABASE_SCHEMA.sql`.
+5. Implementează fazele din `16_PHASE_PROMPTS.md` în ordine P0–P12, reutilizând codul existent.
 
-1. **LifeEvent** — evenimentul de viață („m-am mutat", „am cumpărat o mașină"). Selectează și ordonează un set de proceduri.
-2. **Intent / Procedură atomică** — unitatea rezolvată de motorul determinist (ex. `ro.identity.id_card.address_change`). Are surse, reguli, termene, cerințe.
-3. **Orchestrator** — compune procedurile unui eveniment într-un graf cu dependențe și fapte (`facts`) partajate, fără a duplica logica motorului.
+## Reguli de adevăr (din pachetul canonic anterior, păstrate)
 
-## Mod de lucru obligatoriu
+- Nu inventa instituții, documente, termene, taxe, coduri sau URL-uri.
+- Orice regulă administrativă reală are nevoie de `source_claim_ids`. Fără ele rămâne `REQUIRES_HUMAN_CURATION`.
+- `demo_mode` este permis doar pentru fixture-uri de test, marcat explicit; niciodată ca adevăr de producție.
+- Necunoscut ≠ fals (logică tri-valued). `unknown` pe o ramură critică → `NEEDS_FACTS` / `needs_confirmation`.
+- Reproductibilitate: același (eveniment + fapte + jurisdicție + dată + bundle + versiuni) ⇒ același `route_hash`/`event_plan_hash`.
 
-1. Reutilizează monorepo-ul existent și `IMPLEMENTATION_STATUS.md`.
-2. Execută fazele din `16_PHASE_PROMPTS.md` în ordine.
-3. La fiecare fază: citește documentele relevante; scrie un plan scurt; implementează doar scope-ul fazei; rulează format, lint, type-check, unit, contract și integration tests; actualizează statusul, riscurile și comenzile de reproducere; nu marca faza completă dacă un gate este roșu.
-4. Orice ambiguitate semnificativă produce un ADR; nu se rezolvă prin presupunere ascunsă.
+## Stack canonic (reconciliat)
 
-## Garduri de adevăr
+- Backend: **FastAPI** existent (`services/api/src/wb_api`).
+- Motor: **`packages/rule-engine`** (`wb_rule_engine`) + orchestrator de evenimente deasupra.
+- Mobil: **Android nativ Kotlin/Compose** (ADR-001 din pachetul original). React Native NU se adoptă (vezi MERGE_PROVENANCE / ADR-022).
+- Curator: portal **Next.js/React**.
+- Persistență: **PostgreSQL**.
 
-- Nu inventa instituții, documente, termene, taxe, coduri, adrese sau URL-uri.
-- Nu transforma fixture-urile de test în seed de producție.
-- Nu folosi text liber drept condiție executabilă.
-- Nu folosi `eval`, `exec`, evaluare de expresii sau SQL prin concatenare.
-- Nu publica automat output de LLM.
-- Nu interpreta o fotografie ca dovadă de autenticitate.
-- Nu compune un eveniment din proceduri neverificate marcându-l ca `verified`.
-- Nu face upload de documente fără consimțământ explicit și scope de retenție.
+Comandă conceptuală pentru Codex:
 
-## Reutilizare (nu porni de la zero)
-
-Motorul de reguli, schemele, auditul, idempotența și criptarea existente se reutilizează. Stratul nou este `LifeEvent` + orchestratorul; restul se extinde, nu se rescrie.
-
-## Rezultatul minim acceptat
-
-- `make bootstrap`, `make up`, `make migrate`, `make seed-verified`, `make test-all` funcționează dintr-un mediu curat.
-- API-ul pornește, expune OpenAPI și trece testele contractuale.
-- Motorul rezolvă deterministic fixture-urile de rutare (același `route_hash` pentru aceleași intrări).
-- Orchestratorul compune deterministic un eveniment din proceduri (același `event_plan_hash` pentru aceleași intrări).
-- Utilizatorul poate parcurge end-to-end cel puțin un eveniment 🔥 din R1 fără date demo în producție.
-- Documentele sunt analizate local implicit.
+```text
+Build LifeOS Romania from this single canonical super-book. Reuse existing FastAPI service and rule-engine. Add the LifeEvent orchestration layer above the deterministic engine. Keep AI out of runtime legal/admin decisions. Production posture, not demo. Real rules require source claims. Do not invent administrative requirements.
+```

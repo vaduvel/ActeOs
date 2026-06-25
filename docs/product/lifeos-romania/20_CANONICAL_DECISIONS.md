@@ -1,16 +1,17 @@
-# Decizii de arhitectură canonice — LifeOS România
+# Decizii de arhitectură canonice — LifeOS România (Super-Book)
 
-Deciziile ADR-001 … ADR-015 din pachetul anterior rămân valabile și se moștenesc integral (Android nativ, FastAPI monolith modular, PostgreSQL, reguli ca JSON canonic imutabil, fără LLM în runtime de rutare, local-first documents, cont opțional, OIDC/RBAC curatori, publicare bundle independentă, deep-link înainte de API, fail-closed pe stale critic, two-person rule, Docker-first, EU-region, fără ranking de parteneri).
+ADR-001…015 din pachetul original `waze-birocratie` rămân valabile și se moștenesc integral (Android nativ, FastAPI monolith modular, PostgreSQL, reguli ca JSON canonic imutabil, fără LLM în runtime de rutare, local-first documents, cont opțional, OIDC/RBAC curatori, publicare bundle independentă, deep-link înainte de API, fail-closed pe stale critic, two-person rule, Docker-first, EU-region, fără ranking de parteneri).
 
-Se adaugă deciziile specifice noii direcții:
+ADR-016…021 (stratul de eveniment) rămân valabile: orchestrare LifeEvent deasupra procedurilor, plan determinist cu `event_plan_hash`, pilot teritorial Timiș, clasificator NL assist-only pe catalog controlat, claim pe dependențe, fapte partajate.
+
+Deciziile de **fuziune** (vezi `MERGE_PROVENANCE.md`):
 
 | ADR | Decizie | Raționament | Revisit trigger |
-|---|---|---|---|
-| ADR-016 | Strat de orchestrare `LifeEvent` deasupra procedurilor (intents), nu rescriere a motorului | Reutilizează motorul determinist; separă compoziția de rezolvare | dacă compoziția cere stare partajată complexă între proceduri |
-| ADR-017 | Planul de eveniment este determinist și are `event_plan_hash` (include engine + orchestrator version) | reproductibilitate și audit la nivel de eveniment | schimbare de model de versionare |
-| ADR-018 | R1: pași naționali la nivel național; pași locali doar pilot Timiș; restul `verified_with_local_gap`/`needs_confirmation` | onestitate teritorială, extindere fără a minți | curatoriere locală pentru un nou UAT |
-| ADR-019 | Clasificatorul NL „Ce s-a întâmplat?" mapează doar la un catalog controlat de evenimente; nu generează obligații | siguranță, fără chatbot liber | doar cu garduri și evaluare formală separată |
-| ADR-020 | Dependențele dintre proceduri necesită claim aprobat (provenance), la fel ca cerințele critice | o dependență greșită produce drum inutil | niciodată relaxat pentru noduri critice |
-| ADR-021 | Faptele se colectează o dată și se partajează în eveniment; minimizare și scop de retenție per fapt | UX și confidențialitate | cerințe legale de izolare |
+|-----|---------|-------------|-----------------|
+| ADR-022 | Mobil = Android nativ Kotlin/Compose; React Native Expo respins | nu aruncăm munca nativă existentă; control fin pe accesibilitate/seniori | dacă apare nevoie cross-platform iOS prioritară |
+| ADR-023 | Postură de producție; `demo_mode` doar fixture de test | regula de execuție a utilizatorului (totul real) | niciodată relaxat pentru date afișate utilizatorului |
+| ADR-024 | Convenție ID canonică: `life.*` pentru evenimente, `<domain>.<action>` pentru obligații | deja cablată în seed/contracte/DB; descompunerea bogată se re-exprimă pe ea | migrare majoră de taxonomie |
+| ADR-025 | Frecvență = high/medium/low; freshness = clasele A/B/C | eliminarea coliziunii de denumiri din pachetul B | — |
+| ADR-026 | Un singur director canonic; pachetul GPT devine arhivă deprecată | un singur adevăr | — |
 
 Codex creează fișiere ADR formale în `docs/adr/` la implementare.
