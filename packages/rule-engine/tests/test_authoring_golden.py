@@ -37,7 +37,7 @@ TM_PATH = ["eu", "ro", "ro.tm", "ro.tm.timisoara"]
 
 def test_evaluate_ruleset_basic():
     r = evaluate_ruleset(RULESET, {"reason": "purchase", "is_owner": True}, jurisdiction_path=TM_PATH, reference_date="2026-06-25")
-    assert r.status == "ok"
+    assert r.status == "resolved"
     assert "do_it" in r.included_steps
     assert "ch.local" in r.channels
     assert "base_advice" in r.advice_tags
@@ -46,6 +46,7 @@ def test_evaluate_ruleset_basic():
 
 def test_death_path_requirement_and_confirmation():
     r = evaluate_ruleset(RULESET, {"reason": "death", "is_owner": True}, jurisdiction_path=TM_PATH, reference_date="2026-06-25")
+    assert r.status == "needs_confirmation"
     assert "req.death_cert" in r.requirements
     assert "death_path" in r.confirmations
 
@@ -70,7 +71,7 @@ def test_run_fixtures_pass_and_fail():
         "fixtures": [
             {"id": "D01", "facts": {"reason": "purchase", "is_owner": True}, "expect": {"status": "ok", "included_steps": ["do_it"], "advice_tags": ["base_advice"], "requirements_absent": ["req.death_cert"]}},
             {"id": "D02", "facts": {}, "expect": {"status": "needs_facts", "missing_facts": ["reason", "is_owner"]}},
-            {"id": "D03", "facts": {"reason": "death", "is_owner": True}, "expect": {"status": "ok", "needs_confirmation": ["death_path"]}},
+            {"id": "D03", "facts": {"reason": "death", "is_owner": True}, "expect": {"status": "needs_confirmation", "needs_confirmation": ["death_path"]}},
         ],
     }
     report = run_fixtures({"ruleset": RULESET, "fixtures": good})

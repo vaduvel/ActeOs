@@ -24,13 +24,17 @@
         "type": "object",
         "required": ["type"],
         "properties": {
-          "type": { "type": "string", "enum": ["include_step", "exclude_step", "include_requirement", "set_requirement_obligation", "set_deadline", "attach_channel", "emit_warning", "emit_advice", "block", "require_confirmation", "override_rule", "trigger_child_event", "set_freshness_state"] },
+          "type": { "type": "string", "enum": ["include_step", "exclude_step", "include_requirement", "set_requirement_obligation", "set_deadline", "attach_channel", "emit_warning", "emit_advice", "require_confirmation", "flag_conflict", "block", "override_rule", "trigger_child_event", "set_freshness_state"] },
           "step_id": { "type": "string" },
           "requirement_id": { "type": "string" },
           "channel_id": { "type": "string" },
-          "rule_id": { "type": "string" },
+          "rule_id": { "type": "string", "description": "Target rule id for override_rule." },
+          "target_rule_id": { "type": "string", "description": "Alias accepted for override_rule target." },
           "event_type_id": { "type": "string" },
-          "tag": { "type": "string", "description": "Stable grouping tag for advice/warning/confirmation; golden fixtures assert on this." },
+          "tag": { "type": "string", "description": "Stable grouping tag for advice/warning/confirmation/conflict; golden fixtures assert on this." },
+          "blocked_effect": { "type": "string", "description": "For flag_conflict: tag of the downstream effect that cannot be shown until the conflict is resolved." },
+          "obligation": { "type": "string" },
+          "code": { "type": "string" },
           "value": {},
           "message_ro": { "type": "string" }
         },
@@ -40,7 +44,8 @@
     "source_claim_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
     "override_rule_ids": { "type": "array", "items": { "type": "string" } },
     "status": { "type": "string", "enum": ["draft", "in_review", "approved", "active", "withdrawn", "superseded"] },
-    "reviewer_id": { "type": ["string", "null"] }
+    "reviewer_id": { "type": ["string", "null"] },
+    "note": { "type": "string" }
   },
   "additionalProperties": false
 }
