@@ -1,0 +1,92 @@
+batch_id: R1_VEHICLE_SOLD
+defaults:
+  event_type_id: life.vehicle_sold
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: S01
+    desc: vanzare finalizata, are certificat fiscal
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, included_steps: [remove_vehicle_from_fiscal_evidence], removal_deadline_days: 30 }
+  - id: S02
+    desc: nu are certificat fiscal inca
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: false, sale_completed: false }
+    expect: { status: ok, included_steps: [obtain_fiscal_certificate], requirements: [req.contract_5_copies] }
+  - id: S03
+    desc: are certificat, vanzare nefinalizata
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: false }
+    expect: { status: ok, steps_absent: [remove_vehicle_from_fiscal_evidence] }
+  - id: S04
+    desc: fara certificat + vanzare finalizata (cumul)
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: false, sale_completed: true }
+    expect: { status: ok, included_steps: [obtain_fiscal_certificate, remove_vehicle_from_fiscal_evidence] }
+  - id: S05
+    desc: scoatere exact la 30 zile
+    facts: { contract_date: '2026-05-26', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, included_steps: [remove_vehicle_from_fiscal_evidence] }
+  - id: S06
+    desc: scoatere depasita (45 zile)
+    facts: { contract_date: '2026-05-11', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, removal_overdue: true }
+  - id: S07
+    desc: avertisment risc fiscal mereu prezent
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, warnings_present: [fiscal_risk] }
+  - id: S08
+    desc: sfat 48h prezent
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: false, sale_completed: false }
+    expect: { status: ok, advice_present: [visa_48h] }
+  - id: S09
+    desc: scoatere ramane in_review (confirmare termen)
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, needs_confirmation: [removal_deadline_30d] }
+  - id: S10
+    desc: lipseste contract_date
+    facts: { has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: needs_facts, missing_facts: [contract_date] }
+  - id: S11
+    desc: lipseste has_fiscal_certificate
+    facts: { contract_date: '2026-06-20', sale_completed: true }
+    expect: { status: needs_facts, missing_facts: [has_fiscal_certificate] }
+  - id: S12
+    desc: lipseste sale_completed - regula scoatere nu se evalueaza
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true }
+    expect: { status: needs_facts, missing_facts: [sale_completed] }
+  - id: S13
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [contract_date, has_fiscal_certificate, sale_completed] }
+  - id: S14
+    desc: alt judet - canal Timisoara absent
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: true }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: ok, channels_absent: [ch.dfmt_timisoara] }
+  - id: S15
+    desc: Timisoara - canal fiscal atasat
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, channels: [ch.dfmt_timisoara] }
+  - id: S16
+    desc: are certificat - fara pas de obtinere
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, steps_absent: [obtain_fiscal_certificate] }
+  - id: S17
+    desc: contract in viitor
+    facts: { contract_date: '2026-12-01', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, warnings: [future_contract_date] }
+  - id: S18
+    desc: cerinta 5 exemplare contract cand lipseste certificat
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: false, sale_completed: false }
+    expect: { status: ok, requirements: [req.contract_5_copies] }
+  - id: S19
+    desc: vanzare finalizata azi - termen plin scoatere
+    facts: { contract_date: '2026-06-25', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, removal_deadline_days: 30 }
+  - id: S20
+    desc: vanzare nefinalizata - doar pregatire
+    facts: { contract_date: '2026-06-20', has_fiscal_certificate: false, sale_completed: false }
+    expect: { status: ok, included_steps: [obtain_fiscal_certificate], steps_absent: [remove_vehicle_from_fiscal_evidence] }
+  - id: S21
+    desc: are certificat + vanzare finalizata + Timisoara (caz complet)
+    facts: { contract_date: '2026-06-18', has_fiscal_certificate: true, sale_completed: true }
+    expect: { status: ok, included_steps: [remove_vehicle_from_fiscal_evidence], channels: [ch.dfmt_timisoara], warnings_present: [fiscal_risk] }
