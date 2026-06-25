@@ -1,0 +1,96 @@
+batch_id: R1_ID_CARD_LOST_STOLEN
+defaults:
+  event_type_id: life.id_card_lost_stolen
+  timezone: Europe/Bucharest
+  jurisdiction_path: [eu, ro, ro.tm, ro.tm.timisoara]
+  reference_date: '2026-06-25'
+fixtures:
+  - id: L01
+    desc: pierdere simpla, imagine in RNEP, proprietar
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [request_new_identity_card], requirements: [req.anexa11, req.civil_status_certificates, req.proof_of_address], deadline_days: 15, steps_absent: [report_theft_police] }
+  - id: L02
+    desc: furt - necesita reclamatie politie 24h
+    facts: { id_card_type: ci_simpla, loss_type: stolen, event_date: '2026-06-24', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [request_new_identity_card, report_theft_police], police_deadline_hours: 24 }
+  - id: L03
+    desc: distrugere - anunt direct SPCLEP, fara politie
+    facts: { id_card_type: ci_simpla, loss_type: destroyed, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [request_new_identity_card], warnings: [spclep_announce], steps_absent: [report_theft_police] }
+  - id: L04
+    desc: deteriorare - prezinta actul deteriorat
+    facts: { id_card_type: ci_simpla, loss_type: deteriorated, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [request_new_identity_card] }
+  - id: L05
+    desc: imagine NU e in RNEP - document foto suplimentar
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: false, new_address_relation: owner }
+    expect: { status: conflicting, requirements: [req.recent_photo_document] }
+  - id: L06
+    desc: gazduit - consimtamant gazduitor
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: host_consent }
+    expect: { status: conflicting, requirements: [req.host_consent_declaration] }
+  - id: L07
+    desc: furt + imagine lipsa RNEP + gazduit (cumul cerinte)
+    facts: { id_card_type: ci_simpla, loss_type: stolen, event_date: '2026-06-24', facial_image_in_rnep: false, new_address_relation: host_consent }
+    expect: { status: conflicting, included_steps: [request_new_identity_card, report_theft_police], requirements: [req.recent_photo_document, req.host_consent_declaration] }
+  - id: L08
+    desc: CEI pierduta
+    facts: { id_card_type: cei, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [request_new_identity_card] }
+  - id: L09
+    desc: termen exact 15 zile
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-10', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [request_new_identity_card] }
+  - id: L10
+    desc: termen depasit (pierdut acum 30 zile)
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-05-26', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, overdue: true, confirmations: [sanction_amount] }
+  - id: L11
+    desc: furt cu reclamatie peste 24h (intarziat la politie)
+    facts: { id_card_type: ci_simpla, loss_type: stolen, event_date: '2026-06-22', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, included_steps: [report_theft_police], police_overdue: true }
+  - id: L12
+    desc: conflict sanctiune mereu prezent
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, conflicts: [sanction_amount], blocked_effects: [sanction_amount_display] }
+  - id: L13
+    desc: mesaj nulitate de drept prezent
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, warnings_present: [null_by_law] }
+  - id: L14
+    desc: mesaj predare in 48h daca e gasit
+    facts: { id_card_type: ci_simpla, loss_type: stolen, event_date: '2026-06-24', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, warnings_present: [return_if_found_48h] }
+  - id: L15
+    desc: lipseste loss_type
+    facts: { id_card_type: ci_simpla, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: needs_facts, missing_facts: [loss_type] }
+  - id: L16
+    desc: lipseste event_date - fara deadline calculabil
+    facts: { id_card_type: ci_simpla, loss_type: lost, facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: needs_facts, missing_facts: [event_date] }
+  - id: L17
+    desc: lipseste facial_image_in_rnep - regula foto nu se evalueaza
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', new_address_relation: owner }
+    expect: { status: needs_facts, missing_facts: [facial_image_in_rnep] }
+  - id: L18
+    desc: lipseste new_address_relation
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true }
+    expect: { status: needs_facts, missing_facts: [new_address_relation] }
+  - id: L19
+    desc: toate faptele lipsa
+    facts: {}
+    expect: { status: needs_facts, missing_facts: [id_card_type, loss_type, event_date, facial_image_in_rnep, new_address_relation] }
+  - id: L20
+    desc: alt judet - fara canal Timisoara
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    jurisdiction_path: [eu, ro, ro.cj, ro.cj.cluj]
+    expect: { status: conflicting, channels_absent: [ch.dep_timisoara] }
+  - id: L21
+    desc: pierdere proprietar - fara cerinta consimtamant
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, requirements_absent: [req.host_consent_declaration] }
+  - id: L22
+    desc: Monitorul Oficial NU este afisat ca obligatie (claim in_review)
+    facts: { id_card_type: ci_simpla, loss_type: lost, event_date: '2026-06-23', facial_image_in_rnep: true, new_address_relation: owner }
+    expect: { status: conflicting, requirements_absent: [req.monitorul_oficial], steps_absent: [publish_monitorul_oficial] }
