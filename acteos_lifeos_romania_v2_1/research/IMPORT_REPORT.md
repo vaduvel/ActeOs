@@ -1,6 +1,6 @@
 # Research Import Report
 
-- generated_at: 2026-06-25T18:36:10.257279+00:00
+- generated_at: 2026-06-25T18:48:02.303453+00:00
 - source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox`
 - dest: `/Users/vaduvageorge/Desktop/ActeOs/acteos_lifeos_romania_v2_1/research/inbox`
 - mode: import
@@ -8,77 +8,32 @@
 ## Counts
 
 - discovered: 193
-- imported (valid): 92
-- rejected (invalid): 13
-- skipped (duplicate/exists): 88
-
-## Rejected (NOT imported)
-
-### ro.life.early_retirement
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.early_retirement`
-  - rule rule.early.stage_not_met: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.change_business_activity
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.change_business_activity`
-  - rule rule.activity.other_uat_local_gap: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.change_company_address
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.change_company_address`
-  - rule rule.address.other_uat_local_gap: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.close_working_point
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.close_working_point`
-  - rule rule.close_point.other_uat_local_gap: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.open_working_point
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.open_working_point`
-  - rule rule.open_point.other_uat_local_gap: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.resume_business
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.resume_business`
-  - rule rule.resume.other_uat_local_gap: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.tax_decision_contest
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_13/ro.life.tax_decision_contest`
-  - rule rule.b13.tax_contest.within_instruction: Additional properties are not allowed ('note' was unexpected)
-  - rule rule.b13.tax_contest.after_instruction: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.declare_vehicle_local_tax
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.declare_vehicle_local_tax`
-  - rule rule.vtax.salubritate_not_tm: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.identity_card_change_address
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.identity_card_change_address`
-  - rule rule.addr.cei_no_new_doc: Additional properties are not allowed ('note' was unexpected)
-  - rule rule.addr.resedinta: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.identity_card_expired
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.identity_card_expired`
-  - rule rule.exp.sanction_conflict: Additional properties are not allowed ('note' was unexpected)
-
-### ro.life.identity_card_lost
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.identity_card_lost`
-  - rule rule.lost.sanction_conflict: source_claim_id 'claim.exp.sanction_40_80' not found in source_claims.yaml
-
-### ro.life.identity_card_stolen
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.identity_card_stolen`
-  - rule rule.lost.sanction_conflict: source_claim_id 'claim.exp.sanction_40_80' not found in source_claims.yaml
-
-### ro.life.criminal_record_certificate
-- source: `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1b/ro.life.criminal_record_certificate`
-  - rule rule.cj.issuance_foreign: 'values' is a required property at /when
+- imported (valid): 13
+- rejected (invalid): 0
+- skipped (duplicate/exists): 180
 
 ## Skipped
 
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.civil_status_duplicate` (ro.life.civil_status_duplicate): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.documents_apostille` (ro.life.documents_apostille): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.driving_licence_expired` (ro.life.driving_licence_expired): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.driving_licence_lost_stolen` (ro.life.driving_licence_lost_stolen): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.identity_card_change_name` (ro.life.identity_card_change_name): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.identity_card_damaged` (ro.life.identity_card_damaged): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.identity_card_first` (ro.life.identity_card_first): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.identity_theft_suspected` (ro.life.identity_theft_suspected): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.passport_lost_stolen` (ro.life.passport_lost_stolen): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_01/ro.life.residence_registration` (ro.life.residence_registration): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.consular_service` (ro.life.consular_service): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.documents_legalisation_translation` (ro.life.documents_legalisation_translation): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.documents_lost_abroad` (ro.life.documents_lost_abroad): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.foreign_document_recognition` (ro.life.foreign_document_recognition): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.moved_from_abroad_to_ro` (ro.life.moved_from_abroad_to_ro): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.renounce_citizenship` (ro.life.renounce_citizenship): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.residence_registration_eu` (ro.life.residence_registration_eu): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.residence_right_ro` (ro.life.residence_right_ro): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.romanian_citizenship` (ro.life.romanian_citizenship): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.study_equivalence_ro` (ro.life.study_equivalence_ro): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.transcribe_foreign_birth` (ro.life.transcribe_foreign_birth): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_02/ro.life.transcribe_foreign_death` (ro.life.transcribe_foreign_death): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_03/ro.life.adoption` (ro.life.adoption): destination already exists (use --overwrite)
@@ -91,8 +46,40 @@
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_03/ro.life.parental_authority_change` (ro.life.parental_authority_change): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_03/ro.life.spouse_death` (ro.life.spouse_death): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_03/ro.life.transcribe_foreign_marriage` (ro.life.transcribe_foreign_marriage): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.birth_registration` (ro.life.birth_registration): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.child_allowance` (ro.life.child_allowance): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.child_birth` (ro.life.child_birth): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.maternity_leave` (ro.life.maternity_leave): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.minor_travel_abroad` (ro.life.minor_travel_abroad): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.parental_leave_benefit` (ro.life.parental_leave_benefit): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.paternity_leave` (ro.life.paternity_leave): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.pregnancy_admin` (ro.life.pregnancy_admin): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.reinsertion_incentive` (ro.life.reinsertion_incentive): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_04/ro.life.return_from_parental_leave` (ro.life.return_from_parental_leave): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.highschool_admission` (ro.life.highschool_admission): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.nursery_enrollment` (ro.life.nursery_enrollment): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.preparatory_class_enrollment` (ro.life.preparatory_class_enrollment): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.preschool_enrollment` (ro.life.preschool_enrollment): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.school_transfer` (ro.life.school_transfer): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.student_scholarship` (ro.life.student_scholarship): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.student_transport_benefit` (ro.life.student_transport_benefit): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.university_admission` (ro.life.university_admission): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_05/ro.life.vocational_admission` (ro.life.vocational_admission): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.diploma_duplicate` (ro.life.diploma_duplicate): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.disability_certificate` (ro.life.disability_certificate): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.disability_reassessment` (ro.life.disability_reassessment): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.erasmus_mobility` (ro.life.erasmus_mobility): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.health_card_blocked` (ro.life.health_card_blocked): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.health_card_lost` (ro.life.health_card_lost): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.health_insurance_status` (ro.life.health_insurance_status): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.medical_certificate_school` (ro.life.medical_certificate_school): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.special_education_support` (ro.life.special_education_support): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_06/ro.life.vaccination_record` (ro.life.vaccination_record): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.bought_home` (ro.life.bought_home): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.change_correspondence_address` (ro.life.change_correspondence_address): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.homeowners_association_registration` (ro.life.homeowners_association_registration): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.inherited_home` (ro.life.inherited_home): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.move_abroad` (ro.life.move_abroad): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.rent_out_home` (ro.life.rent_out_home): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.rented_home` (ro.life.rented_home): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_07/ro.life.return_to_romania` (ro.life.return_to_romania): destination already exists (use --overwrite)
@@ -107,6 +94,40 @@
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_08/ro.life.land_split_merge` (ro.life.land_split_merge): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_08/ro.life.property_cadastral_registration` (ro.life.property_cadastral_registration): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_08/ro.life.renovation_authorisation_check` (ro.life.renovation_authorisation_check): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.energy_performance_certificate` (ro.life.energy_performance_certificate): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.event_public_space_authorisation` (ro.life.event_public_space_authorisation): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.notarial_declaration` (ro.life.notarial_declaration): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.power_of_attorney` (ro.life.power_of_attorney): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.public_domain_occupation` (ro.life.public_domain_occupation): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.public_fee_payment` (ro.life.public_fee_payment): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.public_information_request` (ro.life.public_information_request): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.register_drone` (ro.life.register_drone): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.register_pet` (ro.life.register_pet): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_09/ro.life.urbanism_certificate` (ro.life.urbanism_certificate): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.changed_job` (ro.life.changed_job): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.employment_history_proof` (ro.life.employment_history_proof): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.hire_first_employee` (ro.life.hire_first_employee): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.home_care_support` (ro.life.home_care_support): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.lost_job` (ro.life.lost_job): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.medical_leave` (ro.life.medical_leave): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.return_to_ro_work` (ro.life.return_to_ro_work): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.started_job` (ro.life.started_job): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.unemployment_benefit` (ro.life.unemployment_benefit): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_10/ro.life.work_abroad` (ro.life.work_abroad): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.administrative_decision_contest` (ro.life.administrative_decision_contest): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.bank_account_change_admin` (ro.life.bank_account_change_admin): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.change_family_doctor` (ro.life.change_family_doctor): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.choose_family_doctor` (ro.life.choose_family_doctor): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.contest_fine` (ro.life.contest_fine): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.invalidity_pension` (ro.life.invalidity_pension): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.pension_recalculation` (ro.life.pension_recalculation): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.retirement_age` (ro.life.retirement_age): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_11/ro.life.survivor_pension` (ro.life.survivor_pension): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.change_company_administrator` (ro.life.change_company_administrator): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.close_business` (ro.life.close_business): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.open_pfa` (ro.life.open_pfa): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.open_srl` (ro.life.open_srl): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_12/ro.life.suspend_business` (ro.life.suspend_business): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_13/ro.life.beneficial_owner_update` (ro.life.beneficial_owner_update): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_13/ro.life.company_admin_personal_change` (ro.life.company_admin_personal_change): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_13/ro.life.company_vehicle_change` (ro.life.company_vehicle_change): destination already exists (use --overwrite)
@@ -126,6 +147,16 @@
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_14/ro.life.vehicle_registration` (ro.life.vehicle_registration): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_14/ro.life.vehicle_registration_certificate_lost` (ro.life.vehicle_registration_certificate_lost): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_14/ro.life.vehicle_stolen` (ro.life.vehicle_stolen): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.administrative_petition` (ro.life.administrative_petition): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.change_name_admin_court` (ro.life.change_name_admin_court): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.driving_licence_foreign_exchange` (ro.life.driving_licence_foreign_exchange): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.home_fire_flood` (ro.life.home_fire_flood): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.licence_suspended_recovery` (ro.life.licence_suspended_recovery): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.road_accident_admin` (ro.life.road_accident_admin): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.vehicle_itp_due` (ro.life.vehicle_itp_due): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.vehicle_leasing_end` (ro.life.vehicle_leasing_end): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.vehicle_rca_due` (ro.life.vehicle_rca_due): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_15/ro.life.vote_address_change` (ro.life.vote_address_change): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_16/ro.life.change_heat_holder` (ro.life.change_heat_holder): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_16/ro.life.change_internet_holder` (ro.life.change_internet_holder): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_16/ro.life.utility_connection_construction` (ro.life.utility_connection_construction): destination already exists (use --overwrite)
@@ -150,14 +181,19 @@
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_18/ro.life.radio_amateur_license` (ro.life.radio_amateur_license): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/batch_18/ro.life.weapon_permit` (ro.life.weapon_permit): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.bought_used_vehicle_ro` (ro.life.bought_used_vehicle_ro): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.documents_stolen_bundle` (ro.life.documents_stolen_bundle): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.local_tax_certificate` (ro.life.local_tax_certificate): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.lost_all_documents` (ro.life.lost_all_documents): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.moved_home` (ro.life.moved_home): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.moved_to_another_city` (ro.life.moved_to_another_city): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.sold_vehicle_ro` (ro.life.sold_vehicle_ro): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.vehicle_change_address` (ro.life.vehicle_change_address): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1a/ro.life.vehicle_transcription` (ro.life.vehicle_transcription): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1b/ro.life.change_electricity_holder` (ro.life.change_electricity_holder): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1b/ro.life.change_gas_holder` (ro.life.change_gas_holder): destination already exists (use --overwrite)
 - `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1b/ro.life.change_water_holder` (ro.life.change_water_holder): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1b/ro.life.minor_passport` (ro.life.minor_passport): destination already exists (use --overwrite)
+- `/Users/vaduvageorge/Desktop/ActeOs/docs/product/lifeos-romania/research/inbox/r1b/ro.life.passport_first_or_renew` (ro.life.passport_first_or_renew): destination already exists (use --overwrite)
 
 ## Governance
 
