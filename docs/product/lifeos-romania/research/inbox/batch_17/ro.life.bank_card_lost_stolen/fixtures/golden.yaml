@@ -1,0 +1,783 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.bank_card_lost_stolen
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.bank_card_lost_stolen.01.ing_app
+  purpose: ING, acces la aplicație
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.security_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Blocare prin Home'Bank sau Card Stop.
+- id: fx.bank_card_lost_stolen.02.ing_no_app
+  purpose: ING fără acces la aplicație
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      incident_type: stolen
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.security_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Folosește Card Stop.
+- id: fx.bank_card_lost_stolen.03.bt_app
+  purpose: BT Pay disponibil
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bt
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: BT publică blocare și reemitere din BT Pay.
+- id: fx.bank_card_lost_stolen.04.bt_phone
+  purpose: BT prin telefon
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bt
+      incident_type: stolen
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.security_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Call center 24/7.
+- id: fx.bank_card_lost_stolen.05.bcr_george
+  purpose: BCR prin George
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Canal oficial George.
+- id: fx.bank_card_lost_stolen.06.bcr_abroad
+  purpose: BCR din străinătate
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      incident_type: stolen
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: true
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.security_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Folosește numărul internațional oficial.
+- id: fx.bank_card_lost_stolen.07.cec_conflict
+  purpose: CEC cu conflict de număr secundar
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: cec
+      incident_type: lost
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: conflicting
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.security_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    - CEC_SECONDARY_PHONE_CONFLICT
+    confidence: conflicting
+    notes: Numărul comun este 021 202 69 99; conflictul secundar rămâne deschis.
+- id: fx.bank_card_lost_stolen.08.other_issuer
+  purpose: Emitent necartografiat
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: other
+      incident_type: lost
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.block_card
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - ISSUER_CHANNEL_REQUIRED
+    - BLOCK_CARD_NOW
+    confidence: verified_with_local_gap
+    notes: Nu inventăm canalul emitentului.
+- id: fx.bank_card_lost_stolen.09.unknown_issuer
+  purpose: Emitent necunoscut
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: unknown
+      incident_type: unknown
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.block_card
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - ISSUER_CHANNEL_REQUIRED
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Trebuie identificată banca.
+- id: fx.bank_card_lost_stolen.10.unauth_recent
+  purpose: Tranzacție neautorizată recentă
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      incident_type: stolen
+      can_access_banking_app: true
+      unauthorized_transactions_seen: true
+      latest_unauthorized_transaction_date: '2026-06-24'
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.report_unauthorized
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.transaction_details
+    warning_codes:
+    - BLOCK_CARD_NOW
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    confidence: verified
+    notes: Termenul legal maxim nu justifică amânarea.
+- id: fx.bank_card_lost_stolen.11.unauth_12_months
+  purpose: Tranzacție la 12 luni
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bt
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: true
+      latest_unauthorized_transaction_date: '2025-07-01'
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.report_unauthorized
+    requirement_ids:
+    - req.issuer_identification
+    - req.transaction_details
+    warning_codes:
+    - BLOCK_CARD_NOW
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    confidence: verified
+    notes: Încă în limita maximă de 13 luni; notificare imediată.
+- id: fx.bank_card_lost_stolen.12.unauth_over_13_months
+  purpose: Tranzacție mai veche de 13 luni
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: true
+      latest_unauthorized_transaction_date: '2025-05-01'
+      is_abroad: false
+      card_already_blocked: true
+      replacement_needed: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.review_transactions
+    - step.report_unauthorized
+    requirement_ids:
+    - req.transaction_details
+    warning_codes:
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    confidence: verified
+    notes: Depășirea termenului legal maxim necesită evaluare contractuală/juridică; nu promitem corectarea.
+- id: fx.bank_card_lost_stolen.13.already_blocked_clean
+  purpose: Card deja blocat, fără tranzacții
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: true
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes: []
+    confidence: verified
+    notes: Sare peste blocare.
+- id: fx.bank_card_lost_stolen.14.already_blocked_unauth
+  purpose: Card blocat, tranzacții suspecte
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bt
+      incident_type: stolen
+      can_access_banking_app: true
+      unauthorized_transactions_seen: true
+      latest_unauthorized_transaction_date: '2026-06-20'
+      is_abroad: false
+      card_already_blocked: true
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.review_transactions
+    - step.report_unauthorized
+    - step.request_replacement
+    requirement_ids:
+    - req.transaction_details
+    warning_codes:
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    confidence: verified
+    notes: Raportarea tranzacțiilor rămâne necesară.
+- id: fx.bank_card_lost_stolen.15.atm_retained
+  purpose: Card reținut de ATM
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: cec
+      incident_type: retained_by_atm
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: conflicting
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    - CEC_SECONDARY_PHONE_CONFLICT
+    confidence: conflicting
+    notes: Blocarea rămâne prudentă; procedura ATM exactă e provider-specifică.
+- id: fx.bank_card_lost_stolen.16.lost_abroad_other
+  purpose: Card pierdut în străinătate, emitent neacoperit
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: other
+      incident_type: lost
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: true
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.block_card
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - ISSUER_CHANNEL_REQUIRED
+    - BLOCK_CARD_NOW
+    confidence: verified_with_local_gap
+    notes: Trebuie găsit numărul oficial internațional.
+- id: fx.bank_card_lost_stolen.17.no_replacement
+  purpose: Doar blocare, fără reemitere imediată
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Pasul de reemitere este exclus.
+- id: fx.bank_card_lost_stolen.18.missing_provider
+  purpose: Provider lipsă
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      incident_type: lost
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.block_card
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - ISSUER_CHANNEL_REQUIRED
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Este necesar provider_id.
+- id: fx.bank_card_lost_stolen.19.missing_transaction_date
+  purpose: Tranzacții suspecte fără dată
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      incident_type: stolen
+      can_access_banking_app: true
+      unauthorized_transactions_seen: true
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    requirement_ids:
+    - req.transaction_details
+    warning_codes:
+    - BLOCK_CARD_NOW
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    confidence: verified
+    notes: Data este necesară pentru verificarea ferestrei.
+- id: fx.bank_card_lost_stolen.20.false_alarm
+  purpose: Card găsit după blocare
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bt
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: true
+      replacement_needed: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.review_transactions
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Deblocarea sau înlocuirea depinde de starea setată de emitent.
+- id: fx.bank_card_lost_stolen.21.theft_police_question
+  purpose: Utilizator întreabă dacă trebuie poliție
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: ing
+      incident_type: stolen
+      can_access_banking_app: true
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified_with_local_gap
+    notes: Nu există în sursele cercetate o obligație bancară universală de plângere la poliție pentru simpla reemitere.
+- id: fx.bank_card_lost_stolen.22.fraud_suspected
+  purpose: Banca poate suspecta fraudă
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: cec
+      incident_type: stolen
+      can_access_banking_app: false
+      unauthorized_transactions_seen: true
+      latest_unauthorized_transaction_date: '2026-06-25'
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: conflicting
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.report_unauthorized
+    - step.request_replacement
+    requirement_ids:
+    - req.transaction_details
+    warning_codes:
+    - BLOCK_CARD_NOW
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    - CEC_SECONDARY_PHONE_CONFLICT
+    confidence: conflicting
+    notes: Rambursarea până în ziua următoare are excepție pentru suspiciunea rezonabilă de fraudă.
+- id: fx.bank_card_lost_stolen.23.liability_question
+  purpose: Întrebare despre limita de 30 euro
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bcr
+      incident_type: lost
+      can_access_banking_app: true
+      unauthorized_transactions_seen: true
+      latest_unauthorized_transaction_date: '2026-06-23'
+      is_abroad: false
+      card_already_blocked: true
+      replacement_needed: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.review_transactions
+    - step.report_unauthorized
+    requirement_ids:
+    - req.transaction_details
+    warning_codes:
+    - REPORT_UNAUTHORIZED_TRANSACTIONS
+    confidence: verified
+    notes: Limita nu se aplică automat; depinde de fraudă, intenție și excepțiile legii.
+- id: fx.bank_card_lost_stolen.24.stolen_phone_and_card
+  purpose: Telefonul și cardul au fost furate
+  input:
+    event_type_id: ro.life.bank_card_lost_stolen
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      provider_id: bt
+      incident_type: stolen
+      can_access_banking_app: false
+      unauthorized_transactions_seen: false
+      is_abroad: false
+      card_already_blocked: false
+      replacement_needed: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.block_card
+    - step.review_transactions
+    - step.request_replacement
+    requirement_ids:
+    - req.issuer_identification
+    - req.security_identification
+    warning_codes:
+    - BLOCK_CARD_NOW
+    confidence: verified
+    notes: Folosește telefonul oficial de pe alt dispozitiv.

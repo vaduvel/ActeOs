@@ -180,16 +180,16 @@ Toate cele 176 de evenimente din taxonomie. Alege un ID și folosește-l în `DE
 | 174 | ro.life.vocational_admission | ✅ DONE |
 | 175 | ro.life.vote_address_change | ✅ DONE |
 | 176 | ro.life.work_abroad | ✅ DONE |
-| 177 | ro.life.bank_account_open | ⬜ TO DO |
-| 178 | ro.life.bank_card_lost_stolen | ⬜ TO DO |
-| 179 | ro.life.bank_card_change | ⬜ TO DO |
-| 180 | ro.life.home_insurance_claim | ⬜ TO DO |
-| 181 | ro.life.life_insurance_claim | ⬜ TO DO |
-| 182 | ro.life.electronic_signature | ⬜ TO DO |
-| 183 | ro.life.digital_identity_ro | ⬜ TO DO |
-| 184 | ro.life.account_recovery_gov | ⬜ TO DO |
-| 185 | ro.life.religious_marriage | ⬜ TO DO |
-| 186 | ro.life.baptism | ⬜ TO DO |
+| 177 | ro.life.bank_account_open | ✅ DONE |
+| 178 | ro.life.bank_card_lost_stolen | ✅ DONE |
+| 179 | ro.life.bank_card_change | ✅ DONE |
+| 180 | ro.life.home_insurance_claim | ✅ DONE |
+| 181 | ro.life.life_insurance_claim | ✅ DONE |
+| 182 | ro.life.electronic_signature | ✅ DONE |
+| 183 | ro.life.digital_identity_ro | ✅ DONE |
+| 184 | ro.life.account_recovery_gov | ✅ DONE |
+| 185 | ro.life.religious_marriage | ✅ DONE |
+| 186 | ro.life.baptism | ✅ DONE |
 | 187 | ro.life.military_enrollment | ✅ DONE |
 | 188 | ro.life.military_certificate | ✅ DONE |
 | 189 | ro.life.military_reserve_status | ✅ DONE |

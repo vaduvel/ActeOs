@@ -1,0 +1,677 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.account_recovery_gov
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: platform_id
+  type: enum
+  label: Pentru ce cont ai nevoie de recuperare?
+  reason: Fiecare platformă are alt flux.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - roeid
+  - ghiseul
+  - anaf_spv
+  - hub_mai
+  - other
+  - unknown
+- id: issue_type
+  type: enum
+  label: Ce problemă ai?
+  reason: Determină dacă se resetează parola sau se reface înrolarea.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - forgot_password
+  - forgot_username
+  - change_password
+  - change_email
+  - changed_phone
+  - lost_email_access
+  - lost_phone_access
+  - no_push
+  - unknown
+- id: current_password_known
+  type: boolean
+  label: Mai știi parola actuală?
+  reason: ROeID și ANAF au fluxuri diferite când parola este cunoscută.
+  sensitive: true
+  required_for_resolution: false
+- id: registered_email_access
+  type: boolean
+  label: Mai ai acces la e-mailul asociat?
+  reason: Ghișeul.ro și ANAF trimit recuperarea la adresa înregistrată.
+  sensitive: true
+  required_for_resolution: false
+- id: registered_phone_access
+  type: boolean
+  label: Mai ai acces la telefonul validat?
+  reason: Hub MAI poate trimite codul prin SMS.
+  sensitive: true
+  required_for_resolution: false
+- id: cnp_available
+  type: boolean
+  label: Ai CNP-ul la îndemână?
+  reason: Este folosit în fluxurile Ghișeul.ro și SPV.
+  sensitive: true
+  required_for_resolution: false
+- id: username_known
+  type: boolean
+  label: Mai știi numele de utilizator?
+  reason: Este necesar în anumite operațiuni ANAF.
+  sensitive: true
+  required_for_resolution: false
+- id: security_answer_known
+  type: boolean
+  label: Știi răspunsul la întrebarea de siguranță?
+  reason: Este cerut de pagina ANAF pentru schimbarea e-mailului.
+  sensitive: true
+  required_for_resolution: false
+- id: new_email_available
+  type: boolean
+  label: Ai o adresă nouă de e-mail accesibilă?
+  reason: Este necesară schimbării adresei.
+  sensitive: true
+  required_for_resolution: false
+- id: roeid_old_phone_available
+  type: boolean
+  label: Mai ai vechiul telefon ROeID?
+  reason: Schimbarea telefonului presupune o nouă înregistrare, indiferent de disponibilitatea vechiului telefon.
+  sensitive: true
+  required_for_resolution: false
+- id: reset_message_received
+  type: boolean
+  label: Ai primit e-mailul/SMS-ul de resetare?
+  reason: Dacă nu, se trece la suportul oficial.
+  sensitive: false
+  required_for_resolution: false
+gates:
+- id: gate.platform_unknown
+  priority: 100
+  when: platform_id in [unknown,other]
+  effect: needs_confirmation
+  code: PLATFORM_RECOVERY_UNMAPPED
+  message: Nu există un flux universal de recuperare pentru toate conturile guvernamentale.
+  recovery_actions:
+  - Identifică platforma exactă și folosește numai pagina ei oficială.
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.anaf_recovery_inputs
+  - claim.account_recovery_gov.hub_mai_reset_channels
+- id: gate.roeid_reenrol
+  priority: 95
+  when: platform_id == roeid and issue_type in [forgot_password,change_email,changed_phone]
+  effect: warn
+  code: ROEID_REENROLMENT_REQUIRED
+  message: Pentru această situație ROeID cere reluarea înrolării/validării.
+  recovery_actions:
+  - Pregătește actul, smartphone-ul și noua adresă/telefon; urmează înrolarea oficială.
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.roeid_email_change
+  - claim.account_recovery_gov.roeid_phone_change
+- id: gate.ghiseul_no_email
+  priority: 90
+  when: platform_id == ghiseul and registered_email_access == false
+  effect: needs_confirmation
+  code: GHISEUL_REGISTERED_EMAIL_UNAVAILABLE
+  message: Fluxul automat trimite credențialele pe e-mailul asociat; fără acces este necesar suportul oficial.
+  recovery_actions:
+  - Contactează suportul Ghișeul.ro prin canalul oficial.
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_by_email
+  - claim.account_recovery_gov.ghiseul_support_after_failure
+- id: gate.anaf_missing_inputs
+  priority: 85
+  when: platform_id == anaf_spv and issue_type in [forgot_password,forgot_username] and (cnp_available == false or registered_email_access
+    == false)
+  effect: needs_confirmation
+  code: ANAF_RECOVERY_INPUTS_MISSING
+  message: Recuperarea automată SPV cere CNP și acces la e-mailul folosit la înregistrare.
+  recovery_actions:
+  - Folosește asistența oficială ANAF dacă nu mai ai acces la datele asociate.
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_recovery_inputs
+- id: gate.anaf_change_email_missing
+  priority: 80
+  when: platform_id == anaf_spv and issue_type == change_email and (username_known == false or current_password_known == false
+    or security_answer_known == false or new_email_available == false)
+  effect: block
+  code: ANAF_EMAIL_CHANGE_INPUTS_MISSING
+  message: Pagina de schimbare e-mail nu poate fi completată fără toate credențialele și răspunsul de siguranță.
+  recovery_actions:
+  - Recuperează mai întâi credențialele sau solicită suport oficial.
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_change_email_inputs
+- id: gate.hub_no_contact
+  priority: 75
+  when: platform_id == hub_mai and registered_email_access == false and registered_phone_access == false
+  effect: needs_confirmation
+  code: HUB_MAI_VALIDATED_CONTACT_UNAVAILABLE
+  message: Resetarea automată cere acces la e-mailul utilizat sau telefonul validat.
+  recovery_actions:
+  - Contactează suport.hub@mai.gov.ro prin pagina oficială.
+  source_claim_ids:
+  - claim.account_recovery_gov.hub_mai_validated_contact
+- id: gate.reset_not_received
+  priority: 70
+  when: reset_message_received == false
+  effect: warn
+  code: RESET_MESSAGE_NOT_RECEIVED
+  message: Verifică spamul și datele introduse; apoi folosește suportul oficial al platformei.
+  recovery_actions:
+  - Nu comunica parola, codul sau datele de acces unor terți.
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_support_after_failure
+  - claim.account_recovery_gov.anaf_recovery_email_link
+  - claim.account_recovery_gov.hub_mai_reset_channels
+steps:
+- id: step.identify_platform
+  title: Identifică platforma și problema
+  instruction: Alege ROeID, Ghișeul.ro, SPV ANAF sau Hub MAI și descrie problema exactă.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Platforma și tipul problemei sunt selectate.
+  recovery_actions:
+  - Verifică domeniul oficial înainte să introduci CNP sau credențiale.
+  official_channel_ids:
+  - channel.roeid_recovery
+  - channel.ghiseul_recovery
+  - channel.anaf_recovery
+  - channel.hub_mai_reset
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.anaf_recovery_inputs
+  - claim.account_recovery_gov.hub_mai_reset_channels
+- id: step.prepare_recovery_data
+  title: Pregătește datele cerute de platformă
+  instruction: Folosește numai datele asociate contului și canalul oficial.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.identify_platform
+  deadline:
+    kind: none
+  completion_evidence: Ai datele necesare fluxului ales, fără a le transmite aplicației ActeOS.
+  recovery_actions:
+  - Dacă nu mai ai acces la e-mail/telefon, treci la suportul instituției.
+  official_channel_ids:
+  - channel.roeid_recovery
+  - channel.ghiseul_recovery
+  - channel.anaf_recovery
+  - channel.hub_mai_reset
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.anaf_recovery_inputs
+  - claim.account_recovery_gov.anaf_change_email_inputs
+  - claim.account_recovery_gov.hub_mai_validated_contact
+- id: step.run_official_recovery
+  title: Rulează recuperarea pe pagina oficială
+  instruction: Solicită resetarea, reînrolarea sau schimbarea e-mailului prin fluxul platformei.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.prepare_recovery_data
+  deadline:
+    kind: none
+  completion_evidence: Platforma confirmă trimiterea mesajului sau începerea reînrolării.
+  recovery_actions:
+  - Dacă nu primești mesajul, verifică spam și apelează suportul oficial.
+  official_channel_ids:
+  - channel.roeid_recovery
+  - channel.ghiseul_recovery
+  - channel.anaf_recovery
+  - channel.anaf_change_email
+  - channel.hub_mai_reset
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_known
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.roeid_email_change
+  - claim.account_recovery_gov.roeid_phone_change
+  - claim.account_recovery_gov.ghiseul_credentials_by_email
+  - claim.account_recovery_gov.anaf_recovery_email_link
+  - claim.account_recovery_gov.hub_mai_reset_channels
+- id: step.set_new_credentials
+  title: Setează credențialele noi
+  instruction: Deschide mesajul numai dacă domeniul este oficial și setează o parolă nouă, unică.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.run_official_recovery
+  deadline:
+    kind: none
+  completion_evidence: Te poți autentifica din nou pe domeniul oficial.
+  recovery_actions:
+  - Dacă linkul este expirat sau suspect, pornește din nou din pagina oficială.
+  official_channel_ids:
+  - channel.ghiseul_recovery
+  - channel.anaf_recovery
+  - channel.hub_mai_reset
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_by_email
+  - claim.account_recovery_gov.anaf_recovery_email_link
+  - claim.account_recovery_gov.hub_mai_reset_channels
+- id: step.secure_account
+  title: Securizează contul recuperat
+  instruction: Verifică e-mailul și telefonul asociat, deconectează sesiunile necunoscute unde platforma permite și păstrează
+    parola în siguranță.
+  sequence_hint: 5
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.set_new_credentials
+  deadline:
+    kind: none
+  completion_evidence: Datele asociate sunt corecte și autentificarea funcționează.
+  recovery_actions:
+  - Raportează imediat accesul neautorizat instituției.
+  official_channel_ids:
+  - channel.roeid_recovery
+  - channel.ghiseul_support
+  - channel.hub_mai_reset
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_email_change
+  - claim.account_recovery_gov.roeid_phone_change
+  - claim.account_recovery_gov.ghiseul_support_after_failure
+requirements:
+- id: req.registered_email
+  title: Acces la e-mailul asociat
+  description: Necesar fluxurilor automate Ghișeul.ro și ANAF.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: in
+    field: platform_id
+    values:
+    - ghiseul
+    - anaf_spv
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.anaf_recovery_inputs
+- id: req.cnp
+  title: CNP
+  description: Folosit pentru identificarea contului în fluxurile Ghișeul.ro și SPV persoană fizică.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: in
+    field: platform_id
+    values:
+    - ghiseul
+    - anaf_spv
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - field_present
+  - user_confirmed
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.anaf_recovery_inputs
+- id: req.anaf_current_credentials
+  title: Credențiale și răspuns de siguranță ANAF
+  description: Necesare schimbării directe a e-mailului SPV.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: all
+    args:
+    - op: eq
+      field: platform_id
+      value: anaf_spv
+    - op: eq
+      field: issue_type
+      value: change_email
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - field_present
+  - user_confirmed
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_change_email_inputs
+- id: req.hub_validated_contact
+  title: E-mail sau telefon validat în Hub MAI
+  description: Canal pentru primirea codului de resetare.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: platform_id
+    value: hub_mai
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - field_present
+  - user_confirmed
+  source_claim_ids:
+  - claim.account_recovery_gov.hub_mai_validated_contact
+- id: req.roeid_reenrolment_kit
+  title: Kit pentru reînrolare ROeID
+  description: Smartphone, act de identitate și acces la noul e-mail/telefon, după caz.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: platform_id
+    value: roeid
+  accepted_forms:
+  - original
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - not_expired
+  - user_confirmed
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.roeid_email_change
+  - claim.account_recovery_gov.roeid_phone_change
+official_channels:
+- id: channel.roeid_recovery
+  type: web
+  label: ROeID — întrebări frecvente
+  url: https://www.roeid.ro/%C3%AEntreb%C4%83ri-frecvente
+  integration_status: DEEP_LINK
+  official_domain: roeid.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_known
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.roeid_email_change
+  - claim.account_recovery_gov.roeid_phone_change
+- id: channel.ghiseul_recovery
+  type: web
+  label: Ghișeul.ro — recuperare date de acces
+  url: https://www.ghiseul.ro/ghiseul/public/informatii/intrebari-frecvente
+  integration_status: DEEP_LINK
+  official_domain: ghiseul.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.ghiseul_credentials_by_email
+- id: channel.ghiseul_support
+  type: web
+  label: Ghișeul.ro — contact
+  url: https://www.ghiseul.ro/ghiseul/public/informatii/contact
+  integration_status: DEEP_LINK
+  official_domain: ghiseul.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_support_after_failure
+- id: channel.anaf_recovery
+  type: web
+  label: ANAF SPV — recuperare credențiale
+  url: https://www.anaf.ro/InregPersFizicePublic/recuperarecredentiale.jsp
+  integration_status: DEEP_LINK
+  official_domain: anaf.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_recovery_inputs
+  - claim.account_recovery_gov.anaf_recovery_email_link
+- id: channel.anaf_change_email
+  type: web
+  label: ANAF SPV — schimbare e-mail
+  url: https://www.anaf.ro/InregPersFizicePublic/schimbareEmail.jsp
+  integration_status: DEEP_LINK
+  official_domain: anaf.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_change_email_inputs
+- id: channel.hub_mai_reset
+  type: web
+  label: Hub MAI — resetare parolă
+  url: https://hub.mai.gov.ro/site/forgot-password
+  integration_status: DEEP_LINK
+  official_domain: hub.mai.gov.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.account_recovery_gov.hub_mai_reset_channels
+  - claim.account_recovery_gov.hub_mai_validated_contact
+rules:
+- id: rule.account_recovery_gov.roeid_known_password.r1
+  canonical_rule_id: rule.account_recovery_gov.roeid_known_password
+  event_type_id: ro.life.account_recovery_gov
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - platform:roeid
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: platform_id
+      value: roeid
+    - op: eq
+      field: issue_type
+      value: change_password
+    - op: eq
+      field: current_password_known
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: channel.roeid_recovery
+  - type: emit_warning
+    message_ro: Schimbă parola din aplicație, din Setări > Modificare parolă.
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_known
+  status: draft
+  reviewer_id: null
+- id: rule.account_recovery_gov.roeid_reenrol.r1
+  canonical_rule_id: rule.account_recovery_gov.roeid_reenrol
+  event_type_id: ro.life.account_recovery_gov
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - platform:roeid
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: platform_id
+      value: roeid
+    - op: in
+      field: issue_type
+      values:
+      - forgot_password
+      - change_email
+      - changed_phone
+  effects:
+  - type: include_requirement
+    requirement_id: req.roeid_reenrolment_kit
+  - type: require_confirmation
+    message_ro: Este necesară o nouă înrolare/validare ROeID.
+  source_claim_ids:
+  - claim.account_recovery_gov.roeid_password_forgotten
+  - claim.account_recovery_gov.roeid_email_change
+  - claim.account_recovery_gov.roeid_phone_change
+  status: draft
+  reviewer_id: null
+- id: rule.account_recovery_gov.ghiseul_recovery.r1
+  canonical_rule_id: rule.account_recovery_gov.ghiseul_recovery
+  event_type_id: ro.life.account_recovery_gov
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - platform:ghiseul
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: platform_id
+    value: ghiseul
+  effects:
+  - type: include_requirement
+    requirement_id: req.registered_email
+  - type: include_requirement
+    requirement_id: req.cnp
+  - type: attach_channel
+    channel_id: channel.ghiseul_recovery
+  source_claim_ids:
+  - claim.account_recovery_gov.ghiseul_credentials_recovery
+  - claim.account_recovery_gov.ghiseul_credentials_by_email
+  status: draft
+  reviewer_id: null
+- id: rule.account_recovery_gov.anaf_recovery.r1
+  canonical_rule_id: rule.account_recovery_gov.anaf_recovery
+  event_type_id: ro.life.account_recovery_gov
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - platform:anaf_spv
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: platform_id
+      value: anaf_spv
+    - op: in
+      field: issue_type
+      values:
+      - forgot_password
+      - forgot_username
+  effects:
+  - type: include_requirement
+    requirement_id: req.registered_email
+  - type: include_requirement
+    requirement_id: req.cnp
+  - type: attach_channel
+    channel_id: channel.anaf_recovery
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_recovery_inputs
+  - claim.account_recovery_gov.anaf_recovery_email_link
+  status: draft
+  reviewer_id: null
+- id: rule.account_recovery_gov.anaf_change_email.r1
+  canonical_rule_id: rule.account_recovery_gov.anaf_change_email
+  event_type_id: ro.life.account_recovery_gov
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - platform:anaf_spv
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: platform_id
+      value: anaf_spv
+    - op: eq
+      field: issue_type
+      value: change_email
+  effects:
+  - type: include_requirement
+    requirement_id: req.anaf_current_credentials
+  - type: attach_channel
+    channel_id: channel.anaf_change_email
+  source_claim_ids:
+  - claim.account_recovery_gov.anaf_change_email_inputs
+  status: draft
+  reviewer_id: null
+- id: rule.account_recovery_gov.hub_reset.r1
+  canonical_rule_id: rule.account_recovery_gov.hub_reset
+  event_type_id: ro.life.account_recovery_gov
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope:
+  - platform:hub_mai
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: platform_id
+    value: hub_mai
+  effects:
+  - type: include_requirement
+    requirement_id: req.hub_validated_contact
+  - type: attach_channel
+    channel_id: channel.hub_mai_reset
+  source_claim_ids:
+  - claim.account_recovery_gov.hub_mai_reset_channels
+  - claim.account_recovery_gov.hub_mai_validated_contact
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

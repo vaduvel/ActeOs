@@ -1,0 +1,646 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.baptism
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: candidate_kind
+  type: enum
+  label: Pentru cine pregătești botezul?
+  reason: Consimțământul și capacitatea de alegere diferă după vârstă.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - infant
+  - minor
+  - adult
+- id: candidate_age_years
+  type: integer
+  label: Ce vârstă are persoana?
+  reason: Legea stabilește praguri la 14 și 16 ani.
+  sensitive: true
+  required_for_resolution: true
+- id: religion_change_involved
+  type: boolean
+  label: Demersul implică schimbarea religiei persoanei?
+  reason: La 14 ani schimbarea religiei necesită consimțământul copilului.
+  sensitive: true
+  required_for_resolution: false
+- id: candidate_consents
+  type: boolean
+  label: Persoana consimte la botez, dacă poate exprima voința?
+  reason: Libertatea religioasă exclude constrângerea.
+  sensitive: true
+  required_for_resolution: true
+- id: guardian_authority_confirmed
+  type: boolean
+  label: Pentru minor, este clar cine exercită autoritatea/tutela?
+  reason: Aplicația nu poate presupune dreptul de reprezentare.
+  sensitive: true
+  required_for_resolution: false
+- id: guardians_agree
+  type: boolean
+  label: Reprezentanții legali sunt de acord?
+  reason: Un conflict parental necesită clarificare juridică/locală, nu decizie automată.
+  sensitive: true
+  required_for_resolution: false
+- id: cult_id
+  type: enum
+  label: În ce cult vrei botezul?
+  reason: Ritualul și actele sunt stabilite de cult și parohie.
+  sensitive: true
+  required_for_resolution: true
+  options:
+  - orthodox
+  - roman_catholic
+  - other_recognized
+  - religious_association
+  - unknown
+- id: locality
+  type: jurisdiction_ref
+  label: În ce localitate vrei botezul?
+  reason: Determină unitatea de cult competentă.
+  sensitive: false
+  required_for_resolution: true
+- id: parish_selected
+  type: boolean
+  label: Ai ales parohia/comunitatea?
+  reason: Cerințele se confirmă la nivel local.
+  sensitive: false
+  required_for_resolution: true
+- id: local_checklist_confirmed
+  type: boolean
+  label: Ai primit checklistul oficial al unității de cult?
+  reason: Nu există o listă națională unică.
+  sensitive: false
+  required_for_resolution: true
+- id: religion_data_storage_consent
+  type: boolean
+  label: Consimți la stocarea în aplicație a informației religioase?
+  reason: Este o categorie sensibilă de date.
+  sensitive: true
+  required_for_resolution: true
+- id: contribution_presented_as_mandatory_fee
+  type: boolean
+  label: Ți s-a prezentat o contribuție ca taxă obligatorie?
+  reason: Trebuie separată de o taxă publică națională.
+  sensitive: false
+  required_for_resolution: false
+- id: certificate_needed_after
+  type: boolean
+  label: Ai nevoie de o dovadă/certificat emis de cult după ceremonie?
+  reason: Forma și disponibilitatea documentului sunt stabilite local.
+  sensitive: false
+  required_for_resolution: false
+gates:
+- id: gate.no_candidate_consent
+  priority: 100
+  when: candidate_kind == adult and candidate_consents == false
+  effect: block
+  code: BAPTISM_CONSENT_REQUIRED
+  message: O persoană adultă nu poate fi ghidată spre botez împotriva voinței sale.
+  recovery_actions:
+  - Oprește demersul; orice alegere religioasă trebuie să fie liberă.
+  source_claim_ids:
+  - claim.baptism.freedom_no_coercion
+- id: gate.age_16_choice
+  priority: 98
+  when: candidate_age_years >= 16 and candidate_consents == false
+  effect: block
+  code: AGE_16_PERSONAL_RELIGIOUS_CHOICE
+  message: De la 16 ani, minorul își alege singur religia; botezul nu poate continua fără voința sa.
+  recovery_actions:
+  - Solicită consimțământul liber al persoanei.
+  source_claim_ids:
+  - claim.baptism.child_16_choice
+  - claim.baptism.freedom_no_coercion
+- id: gate.age_14_change
+  priority: 96
+  when: candidate_age_years >= 14 and candidate_age_years < 16 and religion_change_involved == true and candidate_consents
+    == false
+  effect: block
+  code: AGE_14_CONSENT_FOR_CHANGE_REQUIRED
+  message: Schimbarea religiei după 14 ani nu se poate face fără consimțământul copilului.
+  recovery_actions:
+  - Nu continua fără consimțământul exprimat de copil.
+  source_claim_ids:
+  - claim.baptism.child_14_consent
+- id: gate.guardian_unclear
+  priority: 90
+  when: candidate_age_years < 16 and guardian_authority_confirmed == false
+  effect: needs_confirmation
+  code: LEGAL_REPRESENTATION_UNCONFIRMED
+  message: Pentru minor, calitatea și autoritatea reprezentantului trebuie clarificate.
+  recovery_actions:
+  - Confirmă situația de autoritate părintească/tutelă și cerința unității de cult.
+  source_claim_ids:
+  - claim.baptism.parents_religious_education
+  - claim.baptism.cult_autonomy
+- id: gate.guardian_disagreement
+  priority: 88
+  when: candidate_age_years < 16 and guardians_agree == false
+  effect: needs_confirmation
+  code: GUARDIAN_DISAGREEMENT
+  message: Aplicația nu decide un conflict între reprezentanții legali privind opțiunea religioasă.
+  recovery_actions:
+  - Solicită consiliere juridică adecvată și discută cu unitatea de cult.
+  source_claim_ids:
+  - claim.baptism.parents_religious_education
+  - claim.baptism.freedom_no_coercion
+- id: gate.cult_unknown
+  priority: 85
+  when: cult_id == unknown
+  effect: needs_confirmation
+  code: CULT_AND_PARISH_REQUIRED
+  message: Ritualul și documentele nu pot fi stabilite fără cult și unitate locală.
+  recovery_actions:
+  - Consultă directorul oficial și alege parohia/comunitatea.
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+  - claim.baptism.official_cult_directory
+- id: gate.local_checklist_missing
+  priority: 80
+  when: parish_selected == false or local_checklist_confirmed == false
+  effect: needs_confirmation
+  code: LOCAL_BAPTISM_CHECKLIST_REQUIRED
+  message: Actele, pregătirea, nașii/sponsorii și programarea trebuie confirmate local.
+  recovery_actions:
+  - Cere checklistul datat direct de la parohie/comunitate.
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+  - claim.baptism.orthodox_timisoara_channel
+  - claim.baptism.catholic_timisoara_channel
+- id: gate.no_data_consent
+  priority: 75
+  when: religion_data_storage_consent == false
+  effect: warn
+  code: RELIGION_DATA_NOT_STORED
+  message: ActeOS nu va păstra cultul sau apartenența religioasă fără consimțământ expres.
+  recovery_actions:
+  - Continuă fără memorarea datelor sensibile sau acordă consimțământ explicit.
+  source_claim_ids:
+  - claim.baptism.religion_data_consent
+  - claim.baptism.religion_disclosure_not_compulsory
+- id: gate.contribution_as_fee
+  priority: 70
+  when: contribution_presented_as_mandatory_fee == true
+  effect: warn
+  code: RELIGIOUS_CONTRIBUTION_NOT_PUBLIC_FEE
+  message: Nu trata o contribuție locală drept taxă publică universală obligatorie.
+  recovery_actions:
+  - Cere explicație și document justificativ direct unității de cult.
+  source_claim_ids:
+  - claim.baptism.contributions_not_compelled
+  - claim.baptism.cults_may_set_contributions
+steps:
+- id: step.confirm_free_consent
+  title: Confirmă voința și reprezentarea
+  instruction: Verifică consimțământul persoanei conform vârstei și, pentru minor, situația reprezentanților legali.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Consimțământul necesar și autoritatea de reprezentare sunt clarificate.
+  recovery_actions:
+  - Oprește traseul dacă există constrângere sau conflict nerezolvat.
+  official_channel_ids:
+  - channel.cult_directory
+  source_claim_ids:
+  - claim.baptism.freedom_no_coercion
+  - claim.baptism.parents_religious_education
+  - claim.baptism.child_14_consent
+  - claim.baptism.child_16_choice
+- id: step.select_cult_parish
+  title: Alege cultul și unitatea locală
+  instruction: Folosește directorul oficial și canalele eparhiale/parohiale pentru localitatea aleasă.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.confirm_free_consent
+  deadline:
+    kind: none
+  completion_evidence: Ai identificat unitatea locală și contactul oficial.
+  recovery_actions:
+  - Contactează structura centrală/eparhială dacă parohia nu este publicată.
+  official_channel_ids:
+  - channel.cult_directory
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+  - claim.baptism.official_cult_directory
+  - claim.baptism.orthodox_timisoara_channel
+  - claim.baptism.catholic_timisoara_channel
+- id: step.request_local_checklist
+  title: Solicită checklistul local
+  instruction: Cere în scris actele, condițiile pentru candidat și nași/sponsori, pregătirea/cateheza, programarea și contribuțiile,
+    dacă există.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.select_cult_parish
+  deadline:
+    kind: none
+  completion_evidence: Ai checklistul local actual și răspunsul la situația concretă.
+  recovery_actions:
+  - Cere clarificări eparhiei/structurii competente.
+  official_channel_ids:
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+  - claim.baptism.contributions_not_compelled
+  - claim.baptism.cults_may_set_contributions
+- id: step.prepare_local_requirements
+  title: Pregătește numai cerințele confirmate
+  instruction: Adună documentele și finalizează pregătirea indicată de unitatea de cult; nu folosi checklisturi generice de
+    pe bloguri.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.request_local_checklist
+  deadline:
+    kind: none
+  completion_evidence: Unitatea de cult confirmă că pregătirea este completă.
+  recovery_actions:
+  - Corectează lipsurile comunicate de unitatea competentă.
+  official_channel_ids:
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+- id: step.confirm_ceremony
+  title: Confirmă ceremonia și dovada ulterioară
+  instruction: Obține confirmarea datei și întreabă dacă/în ce formă se eliberează un certificat sau extras după botez.
+  sequence_hint: 5
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.prepare_local_requirements
+  deadline:
+    kind: none
+  completion_evidence: Ai confirmarea programării și știi cum se obține dovada, dacă este necesară.
+  recovery_actions:
+  - Reprogramează sau solicită duplicatul direct unității de cult.
+  official_channel_ids:
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+requirements:
+- id: req.consent_confirmation
+  title: Confirmarea consimțământului
+  description: Dovada/confirmarea că alegerea este liberă și respectă pragurile de vârstă; forma concretă se stabilește local
+    și legal.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - declaration
+  - electronic
+  - original
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.baptism.freedom_no_coercion
+  - claim.baptism.child_14_consent
+  - claim.baptism.child_16_choice
+- id: req.guardian_authority_confirmation
+  title: Confirmarea reprezentării minorului
+  description: Necesară numai pentru minor; documentul exact nu este generalizat și se confirmă pentru situația concretă.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: lt
+    field: candidate_age_years
+    value: 18
+  accepted_forms:
+  - original
+  - copy
+  - electronic
+  - certified_copy
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - names_consistent
+  - user_confirmed
+  source_claim_ids:
+  - claim.baptism.parents_religious_education
+- id: req.local_checklist_confirmation
+  title: Checklistul oficial al parohiei/comunității
+  description: Confirmă documentele, pregătirea, programarea și condițiile locale.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  - copy
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - date_within_window
+  - user_confirmed
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+- id: req.religion_data_consent
+  title: Consimțământ pentru stocarea datelor religioase
+  description: Necesar doar dacă aplicația păstrează cultul/apartenența religioasă.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: religion_data_storage_consent
+    value: true
+  accepted_forms:
+  - electronic
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.baptism.religion_data_consent
+  - claim.baptism.religion_disclosure_not_compulsory
+official_channels:
+- id: channel.cult_directory
+  type: web
+  label: Secretariatul de Stat pentru Culte — director
+  url: https://culte.gov.ro/culte-religioase/
+  integration_status: DEEP_LINK
+  official_domain: culte.gov.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.baptism.official_cult_directory
+- id: channel.orthodox_timisoara
+  type: web
+  label: Arhiepiscopia Timișoarei — parohii/contact
+  url: https://www.arhiepiscopiatimisoarei.ro/
+  integration_status: DEEP_LINK
+  official_domain: arhiepiscopiatimisoarei.ro
+  territory_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  source_claim_ids:
+  - claim.baptism.orthodox_timisoara_channel
+  notes: Checklistul se confirmă la parohia competentă.
+- id: channel.catholic_timisoara
+  type: web
+  label: Episcopia Romano-Catolică de Timișoara — parohii/contact
+  url: https://gerhardus.ro/
+  integration_status: DEEP_LINK
+  official_domain: gerhardus.ro
+  territory_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  source_claim_ids:
+  - claim.baptism.catholic_timisoara_channel
+  notes: Checklistul se confirmă la parohia competentă.
+rules:
+- id: rule.baptism.adult_consent.r1
+  canonical_rule_id: rule.baptism.adult_consent
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: candidate_kind
+      value: adult
+    - op: eq
+      field: candidate_consents
+      value: false
+  effects:
+  - type: block
+    message_ro: Botezul nu poate fi ghidat fără consimțământul liber al persoanei.
+  source_claim_ids:
+  - claim.baptism.freedom_no_coercion
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.age_16_choice.r1
+  canonical_rule_id: rule.baptism.age_16_choice
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: gte
+    field: candidate_age_years
+    value: 16
+  effects:
+  - type: include_requirement
+    requirement_id: req.consent_confirmation
+  - type: emit_warning
+    message_ro: Persoana de 16 ani sau mai mult își alege singură religia.
+  source_claim_ids:
+  - claim.baptism.child_16_choice
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.age_14_change.r1
+  canonical_rule_id: rule.baptism.age_14_change
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: gte
+      field: candidate_age_years
+      value: 14
+    - op: lt
+      field: candidate_age_years
+      value: 16
+    - op: eq
+      field: religion_change_involved
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.consent_confirmation
+  - type: block
+    message_ro: Schimbarea religiei nu poate continua fără consimțământul copilului.
+  source_claim_ids:
+  - claim.baptism.child_14_consent
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.minor_representation.r1
+  canonical_rule_id: rule.baptism.minor_representation
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: lt
+    field: candidate_age_years
+    value: 18
+  effects:
+  - type: include_requirement
+    requirement_id: req.guardian_authority_confirmation
+  source_claim_ids:
+  - claim.baptism.parents_religious_education
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.local_rules.r1
+  canonical_rule_id: rule.baptism.local_rules
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: local_checklist_confirmed
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_checklist_confirmation
+  - type: require_confirmation
+    message_ro: Cerințele botezului trebuie confirmate la cult/parohie.
+  source_claim_ids:
+  - claim.baptism.cult_autonomy
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.privacy.r1
+  canonical_rule_id: rule.baptism.privacy
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: religion_data_storage_consent
+    value: false
+  effects:
+  - type: emit_warning
+    message_ro: Nu stoca date religioase fără consimțământ expres.
+  source_claim_ids:
+  - claim.baptism.religion_data_consent
+  - claim.baptism.religion_disclosure_not_compulsory
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.orthodox_channel.r1
+  canonical_rule_id: rule.baptism.orthodox_channel
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - cult:orthodox
+  - territory:timis
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: cult_id
+    value: orthodox
+  effects:
+  - type: attach_channel
+    channel_id: channel.orthodox_timisoara
+  source_claim_ids:
+  - claim.baptism.orthodox_timisoara_channel
+  status: draft
+  reviewer_id: null
+- id: rule.baptism.catholic_channel.r1
+  canonical_rule_id: rule.baptism.catholic_channel
+  event_type_id: ro.life.baptism
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - cult:roman_catholic
+  - territory:timis
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: cult_id
+    value: roman_catholic
+  effects:
+  - type: attach_channel
+    channel_id: channel.catholic_timisoara
+  source_claim_ids:
+  - claim.baptism.catholic_timisoara_channel
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

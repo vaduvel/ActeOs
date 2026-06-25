@@ -1,0 +1,958 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.home_insurance_claim
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.home_insurance_claim.01.pad_earthquake
+  purpose: PAD cutremur
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.02.pad_flood
+  purpose: PAD inundație naturală
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: natural_flood
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_authorities
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.authority_report
+    - req.property_title
+    warning_codes:
+    - NOTIFY_LOCAL_AUTHORITIES
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.03.pad_landslide
+  purpose: PAD alunecare de teren
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: landslide
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_authorities
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.authority_report
+    - req.property_title
+    warning_codes:
+    - NOTIFY_LOCAL_AUTHORITIES
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.04.pad_flood_authority_done
+  purpose: PAD inundație, autoritatea anunțată
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: natural_flood
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: true
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_authorities
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.authority_report
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.05.pad_repairs_started
+  purpose: PAD cu reparații începute
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: true
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes:
+    - REPAIRS_BEFORE_INSPECTION
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.06.pad_over_60_days
+  purpose: PAD peste 60 zile
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-04-01'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes:
+    - PAD_60_DAY_WINDOW_EXCEEDED
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.07.pad_no_policy_valid
+  purpose: PAD nevalabil la eveniment
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: false
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.08.pad_missing_title
+  purpose: PAD fără act proprietate
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.09.allianz_fire
+  purpose: Allianz incendiu
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: allianz
+      peril: fire
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.10.allianz_theft
+  purpose: Allianz furt
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: allianz
+      peril: theft
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.11.allianz_late_theft
+  purpose: Allianz furt notificat tardiv
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: allianz
+      peril: theft
+      event_date: '2026-06-20'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.12.groupama_water
+  purpose: Groupama avarie apă
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: groupama
+      peril: water_damage
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.13.groupama_late
+  purpose: Groupama după 48h
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: groupama
+      peril: storm
+      event_date: '2026-06-20'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.14.both_flood
+  purpose: PAD plus facultativă, inundație
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: both
+      insurer_id: allianz
+      peril: natural_flood
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_authorities
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.authority_report
+    - req.property_title
+    warning_codes:
+    - NOTIFY_LOCAL_AUTHORITIES
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.15.both_fire
+  purpose: PAD plus facultativă, incendiu
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: both
+      insurer_id: groupama
+      peril: fire
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.16.unknown_policy
+  purpose: Tip poliță necunoscut
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: unknown
+      insurer_id: unknown
+      peril: water_damage
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes:
+    - CONTRACT_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.home_insurance_claim.17.other_insurer
+  purpose: Asigurător facultativ neacoperit
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: other
+      peril: fire
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes:
+    - CONTRACT_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.home_insurance_claim.18.danger_active
+  purpose: Pericol în desfășurare
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: true
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes:
+    - ENSURE_SAFETY_FIRST
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.19.outside_timisoara
+  purpose: Locuință în alt UAT
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: natural_flood
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.cj.cluj-napoca
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_authorities
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.authority_report
+    - req.property_title
+    warning_codes:
+    - NOTIFY_LOCAL_AUTHORITIES
+    confidence: verified_with_local_gap
+    notes: Canalele locale pilot nu se generalizează.
+- id: fx.home_insurance_claim.20.theft_no_authority
+  purpose: Furt fără document autoritate
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: facultative
+      insurer_id: allianz
+      peril: theft
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.21.earthquake_no_authority
+  purpose: Cutremur PAD fără proces verbal individual
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: PAD indică rapoarte primite de la INCDFP pentru cutremur.
+- id: fx.home_insurance_claim.22.no_event_date
+  purpose: Data evenimentului lipsește
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: earthquake
+      event_date: null
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.23.landslide_repairs
+  purpose: Alunecare și reparații înainte de constatare
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: pad
+      insurer_id: other
+      peril: landslide
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: true
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_authorities
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.authority_report
+    - req.property_title
+    warning_codes:
+    - NOTIFY_LOCAL_AUTHORITIES
+    - REPAIRS_BEFORE_INSPECTION
+    confidence: verified
+    notes: ''
+- id: fx.home_insurance_claim.24.policy_both_unknown_insurer
+  purpose: Ambele polițe, asigurător necunoscut
+  input:
+    event_type_id: ro.life.home_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      policy_kind: both
+      insurer_id: unknown
+      peril: storm
+      event_date: '2026-06-24'
+      property_jurisdiction: ro.tm.timisoara
+      danger_ongoing: false
+      authorities_notified: false
+      repairs_started: false
+      policy_valid_on_event_date: true
+      ownership_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.secure_property
+    - step.notify_insurer
+    - step.prepare_file
+    - step.inspection
+    - step.track_payment
+    requirement_ids:
+    - req.policy
+    - req.identity
+    - req.damage_evidence
+    - req.property_title
+    warning_codes:
+    - CONTRACT_RULES_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''

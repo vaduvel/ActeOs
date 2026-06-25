@@ -1,0 +1,983 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.electronic_signature
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.electronic_signature.01.certsign_cloud
+  purpose: certSIGN cloud
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.02.certsign_token
+  purpose: certSIGN token
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: token
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.03.digisign_token
+  purpose: DigiSign token
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: digisign
+      delivery_mode: token
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.04.other_trusted
+  purpose: Alt prestator din Trusted List
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: other_trusted
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.electronic_signature.05.unknown_type
+  purpose: Tip de semnătură necunoscut
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: unknown
+      provider_id: unknown
+      delivery_mode: unknown
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - SIGNATURE_TYPE_UNCONFIRMED
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.06.advanced_requested
+  purpose: Semnătură avansată cerută
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: advanced
+      provider_id: other_trusted
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Efectele concrete depind de condițiile legale și acceptarea destinatarului.
+- id: fx.electronic_signature.07.simple_requested
+  purpose: Semnătură simplă
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: simple
+      provider_id: unknown
+      delivery_mode: unknown
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.electronic_signature.08.authentic_act
+  purpose: Act cu formă autentică
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: true
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - AUTHENTIC_FORM_NOT_REPLACED
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.09.invalid_id
+  purpose: Act expirat
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: false
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - VALID_ID_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.10.no_camera
+  purpose: Fără cameră/microfon
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: false
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - VIDEO_IDENTIFICATION_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.11.no_internet
+  purpose: Fără internet
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: digisign
+      delivery_mode: token
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: false
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - VIDEO_IDENTIFICATION_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.12.digisign_minor
+  purpose: Minor pe flux DigiSign
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: digisign
+      delivery_mode: token
+      age_years: 17
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - DIGISIGN_VIDEO_AGE_LIMIT
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.13.no_card
+  purpose: Fără card de plată
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: false
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.14.public_authority
+  purpose: Utilizare la instituție publică
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.15.private_contract
+  purpose: Contract privat
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: private_contract
+      requested_signature_type: qualified
+      provider_id: digisign
+      delivery_mode: token
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.16.employment
+  purpose: Documente de muncă
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: employment
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.17.tax_platform
+  purpose: Platformă fiscală
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: tax_platform
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: token
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.18.recipient_unknown
+  purpose: Destinatar neconfirmat
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: unknown
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - SIGNATURE_TYPE_UNCONFIRMED
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.19.cloud_urgent
+  purpose: Cloud cu nevoie rapidă
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Termenul de o zi este orientativ, nu SLA legal.
+- id: fx.electronic_signature.20.token_urgent
+  purpose: Token cu nevoie rapidă
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: token
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Termenul de cinci zile este orientativ.
+- id: fx.electronic_signature.21.provider_site_fake
+  purpose: Prestator neconfirmat
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: unknown
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.22.foreign_eu_provider
+  purpose: Prestator calificat din alt stat UE
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: other_trusted
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Valabilitatea în UE este confirmată; oferta concretă trebuie verificată.
+- id: fx.electronic_signature.23.all_tools_missing
+  purpose: Fără act și dispozitiv
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: public_authority
+      requested_signature_type: qualified
+      provider_id: certsign
+      delivery_mode: cloud
+      age_years: 33
+      valid_identity_document: false
+      payment_card_available: true
+      camera_microphone_available: false
+      internet_available: false
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: blocked
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - VALID_ID_REQUIRED
+    - VIDEO_IDENTIFICATION_NOT_READY
+    confidence: verified
+    notes: ''
+- id: fx.electronic_signature.24.unknown_goal
+  purpose: Scop neclar
+  input:
+    event_type_id: ro.life.electronic_signature
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      signature_goal: unknown
+      requested_signature_type: unknown
+      provider_id: unknown
+      delivery_mode: unknown
+      age_years: 33
+      valid_identity_document: true
+      payment_card_available: true
+      camera_microphone_available: true
+      internet_available: true
+      target_requires_authentic_form: false
+      target_platform_known: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.confirm_signature_type
+    - step.choose_provider
+    - step.purchase_and_identify
+    - step.receive_activate
+    - step.enrol_target_platform
+    requirement_ids:
+    - req.valid_id
+    - req.payment_method
+    - req.video_device
+    - req.recipient_requirement
+    warning_codes:
+    - SIGNATURE_TYPE_UNCONFIRMED
+    - TRUSTED_PROVIDER_REQUIRED
+    confidence: verified
+    notes: ''

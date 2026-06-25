@@ -1,0 +1,496 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.digital_identity_ro
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: romanian_citizen
+  type: boolean
+  label: Ești cetățean român?
+  reason: Termenii ROeID definesc utilizatorul persoană fizică prin cetățenia română.
+  sensitive: true
+  required_for_resolution: true
+- id: smartphone_os
+  type: enum
+  label: Ce telefon folosești?
+  reason: Aplicația este publicată pentru Android și iPhone.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - android
+  - ios
+  - other
+  - none
+- id: internet_available
+  type: boolean
+  label: Ai conexiune la internet?
+  reason: Este necesară înrolării și autentificării.
+  sensitive: false
+  required_for_resolution: true
+- id: identity_document_available
+  type: boolean
+  label: Ai cartea de identitate la îndemână?
+  reason: Este fotografiată și prezentată în proces.
+  sensitive: false
+  required_for_resolution: true
+- id: identity_document_valid
+  type: boolean
+  label: Cartea de identitate este valabilă și lizibilă?
+  reason: Un document neclar sau nevalabil poate bloca validarea.
+  sensitive: false
+  required_for_resolution: true
+- id: camera_available
+  type: boolean
+  label: Camera telefonului funcționează?
+  reason: Sunt necesare selfie și filmări.
+  sensitive: false
+  required_for_resolution: true
+- id: microphone_available
+  type: boolean
+  label: Microfonul telefonului funcționează?
+  reason: Fluxul include înregistrare audio-video.
+  sensitive: false
+  required_for_resolution: true
+- id: email_available
+  type: boolean
+  label: Ai acces la o adresă de e-mail?
+  reason: Confirmarea validării este transmisă pe e-mail.
+  sensitive: false
+  required_for_resolution: true
+- id: enrollment_submitted
+  type: boolean
+  label: Ai trimis deja solicitarea?
+  reason: Determină dacă urmează capturile sau așteptarea validării.
+  sensitive: false
+  required_for_resolution: false
+- id: enrollment_rejected
+  type: boolean
+  label: Solicitarea a fost respinsă?
+  reason: Activează instrucțiunile de refacere a capturilor.
+  sensitive: false
+  required_for_resolution: false
+- id: needs_exact_completion_deadline
+  type: boolean
+  label: Ai nevoie de o dată garantată de activare?
+  reason: Sursele oficiale publică termene incompatibile.
+  sensitive: false
+  required_for_resolution: false
+gates:
+- id: gate.not_romanian
+  priority: 100
+  when: romanian_citizen == false
+  effect: needs_confirmation
+  code: ROEID_CITIZENSHIP_SCOPE
+  message: Termenii cercetați definesc utilizatorul persoană fizică drept cetățean român.
+  recovery_actions:
+  - Verifică un alt mijloc de identitate acceptat de serviciul public țintă.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_romanian_user
+- id: gate.no_supported_phone
+  priority: 95
+  when: smartphone_os in [other,none]
+  effect: block
+  code: SUPPORTED_SMARTPHONE_REQUIRED
+  message: Înrolarea ROeID necesită aplicația pe Android sau iPhone.
+  recovery_actions:
+  - Folosește un smartphone compatibil și instalează aplicația din magazinul oficial.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_smartphone_internet
+- id: gate.no_id
+  priority: 90
+  when: identity_document_available == false or identity_document_valid == false
+  effect: block
+  code: IDENTITY_DOCUMENT_REQUIRED
+  message: Nu poți finaliza înrolarea fără cartea de identitate disponibilă și lizibilă.
+  recovery_actions:
+  - Pregătește documentul valabil și originalul pentru filmare.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_rejected_capture_recovery
+- id: gate.no_capture_tools
+  priority: 85
+  when: camera_available == false or microphone_available == false or internet_available == false
+  effect: block
+  code: ROEID_CAPTURE_NOT_READY
+  message: Camera, microfonul și internetul sunt necesare capturilor ROeID.
+  recovery_actions:
+  - Remediază permisiunile/dispozitivul și reia înrolarea.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_capture_requirements
+  - claim.digital_identity_ro.roeid_smartphone_internet
+- id: gate.timeline_conflict
+  priority: 80
+  when: enrollment_submitted == true
+  effect: warn
+  code: ROEID_APPROVAL_TIME_CONFLICT
+  message: Sursele oficiale ROeID indică atât maximum 24 de ore, cât și 24–72 de ore lucrătoare.
+  recovery_actions:
+  - Nu promite un termen exact; urmărește notificarea oficială și contactează suportul dacă întârzie.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_duration_24_72
+  - claim.digital_identity_ro.roeid_duration_max_24
+- id: gate.rejected
+  priority: 70
+  when: enrollment_rejected == true
+  effect: warn
+  code: ROEID_CAPTURE_REJECTED
+  message: Refă imaginile și filmarea cu lumină bună, fără reflexii și cu actul original.
+  recovery_actions:
+  - Respectă ghidajul din aplicație; dacă persistă, folosește formularul oficial de contact.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_rejected_capture_recovery
+steps:
+- id: step.check_readiness
+  title: Verifică dispozitivul și actul
+  instruction: Pregătește un smartphone Android/iPhone, internet și cartea de identitate.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Telefonul, conexiunea, camera, microfonul și actul sunt disponibile.
+  recovery_actions:
+  - Schimbă dispozitivul sau reînnoiește actul înainte de înrolare.
+  official_channel_ids:
+  - channel.roeid_citizens
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_smartphone_internet
+- id: step.install_official_app
+  title: Instalează aplicația oficială ROeID
+  instruction: Accesează magazinele oficiale prin pagina ROeID și deschide procesul de creare a contului.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.check_readiness
+  deadline:
+    kind: none
+  completion_evidence: Aplicația oficială este instalată și procesul de înrolare este deschis.
+  recovery_actions:
+  - Nu instala aplicații din linkuri neoficiale.
+  official_channel_ids:
+  - channel.roeid_citizens
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_purpose
+  - claim.digital_identity_ro.roeid_smartphone_internet
+- id: step.capture_identity
+  title: Parcurge cele cinci etape de captură
+  instruction: Introdu datele, fotografiază actul, fă selfie-ul și înregistrările video/audio cerute.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.install_official_app
+  deadline:
+    kind: none
+  completion_evidence: Aplicația confirmă trimiterea solicitării de validare.
+  recovery_actions:
+  - Refă capturile în lumină bună, cu actul original și fără reflexii.
+  official_channel_ids:
+  - channel.roeid_citizens
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_five_steps
+  - claim.digital_identity_ro.roeid_capture_requirements
+  - claim.digital_identity_ro.roeid_rejected_capture_recovery
+- id: step.wait_validation
+  title: Urmărește validarea
+  instruction: Așteaptă e-mailul și notificarea din aplicație; nu trata intervalul publicat ca termen garantat.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.capture_identity
+  deadline:
+    kind: none
+  completion_evidence: Ai primit aprobarea sau un motiv de respingere.
+  recovery_actions:
+  - Dacă nu primești rezultat, folosește suportul oficial ROeID.
+  official_channel_ids:
+  - channel.roeid_terms
+  - channel.roeid_support
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_duration_24_72
+  - claim.digital_identity_ro.roeid_duration_max_24
+- id: step.use_roeid
+  title: Folosește autentificarea ROeID
+  instruction: Pe serviciile compatibile, selectează butonul «Autentifică-te cu ROeID» și aprobă cererea în aplicație.
+  sequence_hint: 5
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.wait_validation
+  deadline:
+    kind: none
+  completion_evidence: Serviciul public confirmă autentificarea.
+  recovery_actions:
+  - Verifică permisiunea de notificări și disponibilitatea ROeID pe platforma țintă.
+  official_channel_ids:
+  - channel.roeid_citizens
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_purpose
+requirements:
+- id: req.smartphone
+  title: Smartphone compatibil
+  description: Telefon Android sau iPhone cu aplicația oficială.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_smartphone_internet
+- id: req.identity_card
+  title: Cartea de identitate
+  description: Documentul este fotografiat și prezentat în original în procesul video.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - original
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - not_expired
+  - names_consistent
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_rejected_capture_recovery
+- id: req.camera_microphone_internet
+  title: Cameră, microfon și internet
+  description: Resursele tehnice pentru selfie și înregistrările video/audio.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_capture_requirements
+  - claim.digital_identity_ro.roeid_smartphone_internet
+- id: req.email
+  title: Adresă de e-mail accesibilă
+  description: Canal pentru confirmarea rezultatului validării.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - user_confirmed
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_duration_max_24
+official_channels:
+- id: channel.roeid_citizens
+  type: web
+  label: ROeID — cetățeni
+  url: https://www.roeid.ro/cetateni
+  integration_status: DEEP_LINK
+  official_domain: roeid.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_purpose
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_capture_requirements
+  - claim.digital_identity_ro.roeid_duration_24_72
+- id: channel.roeid_terms
+  type: web
+  label: ROeID — termeni
+  url: https://www.roeid.ro/termeni
+  integration_status: SOURCE_ONLY
+  official_domain: roeid.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_duration_max_24
+  - claim.digital_identity_ro.roeid_smartphone_internet
+  - claim.digital_identity_ro.roeid_romanian_user
+- id: channel.roeid_support
+  type: web
+  label: ROeID — ajutor și contact
+  url: https://www.roeid.ro/contact
+  integration_status: DEEP_LINK
+  official_domain: roeid.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_rejected_capture_recovery
+rules:
+- id: rule.digital_identity_ro.supported_device.r1
+  canonical_rule_id: rule.digital_identity_ro.supported_device
+  event_type_id: ro.life.digital_identity_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: smartphone_os
+    values:
+    - other
+    - none
+  effects:
+  - type: block
+    message_ro: Este necesar un smartphone Android sau iPhone pentru înrolare.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  - claim.digital_identity_ro.roeid_smartphone_internet
+  status: draft
+  reviewer_id: null
+- id: rule.digital_identity_ro.id_required.r1
+  canonical_rule_id: rule.digital_identity_ro.id_required
+  event_type_id: ro.life.digital_identity_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: identity_document_available
+    value: false
+  effects:
+  - type: block
+    message_ro: Cartea de identitate este necesară procesului ROeID.
+  - type: include_requirement
+    requirement_id: req.identity_card
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_phone_and_id
+  status: draft
+  reviewer_id: null
+- id: rule.digital_identity_ro.capture_requirements.r1
+  canonical_rule_id: rule.digital_identity_ro.capture_requirements
+  event_type_id: ro.life.digital_identity_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: enrollment_submitted
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.smartphone
+  - type: include_requirement
+    requirement_id: req.camera_microphone_internet
+  - type: include_requirement
+    requirement_id: req.email
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_capture_requirements
+  - claim.digital_identity_ro.roeid_smartphone_internet
+  status: draft
+  reviewer_id: null
+- id: rule.digital_identity_ro.validation_conflict.r1
+  canonical_rule_id: rule.digital_identity_ro.validation_conflict
+  event_type_id: ro.life.digital_identity_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: enrollment_submitted
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: 'Durata aprobării este publicată contradictoriu: maximum 24h versus 24–72h lucrătoare.'
+  - type: require_confirmation
+    message_ro: Nu afișa un deadline garantat.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_duration_24_72
+  - claim.digital_identity_ro.roeid_duration_max_24
+  status: draft
+  reviewer_id: null
+- id: rule.digital_identity_ro.rejected_capture.r1
+  canonical_rule_id: rule.digital_identity_ro.rejected_capture
+  event_type_id: ro.life.digital_identity_ro
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: enrollment_rejected
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: Refă capturile cu actul original, lumină bună și fără reflexii.
+  source_claim_ids:
+  - claim.digital_identity_ro.roeid_rejected_capture_recovery
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

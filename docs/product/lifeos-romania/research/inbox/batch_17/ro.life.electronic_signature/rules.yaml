@@ -1,0 +1,519 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.electronic_signature
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: signature_goal
+  type: enum
+  label: Pentru ce ai nevoie de semnătură?
+  reason: Forma cerută de act sau platformă determină tipul potrivit.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - public_authority
+  - private_contract
+  - employment
+  - tax_platform
+  - authentic_act
+  - other
+  - unknown
+- id: requested_signature_type
+  type: enum
+  label: Știi ce tip de semnătură ți se cere?
+  reason: Nu toate semnăturile au automat efectul semnăturii olografe.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - qualified
+  - advanced
+  - simple
+  - unknown
+- id: provider_id
+  type: enum
+  label: Ce prestator ai ales?
+  reason: Documentele, tariful și livrarea sunt stabilite de prestator.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - certsign
+  - digisign
+  - other_trusted
+  - unknown
+- id: delivery_mode
+  type: enum
+  label: Vrei semnătură în cloud sau pe token?
+  reason: Modul de livrare schimbă pașii și timpul orientativ.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - cloud
+  - token
+  - unknown
+- id: age_years
+  type: integer
+  label: Ce vârstă ai?
+  reason: Unii prestatori publică limite proprii pentru fluxul video.
+  sensitive: true
+  required_for_resolution: true
+- id: valid_identity_document
+  type: boolean
+  label: Ai un act de identitate valabil?
+  reason: Este necesar identificării titularului.
+  sensitive: false
+  required_for_resolution: true
+- id: payment_card_available
+  type: boolean
+  label: Ai un card pentru plata online?
+  reason: Este cerut în fluxurile online cercetate.
+  sensitive: false
+  required_for_resolution: true
+- id: camera_microphone_available
+  type: boolean
+  label: Ai cameră și microfon funcționale?
+  reason: Sunt necesare identificării video.
+  sensitive: false
+  required_for_resolution: true
+- id: internet_available
+  type: boolean
+  label: Ai o conexiune stabilă la internet?
+  reason: Este necesară identificării și activării.
+  sensitive: false
+  required_for_resolution: true
+- id: target_requires_authentic_form
+  type: boolean
+  label: Actul trebuie autentificat de notar sau altă autoritate?
+  reason: Semnătura calificată nu înlocuiește autentificarea impusă de lege.
+  sensitive: false
+  required_for_resolution: false
+- id: target_platform_known
+  type: boolean
+  label: Știi platforma în care vei folosi certificatul?
+  reason: Unele platforme cer o înrolare separată după emitere.
+  sensitive: false
+  required_for_resolution: false
+gates:
+- id: gate.authentic_form
+  priority: 100
+  when: target_requires_authentic_form == true
+  effect: warn
+  code: AUTHENTIC_FORM_NOT_REPLACED
+  message: Semnătura electronică nu înlocuiește autentificarea cerută expres de lege.
+  recovery_actions:
+  - Confirmă procedura la notar sau autoritatea competentă.
+  source_claim_ids:
+  - claim.electronic_signature.authentic_form_exception
+- id: gate.signature_type_unknown
+  priority: 95
+  when: requested_signature_type == unknown
+  effect: needs_confirmation
+  code: SIGNATURE_TYPE_UNCONFIRMED
+  message: Nu cumpăra un certificat până nu confirmi tipul acceptat de destinatar.
+  recovery_actions:
+  - Verifică cerința pe portalul sau în documentația oficială a destinatarului.
+  source_claim_ids:
+  - claim.electronic_signature.all_signatures_have_legal_effect
+  - claim.electronic_signature.qualified_equals_handwritten
+- id: gate.invalid_id
+  priority: 90
+  when: valid_identity_document == false
+  effect: block
+  code: VALID_ID_REQUIRED
+  message: Fluxurile de emitere cercetate necesită un document de identitate valabil.
+  recovery_actions:
+  - Reînnoiește documentul sau verifică la prestator ce documente alternative acceptă.
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: gate.video_tools_missing
+  priority: 80
+  when: camera_microphone_available == false or internet_available == false
+  effect: block
+  code: VIDEO_IDENTIFICATION_NOT_READY
+  message: Identificarea video nu poate fi finalizată fără cameră, microfon și internet.
+  recovery_actions:
+  - Folosește un dispozitiv compatibil și o conexiune stabilă.
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: gate.digisign_under_18
+  priority: 75
+  when: provider_id == digisign and age_years < 18
+  effect: needs_confirmation
+  code: DIGISIGN_VIDEO_AGE_LIMIT
+  message: Fluxul DigiSign cercetat indică vârsta minimă de 18 ani.
+  recovery_actions:
+  - Alege un prestator/flux compatibil și confirmă condițiile direct.
+  source_claim_ids:
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: gate.provider_unknown
+  priority: 70
+  when: provider_id == unknown
+  effect: needs_confirmation
+  code: TRUSTED_PROVIDER_REQUIRED
+  message: Prestatorul și statutul calificat trebuie verificate înainte de achiziție.
+  recovery_actions:
+  - Alege un serviciu calificat din Trusted List.
+  source_claim_ids:
+  - claim.electronic_signature.eu_qualified_trusted_list
+steps:
+- id: step.confirm_signature_type
+  title: Confirmă tipul de semnătură acceptat
+  instruction: Verifică dacă destinatarul cere semnătură calificată, avansată sau acceptă alt tip.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Ai o cerință oficială sau contractuală clară privind tipul acceptat.
+  recovery_actions:
+  - Solicită confirmare scrisă destinatarului.
+  official_channel_ids:
+  - channel.adr_trusted_list
+  source_claim_ids:
+  - claim.electronic_signature.all_signatures_have_legal_effect
+  - claim.electronic_signature.qualified_equals_handwritten
+  - claim.electronic_signature.authentic_form_exception
+- id: step.choose_provider
+  title: Alege un prestator calificat
+  instruction: Verifică prestatorul și serviciul în Trusted List înainte de plată.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.confirm_signature_type
+  deadline:
+    kind: none
+  completion_evidence: Prestatorul și serviciul ales apar ca fiind calificate în lista oficială.
+  recovery_actions:
+  - Nu continua pe un site neconfirmat; revino la Trusted List.
+  official_channel_ids:
+  - channel.adr_trusted_list
+  - channel.certsign
+  - channel.digisign
+  source_claim_ids:
+  - claim.electronic_signature.eu_qualified_trusted_list
+- id: step.purchase_and_identify
+  title: Completează comanda și identificarea
+  instruction: Furnizează datele cerute, plătește prin canalul oficial și finalizează identificarea video.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.choose_provider
+  deadline:
+    kind: none
+  completion_evidence: Ai confirmarea trimiterii și rezultatul validării identității.
+  recovery_actions:
+  - Refă identificarea în condiții bune de lumină sau contactează suportul prestatorului.
+  official_channel_ids:
+  - channel.certsign
+  - channel.digisign
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.certsign_validation_24h
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: step.receive_activate
+  title: Primește și activează certificatul
+  instruction: Urmează instrucțiunile pentru cloud sau token și păstrează în siguranță credențialele/PIN-ul.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.purchase_and_identify
+  deadline:
+    kind: none
+  completion_evidence: Poți aplica și valida o semnătură de test.
+  recovery_actions:
+  - Folosește suportul oficial al prestatorului pentru activare.
+  official_channel_ids:
+  - channel.certsign
+  - channel.digisign
+  source_claim_ids:
+  - claim.electronic_signature.certsign_delivery_estimates
+  - claim.electronic_signature.digisign_issue_window
+- id: step.enrol_target_platform
+  title: Înrolează certificatul unde este necesar
+  instruction: Dacă platforma țintă cere înrolare separată, urmează procedura ei oficială.
+  sequence_hint: 5
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.receive_activate
+  deadline:
+    kind: none
+  completion_evidence: Platforma țintă confirmă certificatul sau acceptă documentul semnat.
+  recovery_actions:
+  - Verifică ghidul oficial al platformei țintă.
+  official_channel_ids:
+  - channel.adr_trusted_list
+  source_claim_ids:
+  - claim.electronic_signature.qualified_equals_handwritten
+requirements:
+- id: req.valid_id
+  title: Document de identitate valabil
+  description: Document acceptat de prestator pentru verificarea titularului.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - original
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - not_expired
+  - names_consistent
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: req.payment_method
+  title: Metodă de plată online
+  description: Card sau altă metodă acceptată de prestator.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: req.video_device
+  title: Dispozitiv pentru identificare video
+  description: Smartphone/PC cu cameră, microfon și internet.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.digisign_identity_prerequisites
+- id: req.recipient_requirement
+  title: Cerința destinatarului
+  description: Dovada tipului de semnătură acceptat pentru demersul concret.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  - copy
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - field_present
+  - user_confirmed
+  source_claim_ids:
+  - claim.electronic_signature.all_signatures_have_legal_effect
+  - claim.electronic_signature.qualified_equals_handwritten
+  - claim.electronic_signature.authentic_form_exception
+official_channels:
+- id: channel.adr_trusted_list
+  type: web
+  label: ADR — Trusted List
+  url: https://www.adr.gov.ro/semnatura-electronica-trusted-list
+  integration_status: DEEP_LINK
+  official_domain: adr.gov.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.electronic_signature.eu_qualified_trusted_list
+- id: channel.certsign
+  type: web
+  label: certSIGN — achiziție și identificare
+  url: https://www.certsign.ro/ro/intrebari-despre-semnatura-electronica-calificata/
+  integration_status: DEEP_LINK
+  official_domain: certsign.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  - claim.electronic_signature.certsign_validation_24h
+  - claim.electronic_signature.certsign_delivery_estimates
+- id: channel.digisign
+  type: web
+  label: DigiSign — identificare video
+  url: https://digisign.ro/video/portal-identificare-video-fara-operator/
+  integration_status: DEEP_LINK
+  official_domain: digisign.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.electronic_signature.digisign_identity_prerequisites
+  - claim.electronic_signature.digisign_issue_window
+rules:
+- id: rule.electronic_signature.qes_effect.r1
+  canonical_rule_id: rule.electronic_signature.qes_effect
+  event_type_id: ro.life.electronic_signature
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: requested_signature_type
+    value: qualified
+  effects:
+  - type: emit_warning
+    message_ro: Semnătura calificată are efectele semnăturii olografe, dar verifică forma juridică cerută pentru actul concret.
+  source_claim_ids:
+  - claim.electronic_signature.qualified_equals_handwritten
+  - claim.electronic_signature.authentic_form_exception
+  status: draft
+  reviewer_id: null
+- id: rule.electronic_signature.authentic_form.r1
+  canonical_rule_id: rule.electronic_signature.authentic_form
+  event_type_id: ro.life.electronic_signature
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: target_requires_authentic_form
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: Este necesară autentificarea prevăzută de lege; certificatul calificat nu o înlocuiește.
+  - type: require_confirmation
+    message_ro: Confirmă procedura la autoritatea competentă.
+  source_claim_ids:
+  - claim.electronic_signature.authentic_form_exception
+  status: draft
+  reviewer_id: null
+- id: rule.electronic_signature.certsign_requirements.r1
+  canonical_rule_id: rule.electronic_signature.certsign_requirements
+  event_type_id: ro.life.electronic_signature
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:certsign
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: provider_id
+    value: certsign
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_id
+  - type: include_requirement
+    requirement_id: req.payment_method
+  - type: include_requirement
+    requirement_id: req.video_device
+  source_claim_ids:
+  - claim.electronic_signature.certsign_video_requirements
+  status: draft
+  reviewer_id: null
+- id: rule.electronic_signature.digisign_requirements.r1
+  canonical_rule_id: rule.electronic_signature.digisign_requirements
+  event_type_id: ro.life.electronic_signature
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:digisign
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: provider_id
+    value: digisign
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_id
+  - type: include_requirement
+    requirement_id: req.payment_method
+  - type: include_requirement
+    requirement_id: req.video_device
+  source_claim_ids:
+  - claim.electronic_signature.digisign_identity_prerequisites
+  status: draft
+  reviewer_id: null
+- id: rule.electronic_signature.unknown_provider.r1
+  canonical_rule_id: rule.electronic_signature.unknown_provider
+  event_type_id: ro.life.electronic_signature
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: provider_id
+    value: unknown
+  effects:
+  - type: require_confirmation
+    message_ro: Alege prestatorul numai după verificarea în Trusted List.
+  source_claim_ids:
+  - claim.electronic_signature.eu_qualified_trusted_list
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

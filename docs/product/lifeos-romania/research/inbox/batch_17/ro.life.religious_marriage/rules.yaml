@@ -1,0 +1,529 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.religious_marriage
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: civil_marriage_completed
+  type: boolean
+  label: Căsătoria civilă este deja încheiată?
+  reason: Este o condiție legală anterioară celebrării religioase.
+  sensitive: false
+  required_for_resolution: true
+- id: civil_certificate_available
+  type: boolean
+  label: Ai dovada/certificatul căsătoriei civile?
+  reason: Parohia poate solicita dovada îndeplinirii condiției legale.
+  sensitive: false
+  required_for_resolution: true
+- id: cult_id
+  type: enum
+  label: În ce cult vrei celebrarea?
+  reason: Checklistul și pregătirea sunt stabilite de cult și unitatea locală.
+  sensitive: true
+  required_for_resolution: true
+  options:
+  - orthodox
+  - roman_catholic
+  - other_recognized
+  - religious_association
+  - unknown
+- id: locality
+  type: jurisdiction_ref
+  label: În ce localitate vrei ceremonia?
+  reason: Determină eparhia/parohia și canalul local.
+  sensitive: false
+  required_for_resolution: true
+- id: parish_selected
+  type: boolean
+  label: Ai ales parohia/comunitatea?
+  reason: Cerințele concrete trebuie confirmate local.
+  sensitive: false
+  required_for_resolution: true
+- id: desired_date_known
+  type: boolean
+  label: Ai o dată dorită?
+  reason: Programarea și pregătirea pot varia local.
+  sensitive: false
+  required_for_resolution: false
+- id: both_parties_consent
+  type: boolean
+  label: Ambele persoane doresc celebrarea religioasă?
+  reason: Libertatea religioasă exclude constrângerea.
+  sensitive: true
+  required_for_resolution: true
+- id: religion_data_storage_consent
+  type: boolean
+  label: Consimți ca aplicația să păstreze informația despre cult?
+  reason: Apartenența religioasă este dată sensibilă și necesită consimțământ expres.
+  sensitive: true
+  required_for_resolution: true
+- id: local_checklist_confirmed
+  type: boolean
+  label: Ai primit checklistul oficial al parohiei?
+  reason: Nu există o listă națională unică de acte.
+  sensitive: false
+  required_for_resolution: true
+- id: contribution_presented_as_mandatory_fee
+  type: boolean
+  label: Ți s-a prezentat o contribuție drept taxă obligatorie?
+  reason: Trebuie diferențiată contribuția cultului de o taxă publică universală.
+  sensitive: false
+  required_for_resolution: false
+- id: special_canonical_situation
+  type: boolean
+  label: Există o situație religioasă anterioară care trebuie discutată cu cultul?
+  reason: Impedimentele și dispensările sunt stabilite canonic, nu de aplicație.
+  sensitive: true
+  required_for_resolution: false
+gates:
+- id: gate.civil_not_completed
+  priority: 100
+  when: civil_marriage_completed == false
+  effect: block
+  code: CIVIL_MARRIAGE_REQUIRED_FIRST
+  message: Celebrarea religioasă nu poate avea loc înaintea căsătoriei civile.
+  recovery_actions:
+  - Finalizează mai întâi procedura de căsătorie civilă.
+  source_claim_ids:
+  - claim.religious_marriage.civil_marriage_first
+- id: gate.no_mutual_consent
+  priority: 95
+  when: both_parties_consent == false
+  effect: block
+  code: RELIGIOUS_CONSENT_REQUIRED
+  message: Aplicația nu poate ghida o celebrare religioasă împotriva voinței uneia dintre persoane.
+  recovery_actions:
+  - Oprește demersul și discută liber, fără constrângere.
+  source_claim_ids:
+  - claim.religious_marriage.religion_disclosure_not_compulsory
+- id: gate.no_data_consent
+  priority: 90
+  when: religion_data_storage_consent == false
+  effect: warn
+  code: RELIGION_DATA_NOT_STORED
+  message: ActeOS nu va salva cultul sau apartenența religioasă fără consimțământ expres.
+  recovery_actions:
+  - Continuă în mod privat, fără memorarea acestei informații, sau acordă consimțământ explicit.
+  source_claim_ids:
+  - claim.religious_marriage.religion_data_consent
+  - claim.religious_marriage.religion_disclosure_not_compulsory
+- id: gate.cult_unknown
+  priority: 85
+  when: cult_id == unknown
+  effect: needs_confirmation
+  code: CULT_AND_PARISH_REQUIRED
+  message: Nu există un checklist național unic; trebuie identificat cultul și unitatea locală.
+  recovery_actions:
+  - Consultă directorul oficial al cultelor și alege parohia/comunitatea.
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+  - claim.religious_marriage.official_cult_directory
+- id: gate.local_checklist_missing
+  priority: 80
+  when: parish_selected == false or local_checklist_confirmed == false
+  effect: needs_confirmation
+  code: LOCAL_RELIGIOUS_CHECKLIST_REQUIRED
+  message: Actele, pregătirea și programarea trebuie confirmate direct cu parohia/comunitatea.
+  recovery_actions:
+  - Cere în scris checklistul, termenul, condițiile și dovada programării.
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+  - claim.religious_marriage.orthodox_timisoara_channel
+  - claim.religious_marriage.catholic_timisoara_channel
+- id: gate.contribution_as_fee
+  priority: 70
+  when: contribution_presented_as_mandatory_fee == true
+  effect: warn
+  code: RELIGIOUS_CONTRIBUTION_NOT_PUBLIC_FEE
+  message: O contribuție a cultului nu trebuie afișată ca taxă publică națională obligatorie.
+  recovery_actions:
+  - Cere explicație/bon și confirmă natura contribuției direct cu unitatea de cult.
+  source_claim_ids:
+  - claim.religious_marriage.contributions_not_compelled
+  - claim.religious_marriage.cults_may_set_contributions
+- id: gate.canonical_case
+  priority: 60
+  when: special_canonical_situation == true
+  effect: needs_confirmation
+  code: CANONICAL_REVIEW_REQUIRED
+  message: Aplicația nu decide impedimente sau dispense canonice.
+  recovery_actions:
+  - Discută situația confidențial cu reprezentantul cultului competent.
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+steps:
+- id: step.complete_civil_marriage
+  title: Încheie căsătoria civilă
+  instruction: Finalizează căsătoria civilă înainte de programarea celebrării religioase.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Căsătoria civilă este încheiată și ai dovada oficială.
+  recovery_actions:
+  - Urmează separat traseul de căsătorie civilă.
+  official_channel_ids:
+  - channel.civil_code_source
+  source_claim_ids:
+  - claim.religious_marriage.civil_marriage_first
+- id: step.select_cult_parish
+  title: Alege cultul și parohia/comunitatea
+  instruction: Folosește directorul oficial și canalul eparhial/local, fără a presupune că regulile sunt identice între culte.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.complete_civil_marriage
+  deadline:
+    kind: none
+  completion_evidence: Ai identificat unitatea locală și datele ei oficiale de contact.
+  recovery_actions:
+  - Contactează structura eparhială/centrală dacă parohia nu are date publice.
+  official_channel_ids:
+  - channel.cult_directory
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+  - claim.religious_marriage.official_cult_directory
+  - claim.religious_marriage.orthodox_timisoara_channel
+  - claim.religious_marriage.catholic_timisoara_channel
+- id: step.request_local_checklist
+  title: Solicită checklistul și pregătirea locală
+  instruction: Cere parohiei lista actuală de documente, eventualele întâlniri/pregătiri, disponibilitatea și modul de programare.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.select_cult_parish
+  deadline:
+    kind: none
+  completion_evidence: Ai primit un răspuns oficial/local datat și ai confirmat condițiile.
+  recovery_actions:
+  - Escaladează la eparhie/structura cultului dacă răspunsul este neclar.
+  official_channel_ids:
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+- id: step.prepare_local_dossier
+  title: Pregătește actele confirmate de parohie
+  instruction: Încarcă numai documentele cerute explicit de unitatea locală; nu folosi o listă generică.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.request_local_checklist
+  deadline:
+    kind: none
+  completion_evidence: Parohia confirmă că dosarul/pregătirea sunt complete.
+  recovery_actions:
+  - Corectează doar lipsurile comunicate de unitatea competentă.
+  official_channel_ids:
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+  - claim.religious_marriage.civil_marriage_first
+- id: step.confirm_schedule
+  title: Confirmă data și locul
+  instruction: Obține confirmarea programării și instrucțiunile finale de la unitatea de cult.
+  sequence_hint: 5
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.prepare_local_dossier
+  deadline:
+    kind: none
+  completion_evidence: Ai confirmare datată privind ceremonia și eventualele etape premergătoare.
+  recovery_actions:
+  - Reprogramează direct cu unitatea de cult.
+  official_channel_ids:
+  - channel.orthodox_timisoara
+  - channel.catholic_timisoara
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+requirements:
+- id: req.civil_marriage_proof
+  title: Dovada căsătoriei civile
+  description: Dovada îndeplinirii condiției legale prealabile; forma concretă acceptată se confirmă la cult.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - original
+  - copy
+  - electronic
+  - certified_copy
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - names_consistent
+  - date_within_window
+  source_claim_ids:
+  - claim.religious_marriage.civil_marriage_first
+- id: req.local_checklist_confirmation
+  title: Checklist local confirmat
+  description: Răspunsul parohiei/comunității privind actele, pregătirea și programarea.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  - copy
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - date_within_window
+  - user_confirmed
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+- id: req.religion_data_consent
+  title: Consimțământ pentru stocarea datelor religioase
+  description: Necesar numai dacă ActeOS păstrează cultul sau apartenența religioasă în profil/dosar.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: religion_data_storage_consent
+    value: true
+  accepted_forms:
+  - electronic
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.religious_marriage.religion_data_consent
+  - claim.religious_marriage.religion_disclosure_not_compulsory
+official_channels:
+- id: channel.civil_code_source
+  type: web
+  label: Portal Legislativ — condiția căsătoriei civile
+  url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/130143
+  integration_status: SOURCE_ONLY
+  official_domain: legislatie.just.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.religious_marriage.civil_marriage_first
+- id: channel.cult_directory
+  type: web
+  label: Secretariatul de Stat pentru Culte — director
+  url: https://culte.gov.ro/culte-religioase/
+  integration_status: DEEP_LINK
+  official_domain: culte.gov.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.religious_marriage.official_cult_directory
+- id: channel.orthodox_timisoara
+  type: web
+  label: Arhiepiscopia Timișoarei — parohii/contact
+  url: https://www.arhiepiscopiatimisoarei.ro/
+  integration_status: DEEP_LINK
+  official_domain: arhiepiscopiatimisoarei.ro
+  territory_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  source_claim_ids:
+  - claim.religious_marriage.orthodox_timisoara_channel
+  notes: Cerințele se confirmă la parohia competentă.
+- id: channel.catholic_timisoara
+  type: web
+  label: Episcopia Romano-Catolică de Timișoara — parohii/contact
+  url: https://gerhardus.ro/
+  integration_status: DEEP_LINK
+  official_domain: gerhardus.ro
+  territory_ids:
+  - ro.tm
+  - ro.tm.timisoara
+  source_claim_ids:
+  - claim.religious_marriage.catholic_timisoara_channel
+  notes: Cerințele se confirmă la parohia competentă.
+rules:
+- id: rule.religious_marriage.civil_first.r1
+  canonical_rule_id: rule.religious_marriage.civil_first
+  event_type_id: ro.life.religious_marriage
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: cod
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: civil_marriage_completed
+    value: false
+  effects:
+  - type: block
+    message_ro: Căsătoria religioasă poate fi celebrată numai după căsătoria civilă.
+  - type: include_requirement
+    requirement_id: req.civil_marriage_proof
+  source_claim_ids:
+  - claim.religious_marriage.civil_marriage_first
+  status: draft
+  reviewer_id: null
+- id: rule.religious_marriage.local_rules.r1
+  canonical_rule_id: rule.religious_marriage.local_rules
+  event_type_id: ro.life.religious_marriage
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: local_checklist_confirmed
+    value: false
+  effects:
+  - type: require_confirmation
+    message_ro: Checklistul trebuie obținut de la cultul/parohia competentă.
+  - type: include_requirement
+    requirement_id: req.local_checklist_confirmation
+  source_claim_ids:
+  - claim.religious_marriage.cult_autonomy
+  status: draft
+  reviewer_id: null
+- id: rule.religious_marriage.privacy.r1
+  canonical_rule_id: rule.religious_marriage.privacy
+  event_type_id: ro.life.religious_marriage
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: religion_data_storage_consent
+    value: false
+  effects:
+  - type: emit_warning
+    message_ro: Nu stoca apartenența religioasă fără consimțământ expres.
+  source_claim_ids:
+  - claim.religious_marriage.religion_data_consent
+  - claim.religious_marriage.religion_disclosure_not_compulsory
+  status: draft
+  reviewer_id: null
+- id: rule.religious_marriage.orthodox_channel.r1
+  canonical_rule_id: rule.religious_marriage.orthodox_channel
+  event_type_id: ro.life.religious_marriage
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - cult:orthodox
+  - territory:timis
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: cult_id
+    value: orthodox
+  effects:
+  - type: attach_channel
+    channel_id: channel.orthodox_timisoara
+  source_claim_ids:
+  - claim.religious_marriage.orthodox_timisoara_channel
+  status: draft
+  reviewer_id: null
+- id: rule.religious_marriage.catholic_channel.r1
+  canonical_rule_id: rule.religious_marriage.catholic_channel
+  event_type_id: ro.life.religious_marriage
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - cult:roman_catholic
+  - territory:timis
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: cult_id
+    value: roman_catholic
+  effects:
+  - type: attach_channel
+    channel_id: channel.catholic_timisoara
+  source_claim_ids:
+  - claim.religious_marriage.catholic_timisoara_channel
+  status: draft
+  reviewer_id: null
+- id: rule.religious_marriage.contribution_warning.r1
+  canonical_rule_id: rule.religious_marriage.contribution_warning
+  event_type_id: ro.life.religious_marriage
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: contribution_presented_as_mandatory_fee
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: Nu eticheta contribuția cultului drept taxă publică universală obligatorie.
+  source_claim_ids:
+  - claim.religious_marriage.contributions_not_compelled
+  - claim.religious_marriage.cults_may_set_contributions
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

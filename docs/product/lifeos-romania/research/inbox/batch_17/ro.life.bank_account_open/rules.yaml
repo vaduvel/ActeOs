@@ -1,0 +1,480 @@
+schema_version: 2.1.0
+data_class: research_candidate
+event_id: ro.life.bank_account_open
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+jurisdiction_scope:
+  national:
+  - eu
+  - ro
+  local_pilot:
+  - ro.tm
+  - ro.tm.timisoara
+  other_uat_policy: verified_with_local_gap
+facts:
+- id: account_type
+  type: enum
+  label: Ce fel de cont vrei să deschizi?
+  reason: Contul cu servicii de bază are o regulă legală distinctă de termen.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - standard
+  - basic_payment_account
+  - unsure
+- id: provider_id
+  type: enum
+  label: La ce bancă vrei contul?
+  reason: Cerințele comerciale și fluxurile online diferă între furnizori.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - ing
+  - bt
+  - cec
+  - other
+  - undecided
+- id: channel_preference
+  type: enum
+  label: Vrei online sau la unitate?
+  reason: Cerințele tehnice și documentele pot diferi.
+  sensitive: false
+  required_for_resolution: true
+  options:
+  - online
+  - branch
+  - either
+- id: age
+  type: integer
+  label: Ce vârstă ai?
+  reason: Unele fluxuri online oficiale cercetate sunt numai pentru persoane majore.
+  sensitive: true
+  required_for_resolution: true
+- id: citizenship
+  type: enum
+  label: Ce cetățenie ai?
+  reason: Eligibilitatea fluxului online poate depinde de cetățenie.
+  sensitive: true
+  required_for_resolution: true
+  options:
+  - romanian
+  - eu_other
+  - non_eu
+- id: residence_country
+  type: string
+  label: În ce țară locuiești?
+  reason: Unele fluxuri online sunt limitate rezidenților din România.
+  sensitive: true
+  required_for_resolution: true
+- id: valid_identity_document
+  type: boolean
+  label: Ai un act de identitate valabil?
+  reason: Identificarea este obligatorie înainte de deschiderea contului.
+  sensitive: true
+  required_for_resolution: true
+- id: can_complete_kyc
+  type: boolean
+  label: Poți finaliza verificarea identității?
+  reason: Fără KYC, contul nu poate fi deschis.
+  sensitive: true
+  required_for_resolution: true
+- id: has_camera_device
+  type: boolean
+  label: Ai telefon sau dispozitiv cu cameră?
+  reason: Este necesar pentru unele fluxuri online.
+  sensitive: false
+  required_for_resolution: false
+- id: has_internet
+  type: boolean
+  label: Ai conexiune la internet?
+  reason: Este necesară pentru fluxul online.
+  sensitive: false
+  required_for_resolution: false
+- id: is_existing_customer
+  type: boolean
+  label: Ești deja clientul băncii?
+  reason: Unele fluxuri de onboarding se adresează clienților noi.
+  sensitive: false
+  required_for_resolution: false
+- id: tax_residency_known
+  type: boolean
+  label: Îți cunoști rezidența fiscală?
+  reason: Banca poate solicita informații suplimentare în cadrul KYC.
+  sensitive: true
+  required_for_resolution: false
+gates:
+- id: gate.kyc_possible
+  priority: 100
+  when: can_complete_kyc == false
+  effect: block
+  code: KYC_UNAVAILABLE
+  message: Contul nu poate fi deschis până când banca nu îți poate verifica identitatea.
+  recovery_actions:
+  - Pregătește un act valabil.
+  - Alege un canal alternativ indicat de bancă.
+  source_claim_ids:
+  - claim.bank_account_open.no_account_without_kyc
+- id: gate.provider_selected
+  priority: 80
+  when: provider_id in [other, undecided]
+  effect: needs_confirmation
+  code: PROVIDER_RULES_REQUIRED
+  message: Cerințele exacte trebuie confirmate la banca aleasă; nu există un dosar bancar unic pentru toate băncile.
+  recovery_actions:
+  - Selectează furnizorul.
+  - Verifică pagina oficială a produsului.
+  source_claim_ids:
+  - claim.bank_account_open.kyc_before_relationship
+- id: gate.online_eligibility
+  priority: 70
+  when: channel_preference == online and provider-specific eligibility is not met
+  effect: warn
+  code: ONLINE_FLOW_MAY_BE_UNAVAILABLE
+  message: Fluxul online cercetat poate să nu fie disponibil; verifică deschiderea la unitate.
+  recovery_actions:
+  - Alege canalul fizic.
+  - Confirmă eligibilitatea direct cu banca.
+  source_claim_ids:
+  - claim.bank_account_open.ing_online_eligibility
+  - claim.bank_account_open.bt_online_eligibility
+  - claim.bank_account_open.cec_online_prerequisites
+steps:
+- id: step.choose_provider_product
+  title: Alege banca și tipul de cont
+  instruction: Compară produsul standard cu contul de plăți cu servicii de bază și selectează banca.
+  sequence_hint: 1
+  applies_when:
+    op: const
+    value: true
+  depends_on: []
+  deadline:
+    kind: none
+  completion_evidence: Ai selectat provider_id și account_type.
+  recovery_actions:
+  - Dacă nu știi ce tip alegi, marchează «nesigur» și cere explicația diferențelor.
+  official_channel_ids:
+  - channel.ing_account
+  - channel.bt_account
+  - channel.cec_account
+  source_claim_ids:
+  - claim.bank_account_open.basic_account_ten_days
+  - claim.bank_account_open.ing_online_eligibility
+  - claim.bank_account_open.bt_online_eligibility
+  - claim.bank_account_open.cec_online_prerequisites
+- id: step.prepare_identity
+  title: Pregătește identificarea
+  instruction: Folosește un act de identitate valabil și completează informațiile cerute pentru cunoașterea clientelei.
+  sequence_hint: 2
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.choose_provider_product
+  deadline:
+    kind: none
+  completion_evidence: Banca a putut verifica identitatea și a confirmat că solicitarea este completă.
+  recovery_actions:
+  - Corectează fotografiile sau datele.
+  - Mergi la o unitate dacă verificarea online eșuează.
+  official_channel_ids:
+  - channel.ing_account
+  - channel.bt_account
+  - channel.cec_account
+  source_claim_ids:
+  - claim.bank_account_open.kyc_before_relationship
+  - claim.bank_account_open.no_account_without_kyc
+- id: step.submit_application
+  title: Trimite cererea
+  instruction: Trimite cererea prin canalul oficial al băncii și păstrează confirmarea.
+  sequence_hint: 3
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.prepare_identity
+  deadline:
+    kind: none
+  completion_evidence: Ai confirmarea că cererea completă a fost primită.
+  recovery_actions:
+  - Dacă nu primești confirmare, contactează banca prin canalul oficial.
+  official_channel_ids:
+  - channel.ing_account
+  - channel.bt_account
+  - channel.cec_account
+  source_claim_ids:
+  - claim.bank_account_open.basic_account_ten_days
+  - claim.bank_account_open.ing_online_eligibility
+  - claim.bank_account_open.bt_online_eligibility
+  - claim.bank_account_open.cec_online_prerequisites
+- id: step.receive_decision
+  title: Primește decizia și activează contul
+  instruction: Verifică decizia băncii, contractul, IBAN-ul și modalitatea de activare.
+  sequence_hint: 4
+  applies_when:
+    op: const
+    value: true
+  depends_on:
+  - step.submit_application
+  deadline:
+    kind: none
+  completion_evidence: Ai contractul/confirmarea, IBAN-ul și accesul activat sau un refuz motivat.
+  recovery_actions:
+  - Pentru contul de bază, urmărește termenul legal de 10 zile lucrătoare de la cererea completă.
+  - Pentru alte produse, confirmă termenul contractual.
+  official_channel_ids:
+  - channel.ing_account
+  - channel.bt_account
+  - channel.cec_account
+  source_claim_ids:
+  - claim.bank_account_open.basic_account_ten_days
+requirements:
+- id: req.valid_identity
+  title: Act de identitate valabil
+  description: Document pentru identificarea clientului.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - original
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - readable
+  - correct_document_type
+  - not_expired
+  - names_consistent
+  source_claim_ids:
+  - claim.bank_account_open.kyc_before_relationship
+  - claim.bank_account_open.no_account_without_kyc
+- id: req.kyc_information
+  title: Informațiile KYC solicitate de bancă
+  description: Datele și declarațiile necesare verificării clientului și, după caz, rezidenței fiscale.
+  obligation: mandatory
+  timing: now
+  applies_when:
+    op: const
+    value: true
+  accepted_forms:
+  - electronic
+  - declaration
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - exists
+  - field_present
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_account_open.kyc_before_relationship
+- id: req.camera_device
+  title: Dispozitiv cu cameră
+  description: Necesar pentru fluxurile online care folosesc identificare foto/video.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: channel_preference
+    value: online
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_account_open.cec_online_prerequisites
+  - claim.bank_account_open.ing_online_eligibility
+- id: req.internet_connection
+  title: Conexiune la internet
+  description: Necesară pentru finalizarea fluxului online.
+  obligation: conditional
+  timing: now
+  applies_when:
+    op: eq
+    field: channel_preference
+    value: online
+  accepted_forms:
+  - electronic
+  validity:
+    max_age_days: null
+    must_be_valid_at: submission
+  readiness_checks:
+  - user_confirmed
+  source_claim_ids:
+  - claim.bank_account_open.cec_online_prerequisites
+official_channels:
+- id: channel.ing_account
+  type: web
+  label: ING — deschidere cont
+  url: https://ing.ro/persoane-fizice/carduri-si-conturi/pachete-conturi-curente
+  integration_status: DEEP_LINK
+  official_domain: ing.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_account_open.ing_online_eligibility
+- id: channel.bt_account
+  type: web
+  label: Banca Transilvania — cont online
+  url: https://www.bancatransilvania.ro/cont-online
+  integration_status: DEEP_LINK
+  official_domain: bancatransilvania.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_account_open.bt_online_eligibility
+- id: channel.cec_account
+  type: web
+  label: CEC Bank — cont online
+  url: https://www.cec.ro/BunVenit/cont-bancar-online
+  integration_status: DEEP_LINK
+  official_domain: cec.ro
+  territory_ids:
+  - ro
+  source_claim_ids:
+  - claim.bank_account_open.cec_online_prerequisites
+rules:
+- id: rule.bank_account_open.kyc_required.r1
+  canonical_rule_id: rule.bank_account_open.kyc_required
+  event_type_id: ro.life.bank_account_open
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope:
+  - customer_due_diligence
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: step.prepare_identity
+  - type: include_requirement
+    requirement_id: req.valid_identity
+  source_claim_ids:
+  - claim.bank_account_open.kyc_before_relationship
+  status: draft
+  reviewer_id: null
+- id: rule.bank_account_open.block_without_kyc.r1
+  canonical_rule_id: rule.bank_account_open.block_without_kyc
+  event_type_id: ro.life.bank_account_open
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: can_complete_kyc
+    value: false
+  effects:
+  - type: block
+    message_ro: Banca nu poate deschide contul fără aplicarea măsurilor de cunoaștere a clientelei.
+  source_claim_ids:
+  - claim.bank_account_open.no_account_without_kyc
+  status: draft
+  reviewer_id: null
+- id: rule.bank_account_open.basic_account_decision_deadline.r1
+  canonical_rule_id: rule.bank_account_open.basic_account_decision_deadline
+  event_type_id: ro.life.bank_account_open
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  competence_scope: []
+  legal_rank: lege
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: eq
+    field: account_type
+    value: basic_payment_account
+  effects:
+  - type: set_deadline
+    step_id: step.receive_decision
+    value:
+      business_days: 10
+      anchor: complete_application_received
+  source_claim_ids:
+  - claim.bank_account_open.basic_account_ten_days
+  status: draft
+  reviewer_id: null
+- id: rule.bank_account_open.ing_online_conditions.r1
+  canonical_rule_id: rule.bank_account_open.ing_online_conditions
+  event_type_id: ro.life.bank_account_open
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  competence_scope:
+  - provider:ing
+  legal_rank: null
+  severity: critical
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: provider_id
+      value: ing
+    - op: eq
+      field: channel_preference
+      value: online
+  effects:
+  - type: include_requirement
+    requirement_id: req.camera_device
+  - type: include_requirement
+    requirement_id: req.internet_connection
+  source_claim_ids:
+  - claim.bank_account_open.ing_online_eligibility
+  status: draft
+  reviewer_id: null
+- id: rule.bank_account_open.provider_unknown.r1
+  canonical_rule_id: rule.bank_account_open.provider_unknown
+  event_type_id: ro.life.bank_account_open
+  jurisdiction_ids:
+  - ro
+  authority_level: mixed
+  competence_scope: []
+  legal_rank: null
+  severity: operational
+  effective_from: '2026-06-25'
+  effective_to: null
+  when:
+    op: in
+    field: provider_id
+    values:
+    - other
+    - undecided
+  effects:
+  - type: require_confirmation
+    message_ro: Cerințele și termenul produsului trebuie confirmate la furnizorul ales.
+  source_claim_ids:
+  - claim.bank_account_open.kyc_before_relationship
+  status: draft
+  reviewer_id: null
+freshness_policy:
+  critical:
+    review_due_at: '2026-07-25'
+    hard_expiry_at: '2026-09-23'
+    on_expiry: needs_confirmation
+  operational:
+    review_due_at: '2026-08-24'
+    hard_expiry_at: '2026-12-22'
+    on_expiry: warn
+  normative:
+    review_due_at: '2026-12-22'
+    hard_expiry_at: '2027-06-25'
+    on_expiry: needs_confirmation

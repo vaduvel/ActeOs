@@ -1,0 +1,927 @@
+schema_version: 2.1.0
+data_class: research_golden_candidate
+event_id: ro.life.life_insurance_claim
+reference_date: '2026-06-25'
+timezone: Europe/Bucharest
+fixtures:
+- id: fx.life_insurance_claim.01.nn_death
+  purpose: NN deces
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.02.nn_invalidity
+  purpose: NN invaliditate
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: invalidity
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.03.nn_serious_illness
+  purpose: NN afecțiune gravă
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: serious_illness
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.04.nn_hospital_in_time
+  purpose: NN spitalizare în 72h
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: hospitalization
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.05.nn_hospital_late
+  purpose: NN spitalizare după 72h
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: hospitalization
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-20'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes:
+    - NN_72H_WINDOW_MAY_BE_EXCEEDED
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.06.nn_surgery
+  purpose: NN intervenție chirurgicală
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: surgery
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.07.allianz_death
+  purpose: Allianz Life Plan deces
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: allianz
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.08.allianz_death_no_policy
+  purpose: Allianz fără număr poliță
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: allianz
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: false
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes:
+    - POLICY_NUMBER_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.09.allianz_other_event
+  purpose: Allianz alt eveniment decât deces
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: allianz
+      event_type: serious_illness
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes:
+    - POLICY_CONDITIONS_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Pagina cercetată este pentru Life Plan/deces; clauza concretă trebuie confirmată.
+- id: fx.life_insurance_claim.10.groupama_death
+  purpose: Groupama deces
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: groupama
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.11.groupama_invalidity
+  purpose: Groupama invaliditate
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: groupama
+      event_type: invalidity
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.12.groupama_no_iban
+  purpose: Groupama fără IBAN pregătit
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: groupama
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: false
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.13.other_provider
+  purpose: Alt asigurător
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: other
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes:
+    - POLICY_CONDITIONS_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.life_insurance_claim.14.unknown_provider
+  purpose: Asigurător necunoscut
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: unknown
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes:
+    - POLICY_CONDITIONS_REQUIRED
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.15.missing_docs
+  purpose: Documente lipsă
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: invalidity
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes:
+    - EVENT_DOCUMENTS_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.16.missing_policy_and_docs
+  purpose: Fără poliță și acte
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: groupama
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: false
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: false
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes:
+    - POLICY_NUMBER_MISSING
+    - EVENT_DOCUMENTS_MISSING
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.17.representative
+  purpose: Depunere prin reprezentant
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: invalidity
+      claimant_role: representative
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Împuternicirea exactă depinde de asigurător.
+- id: fx.life_insurance_claim.18.heir_not_named_beneficiary
+  purpose: Moștenitor, beneficiar neclar
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: allianz
+      event_type: death
+      claimant_role: heir
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: false
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: Calitatea la plată se stabilește contractual/legal de asigurător.
+- id: fx.life_insurance_claim.19.insured_claims_hospital
+  purpose: Asiguratul notifică spitalizarea
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: hospitalization
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.medical_documents
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.20.beneficiary_claims_death
+  purpose: Beneficiarul notifică decesul
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: groupama
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: resolved
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.21.event_date_missing
+  purpose: Data evenimentului lipsește
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: death
+      claimant_role: beneficiary
+      event_date: null
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_input
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified
+    notes: ''
+- id: fx.life_insurance_claim.22.unknown_event
+  purpose: Tip eveniment neclar
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: nn
+      event_type: other
+      claimant_role: insured
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    warning_codes:
+    - POLICY_CONDITIONS_REQUIRED
+    confidence: verified_with_local_gap
+    notes: ''
+- id: fx.life_insurance_claim.23.old_event
+  purpose: Eveniment vechi fără termen public universal
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: allianz
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2025-01-01'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: true
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes:
+    - POLICY_CONDITIONS_REQUIRED
+    confidence: verified_with_local_gap
+    notes: Termenul exact trebuie citit în contract.
+- id: fx.life_insurance_claim.24.no_beneficiary_data
+  purpose: Deces cu beneficiar necunoscut
+  input:
+    event_type_id: ro.life.life_insurance_claim
+    reference_date: '2026-06-25'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - eu
+    - ro
+    - ro.tm
+    - ro.tm.timisoara
+    facts:
+      insurer_id: groupama
+      event_type: death
+      claimant_role: beneficiary
+      event_date: '2026-06-24'
+      discharge_date: '2026-06-24'
+      policy_number_known: true
+      beneficiary_known: false
+      iban_available: true
+      event_documents_available: true
+    ruleset_version: batch17-research-candidate@1
+  expected:
+    resolution_status: needs_confirmation
+    required_step_ids:
+    - step.identify_policy
+    - step.notify_event
+    - step.prepare_documents
+    - step.track_decision
+    requirement_ids:
+    - req.policy_reference
+    - req.claimant_identity
+    - req.event_form
+    - req.iban
+    - req.death_certificate
+    warning_codes: []
+    confidence: verified_with_local_gap
+    notes: ''
