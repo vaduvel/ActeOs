@@ -1,0 +1,383 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_CHANGE_COMPANY_ADDRESS
+event_type_id: life.change_company_address
+status: draft
+rules:
+- id: rule.address.entity_required
+  canonical_rule_id: address.entity_required
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează dacă schimbi sediul PFA sau al SRL.
+  source_claim_ids:
+  - claim.biz.address.pfa_register
+  - claim.biz.address.onrc_routes
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+- id: rule.address.new_address_required
+  canonical_rule_id: address.new_address_required
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: new_address
+  effects:
+  - type: require_confirmation
+    tag: new_address_required
+    message_ro: Este necesară adresa completă a noului sediu.
+  source_claim_ids:
+  - claim.biz.address.pfa_register
+  - claim.biz.address.srl_in_act
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - new_address
+- id: rule.address.use_right_required
+  canonical_rule_id: address.use_right_required
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: new_seat_use_right_document_available
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.new_seat_use_right_document
+  - type: block
+    tag: new_seat_use_right_missing
+    message_ro: Lipsește dovada dreptului de folosință asupra noului sediu.
+  source_claim_ids:
+  - claim.biz.address.use_right
+  - claim.biz.address.expiry_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - new_seat_use_right_document_available
+- id: rule.address.pfa_same_county
+  canonical_rule_id: address.pfa_same_county
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: county_changes
+      value: false
+  effects:
+  - type: include_step
+    step_id: file_pfa_seat_change
+  source_claim_ids:
+  - claim.biz.address.pfa_register
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - county_changes
+  legal_rank: OUG
+- id: rule.address.pfa_cross_county
+  canonical_rule_id: address.pfa_cross_county
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: county_changes
+      value: true
+  effects:
+  - type: include_step
+    step_id: file_pfa_cross_county_seat_change
+  - type: emit_advice
+    tag: single_cross_county_decision
+    message_ro: Operațiunile de la vechiul și noul sediu sunt dispuse prin aceeași încheiere.
+  source_claim_ids:
+  - claim.biz.address.pfa_cross_county
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - county_changes
+  legal_rank: OUG
+- id: rule.address.srl_route
+  canonical_rule_id: address.srl_route
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: entity_type
+    value: srl
+  effects:
+  - type: include_step
+    step_id: approve_srl_seat_change
+  - type: include_step
+    step_id: file_srl_seat_change
+  - type: include_requirement
+    requirement_id: req.amending_act
+  - type: include_requirement
+    requirement_id: req.updated_constitutive_act
+  source_claim_ids:
+  - claim.biz.address.srl_in_act
+  - claim.biz.address.updated_act
+  - claim.biz.address.onrc_routes
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  legal_rank: Lege
+- id: rule.address.dwelling_no_activity
+  canonical_rule_id: address.dwelling_no_activity
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: new_seat_is_dwelling
+      value: true
+    - op: eq
+      field: activity_at_new_seat
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.no_activity_at_registered_office_declaration
+  - type: emit_advice
+    tag: association_change_destination_approval_not_required
+    message_ro: Declarația administratorilor că nu se desfășoară activitate înlătură avizul de schimbare a destinației prevăzut
+      de art. 17 alin. (6).
+  source_claim_ids:
+  - claim.biz.address.home_no_activity
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - new_seat_is_dwelling
+  - activity_at_new_seat
+  legal_rank: Lege
+- id: rule.address.dwelling_with_activity
+  canonical_rule_id: address.dwelling_with_activity
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: new_seat_is_dwelling
+      value: true
+    - op: eq
+      field: activity_at_new_seat
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: condominium_formalities_required
+    message_ro: Pentru activitate efectivă într-un condominiu trebuie verificate formalitățile aplicabile spațiului și activității.
+  source_claim_ids:
+  - claim.biz.address.home_no_activity
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - new_seat_is_dwelling
+  - activity_at_new_seat
+  legal_rank: Lege
+- id: rule.address.current_right_expiry
+  canonical_rule_id: address.current_right_expiry
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: current_seat_use_right_expired
+    value: true
+  effects:
+  - type: emit_warning
+    tag: dissolution_risk_due_to_seat
+    message_ro: Dreptul de folosință al sediului actual a expirat; tratează schimbarea ca urgentă și verifică starea registrului.
+  source_claim_ids:
+  - claim.biz.address.expiry_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - current_seat_use_right_expired
+  legal_rank: Lege
+- id: rule.address.deadline
+  canonical_rule_id: address.deadline
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: exists
+    field: decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_15_days
+    value:
+      days: 15
+      from: decision_date
+  - type: emit_warning
+    tag: deadline_check
+    message_ro: Verifică termenul de 15 zile pentru înregistrarea schimbării.
+  source_claim_ids:
+  - claim.biz.address.deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - decision_date
+  legal_rank: Lege
+- id: rule.address.signer
+  canonical_rule_id: address.signer
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - pfa_holder
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Semnatarul nu este autorizat în calitatea declarată.
+  source_claim_ids:
+  - claim.biz.address.signer_channel
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.address.online_qes
+  canonical_rule_id: address.online_qes
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Depunerea online cere semnătură electronică calificată.
+  source_claim_ids:
+  - claim.biz.address.signer_channel
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.address.timisoara_modify
+  canonical_rule_id: address.timisoara_modify
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: include_step
+    step_id: modify_timisoara_agreement_for_seat
+  - type: require_confirmation
+    tag: confirm_current_local_case_fee_documents
+    message_ro: Sediul social este un caz de modificare locală; verifică taxa și documentele afișate.
+  source_claim_ids:
+  - claim.biz.address.local_modify
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+- id: rule.address.other_uat_local_gap
+  canonical_rule_id: address.other_uat_local_gap
+  event_type_id: life.change_company_address
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: municipality_id
+    - op: neq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: emit_warning
+    tag: verified_with_local_gap
+    message_ro: Acoperirea locală este verificată numai pentru pilotul Timișoara.
+  - type: require_confirmation
+    tag: confirm_other_uat_local_rules
+    message_ro: Confirmă pașii locali pe sursa oficială a UAT-ului competent.
+  source_claim_ids:
+  - claim.biz.address.local_modify
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+  note: 'Regulă de ne-generalizare: nu deduce documente, taxe sau termene pentru alt UAT.'

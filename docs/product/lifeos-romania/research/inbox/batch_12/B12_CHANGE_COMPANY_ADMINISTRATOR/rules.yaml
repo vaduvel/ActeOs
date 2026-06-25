@@ -1,0 +1,605 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_CHANGE_COMPANY_ADMINISTRATOR
+event_type_id: life.change_company_administrator
+status: draft
+rules:
+- id: rule.admin.entity_required
+  canonical_rule_id: admin.entity_required
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează forma juridică a entității.
+  source_claim_ids:
+  - claim.biz.admin.onrc_route
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+- id: rule.admin.only_company
+  canonical_rule_id: admin.only_company
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: neq
+    field: entity_type
+    value: srl
+  effects:
+  - type: block
+    tag: administrator_change_route_not_supported
+    message_ro: Acest traseu este modelat pentru administratorul unui SRL; pentru PFA nu există administrator societar.
+  source_claim_ids:
+  - claim.biz.admin.onrc_route
+  - claim.biz.admin.aga_power
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+- id: rule.admin.change_type_required
+  canonical_rule_id: admin.change_type_required
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: administrator_change_type
+  effects:
+  - type: require_confirmation
+    tag: administrator_change_type_required
+    message_ro: Precizează dacă numești, revoci, înlocuiești, prelungești mandatul sau schimbi puterile administratorului.
+  source_claim_ids:
+  - claim.biz.admin.onrc_route
+  - claim.biz.admin.data_term_powers
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - administrator_change_type
+- id: rule.admin.route
+  canonical_rule_id: admin.route
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: entity_type
+    value: srl
+  effects:
+  - type: include_step
+    step_id: approve_administrator_change
+  - type: include_step
+    step_id: file_administrator_change_mention
+  source_claim_ids:
+  - claim.biz.admin.onrc_route
+  - claim.biz.admin.aga_power
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  legal_rank: Lege
+- id: rule.admin.sole_associate_written
+  canonical_rule_id: admin.sole_associate_written
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: associates_count
+      value: 1
+    - op: eq
+      field: decision_recorded_in_writing
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.sole_associate_written_decision
+  - type: block
+    tag: sole_associate_written_decision_missing
+    message_ro: Decizia asociatului unic trebuie consemnată în scris.
+  source_claim_ids:
+  - claim.biz.admin.sole_written
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - associates_count
+  - decision_recorded_in_writing
+  legal_rank: Lege
+- id: rule.admin.sole_associate_ok
+  canonical_rule_id: admin.sole_associate_ok
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: associates_count
+      value: 1
+    - op: eq
+      field: decision_recorded_in_writing
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.sole_associate_written_decision
+  source_claim_ids:
+  - claim.biz.admin.sole_written
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - associates_count
+  - decision_recorded_in_writing
+  legal_rank: Lege
+- id: rule.admin.multi_associate_validity_unknown
+  canonical_rule_id: admin.multi_associate_validity_unknown
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: gt
+      field: associates_count
+      value: 1
+    - op: missing
+      field: decision_valid_under_articles
+  effects:
+  - type: require_confirmation
+    tag: decision_validity_under_articles_required
+    message_ro: Verifică majoritatea și regulile speciale din actul constitutiv înainte de depunere.
+  source_claim_ids:
+  - claim.biz.admin.majority
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - associates_count
+  - decision_valid_under_articles
+  legal_rank: Lege
+- id: rule.admin.multi_associate_invalid
+  canonical_rule_id: admin.multi_associate_invalid
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: gt
+      field: associates_count
+      value: 1
+    - op: eq
+      field: decision_valid_under_articles
+      value: false
+  effects:
+  - type: block
+    tag: decision_invalid_under_articles
+    message_ro: Hotărârea nu îndeplinește regula de vot aplicabilă din lege și actul constitutiv.
+  source_claim_ids:
+  - claim.biz.admin.majority
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - associates_count
+  - decision_valid_under_articles
+  legal_rank: Lege
+- id: rule.admin.multi_associate_valid
+  canonical_rule_id: admin.multi_associate_valid
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: gt
+      field: associates_count
+      value: 1
+    - op: eq
+      field: decision_valid_under_articles
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.shareholders_resolution
+  source_claim_ids:
+  - claim.biz.admin.majority
+  - claim.biz.admin.aga_power
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - associates_count
+  - decision_valid_under_articles
+  legal_rank: Lege
+- id: rule.admin.new_identity_required
+  canonical_rule_id: admin.new_identity_required
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: in
+      field: administrator_change_type
+      values:
+      - appoint
+      - replace
+    - op: eq
+      field: new_admin_identity_data_complete
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.new_administrator_identity_data
+  - type: block
+    tag: new_administrator_identity_data_missing
+    message_ro: Datele de identificare ale noului administrator sunt incomplete.
+  source_claim_ids:
+  - claim.biz.admin.data_term_powers
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - administrator_change_type
+  - new_admin_identity_data_complete
+  legal_rank: Lege
+- id: rule.admin.term_required
+  canonical_rule_id: admin.term_required
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: in
+      field: administrator_change_type
+      values:
+      - appoint
+      - replace
+      - renew_term
+    - op: eq
+      field: mandate_term_defined
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.administrator_mandate_term
+  - type: block
+    tag: administrator_mandate_term_missing
+    message_ro: Durata mandatului trebuie stabilită.
+  source_claim_ids:
+  - claim.biz.admin.data_term_powers
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - administrator_change_type
+  - mandate_term_defined
+  legal_rank: Lege
+- id: rule.admin.powers_required
+  canonical_rule_id: admin.powers_required
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: in
+      field: administrator_change_type
+      values:
+      - appoint
+      - replace
+      - change_powers
+    - op: any
+      args:
+      - op: eq
+        field: powers_defined
+        value: false
+      - op: missing
+        field: representation_mode
+  effects:
+  - type: include_requirement
+    requirement_id: req.administrator_powers_and_representation
+  - type: block
+    tag: administrator_powers_or_representation_missing
+    message_ro: Puterile și exercitarea împreună ori separat trebuie definite.
+  source_claim_ids:
+  - claim.biz.admin.data_term_powers
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - administrator_change_type
+  - powers_defined
+  - representation_mode
+  legal_rank: Lege
+- id: rule.admin.updated_act
+  canonical_rule_id: admin.updated_act
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: constitutive_act_is_modified
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.amending_act
+  - type: include_requirement
+    requirement_id: req.updated_constitutive_act
+  - type: include_step
+    step_id: prepare_updated_constitutive_act
+  source_claim_ids:
+  - claim.biz.admin.updated_act
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - constitutive_act_is_modified
+  legal_rank: Lege
+- id: rule.admin.updated_act_uncertain
+  canonical_rule_id: admin.updated_act_uncertain
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: constitutive_act_is_modified
+  effects:
+  - type: require_confirmation
+    tag: constitutive_act_update_required_check
+    message_ro: Verifică dacă hotărârea modifică textul actului constitutiv și dacă trebuie depus textul actualizat.
+  source_claim_ids:
+  - claim.biz.admin.data_term_powers
+  - claim.biz.admin.updated_act
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - constitutive_act_is_modified
+  legal_rank: Lege
+- id: rule.admin.no_administrator_remaining
+  canonical_rule_id: admin.no_administrator_remaining
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: resulting_admin_count
+    value: 0
+  effects:
+  - type: block
+    tag: no_administrator_remaining
+    message_ro: Nu finaliza revocarea fără organ statutar rămas sau înlocuitor; lipsa organelor statutare creează risc de
+      dizolvare.
+  - type: emit_warning
+    tag: statutory_body_dissolution_risk
+    message_ro: Societatea ar rămâne fără organ statutar.
+  source_claim_ids:
+  - claim.biz.admin.no_organs_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - resulting_admin_count
+  legal_rank: Lege
+- id: rule.admin.deadline
+  canonical_rule_id: admin.deadline
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: exists
+    field: decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_deadline
+    value:
+      days: 15
+      anchor: decision_date
+      inclusive: true
+  source_claim_ids:
+  - claim.biz.admin.deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - decision_date
+  legal_rank: Lege
+- id: rule.admin.allowed_signer
+  canonical_rule_id: admin.allowed_signer
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: in
+    field: filing_actor
+    values:
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_mention_signature
+  source_claim_ids:
+  - claim.biz.admin.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.admin.disallowed_signer
+  canonical_rule_id: admin.disallowed_signer
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Cererea de mențiuni trebuie semnată de un semnatar permis de art. 81.
+  source_claim_ids:
+  - claim.biz.admin.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.admin.signer_authority_invalid
+  canonical_rule_id: admin.signer_authority_invalid
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_actor
+      value: legal_representative
+    - op: eq
+      field: signer_authority_valid_on_filing_date
+      value: false
+  effects:
+  - type: block
+    tag: signer_authority_not_valid_on_filing_date
+    message_ro: Persoana indicată nu mai are putere de reprezentare valabilă la data semnării cererii.
+  source_claim_ids:
+  - claim.biz.admin.signer
+  - claim.biz.admin.aga_power
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  - signer_authority_valid_on_filing_date
+  legal_rank: Lege
+- id: rule.admin.online_qes
+  canonical_rule_id: admin.online_qes
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Depunerea online cere semnătură electronică calificată pentru cerere și documente.
+  source_claim_ids:
+  - claim.biz.admin.electronic
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.admin.bo_change
+  canonical_rule_id: admin.bo_change
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: beneficial_owner_identity_or_control_changes
+    value: true
+  effects:
+  - type: include_step
+    step_id: update_beneficial_owner_data
+  - type: include_requirement
+    requirement_id: req.beneficial_owner_change_declaration
+  - type: set_deadline
+    tag: beneficial_owner_change_deadline
+    value:
+      days: 15
+      anchor: beneficial_owner_change_date
+      inclusive: true
+  source_claim_ids:
+  - claim.biz.admin.bo_change
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - beneficial_owner_identity_or_control_changes
+  legal_rank: Lege
+- id: rule.admin.bo_no_automatic_change
+  canonical_rule_id: admin.bo_no_automatic_change
+  event_type_id: life.change_company_administrator
+  jurisdiction_ids:
+  - ro
+  severity: explanatory
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: beneficial_owner_identity_or_control_changes
+    value: false
+  effects:
+  - type: emit_advice
+    tag: administrator_change_does_not_automatically_change_bo
+    message_ro: Nu genera declarație de beneficiar real doar pentru schimbarea administratorului dacă datele beneficiarului
+      real nu se modifică.
+  source_claim_ids:
+  - claim.biz.admin.bo_change
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - beneficial_owner_identity_or_control_changes
+  legal_rank: Lege

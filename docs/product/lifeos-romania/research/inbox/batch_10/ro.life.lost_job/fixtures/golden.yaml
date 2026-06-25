@@ -1,0 +1,706 @@
+batch_id: batch10.lost_job
+defaults:
+  event_type_id: ro.life.lost_job
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.nonimputable.early
+  desc: Încetare neimputabilă și cerere în primele 10 zile
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+- id: fx.imputable
+  desc: Încetare imputabilă
+  facts:
+    termination_reason_class: imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    warnings:
+    - unemployment_benefit_nonimputable_condition_not_met
+- id: fx.reason.unknown
+  desc: Motivul încetării nu este încă încadrat
+  facts:
+    termination_reason_class: unknown
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    confirmations:
+    - confirm_termination_reason_for_unemployment
+- id: fx.fixed_term
+  desc: Expirarea unui contract pe durată determinată
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: fixed_term_expiry
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+- id: fx.no_doc
+  desc: Lipsește documentul de încetare
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: false
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    requirements:
+    - written_termination_document
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+- id: fx.dismissal.no_reason
+  desc: Decizia de concediere nu indică motivele
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: false
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    requirements:
+    - dismissal_decision_with_reasons
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    warnings:
+    - dismissal_decision_missing_reasons
+- id: fx.dismissal.no_contest
+  desc: Decizia nu indică termenul și instanța
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: false
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    requirements:
+    - dismissal_decision_with_contest_deadline_and_court
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    warnings:
+    - contest_information_missing
+- id: fx.no_history
+  desc: Lipsește dovada vechimii
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: false
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - request_history_document_or_reges_extract
+    - prepare_unemployment_benefit_application
+    requirements:
+    - employment_activity_and_seniority_document
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+- id: fx.after_10_within_12_months
+  desc: Cerere după primele 10 zile, dar în interiorul termenului de 12 luni
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: after_10_days_within_12_months
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - benefit_starts_from_application_date
+- id: fx.after_12_months
+  desc: Cerere după termenul de 12 luni
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: after_12_months
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: blocked
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+- id: fx.challenge
+  desc: Persoana dorește contestarea concedierii
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: true
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    - verify_contest_deadline_and_competent_court
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    warnings:
+    - act_immediately_on_contest_deadline
+- id: fx.unused_leave
+  desc: Concediu neefectuat necompensat
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: true
+    unused_leave_compensated: false
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    requirements:
+    - cash_compensation_for_unused_annual_leave_at_termination
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+- id: fx.reges_unchecked
+  desc: Încetarea nu a fost verificată în REGES
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: false
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    - download_reges_extract_and_verify_termination
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+- id: fx.no_benefit
+  desc: Persoana nu solicită indemnizație
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: false
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: resolved
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+- id: fx.missing.termination_reason_class
+  desc: Lipsește faptul obligatoriu `termination_reason_class`
+  facts:
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - termination_reason_class
+- id: fx.missing.termination_form
+  desc: Lipsește faptul obligatoriu `termination_form`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - termination_form
+- id: fx.missing.has_written_termination_document
+  desc: Lipsește faptul obligatoriu `has_written_termination_document`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - has_written_termination_document
+- id: fx.missing.document_states_reason
+  desc: Lipsește faptul obligatoriu `document_states_reason`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - document_states_reason
+- id: fx.missing.document_states_contest_deadline_and_court
+  desc: Lipsește faptul obligatoriu `document_states_contest_deadline_and_court`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - document_states_contest_deadline_and_court
+- id: fx.missing.received_history_proof
+  desc: Lipsește faptul obligatoriu `received_history_proof`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - received_history_proof
+- id: fx.missing.wants_unemployment_benefit
+  desc: Lipsește faptul obligatoriu `wants_unemployment_benefit`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    missing_facts:
+    - wants_unemployment_benefit
+- id: fx.missing.filing_window
+  desc: Lipsește faptul obligatoriu `filing_window`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    missing_facts:
+    - filing_window
+- id: fx.missing.wants_to_challenge
+  desc: Lipsește faptul obligatoriu `wants_to_challenge`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    has_unused_leave: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - wants_to_challenge
+- id: fx.missing.has_unused_leave
+  desc: Lipsește faptul obligatoriu `has_unused_leave`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    unused_leave_compensated: true
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - has_unused_leave
+- id: fx.missing.unused_leave_compensated
+  desc: Lipsește faptul obligatoriu `unused_leave_compensated`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    reges_record_checked: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - unused_leave_compensated
+- id: fx.missing.reges_record_checked
+  desc: Lipsește faptul obligatoriu `reges_record_checked`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    termination_form: dismissal
+    has_written_termination_document: true
+    document_states_reason: true
+    document_states_contest_deadline_and_court: true
+    received_history_proof: true
+    wants_unemployment_benefit: true
+    filing_window: within_first_10_days
+    wants_to_challenge: false
+    has_unused_leave: false
+    unused_leave_compensated: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    - prepare_unemployment_benefit_application
+    advice_tags:
+    - file_within_10_days_for_start_from_termination
+    missing_facts:
+    - reges_record_checked
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - collect_termination_document
+    - obtain_employment_history_proof
+    - verify_termination_in_reges
+    - assess_unemployment_route
+    missing_facts:
+    - termination_reason_class
+    - termination_form
+    - has_written_termination_document
+    - document_states_reason
+    - document_states_contest_deadline_and_court
+    - received_history_proof
+    - wants_unemployment_benefit
+    - filing_window
+    - wants_to_challenge
+    - has_unused_leave
+    - unused_leave_compensated
+    - reges_record_checked

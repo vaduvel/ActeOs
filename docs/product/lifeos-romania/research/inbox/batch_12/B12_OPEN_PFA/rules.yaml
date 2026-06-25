@@ -1,0 +1,388 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_OPEN_PFA
+event_type_id: life.open_pfa
+status: draft
+rules:
+- id: rule.open_pfa.register_before_activity
+  canonical_rule_id: open_pfa.register_before_activity
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: starts_activity_before_registration
+    value: true
+  effects:
+  - type: block
+    tag: pfa_not_registered
+    message_ro: Activitatea nu trebuie începută înainte de înregistrarea și autorizarea PFA.
+  source_claim_ids:
+  - claim.biz.open_pfa.before_activity
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - starts_activity_before_registration
+  legal_rank: OUG
+- id: rule.open_pfa.full_capacity
+  canonical_rule_id: open_pfa.full_capacity
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: applicant_has_full_capacity
+    value: false
+  effects:
+  - type: block
+    tag: full_capacity_required
+    message_ro: Condiția capacității depline de exercițiu nu este îndeplinită.
+  source_claim_ids:
+  - claim.biz.open_pfa.eligibility
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - applicant_has_full_capacity
+  legal_rank: OUG
+- id: rule.open_pfa.professional_seat_ro
+  canonical_rule_id: open_pfa.professional_seat_ro
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: professional_seat_in_ro
+    value: false
+  effects:
+  - type: block
+    tag: professional_seat_ro_required
+    message_ro: PFA trebuie să declare un sediu profesional în România.
+  source_claim_ids:
+  - claim.biz.open_pfa.seat_ro
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - professional_seat_in_ro
+  legal_rank: OUG
+- id: rule.open_pfa.use_right_document
+  canonical_rule_id: open_pfa.use_right_document
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: has_use_right_document
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.professional_seat_use_right_document
+  - type: block
+    tag: seat_use_right_missing
+    message_ro: Lipsește înscrisul care dovedește dreptul de folosință.
+  source_claim_ids:
+  - claim.biz.open_pfa.use_right
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - has_use_right_document
+  legal_rank: OUG
+- id: rule.open_pfa.home_no_activity_declaration
+  canonical_rule_id: open_pfa.home_no_activity_declaration
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2017-01-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: seat_is_dwelling
+      value: true
+    - op: eq
+      field: activity_at_professional_seat
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.no_activity_at_professional_seat_declaration
+  - type: emit_advice
+    tag: association_formalities_not_required
+    message_ro: Pentru această situație se folosește declarația că la sediu nu se desfășoară activitate.
+  source_claim_ids:
+  - claim.biz.open_pfa.no_activity_home
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - seat_is_dwelling
+  - activity_at_professional_seat
+  legal_rank: OUG
+- id: rule.open_pfa.max_five_caen
+  canonical_rule_id: open_pfa.max_five_caen
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2017-01-17'
+  when:
+    op: gt
+    field: caen_class_count
+    value: 5
+  effects:
+  - type: block
+    tag: pfa_caen_limit_exceeded
+    message_ro: PFA nu poate avea mai mult de cinci clase CAEN.
+  source_claim_ids:
+  - claim.biz.open_pfa.max_caen
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - caen_class_count
+  legal_rank: OUG
+- id: rule.open_pfa.qualification_conditional
+  canonical_rule_id: open_pfa.qualification_conditional
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: special_qualification_required
+      value: true
+    - op: eq
+      field: qualification_proof_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.professional_qualification_or_experience_proof
+  - type: block
+    tag: qualification_proof_missing
+    message_ro: Activitatea reglementată cere dovada calificării sau experienței.
+  source_claim_ids:
+  - claim.biz.open_pfa.eligibility
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - special_qualification_required
+  - qualification_proof_available
+  legal_rank: OUG
+- id: rule.open_pfa.special_permit_before_operation
+  canonical_rule_id: open_pfa.special_permit_before_operation
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: special_permit_required
+      value: true
+    - op: eq
+      field: special_permit_obtained
+      value: false
+    - op: eq
+      field: intends_to_start_now
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.special_sector_permit
+  - type: block
+    tag: special_permit_missing
+    message_ro: Autorizația ONRC nu înlocuiește permisul sectorial cerut înainte de operare.
+  source_claim_ids:
+  - claim.biz.open_pfa.special_permits
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - special_permit_required
+  - special_permit_obtained
+  - intends_to_start_now
+  legal_rank: OUG
+- id: rule.open_pfa.forms_bundle
+  canonical_rule_id: open_pfa.forms_bundle
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_pfa_registration
+  - type: include_requirement
+    requirement_id: req.onrc_annex_2b
+  - type: include_requirement
+    requirement_id: req.onrc_annex_4
+  source_claim_ids:
+  - claim.biz.open_pfa.forms
+  status: draft
+  authority_level: national_operational
+- id: rule.open_pfa.signer
+  canonical_rule_id: open_pfa.signer
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - applicant
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_filing_actor
+    message_ro: Persoana indicată nu este, prin această calitate, autorizată să semneze cererea.
+  source_claim_ids:
+  - claim.biz.open_pfa.filing_actor
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.open_pfa.online_qes
+  canonical_rule_id: open_pfa.online_qes
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Pentru transmiterea electronică trebuie pregătită semnătura electronică calificată sau ales alt canal.
+  source_claim_ids:
+  - claim.biz.open_pfa.channel
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.open_pfa.filing_channels
+  canonical_rule_id: open_pfa.filing_channels
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc_counter_any_office
+  - type: attach_channel
+    channel_id: ch.onrc_post_courier
+  - type: attach_channel
+    channel_id: ch.onrc_online_portal
+  source_claim_ids:
+  - claim.biz.open_pfa.channel
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.open_pfa.processing_window
+  canonical_rule_id: open_pfa.processing_window
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: registrar_one_working_day
+    message_ro: Termenul legal de soluționare pornește de la un dosar complet; completările pot schimba calendarul.
+  - type: emit_advice
+    tag: remediation_up_to_15_days
+    message_ro: Urmărește încheierea registratorului dacă sunt cerute completări.
+  source_claim_ids:
+  - claim.biz.open_pfa.processing
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.open_pfa.timisoara_commerce_gate
+  canonical_rule_id: open_pfa.timisoara_commerce_gate
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_applicable
+      value: true
+  effects:
+  - type: include_step
+    step_id: obtain_timisoara_commercial_agreement
+  - type: require_confirmation
+    tag: confirm_current_local_fee_and_documents
+    message_ro: Valoarea taxei și documentele locale se verifică în formularul dinamic al serviciului Timișoara.
+  source_claim_ids:
+  - claim.biz.open_pfa.local_commerce
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_applicable
+- id: rule.open_pfa.home_with_activity_check
+  canonical_rule_id: open_pfa.home_with_activity_check
+  event_type_id: life.open_pfa
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2017-01-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: seat_is_dwelling
+      value: true
+    - op: eq
+      field: activity_at_professional_seat
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: condominium_change_or_activity_formalities
+    message_ro: Excepția pentru sediul fără activitate nu se aplică. Verifică formalitățile legate de destinația și folosirea
+      efectivă a locuinței înainte de depunere.
+  source_claim_ids:
+  - claim.biz.open_pfa.no_activity_home
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - seat_is_dwelling
+  - activity_at_professional_seat
+  - condominium_change_or_activity_formalities
+  legal_rank: OUG

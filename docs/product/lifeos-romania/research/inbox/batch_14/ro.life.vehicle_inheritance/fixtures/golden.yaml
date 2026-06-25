@@ -1,0 +1,989 @@
+batch_id: B14_VEHICLE_INHERITANCE
+defaults:
+  alias_event_type_id: ro.life.vehicle_inheritance
+  event_type_id: life.vehicle_inheritance
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VINH01
+  description: Succesiune finalizată, moștenitorul păstrează vehiculul
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH02
+  description: Succesiune neîncepută, se dorește păstrarea
+  facts:
+    intended_action: keep_and_use
+    succession_status: not_opened
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: blocked
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+- id: VINH03
+  description: Succesiune în curs, se dorește vânzarea
+  facts:
+    intended_action: sell
+    succession_status: in_progress
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: blocked
+    requirements:
+    - req.valid_identity_document
+- id: VINH04
+  description: Succesiune finalizată, se dorește vânzarea
+  facts:
+    intended_action: sell
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - establish_inherited_ownership_before_disposal
+    - declare_vehicle_disposal_to_local_tax_authority
+    requirements:
+    - req.document_attesting_inherited_ownership
+    - req.valid_identity_document
+    channels:
+    - ch.dfmt_atlas
+    confirmations:
+    - sale_route_after_inheritance
+- id: VINH05
+  description: Moștenitorul cere radierea
+  facts:
+    intended_action: deregister
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - select_verified_deregistration_ground
+    - prepare_inherited_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.document_proving_selected_deregistration_ground
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    - ch.local_tax_authority
+    confirmations:
+    - proof_of_legal_heir_capacity
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VINH06
+  description: Solicitant cu altă calitate
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: other
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: blocked
+    included_steps:
+    - request_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH07
+  description: Lipsește calitatea solicitantului
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - request_transcription_within_90_days
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    confirmations:
+    - legal_heir_capacity
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH08
+  description: Data dobândirii confirmată, termen deschis
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH09
+  description: Data dobândirii confirmată, termen depășit
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-01-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    overdue_steps:
+    - request_transcription_within_90_days
+    deadlines:
+      request_transcription_within_90_days: '2026-04-01'
+- id: VINH10
+  description: Data juridică a dobândirii neconfirmată
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: false
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    confirmations:
+    - inheritance_acquisition_date_for_90_day_deadline
+- id: VINH11
+  description: Există co-moștenitori
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: true
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    confirmations:
+    - co_heir_consent_or_partition
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH12
+  description: Moștenitor minor
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: true
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    confirmations:
+    - minor_heir_representation_and_authorisation
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH13
+  description: RCA nevalabilă pentru transcriere
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: false
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: blocked
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH14
+  description: CIV nevalabilă pentru transcriere
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: false
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: blocked
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH15
+  description: ITP nevalabil pentru transcriere
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: false
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: blocked
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH16
+  description: Certificatul anterior indisponibil
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: false
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.proof_replacing_unavailable_registration_certificate
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH17
+  description: Plăcuțele indisponibile
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: false
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.proof_replacing_unavailable_registration_plates
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH18
+  description: Transfer automat al plăcuțelor aplicabil
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: true
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_deposit_not_required_when_transfer_applies
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH19
+  description: Persoană juridică prin delegat
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: company
+    representation_type: company_delegate
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH20
+  description: Depunere prin avocat
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: lawyer
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.ownership_document_registered_local_tax
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - timis_counter_fiscal_document_rule
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH21
+  description: Moștenitor din alt județ
+  facts:
+    intended_action: keep_and_use
+    succession_status: completed
+    applicant_county: BH
+    tax_locality: oradea
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: true
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.bh
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_inherited_vehicle_at_local_tax_authority
+    - prepare_inherited_vehicle_transcription_file
+    - submit_vehicle_transcription_application
+    - request_transcription_within_90_days
+    requirements:
+    - req.document_attesting_inherited_ownership_registered_local_tax
+    - req.previous_registration_certificate_or_substitute
+    - req.registration_plates_or_substitute
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_itp
+    - req.valid_rca_current_owner_name
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    confirmations:
+    - local_inheritance_vehicle_channel_outside_pilot
+    deadlines:
+      request_transcription_within_90_days: '2026-07-30'
+- id: VINH22
+  description: Radiere cu obligații fiscale neachitate și termen fiscal depășit
+  facts:
+    intended_action: deregister
+    succession_status: completed
+    applicant_county: TM
+    tax_locality: timisoara
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    submission_mode: counter
+    legal_acquisition_date_confirmed: true
+    acquisition_date: '2026-05-01'
+    co_heirs: false
+    minor_heir: false
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    registration_certificate_available: true
+    registration_plates_available: true
+    automatic_plate_transfer_applicable: false
+    all_local_obligations_paid: false
+    deregistration_date: '2026-04-01'
+  expect:
+    status: blocked
+    included_steps:
+    - select_verified_deregistration_ground
+    - prepare_inherited_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.document_proving_selected_deregistration_ground
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    - ch.local_tax_authority
+    confirmations:
+    - proof_of_legal_heir_capacity
+    overdue_steps:
+    - declare_deregistration_to_local_tax_authority
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-05-01'

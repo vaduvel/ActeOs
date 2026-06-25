@@ -1,0 +1,243 @@
+batch_id: B12_CLOSE_WORKING_POINT
+defaults:
+  event_type_id: life.close_working_point
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA închide un punct identificat
+  facts:
+    entity_type: pfa
+    working_point_identifier: WP1
+    filing_actor: pfa_holder
+    filing_channel: counter
+  expect:
+    status: resolved
+    included_steps:
+    - file_pfa_working_point_closure
+- id: F02
+  desc: SRL închide sediu secundar identificat
+  facts:
+    entity_type: srl
+    working_point_identifier: WP2
+    decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_secondary_office_closure
+    - file_secondary_office_closure
+- id: F03
+  desc: tip entitate necunoscut
+  facts:
+    working_point_identifier: WP1
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F04
+  desc: punctul nu este identificat
+  facts:
+    entity_type: srl
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - working_point_identifier_required
+- id: F05
+  desc: SRL modifică și actul constitutiv
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    decision_date: '2026-06-20'
+    constitutive_act_is_modified: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    requirements:
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F06
+  desc: SRL nu modifică actul constitutiv
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    decision_date: '2026-06-20'
+    constitutive_act_is_modified: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F07
+  desc: mențiune în ziua a 15-a
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F08
+  desc: mențiune după 16 zile
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F09
+  desc: PFA depune prin avocat
+  facts:
+    entity_type: pfa
+    working_point_identifier: WP1
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F10
+  desc: SRL depune prin mandatar autentic
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    filing_actor: authenticated_proxy
+  expect:
+    status: resolved
+- id: F11
+  desc: asociat fără reprezentare depune mențiunea
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    filing_actor: associate_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F12
+  desc: contabil fără mandat depune pentru PFA
+  facts:
+    entity_type: pfa
+    working_point_identifier: WP1
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F13
+  desc: depunere online cu QES
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+    channels:
+    - ch.onrc_online_portal
+- id: F14
+  desc: depunere online fără QES
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F15
+  desc: depunere la alt ORCT
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    filing_actor: legal_representative
+    filing_channel: counter_other_orct
+  expect:
+    status: resolved
+    channels:
+    - ch.onrc_counter_any_office
+- id: F16
+  desc: utilizatorul vrea de fapt să închidă firma
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    user_intends_whole_business_closure: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    triggered_events:
+    - life.close_business
+    warnings:
+    - intent_is_business_closure
+- id: F17
+  desc: locația este sucursală
+  facts:
+    entity_type: srl
+    working_point_identifier: BR1
+    location_type: branch
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - branch_route_required
+- id: F18
+  desc: locația este punct de lucru obișnuit
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    location_type: working_point
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F19
+  desc: punct cu acord comercial Timișoara
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - cancel_local_agreement_for_point
+    requirements:
+    - req.local_documents_certified_true_copy
+- id: F20
+  desc: punct fără acord comercial local
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F21
+  desc: punct în alt UAT cu autorizație locală
+  facts:
+    entity_type: srl
+    working_point_identifier: WP1
+    municipality_id: ro.cj.cluj
+    local_commercial_agreement_exists: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    warnings:
+    - verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj

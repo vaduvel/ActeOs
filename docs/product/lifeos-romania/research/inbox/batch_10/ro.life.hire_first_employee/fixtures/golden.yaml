@@ -1,0 +1,978 @@
+batch_id: batch10.hire_first_employee
+defaults:
+  event_type_id: ro.life.hire_first_employee
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.ready.srl
+  desc: SRL pregătit pentru primul salariat
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.ready.pfa
+  desc: PFA pregătită pentru primul salariat
+  facts:
+    employer_entity_type: pfa
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_start
+  desc: Data începerii nu este stabilită
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: false
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - confirmed_employment_start_date
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_reges
+  desc: Lipsește accesul angajatorului în REGES
+  facts:
+    employer_entity_type: srl
+    has_reges_access: false
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    - obtain_reges_employer_access
+    requirements:
+    - reges_online_employer_access
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_medical
+  desc: Candidatul nu are aptitudinea medicală
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: false
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: blocked
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - occupational_medical_aptitude
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_cim
+  desc: CIM nu este semnat
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: false
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: blocked
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - written_signed_cim_before_start
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_transmission
+  desc: Primul CIM nu este transmis
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: false
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: blocked
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - first_employee_reges_transmission_before_start
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_copy
+  desc: Salariatul nu a primit copia CIM
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: false
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - signed_cim_copy_for_employee
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_risk
+  desc: Evaluarea riscurilor lipsește
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: false
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - occupational_risk_assessment
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_plan
+  desc: Planul de prevenire lipsește
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: false
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - prevention_and_protection_plan
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_service
+  desc: Serviciul SSM nu este organizat
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: false
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - organised_prevention_and_protection_service
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_training
+  desc: Instruirea SSM nu este făcută
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: false
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - employee_ssm_training
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.no_payroll
+  desc: Salarizarea nu este configurată
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: false
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - payroll_and_tax_reporting_setup
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.d112_unknown
+  desc: Frecvența D112 nu a fost confirmată
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: false
+    start_date_confirmed: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    confirmations:
+    - confirm_d112_frequency_and_deadline
+- id: fx.third_country.ready
+  desc: Primul salariat este din stat terț și are dreptul de muncă
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: third_country
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    - retain_foreign_worker_authorisation_or_exemption
+    - foreign_worker_medical_by_start
+- id: fx.third_country.not_ready
+  desc: Candidat din stat terț fără drept de muncă pregătit
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: third_country
+    third_country_work_right_ready: false
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: blocked
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - foreign_worker_employment_authorisation_or_exemption
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.multiple_ssm
+  desc: Mai multe elemente SSM lipsesc
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: false
+    prevention_plan_done: false
+    ssm_service_arranged: true
+    ssm_training_done: false
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: resolved
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    requirements:
+    - occupational_risk_assessment
+    - prevention_and_protection_plan
+    - employee_ssm_training
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+- id: fx.missing.employer_entity_type
+  desc: Lipsește faptul obligatoriu `employer_entity_type`
+  facts:
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - employer_entity_type
+- id: fx.missing.has_reges_access
+  desc: Lipsește faptul obligatoriu `has_reges_access`
+  facts:
+    employer_entity_type: srl
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - has_reges_access
+- id: fx.missing.candidate_scope
+  desc: Lipsește faptul obligatoriu `candidate_scope`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - candidate_scope
+- id: fx.missing.third_country_work_right_ready
+  desc: Lipsește faptul obligatoriu `third_country_work_right_ready`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - third_country_work_right_ready
+- id: fx.missing.has_medical_aptitude
+  desc: Lipsește faptul obligatoriu `has_medical_aptitude`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - has_medical_aptitude
+- id: fx.missing.cim_signed_before_start
+  desc: Lipsește faptul obligatoriu `cim_signed_before_start`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - cim_signed_before_start
+- id: fx.missing.cim_transmitted_before_start
+  desc: Lipsește faptul obligatoriu `cim_transmitted_before_start`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - cim_transmitted_before_start
+- id: fx.missing.employee_received_copy
+  desc: Lipsește faptul obligatoriu `employee_received_copy`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - employee_received_copy
+- id: fx.missing.ssm_risk_assessment_done
+  desc: Lipsește faptul obligatoriu `ssm_risk_assessment_done`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - ssm_risk_assessment_done
+- id: fx.missing.prevention_plan_done
+  desc: Lipsește faptul obligatoriu `prevention_plan_done`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - prevention_plan_done
+- id: fx.missing.ssm_service_arranged
+  desc: Lipsește faptul obligatoriu `ssm_service_arranged`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - ssm_service_arranged
+- id: fx.missing.ssm_training_done
+  desc: Lipsește faptul obligatoriu `ssm_training_done`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - ssm_training_done
+- id: fx.missing.payroll_setup_done
+  desc: Lipsește faptul obligatoriu `payroll_setup_done`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    d112_frequency_confirmed: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - payroll_setup_done
+- id: fx.missing.d112_frequency_confirmed
+  desc: Lipsește faptul obligatoriu `d112_frequency_confirmed`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    start_date_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    missing_facts:
+    - d112_frequency_confirmed
+- id: fx.missing.start_date_confirmed
+  desc: Lipsește faptul obligatoriu `start_date_confirmed`
+  facts:
+    employer_entity_type: srl
+    has_reges_access: true
+    candidate_scope: romanian_or_eu
+    third_country_work_right_ready: true
+    has_medical_aptitude: true
+    cim_signed_before_start: true
+    cim_transmitted_before_start: true
+    employee_received_copy: true
+    ssm_risk_assessment_done: true
+    prevention_plan_done: true
+    ssm_service_arranged: true
+    ssm_training_done: true
+    payroll_setup_done: true
+    d112_frequency_confirmed: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    advice_tags:
+    - use_d112_version_valid_from_2026_01
+    missing_facts:
+    - start_date_confirmed
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - establish_first_employee_start_date
+    - activate_reges_employer_access
+    - complete_occupational_health_and_ssm_setup
+    - sign_and_transmit_first_cim
+    - configure_payroll_and_d112
+    missing_facts:
+    - employer_entity_type
+    - has_reges_access
+    - candidate_scope
+    - third_country_work_right_ready
+    - has_medical_aptitude
+    - cim_signed_before_start
+    - cim_transmitted_before_start
+    - employee_received_copy
+    - ssm_risk_assessment_done
+    - prevention_plan_done
+    - ssm_service_arranged
+    - ssm_training_done
+    - payroll_setup_done
+    - d112_frequency_confirmed
+    - start_date_confirmed

@@ -1,0 +1,500 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_VEHICLE_PLATE_LOST_STOLEN
+alias_event_type_id: ro.life.vehicle_plate_lost_stolen
+event_type_id: life.vehicle_plate_lost_stolen
+status: draft
+required_facts:
+- plate_issue_reason
+- plate_type
+- plates_affected
+- applicant_county
+- applicant_type
+- representation_type
+- incident_date
+rules:
+- id: rule.vehicle_plate_lost_stolen.base.route
+  canonical_rule_id: vehicle_plate_lost_stolen.base.route
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_replacement_plate_file
+  - type: include_step
+    step_id: submit_replacement_plate_application
+  - type: include_requirement
+    requirement_id: req.valid_identity_or_entity_documents
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  - claim.vehicle_plate_lost_stolen.competent_service
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.reason.lost
+  canonical_rule_id: vehicle_plate_lost_stolen.reason.lost
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_issue_reason
+    value: lost
+  effects:
+  - type: include_requirement
+    requirement_id: req.registration_plate_loss_declaration
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.reason.stolen
+  canonical_rule_id: vehicle_plate_lost_stolen.reason.stolen
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_issue_reason
+    value: stolen
+  effects:
+  - type: include_requirement
+    requirement_id: req.competent_authority_plate_theft_proof
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.reason.damaged
+  canonical_rule_id: vehicle_plate_lost_stolen.reason.damaged
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_issue_reason
+    value: damaged
+  effects:
+  - type: include_requirement
+    requirement_id: req.previous_damaged_plate_or_plates
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.reason.retained_abroad
+  canonical_rule_id: vehicle_plate_lost_stolen.reason.retained_abroad
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_issue_reason
+    value: retained_abroad
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_retention_proof
+  - type: include_requirement
+    requirement_id: req.proof_retention_reasons_ceased
+  - type: include_requirement
+    requirement_id: req.authorised_romanian_translation
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_retained_abroad
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.reason.other
+  canonical_rule_id: vehicle_plate_lost_stolen.reason.other
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_issue_reason
+    value: other
+  effects:
+  - type: require_confirmation
+    tag: plate_replacement_reason
+    message_ro: Confirmă dacă situația intră în pierdere, furt, deteriorare sau reținere externă.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.deadline
+  canonical_rule_id: vehicle_plate_lost_stolen.deadline
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: exists
+    field: incident_date
+  effects:
+  - type: include_step
+    step_id: request_replacement_plates_within_30_days
+  - type: set_deadline
+    step_id: request_replacement_plates_within_30_days
+    value:
+      kind: relative_calendar_days
+      anchor: incident_date
+      days: 30
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_deadline
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.fee.a.single
+  canonical_rule_id: vehicle_plate_lost_stolen.fee.a.single
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: plate_type
+      value: A
+    - op: eq
+      field: plates_affected
+      value: one
+  effects:
+  - type: emit_advice
+    tag: plate_type_a_single_fee_26
+    message_ro: Valoarea publicată pentru o plăcuță duplicat tip A este 26 lei.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.fee_plate_a_single
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.fee.a.pair
+  canonical_rule_id: vehicle_plate_lost_stolen.fee.a.pair
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: plate_type
+      value: A
+    - op: eq
+      field: plates_affected
+      value: pair
+  effects:
+  - type: emit_advice
+    tag: plate_type_a_pair_fee_52
+    message_ro: Valoarea publicată pentru perechea de plăcuțe tip A este 52 lei.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.fee_plate_a_pair
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.fee.b
+  canonical_rule_id: vehicle_plate_lost_stolen.fee.b
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_type
+    value: B
+  effects:
+  - type: emit_advice
+    tag: plate_type_b_fee_27
+    message_ro: Valoarea publicată pentru o plăcuță tip B este 27 lei.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.fee_plate_b
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.fee.c
+  canonical_rule_id: vehicle_plate_lost_stolen.fee.c
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: plate_type
+    value: C
+  effects:
+  - type: emit_advice
+    tag: plate_type_c_fee_22
+    message_ro: Valoarea publicată pentru o plăcuță tip C este 22 lei.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.fee_plate_c
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.fee.d.timis
+  canonical_rule_id: vehicle_plate_lost_stolen.fee.d.timis
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: plate_type
+      value: D
+    - op: eq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: emit_advice
+    tag: plate_type_d_fee_25_timis
+    message_ro: În pilotul Timiș este publicat tariful de 25 lei pentru o plăcuță tip D.
+  - type: require_confirmation
+    tag: plate_type_d_current_technical_availability
+    message_ro: Confirmă disponibilitatea tehnică actuală și numărul de plăcuțe tip D necesare înainte de depunere;
+      anunțul oficial menționează demersuri de implementare.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.fee_plate_d_timis
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.fee.d.outside_pilot
+  canonical_rule_id: vehicle_plate_lost_stolen.fee.d.outside_pilot
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: plate_type
+      value: D
+    - op: neq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: plate_type_d_tariff_and_availability_outside_pilot
+    message_ro: Confirmă tariful, disponibilitatea și numărul de plăcuțe tip D la serviciul competent din județul
+      tău.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.competent_service
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.nonstandard.pair
+  canonical_rule_id: vehicle_plate_lost_stolen.nonstandard.pair
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: plate_type
+      values:
+      - B
+      - C
+    - op: eq
+      field: plates_affected
+      value: pair
+  effects:
+  - type: require_confirmation
+    tag: nonstandard_plate_pair_configuration
+    message_ro: Confirmă numărul și tipul plăcuțelor necesare pentru configurația B/C; nu se dublează automat tariful
+      unei singure plăcuțe.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.fee_plate_b
+  - claim.vehicle_plate_lost_stolen.fee_plate_c
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.stolen.emergency
+  canonical_rule_id: vehicle_plate_lost_stolen.stolen.emergency
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: plate_issue_reason
+      value: stolen
+    - op: eq
+      field: theft_in_progress_or_emergency
+      value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.emergency_112
+  - type: emit_warning
+    tag: use_112_for_emergency
+    message_ro: Pentru furt în desfășurare sau altă urgență, formularul de petiții nu este canalul potrivit; apelează
+      112.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.police_112
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.identity.individual
+  canonical_rule_id: vehicle_plate_lost_stolen.identity.individual
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.identity.company
+  canonical_rule_id: vehicle_plate_lost_stolen.identity.company
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.representation.lawyer
+  canonical_rule_id: vehicle_plate_lost_stolen.representation.lawyer
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.representation.authorized_individual
+  canonical_rule_id: vehicle_plate_lost_stolen.representation.authorized_individual
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.representation.company_delegate
+  canonical_rule_id: vehicle_plate_lost_stolen.representation.company_delegate
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.payment.proof
+  canonical_rule_id: vehicle_plate_lost_stolen.payment.proof
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.replacement_plate_payment_proof
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.payment.snep
+  canonical_rule_id: vehicle_plate_lost_stolen.payment.snep
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: true
+  effects:
+  - type: emit_advice
+    tag: snep_payment_proof_exception
+    message_ro: Dovada plății nu se depune atunci când plata este identificată prin SNEP, potrivit procedurii publicate.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.plate_duplicate_docs
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.channel.timis
+  canonical_rule_id: vehicle_plate_lost_stolen.channel.timis
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_verified_channel
+    message_ro: Pentru pilotul Timiș este publicat canalul SPCRPCIV Timiș și legătura DGPCI pentru programare/informare.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.timis_contact
+  status: draft
+- id: rule.vehicle_plate_lost_stolen.channel.other_county
+  canonical_rule_id: vehicle_plate_lost_stolen.channel.other_county
+  event_type_id: life.vehicle_plate_lost_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și particularitățile locale pentru înlocuirea plăcuțelor în județul
+      competent.
+  source_claim_ids:
+  - claim.vehicle_plate_lost_stolen.competent_service
+  status: draft

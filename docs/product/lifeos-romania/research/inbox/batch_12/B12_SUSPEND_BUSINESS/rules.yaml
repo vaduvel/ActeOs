@@ -1,0 +1,312 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_SUSPEND_BUSINESS
+event_type_id: life.suspend_business
+status: draft
+rules:
+- id: rule.suspend.entity_required
+  canonical_rule_id: suspend.entity_required
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează PFA sau SRL.
+  source_claim_ids:
+  - claim.biz.suspend.pfa_guide
+  - claim.biz.suspend.srl_guide
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+- id: rule.suspend.duration_required
+  canonical_rule_id: suspend.duration_required
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: requested_duration_months
+  effects:
+  - type: require_confirmation
+    tag: suspension_duration_required
+    message_ro: Precizează durata solicitată pentru a verifica limita legală.
+  source_claim_ids:
+  - claim.biz.suspend.pfa_max
+  - claim.biz.suspend.srl_max
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - requested_duration_months
+- id: rule.suspend.max_36_months
+  canonical_rule_id: suspend.max_36_months
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: gt
+    field: requested_duration_months
+    value: 36
+  effects:
+  - type: block
+    tag: suspension_over_three_years
+    message_ro: Suspendarea temporară nu poate fi configurată pentru mai mult de trei ani.
+  source_claim_ids:
+  - claim.biz.suspend.pfa_max
+  - claim.biz.suspend.srl_max
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - requested_duration_months
+  legal_rank: OUG/Lege
+- id: rule.suspend.pfa_route
+  canonical_rule_id: suspend.pfa_route
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: lte
+      field: requested_duration_months
+      value: 36
+  effects:
+  - type: include_step
+    step_id: approve_pfa_interruption
+  - type: include_step
+    step_id: file_pfa_suspension_mention
+  source_claim_ids:
+  - claim.biz.suspend.pfa_max
+  - claim.biz.suspend.pfa_guide
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - requested_duration_months
+  legal_rank: OUG
+- id: rule.suspend.srl_route
+  canonical_rule_id: suspend.srl_route
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: lte
+      field: requested_duration_months
+      value: 36
+  effects:
+  - type: include_step
+    step_id: approve_srl_temporary_inactivity
+  - type: include_step
+    step_id: file_srl_suspension_mention
+  source_claim_ids:
+  - claim.biz.suspend.srl_max
+  - claim.biz.suspend.srl_guide
+  - claim.biz.suspend.decision
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - requested_duration_months
+  legal_rank: Lege
+- id: rule.suspend.already_suspended
+  canonical_rule_id: suspend.already_suspended
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: currently_suspended
+    value: true
+  effects:
+  - type: block
+    tag: already_suspended
+    message_ro: Afacerea este deja în întrerupere temporară; verifică mențiunea existentă sau folosește reluarea.
+  source_claim_ids:
+  - claim.biz.suspend.pfa_guide
+  - claim.biz.suspend.srl_guide
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - currently_suspended
+- id: rule.suspend.mention_deadline
+  canonical_rule_id: suspend.mention_deadline
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: exists
+    field: decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_15_days
+    value:
+      days: 15
+      from: decision_date
+  - type: emit_warning
+    tag: deadline_check
+    message_ro: Verifică termenul de 15 zile pentru depunerea mențiunii.
+  source_claim_ids:
+  - claim.biz.suspend.mention_deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - decision_date
+  legal_rank: Lege
+- id: rule.suspend.signer
+  canonical_rule_id: suspend.signer
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - pfa_holder
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Semnatarul nu este autorizat în calitatea declarată.
+  source_claim_ids:
+  - claim.biz.suspend.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.suspend.online_qes
+  canonical_rule_id: suspend.online_qes
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Depunerea online cere semnătură electronică calificată.
+  source_claim_ids:
+  - claim.biz.suspend.electronic
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.suspend.tax_employment_bundle
+  canonical_rule_id: suspend.tax_employment_bundle
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: any
+    args:
+    - op: eq
+      field: has_employees
+      value: true
+    - op: eq
+      field: tax_registrations_present
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: tax_and_employment_effects
+    message_ro: Suspendarea ONRC nu închide automat obligațiile fiscale și de muncă; acestea trebuie evaluate separat.
+  source_claim_ids:
+  - claim.biz.suspend.pfa_max
+  - claim.biz.suspend.srl_max
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - has_employees
+  - tax_registrations_present
+- id: rule.suspend.local_agreement
+  canonical_rule_id: suspend.local_agreement
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: include_step
+    step_id: review_timisoara_agreement_during_suspension
+  - type: require_confirmation
+    tag: confirm_local_agreement_status
+    message_ro: Verifică dacă acordul local trebuie modificat, anulat sau păstrat pe durata suspendării.
+  source_claim_ids:
+  - claim.biz.suspend.local_dynamic
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+- id: rule.suspend.future_resume_warning
+  canonical_rule_id: suspend.future_resume_warning
+  event_type_id: life.suspend_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: gte
+    field: requested_duration_months
+    value: 30
+  effects:
+  - type: emit_warning
+    tag: resume_before_three_year_limit
+    message_ro: Planifică reluarea înainte de expirarea limitei de trei ani.
+  source_claim_ids:
+  - claim.biz.suspend.srl_risk
+  - claim.biz.suspend.pfa_max
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - requested_duration_months

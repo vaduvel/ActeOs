@@ -1,0 +1,914 @@
+batch_id: B14_VEHICLE_STOLEN
+defaults:
+  alias_event_type_id: ro.life.vehicle_stolen
+  event_type_id: life.vehicle_stolen
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VST01
+  description: Furt descoperit, raportare și radiere în Timiș
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST02
+  description: Furt în desfășurare, numai sesizare
+  facts:
+    theft_status: in_progress
+    desired_outcome: police_report_only
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: null
+  expect:
+    status: resolved
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - call_emergency_112
+    channels:
+    - ch.police_romania_information
+    - ch.emergency_112
+    advice_tags:
+    - online_petition_not_emergency_channel
+    warnings:
+    - use_112_for_vehicle_theft_emergency
+- id: VST03
+  description: Furt în desfășurare și intenție de radiere
+  facts:
+    theft_status: in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - call_emergency_112
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.emergency_112
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    warnings:
+    - use_112_for_vehicle_theft_emergency
+    confirmations:
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST04
+  description: Doar sesizare fără urgență
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: police_report_only
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: null
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    channels:
+    - ch.police_romania_information
+    advice_tags:
+    - online_petition_not_emergency_channel
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+- id: VST05
+  description: Doar radiere după furt deja declarat
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: deregister
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST06
+  description: Radiere cerută de moștenitor legal
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: legal_heir
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - legal_heir_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - proof_of_legal_heir_capacity
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST07
+  description: Calitate nevalidată pentru radiere
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: other
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: blocked
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST08
+  description: Lipsește calitatea solicitantului la radiere
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - applicant_role_for_stolen_vehicle_deregistration
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST09
+  description: Certificatul a fost furat cu vehiculul
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: false
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST10
+  description: Plăcuțele au fost furate cu vehiculul
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: false
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST11
+  description: Vehicul recuperat înaintea radierii
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: true
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    - vehicle_recovery_status_before_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST12
+  description: Obligații fiscale locale neachitate
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: false
+    deregistration_date: '2026-06-20'
+  expect:
+    status: blocked
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST13
+  description: Declarația fiscală post-radiere în termen
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST14
+  description: Declarația fiscală post-radiere întârziată
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-04-01'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    overdue_steps:
+    - declare_deregistration_to_local_tax_authority
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-05-01'
+- id: VST15
+  description: Persoană juridică prin delegat
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: company
+    representation_type: company_delegate
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST16
+  description: Depunere prin avocat
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: lawyer
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST17
+  description: Depunere prin împuternicit persoană fizică
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: authorized_individual
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    - req.notarial_power_of_attorney
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST18
+  description: Solicitant din alt județ
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: CJ
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    - local_deregistration_channel_outside_pilot
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST19
+  description: Lipsește statutul temporal al furtului
+  facts:
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_facts
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    missing_facts:
+    - theft_status
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST20
+  description: Lipsește obiectivul utilizatorului
+  facts:
+    theft_status: discovered_not_in_progress
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+  expect:
+    status: needs_facts
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    channels:
+    - ch.police_romania_information
+    advice_tags:
+    - online_petition_not_emergency_channel
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    missing_facts:
+    - desired_outcome
+- id: VST21
+  description: Se cere termenul de notificare a asigurătorului
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: both
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: individual
+    representation_type: self
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: '2026-06-20'
+    needs_insurer_notification_deadline: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    - obtain_competent_authority_theft_proof
+    - prepare_vehicle_deregistration_file
+    - submit_vehicle_deregistration_application
+    - declare_deregistration_to_local_tax_authority
+    requirements:
+    - req.registration_certificate
+    - req.registration_plates_or_substitute_proof
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_document_proving_vehicle_theft
+    - req.proof_replacing_stolen_registration_plates
+    - req.local_fiscal_clearance_certificate_all_obligations_paid
+    - req.valid_identity_document
+    channels:
+    - ch.police_romania_information
+    - ch.dgpci_information
+    - ch.local_tax_authority
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - online_petition_not_emergency_channel
+    - owner_may_request_deregistration
+    confirmations:
+    - competent_non_emergency_police_reporting_channel
+    - missing_registration_certificate_for_stolen_vehicle_deregistration
+    - insurance_contract_notification_deadline
+    deadlines:
+      declare_deregistration_to_local_tax_authority: '2026-07-20'
+- id: VST22
+  description: Raportare fără radiere de către persoană juridică
+  facts:
+    theft_status: discovered_not_in_progress
+    desired_outcome: police_report_only
+    applicant_county: TM
+    applicant_role: owner
+    applicant_type: company
+    representation_type: company_delegate
+    registration_certificate_with_vehicle: true
+    registration_plates_with_vehicle: true
+    vehicle_recovered: false
+    all_local_obligations_paid: true
+    deregistration_date: null
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - notify_competent_police_authority_about_vehicle_theft
+    channels:
+    - ch.police_romania_information
+    advice_tags:
+    - online_petition_not_emergency_channel
+    confirmations:
+    - competent_non_emergency_police_reporting_channel

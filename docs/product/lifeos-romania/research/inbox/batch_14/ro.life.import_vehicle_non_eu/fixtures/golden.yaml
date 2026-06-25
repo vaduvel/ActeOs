@@ -1,0 +1,1003 @@
+batch_id: B14_IMPORT_VEHICLE_NON_EU
+defaults:
+  alias_event_type_id: ro.life.import_vehicle_non_eu
+  event_type_id: life.import_vehicle_non_eu
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: INE01
+  description: Vehicul utilizat din afara UE, vămuire finalizată
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE02
+  description: Vehicul nou din afara UE
+  facts:
+    vehicle_condition: new
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: null
+    foreign_registration_documents_available: null
+  expect:
+    status: resolved
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.new_imported_vehicle_ownership_document
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - new_vehicle_authenticity_exempt
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE03
+  description: Vămuire în curs
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: pending
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE04
+  description: Situație vamală necunoscută
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: unknown
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE05
+  description: Solicitantul invocă o scutire vamală
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: relief_claimed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - customs_relief_eligibility
+- id: INE06
+  description: Solicitantul cere calculul exact al taxelor
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+    asks_exact_customs_amount: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - customs_rate_and_import_vat_amount
+- id: INE07
+  description: Actele străine lipsesc la vehicul utilizat
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: false
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE08
+  description: ITP expirat
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: false
+    foreign_registration_documents_available: true
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE09
+  description: RCA nevalabilă
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: false
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE10
+  description: CIV nevalabilă
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: false
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE11
+  description: Act de proprietate neînregistrat fiscal
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: false
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: blocked
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE12
+  description: Traduceri/legalizări neclarificate
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+    foreign_documents_need_translation: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - foreign_document_translation_requirements
+- id: INE13
+  description: Persoană juridică prin delegat
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: company_delegate
+    applicant_type: company
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE14
+  description: Depunere prin avocat
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: lawyer
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: INE15
+  description: Plată în afara SNEP
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: false
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    - req.registration_and_plate_payment_proof
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - timis_verified_channel
+- id: INE16
+  description: Solicitant din alt județ
+  facts:
+    vehicle_condition: used
+    applicant_county: AR
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: arad
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.ar
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    advice_tags:
+    - customs_clearance_completed
+    - snep_payment_proof_exception
+    confirmations:
+    - local_channel_outside_pilot
+- id: INE17
+  description: Lipsește starea vehiculului
+  facts:
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - vehicle_condition
+- id: INE18
+  description: Lipsește situația vamală
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - customs_clearance_status
+- id: INE19
+  description: Lipsește înregistrarea fiscală
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - ownership_document_registered_local_tax
+- id: INE20
+  description: Lipsește tipul solicitantului
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - applicant_type
+- id: INE21
+  description: Vămuire finalizată și plată non-SNEP
+  facts:
+    vehicle_condition: used
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: completed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: false
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: true
+    foreign_registration_documents_available: true
+  expect:
+    status: resolved
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_registration_documents_original
+    - req.foreign_registration_plates
+    - req.valid_itp
+    - req.valid_authenticity_certificate
+    - req.valid_identity_document
+    - req.registration_and_plate_payment_proof
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - customs_clearance_completed
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - timis_verified_channel
+- id: INE22
+  description: Vehicul nou, scutire invocată
+  facts:
+    vehicle_condition: new
+    applicant_county: TM
+    representation_type: self
+    applicant_type: individual
+    customs_clearance_status: relief_claimed
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    rca_valid: true
+    civ_valid: true
+    itp_valid: null
+    foreign_registration_documents_available: null
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - complete_customs_clearance
+    - obtain_rar_civ_and_required_checks
+    - declare_vehicle_at_local_tax_authority
+    - submit_imported_vehicle_registration
+    requirements:
+    - req.customs_clearance_and_import_tax_evidence
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.new_imported_vehicle_ownership_document
+    - req.valid_identity_document
+    channels:
+    - ch.rar_booking
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_non_eu_case_selection
+    - timis_counter_fiscal_document_rule
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - customs_relief_eligibility

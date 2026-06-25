@@ -1,0 +1,337 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_CLOSE_WORKING_POINT
+event_type_id: life.close_working_point
+status: draft
+rules:
+- id: rule.close_point.entity_required
+  canonical_rule_id: close_point.entity_required
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează dacă punctul aparține unui PFA sau unui SRL.
+  source_claim_ids:
+  - claim.biz.close_point.pfa_guide
+  - claim.biz.close_point.srl_procedure
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+- id: rule.close_point.identify_point
+  canonical_rule_id: close_point.identify_point
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: working_point_identifier
+  effects:
+  - type: require_confirmation
+    tag: working_point_identifier_required
+    message_ro: Selectează exact sediul secundar care urmează să fie închis.
+  source_claim_ids:
+  - claim.biz.close_point.pfa_registered
+  - claim.biz.close_point.srl_procedure
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - working_point_identifier
+- id: rule.close_point.pfa_route
+  canonical_rule_id: close_point.pfa_route
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: entity_type
+    value: pfa
+  effects:
+  - type: include_step
+    step_id: file_pfa_working_point_closure
+  - type: include_requirement
+    requirement_id: req.onrc_pfa_mention_request
+  source_claim_ids:
+  - claim.biz.close_point.pfa_registered
+  - claim.biz.close_point.pfa_guide
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  legal_rank: OUG
+- id: rule.close_point.srl_route
+  canonical_rule_id: close_point.srl_route
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: entity_type
+    value: srl
+  effects:
+  - type: include_step
+    step_id: approve_secondary_office_closure
+  - type: include_step
+    step_id: file_secondary_office_closure
+  source_claim_ids:
+  - claim.biz.close_point.srl_procedure
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+- id: rule.close_point.updated_constitutive_act
+  canonical_rule_id: close_point.updated_constitutive_act
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: constitutive_act_is_modified
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.amending_act
+  - type: include_requirement
+    requirement_id: req.updated_constitutive_act
+  source_claim_ids:
+  - claim.biz.close_point.constitutive_change
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - constitutive_act_is_modified
+  legal_rank: Lege
+- id: rule.close_point.mention_deadline
+  canonical_rule_id: close_point.mention_deadline
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: exists
+    field: decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_15_days
+    value:
+      days: 15
+      from: decision_date
+  - type: emit_warning
+    tag: deadline_check
+    message_ro: Verifică termenul de 15 zile pentru mențiune.
+  source_claim_ids:
+  - claim.biz.close_point.mention_deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - decision_date
+  legal_rank: Lege
+- id: rule.close_point.signer
+  canonical_rule_id: close_point.signer
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - pfa_holder
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Persoana indicată nu poate semna cererea în această calitate.
+  source_claim_ids:
+  - claim.biz.close_point.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.close_point.channels
+  canonical_rule_id: close_point.channels
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc_counter_any_office
+  - type: attach_channel
+    channel_id: ch.onrc_post_courier
+  - type: attach_channel
+    channel_id: ch.onrc_online_portal
+  source_claim_ids:
+  - claim.biz.close_point.channel
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.close_point.online_qes
+  canonical_rule_id: close_point.online_qes
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Depunerea electronică cere semnătură electronică calificată.
+  source_claim_ids:
+  - claim.biz.close_point.channel
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.close_point.not_whole_business
+  canonical_rule_id: close_point.not_whole_business
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: user_intends_whole_business_closure
+    value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.close_business
+  - type: exclude_step
+    step_id: file_secondary_office_closure
+  - type: emit_warning
+    tag: intent_is_business_closure
+    message_ro: Închiderea întregii afaceri nu se rezolvă prin desființarea unui singur punct de lucru.
+  - type: require_confirmation
+    tag: confirm_whole_business_closure_intent
+    message_ro: Confirmă reclasificarea intenției către închiderea întregii afaceri.
+  source_claim_ids:
+  - claim.biz.close_point.srl_procedure
+  - claim.biz.close_point.pfa_guide
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - user_intends_whole_business_closure
+- id: rule.close_point.branch_not_point
+  canonical_rule_id: close_point.branch_not_point
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: location_type
+    value: branch
+  effects:
+  - type: require_confirmation
+    tag: branch_route_required
+    message_ro: O sucursală nu este tratată automat ca punct de lucru; selectează procedura juridică adecvată.
+  source_claim_ids:
+  - claim.biz.close_point.srl_procedure
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - location_type
+- id: rule.close_point.timisoara_cancel
+  canonical_rule_id: close_point.timisoara_cancel
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: include_step
+    step_id: cancel_local_agreement_for_point
+  - type: include_requirement
+    requirement_id: req.local_documents_certified_true_copy
+  - type: require_confirmation
+    tag: confirm_local_cancellation_documents
+    message_ro: Verifică opisul din serviciul local înainte de trimitere.
+  source_claim_ids:
+  - claim.biz.close_point.local_cancel
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+- id: rule.close_point.other_uat_local_gap
+  canonical_rule_id: close_point.other_uat_local_gap
+  event_type_id: life.close_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: municipality_id
+    - op: neq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: emit_warning
+    tag: verified_with_local_gap
+    message_ro: Anularea locală este verificată numai pentru Timișoara.
+  - type: require_confirmation
+    tag: confirm_other_uat_local_rules
+    message_ro: Confirmă procedura de anulare pe portalul oficial al UAT-ului competent.
+  source_claim_ids:
+  - claim.biz.close_point.local_cancel
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+  note: Nu generalizează procedura pilotului Timișoara.

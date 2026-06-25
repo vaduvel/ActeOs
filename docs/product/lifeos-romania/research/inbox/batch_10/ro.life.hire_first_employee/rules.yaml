@@ -1,0 +1,448 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.hire_first_employee
+event_type_id: ro.life.hire_first_employee
+required_facts:
+- employer_entity_type
+- has_reges_access
+- candidate_scope
+- third_country_work_right_ready
+- has_medical_aptitude
+- cim_signed_before_start
+- cim_transmitted_before_start
+- employee_received_copy
+- ssm_risk_assessment_done
+- prevention_plan_done
+- ssm_service_arranged
+- ssm_training_done
+- payroll_setup_done
+- d112_frequency_confirmed
+- start_date_confirmed
+status: draft
+rules:
+- id: rule.hire_first_employee.route.v1
+  canonical_rule_id: rule.hire_first_employee.route
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: establish_first_employee_start_date
+  - type: include_step
+    step_id: activate_reges_employer_access
+  - type: include_step
+    step_id: complete_occupational_health_and_ssm_setup
+  - type: include_step
+    step_id: sign_and_transmit_first_cim
+  - type: include_step
+    step_id: configure_payroll_and_d112
+  source_claim_ids:
+  - clm.hire_first_employee.first_employee_reges
+  - clm.hire_first_employee.medical_aptitude
+  - clm.hire_first_employee.ssm_employer
+  - clm.hire_first_employee.d112_current
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.missing_start_date.v1
+  canonical_rule_id: rule.hire_first_employee.missing_start_date
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: start_date_confirmed
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: confirmed_employment_start_date
+  source_claim_ids:
+  - clm.hire_first_employee.cim_written
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_reges_access.v1
+  canonical_rule_id: rule.hire_first_employee.no_reges_access
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: has_reges_access
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: reges_online_employer_access
+  - type: include_step
+    step_id: obtain_reges_employer_access
+  source_claim_ids:
+  - clm.hire_first_employee.first_employee_reges
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_medical.v1
+  canonical_rule_id: rule.hire_first_employee.no_medical
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_medical_aptitude
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: occupational_medical_aptitude
+  - type: block
+    code: candidate_not_cleared_for_start
+    message_ro: Nu permite începerea muncii fără aptitudinea medicală cerută.
+  source_claim_ids:
+  - clm.hire_first_employee.medical_aptitude
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_cim.v1
+  canonical_rule_id: rule.hire_first_employee.no_cim
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: cim_signed_before_start
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: written_signed_cim_before_start
+  - type: block
+    code: first_employee_cim_missing
+    message_ro: Încheie CIM în scris înainte de începerea activității.
+  source_claim_ids:
+  - clm.hire_first_employee.cim_written
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_transmission.v1
+  canonical_rule_id: rule.hire_first_employee.no_transmission
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: cim_transmitted_before_start
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: first_employee_reges_transmission_before_start
+  - type: block
+    code: first_employee_reges_missing
+    message_ro: Transmite contractul înainte de data începerii activității.
+  source_claim_ids:
+  - clm.hire_first_employee.first_employee_reges
+  - clm.hire_first_employee.cim_register
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_copy.v1
+  canonical_rule_id: rule.hire_first_employee.no_copy
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: employee_received_copy
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: signed_cim_copy_for_employee
+  source_claim_ids:
+  - clm.hire_first_employee.cim_copy
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_risk_assessment.v1
+  canonical_rule_id: rule.hire_first_employee.no_risk_assessment
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-07-25'
+  effective_to: null
+  when:
+    op: eq
+    field: ssm_risk_assessment_done
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: occupational_risk_assessment
+  source_claim_ids:
+  - clm.hire_first_employee.medical_risk_assessment
+  - clm.hire_first_employee.ssm_employer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_prevention_plan.v1
+  canonical_rule_id: rule.hire_first_employee.no_prevention_plan
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-07-25'
+  effective_to: null
+  when:
+    op: eq
+    field: prevention_plan_done
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: prevention_and_protection_plan
+  source_claim_ids:
+  - clm.hire_first_employee.ssm_plan
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_ssm_service.v1
+  canonical_rule_id: rule.hire_first_employee.no_ssm_service
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-07-25'
+  effective_to: null
+  when:
+    op: eq
+    field: ssm_service_arranged
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: organised_prevention_and_protection_service
+  source_claim_ids:
+  - clm.hire_first_employee.ssm_employer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_training.v1
+  canonical_rule_id: rule.hire_first_employee.no_training
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-07-25'
+  effective_to: null
+  when:
+    op: eq
+    field: ssm_training_done
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: employee_ssm_training
+  source_claim_ids:
+  - clm.hire_first_employee.ssm_employer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.no_payroll.v1
+  canonical_rule_id: rule.hire_first_employee.no_payroll
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: payroll_setup_done
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: payroll_and_tax_reporting_setup
+  source_claim_ids:
+  - clm.hire_first_employee.d112_current
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.d112_unconfirmed.v1
+  canonical_rule_id: rule.hire_first_employee.d112_unconfirmed
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: d112_frequency_confirmed
+    value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_d112_frequency_and_deadline
+    message_ro: Pagina formularului confirmă versiunea, nu și frecvența concretă aplicabilă angajatorului.
+  source_claim_ids:
+  - clm.hire_first_employee.d112_deadline_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.hire_first_employee.d112_current.v1
+  canonical_rule_id: rule.hire_first_employee.d112_current
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: d112_frequency_confirmed
+    value: true
+  effects:
+  - type: emit_advice
+    tag: use_d112_version_valid_from_2026_01
+    message_ro: Folosește versiunea oficială D112 valabilă pentru perioada de raportare.
+  source_claim_ids:
+  - clm.hire_first_employee.d112_current
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.third_country_ready.v1
+  canonical_rule_id: rule.hire_first_employee.third_country_ready
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: candidate_scope
+      value: third_country
+    - op: eq
+      field: third_country_work_right_ready
+      value: true
+  effects:
+  - type: emit_advice
+    tag: retain_foreign_worker_authorisation_or_exemption
+    message_ro: Păstrează avizul de angajare ori dovada excepției și documentele de ședere.
+  - type: emit_advice
+    tag: foreign_worker_medical_by_start
+    message_ro: Certificatul medical trebuie obținut până la data începerii activității.
+  source_claim_ids:
+  - clm.hire_first_employee.third_country_ro_work
+  - clm.hire_first_employee.foreign_medical
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.hire_first_employee.third_country_not_ready.v1
+  canonical_rule_id: rule.hire_first_employee.third_country_not_ready
+  event_type_id: ro.life.hire_first_employee
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2021-10-28'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: candidate_scope
+      value: third_country
+    - op: eq
+      field: third_country_work_right_ready
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: foreign_worker_employment_authorisation_or_exemption
+  - type: block
+    code: foreign_worker_right_not_ready
+    message_ro: Nu încadra candidatul înainte de documentarea dreptului de muncă.
+  source_claim_ids:
+  - clm.hire_first_employee.third_country_ro_work
+  override_rule_ids: []
+  status: active
+  reviewer_id: null

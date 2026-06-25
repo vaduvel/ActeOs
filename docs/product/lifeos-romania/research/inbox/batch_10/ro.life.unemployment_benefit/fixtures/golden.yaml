@@ -1,0 +1,868 @@
+batch_id: batch10.unemployment_benefit
+defaults:
+  event_type_id: ro.life.unemployment_benefit
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.eligible.6years
+  desc: Eligibilitate de bază, stagiu total 6 ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.reason.imputable
+  desc: Motiv imputabil
+  facts:
+    termination_reason_class: imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: blocked
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.reason.unknown
+  desc: Motivul încetării necesită confirmare
+  facts:
+    termination_reason_class: unknown
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    confirmations:
+    - confirm_nonimputable_termination_reason
+- id: fx.contribution.11
+  desc: Doar 11 luni în ultimele 24
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 11
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: blocked
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.income.equal_isr
+  desc: Venit egal cu ISR
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 660
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: blocked
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.pension
+  desc: Condițiile de pensionare sunt îndeplinite
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: true
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: blocked
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.not_registered
+  desc: Persoana nu este încă înregistrată
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: false
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    - complete_ajofm_registration
+    requirements:
+    - jobseeker_registration_at_agency_by_domicile_or_residence
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.no_id
+  desc: Lipsește actul de identitate
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: false
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    requirements:
+    - identity_document
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.no_studies
+  desc: Lipsesc actele de studii
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: false
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    requirements:
+    - study_and_qualification_documents
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.no_employment_records
+  desc: Lipsesc documentele de muncă
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: false
+    total_contribution_years: 6
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    requirements:
+    - employment_and_contribution_records
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.after_10_within_12_months
+  desc: Cerere după primele 10 zile, dar în termenul de 12 luni
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: after_10_days_within_12_months
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_application_after_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.after_12_months
+  desc: Cerere după termenul de 12 luni
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: after_12_months
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: blocked
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.stage_2
+  desc: Stagiu total de 2 ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 2
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_6_months
+    - benefit_amount_base_isr
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.stage_3
+  desc: Stagiu total de 3 ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 3
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_6_months
+    - benefit_increment_3_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.stage_5
+  desc: Stagiu total de 5 ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 5
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.stage_10
+  desc: Stagiu total de 10 ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 10
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_7_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.stage_11
+  desc: Stagiu total de 11 ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 11
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_12_months
+    - benefit_increment_7_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.stage_20
+  desc: Stagiu total de 20 de ani
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 20
+  expect:
+    status: resolved
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_12_months
+    - benefit_increment_10_percent
+    - beneficiary_reporting_and_active_search_obligations
+- id: fx.other_county
+  desc: Solicitant din alt județ
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.b.bucharest
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_by_domicile_or_residence
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    - verified_with_local_gap
+    confirmations:
+    - confirm_local_ajofm_channel
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.b
+  - ro.b.bucharest
+- id: fx.missing.termination_reason_class
+  desc: Lipsește faptul obligatoriu `termination_reason_class`
+  facts:
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - termination_reason_class
+- id: fx.missing.contribution_months_last_24
+  desc: Lipsește faptul obligatoriu `contribution_months_last_24`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - contribution_months_last_24
+- id: fx.missing.monthly_income_amount_ron
+  desc: Lipsește faptul obligatoriu `monthly_income_amount_ron`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - monthly_income_amount_ron
+- id: fx.missing.pension_conditions_met
+  desc: Lipsește faptul obligatoriu `pension_conditions_met`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - pension_conditions_met
+- id: fx.missing.registered_with_agency
+  desc: Lipsește faptul obligatoriu `registered_with_agency`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - registered_with_agency
+- id: fx.missing.jurisdiction_id
+  desc: Lipsește faptul obligatoriu `jurisdiction_id`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - jurisdiction_id
+- id: fx.missing.filing_window
+  desc: Lipsește faptul obligatoriu `filing_window`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - filing_window
+- id: fx.missing.has_identity_document
+  desc: Lipsește faptul obligatoriu `has_identity_document`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_study_qualification_documents: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - has_identity_document
+- id: fx.missing.has_study_qualification_documents
+  desc: Lipsește faptul obligatoriu `has_study_qualification_documents`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_employment_records: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - has_study_qualification_documents
+- id: fx.missing.has_employment_records
+  desc: Lipsește faptul obligatoriu `has_employment_records`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    total_contribution_years: 6
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - benefit_duration_9_months
+    - benefit_increment_5_percent
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - has_employment_records
+- id: fx.missing.total_contribution_years
+  desc: Lipsește faptul obligatoriu `total_contribution_years`
+  facts:
+    termination_reason_class: non_imputable_confirmed
+    contribution_months_last_24: 18
+    monthly_income_amount_ron: 0
+    pension_conditions_met: false
+    registered_with_agency: true
+    jurisdiction_id: ro.tm.timisoara
+    filing_window: within_first_10_days
+    has_identity_document: true
+    has_study_qualification_documents: true
+    has_employment_records: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    channels:
+    - ajofm_timis_bd_republicii_21
+    advice_tags:
+    - entitlement_from_termination_if_filed_in_10_days
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - total_contribution_years
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - register_as_jobseeker
+    - prepare_unemployment_benefit_file
+    - submit_application_to_competent_agency
+    advice_tags:
+    - beneficiary_reporting_and_active_search_obligations
+    missing_facts:
+    - termination_reason_class
+    - contribution_months_last_24
+    - monthly_income_amount_ron
+    - pension_conditions_met
+    - registered_with_agency
+    - jurisdiction_id
+    - filing_window
+    - has_identity_document
+    - has_study_qualification_documents
+    - has_employment_records
+    - total_contribution_years

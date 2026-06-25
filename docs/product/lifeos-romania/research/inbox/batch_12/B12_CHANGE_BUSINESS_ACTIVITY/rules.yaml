@@ -1,0 +1,432 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_CHANGE_BUSINESS_ACTIVITY
+event_type_id: life.change_business_activity
+status: draft
+rules:
+- id: rule.activity.entity_required
+  canonical_rule_id: activity.entity_required
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează dacă modifici PFA sau SRL.
+  source_claim_ids:
+  - claim.biz.activity.simple_pj
+  - claim.biz.activity.simple_pfa
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+- id: rule.activity.change_type_required
+  canonical_rule_id: activity.change_type_required
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: activity_change_type
+  effects:
+  - type: require_confirmation
+    tag: activity_change_type_required
+    message_ro: Precizează dacă este doar actualizare CAEN Rev.3 sau o modificare reală a activităților.
+  source_claim_ids:
+  - claim.biz.activity.onrc_routes
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - activity_change_type
+- id: rule.activity.transition_info
+  canonical_rule_id: activity.transition_info
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-03-25'
+  when:
+    op: date_between
+    field: reference_date
+    values:
+    - '2025-03-25'
+    - '2026-09-25'
+  effects:
+  - type: emit_advice
+    tag: caen_dual_version_transition
+    message_ro: În perioada de implementare sunt acceptate ambele versiuni CAEN, dar dosarele de actualizare se întocmesc
+      potrivit CAEN Rev.3.
+  source_claim_ids:
+  - claim.biz.activity.caen_transition
+  - claim.biz.activity.both_versions
+  status: draft
+  authority_level: national_operational
+- id: rule.activity.simple_pj
+  canonical_rule_id: activity.simple_pj
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: activity_change_type
+      value: caen_rev3_update_only
+  effects:
+  - type: include_step
+    step_id: file_simple_caen_rev3_update
+  - type: include_requirement
+    requirement_id: req.onrc_annex_2a
+  - type: emit_advice
+    tag: no_other_documents_except_mandate
+    message_ro: Pentru actualizarea simplă nu se adaugă documente de modificare, cu excepția împuternicirii dacă este cazul.
+  source_claim_ids:
+  - claim.biz.activity.simple_pj
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+  - activity_change_type
+- id: rule.activity.simple_pfa
+  canonical_rule_id: activity.simple_pfa
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2025-01-01'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: activity_change_type
+      value: caen_rev3_update_only
+  effects:
+  - type: include_step
+    step_id: file_simple_caen_rev3_update
+  - type: include_requirement
+    requirement_id: req.onrc_annex_2b
+  - type: emit_advice
+    tag: no_other_documents_except_mandate
+    message_ro: Pentru actualizarea simplă nu se adaugă documente de modificare, cu excepția împuternicirii dacă este cazul.
+  source_claim_ids:
+  - claim.biz.activity.simple_pfa
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+  - activity_change_type
+- id: rule.activity.real_modification
+  canonical_rule_id: activity.real_modification
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: in
+    field: activity_change_type
+    values:
+    - add_activity
+    - remove_activity
+    - change_main_activity
+    - split_or_aggregate
+  effects:
+  - type: include_step
+    step_id: approve_activity_modification
+  - type: include_step
+    step_id: file_activity_modification
+  source_claim_ids:
+  - claim.biz.activity.split_aggregate
+  - claim.biz.activity.onrc_routes
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - activity_change_type
+- id: rule.activity.srl_updated_act
+  canonical_rule_id: activity.srl_updated_act
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: in
+      field: activity_change_type
+      values:
+      - add_activity
+      - remove_activity
+      - change_main_activity
+      - split_or_aggregate
+  effects:
+  - type: include_requirement
+    requirement_id: req.amending_act
+  - type: include_requirement
+    requirement_id: req.updated_constitutive_act
+  source_claim_ids:
+  - claim.biz.activity.srl_updated_act
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - activity_change_type
+  legal_rank: Lege
+- id: rule.activity.pfa_limit
+  canonical_rule_id: activity.pfa_limit
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2017-01-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: gt
+      field: resulting_caen_class_count
+      value: 5
+  effects:
+  - type: block
+    tag: pfa_caen_limit_exceeded
+    message_ro: Rezultatul ar depăși limita de cinci clase CAEN pentru PFA.
+  source_claim_ids:
+  - claim.biz.activity.pfa_max
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - resulting_caen_class_count
+  legal_rank: OUG
+- id: rule.activity.pfa_new_authorization
+  canonical_rule_id: activity.pfa_new_authorization
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: new_activity_already_registered_authorized
+      value: false
+    - op: in
+      field: activity_change_type
+      values:
+      - add_activity
+      - change_main_activity
+  effects:
+  - type: include_requirement
+    requirement_id: req.onrc_operating_declaration
+  - type: block
+    tag: new_activity_not_authorized
+    message_ro: Noua activitate trebuie înregistrată și autorizată înainte de desfășurare.
+  source_claim_ids:
+  - claim.biz.activity.new_pfa_authorization
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - new_activity_already_registered_authorized
+  - activity_change_type
+  legal_rank: OUG
+- id: rule.activity.special_permit
+  canonical_rule_id: activity.special_permit
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: special_permit_required
+      value: true
+    - op: eq
+      field: special_permit_obtained
+      value: false
+    - op: eq
+      field: intends_to_operate_new_activity
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.special_sector_permit
+  - type: block
+    tag: special_permit_missing
+    message_ro: Înregistrarea ONRC nu înlocuiește avizul sectorial necesar înainte de operare.
+  source_claim_ids:
+  - claim.biz.activity.new_pfa_authorization
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - special_permit_required
+  - special_permit_obtained
+  - intends_to_operate_new_activity
+- id: rule.activity.mention_deadline
+  canonical_rule_id: activity.mention_deadline
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: neq
+      field: activity_change_type
+      value: caen_rev3_update_only
+    - op: exists
+      field: decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_15_days
+    value:
+      days: 15
+      from: decision_date
+  - type: emit_warning
+    tag: deadline_check
+    message_ro: Pentru modificarea reală verifică termenul de 15 zile.
+  source_claim_ids:
+  - claim.biz.activity.deadline_signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - activity_change_type
+  - decision_date
+  legal_rank: Lege
+- id: rule.activity.signer
+  canonical_rule_id: activity.signer
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - pfa_holder
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Semnatarul nu este autorizat în calitatea declarată.
+  source_claim_ids:
+  - claim.biz.activity.deadline_signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.activity.free_certificate
+  canonical_rule_id: activity.free_certificate
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2025-01-01'
+  when:
+    op: eq
+    field: involves_caen_rev3_update
+    value: true
+  effects:
+  - type: emit_advice
+    tag: new_registration_certificate_free
+    message_ro: ONRC indică emiterea gratuită a noului certificat pentru actualizarea CAEN Rev.3.
+  source_claim_ids:
+  - claim.biz.activity.free_certificate
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - involves_caen_rev3_update
+- id: rule.activity.timisoara_modify
+  canonical_rule_id: activity.timisoara_modify
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+    - op: eq
+      field: activity_data_changes
+      value: true
+  effects:
+  - type: include_step
+    step_id: modify_timisoara_commercial_agreement
+  - type: require_confirmation
+    tag: confirm_current_local_case_fee_documents
+    message_ro: Selectează cazul CAEN în serviciul local și verifică taxa și documentele afișate.
+  source_claim_ids:
+  - claim.biz.activity.local_modify
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+  - activity_data_changes
+- id: rule.activity.other_uat_local_gap
+  canonical_rule_id: activity.other_uat_local_gap
+  event_type_id: life.change_business_activity
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: municipality_id
+    - op: neq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_exists
+      value: true
+  effects:
+  - type: emit_warning
+    tag: verified_with_local_gap
+    message_ro: Acoperirea locală este verificată numai pentru pilotul Timișoara.
+  - type: require_confirmation
+    tag: confirm_other_uat_local_rules
+    message_ro: Confirmă pașii locali pe sursa oficială a UAT-ului competent.
+  source_claim_ids:
+  - claim.biz.activity.local_modify
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_exists
+  note: 'Regulă de ne-generalizare: nu deduce documente, taxe sau termene pentru alt UAT.'

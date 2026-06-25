@@ -1,0 +1,326 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.return_to_ro_work
+event_type_id: ro.life.return_to_ro_work
+required_facts:
+- returning_from_scope
+- has_ro_job_offer
+- plans_immediate_employment
+- profession_regulated_in_ro
+- qualification_recognition_ready
+- needs_foreign_periods_for_benefits
+- has_foreign_employment_documents
+- tax_residence_review_done
+- needs_european_form_support
+- jurisdiction_id
+status: draft
+rules:
+- id: rule.return_to_ro_work.route.v1
+  canonical_rule_id: rule.return_to_ro_work.route
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: collect_foreign_employment_and_insurance_documents
+  - type: include_step
+    step_id: review_professional_qualification_in_ro
+  - type: include_step
+    step_id: review_tax_residence_arrival
+  - type: include_step
+    step_id: choose_job_start_or_jobseeker_route
+  source_claim_ids:
+  - clm.return_to_ro_work.social_periods
+  - clm.return_to_ro_work.regulated_qualification
+  - clm.return_to_ro_work.z015
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.job_offer.v1
+  canonical_rule_id: rule.return_to_ro_work.job_offer
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_ro_job_offer
+      value: true
+    - op: eq
+      field: plans_immediate_employment
+      value: true
+  effects:
+  - type: trigger_child_event
+    event_type_id: ro.life.started_job
+  - type: include_step
+    step_id: prepare_ro_employment_start
+  source_claim_ids:
+  - clm.return_to_ro_work.cim_written
+  - clm.return_to_ro_work.cim_register
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.no_offer.v1
+  canonical_rule_id: rule.return_to_ro_work.no_offer
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: has_ro_job_offer
+    value: false
+  effects:
+  - type: include_step
+    step_id: register_for_employment_services_in_ro
+  - type: attach_channel
+    channel_id: ajofm_by_domicile_or_residence
+  source_claim_ids:
+  - clm.return_to_ro_work.jobseeker_register
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.regulated_missing.v1
+  canonical_rule_id: rule.return_to_ro_work.regulated_missing
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: profession_regulated_in_ro
+      value: true
+    - op: eq
+      field: qualification_recognition_ready
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: professional_qualification_recognition_in_romania
+  - type: block
+    code: regulated_profession_not_ready_in_ro
+    message_ro: Obține recunoașterea/autorizarea înainte de exercitarea profesiei reglementate.
+  source_claim_ids:
+  - clm.return_to_ro_work.regulated_qualification
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.eu_periods.v1
+  canonical_rule_id: rule.return_to_ro_work.eu_periods
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_foreign_periods_for_benefits
+      value: true
+    - op: eq
+      field: returning_from_scope
+      value: eu
+  effects:
+  - type: emit_advice
+    tag: eu_periods_must_be_taken_into_account
+    message_ro: Instituția competentă trebuie să ia în calcul perioadele relevante din alte state UE, conform coordonării
+      europene.
+  - type: include_step
+    step_id: request_relevant_european_form_or_period_confirmation
+  source_claim_ids:
+  - clm.return_to_ro_work.social_periods
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.non_eu_periods.v1
+  canonical_rule_id: rule.return_to_ro_work.non_eu_periods
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_foreign_periods_for_benefits
+      value: true
+    - op: eq
+      field: returning_from_scope
+      value: non_eu
+  effects:
+  - type: require_confirmation
+    tag: confirm_non_eu_period_coordination
+    message_ro: Verifică acordul bilateral și prestația pentru care se valorifică perioadele.
+  source_claim_ids:
+  - clm.return_to_ro_work.non_eu_social_periods_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.return_to_ro_work.missing_foreign_docs.v1
+  canonical_rule_id: rule.return_to_ro_work.missing_foreign_docs
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_foreign_periods_for_benefits
+      value: true
+    - op: eq
+      field: has_foreign_employment_documents
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: foreign_employment_and_insurance_documents
+  - type: require_confirmation
+    tag: confirm_exact_foreign_period_documents
+    message_ro: Lista exactă de documente/formulare depinde de stat și prestație.
+  source_claim_ids:
+  - clm.return_to_ro_work.foreign_period_documents_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.return_to_ro_work.tax_not_reviewed.v1
+  canonical_rule_id: rule.return_to_ro_work.tax_not_reviewed
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2023-02-23'
+  effective_to: null
+  when:
+    op: eq
+    field: tax_residence_review_done
+    value: false
+  effects:
+  - type: include_step
+    step_id: review_z015_tax_residence_arrival_applicability
+  - type: emit_advice
+    tag: z015_is_arrival_tax_residence_form
+    message_ro: Verifică obligația și termenul formularului Z015 pentru situația concretă.
+  source_claim_ids:
+  - clm.return_to_ro_work.z015
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.timis_forms.v1
+  canonical_rule_id: rule.return_to_ro_work.timis_forms
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: county
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_european_form_support
+      value: true
+    - op: in
+      field: jurisdiction_id
+      values:
+      - ro.tm
+      - ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ajofm_timis_eures_and_european_forms
+  source_claim_ids:
+  - clm.return_to_ro_work.eures_timisoara
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.return_to_ro_work.other_forms.v1
+  canonical_rule_id: rule.return_to_ro_work.other_forms
+  event_type_id: ro.life.return_to_ro_work
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_european_form_support
+      value: true
+    - op: not_in
+      field: jurisdiction_id
+      values:
+      - ro.tm
+      - ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ajofm_or_eures_by_domicile
+  - type: require_confirmation
+    tag: confirm_local_eures_or_forms_contact
+    message_ro: Contactul local pentru formulare europene trebuie verificat.
+  source_claim_ids:
+  - clm.return_to_ro_work.eures_timisoara
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null

@@ -1,0 +1,544 @@
+batch_id: batch10.employment_history_proof
+defaults:
+  event_type_id: ro.life.employment_history_proof
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.reges.individual
+  desc: Extras individual pentru perioadă recentă
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+- id: fx.reges.centralized
+  desc: Extras centralizator
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: centralized
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_centralized_reges_extract
+    - use_electronically_signed_reges_extract
+- id: fx.no_access
+  desc: Utilizator fără acces REGES
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: false
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    - create_or_recover_reges_employee_access
+    requirements:
+    - roeid_or_email_account_for_reges
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+- id: fx.employer_certificate
+  desc: Este necesară și adeverința angajatorului
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: true
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    - request_activity_and_seniority_document_from_employer
+    requirements:
+    - employer_activity_duration_salary_and_seniority_document
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+- id: fx.insolvency
+  desc: Angajator în insolvență/lichidare
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: true
+    employer_active: false
+    employer_in_insolvency_or_liquidation: true
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    - request_document_from_judicial_administrator_or_liquidator
+    advice_tags:
+    - request_individual_reges_extract
+    - insolvency_document_max_60_calendar_days
+    - use_electronically_signed_reges_extract
+- id: fx.inactive_unknown
+  desc: Angajator inactiv fără procedură identificată
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: true
+    employer_active: false
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    confirmations:
+    - confirm_inactive_employer_history_route
+- id: fx.legacy_or_mixed
+  desc: Perioade istorice sau mixte, fără acoperire digitală confirmată integral
+  facts:
+    history_period_bucket: legacy_or_mixed
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    confirmations:
+    - confirm_legacy_employment_record_coverage
+- id: fx.period_unknown
+  desc: Perioada exactă și acoperirea registrului nu sunt cunoscute
+  facts:
+    history_period_bucket: unknown
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    confirmations:
+    - confirm_legacy_employment_record_coverage
+- id: fx.reges_available_records
+  desc: Perioada este cuprinsă în înregistrările disponibile în REGES
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+- id: fx.incomplete_reges
+  desc: Extrasul nu conține toate perioadele
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: false
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    requirements:
+    - supplementary_employer_or_archive_documents
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    confirmations:
+    - confirm_missing_reges_periods
+- id: fx.discrepancy.active
+  desc: Date incorecte la angajator activ
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: true
+    needs_signed_electronic_extract: true
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    - notify_active_employer_in_reges
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+- id: fx.discrepancy.inactive
+  desc: Date incorecte la angajator inactiv
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: false
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: true
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    confirmations:
+    - confirm_correction_route_for_inactive_employer
+- id: fx.unsigned_ok
+  desc: Nu este necesară semnarea electronică
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: false
+  expect:
+    status: resolved
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+- id: fx.centralized.incomplete
+  desc: Centralizator incomplet
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: centralized
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: false
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    requirements:
+    - supplementary_employer_or_archive_documents
+    advice_tags:
+    - request_centralized_reges_extract
+    - use_electronically_signed_reges_extract
+    confirmations:
+    - confirm_missing_reges_periods
+- id: fx.missing.history_period_bucket
+  desc: Lipsește faptul obligatoriu `history_period_bucket`
+  facts:
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - history_period_bucket
+- id: fx.missing.has_reges_access
+  desc: Lipsește faptul obligatoriu `has_reges_access`
+  facts:
+    history_period_bucket: reges_available_records
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - has_reges_access
+- id: fx.missing.preferred_scope
+  desc: Lipsește faptul obligatoriu `preferred_scope`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - preferred_scope
+- id: fx.missing.needs_employer_certificate
+  desc: Lipsește faptul obligatoriu `needs_employer_certificate`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - needs_employer_certificate
+- id: fx.missing.employer_active
+  desc: Lipsește faptul obligatoriu `employer_active`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - employer_active
+- id: fx.missing.employer_in_insolvency_or_liquidation
+  desc: Lipsește faptul obligatoriu `employer_in_insolvency_or_liquidation`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - employer_in_insolvency_or_liquidation
+- id: fx.missing.data_complete_in_reges
+  desc: Lipsește faptul obligatoriu `data_complete_in_reges`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    has_data_discrepancy: false
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - data_complete_in_reges
+- id: fx.missing.has_data_discrepancy
+  desc: Lipsește faptul obligatoriu `has_data_discrepancy`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    needs_signed_electronic_extract: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    - use_electronically_signed_reges_extract
+    missing_facts:
+    - has_data_discrepancy
+- id: fx.missing.needs_signed_electronic_extract
+  desc: Lipsește faptul obligatoriu `needs_signed_electronic_extract`
+  facts:
+    history_period_bucket: reges_available_records
+    has_reges_access: true
+    preferred_scope: individual
+    needs_employer_certificate: false
+    employer_active: true
+    employer_in_insolvency_or_liquidation: false
+    data_complete_in_reges: true
+    has_data_discrepancy: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    advice_tags:
+    - request_individual_reges_extract
+    missing_facts:
+    - needs_signed_electronic_extract
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    included_steps:
+    - access_reges_employee_portal
+    - generate_employment_history_extract
+    - verify_extract_completeness
+    missing_facts:
+    - history_period_bucket
+    - has_reges_access
+    - preferred_scope
+    - needs_employer_certificate
+    - employer_active
+    - employer_in_insolvency_or_liquidation
+    - data_complete_in_reges
+    - has_data_discrepancy
+    - needs_signed_electronic_extract

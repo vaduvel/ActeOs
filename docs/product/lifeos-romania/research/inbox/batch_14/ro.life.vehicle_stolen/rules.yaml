@@ -1,0 +1,560 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_VEHICLE_STOLEN
+alias_event_type_id: ro.life.vehicle_stolen
+event_type_id: life.vehicle_stolen
+status: draft
+required_facts:
+- theft_status
+- desired_outcome
+- applicant_county
+rules:
+- id: rule.vehicle_stolen.base.report
+  canonical_rule_id: vehicle_stolen.base.report
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: notify_competent_police_authority_about_vehicle_theft
+  - type: emit_advice
+    tag: online_petition_not_emergency_channel
+    message_ro: Formularul de petiții online al Poliției Române nu înlocuiește apelul de urgență.
+  - type: attach_channel
+    channel_id: ch.police_romania_information
+  source_claim_ids:
+  - claim.vehicle_stolen.police_112
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.emergency.in_progress
+  canonical_rule_id: vehicle_stolen.emergency.in_progress
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: theft_status
+    value: in_progress
+  effects:
+  - type: include_step
+    step_id: call_emergency_112
+  - type: attach_channel
+    channel_id: ch.emergency_112
+  - type: emit_warning
+    tag: use_112_for_vehicle_theft_emergency
+    message_ro: Pentru furt în desfășurare sau o situație care reprezintă urgență, apelează 112.
+  source_claim_ids:
+  - claim.vehicle_stolen.police_112
+  status: draft
+- id: rule.vehicle_stolen.report.non_emergency
+  canonical_rule_id: vehicle_stolen.report.non_emergency
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: theft_status
+    value: discovered_not_in_progress
+  effects:
+  - type: require_confirmation
+    tag: competent_non_emergency_police_reporting_channel
+    message_ro: Confirmă unitatea de poliție competentă și forma sesizării; sursa verificată stabilește doar că
+      formularul de petiții nu este canal de urgență.
+  source_claim_ids:
+  - claim.vehicle_stolen.police_112
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.deregistration.route
+  canonical_rule_id: vehicle_stolen.deregistration.route
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: desired_outcome
+    values:
+    - deregister
+    - both
+  effects:
+  - type: include_step
+    step_id: obtain_competent_authority_theft_proof
+  - type: include_step
+    step_id: prepare_vehicle_deregistration_file
+  - type: include_step
+    step_id: submit_vehicle_deregistration_application
+  - type: include_requirement
+    requirement_id: req.registration_certificate
+  - type: include_requirement
+    requirement_id: req.registration_plates_or_substitute_proof
+  - type: include_requirement
+    requirement_id: req.valid_identity_or_entity_documents
+  - type: include_requirement
+    requirement_id: req.competent_authority_document_proving_vehicle_theft
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  - claim.vehicle_stolen.deregistration_docs
+  - claim.vehicle_stolen.competent_service
+  status: draft
+- id: rule.vehicle_stolen.deregistration.owner
+  canonical_rule_id: vehicle_stolen.deregistration.owner
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_role
+      value: owner
+  effects:
+  - type: emit_advice
+    tag: owner_may_request_deregistration
+    message_ro: Proprietarul poate cere radierea pentru furt declarat, pe baza documentului autorității competente.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.deregistration.heir
+  canonical_rule_id: vehicle_stolen.deregistration.heir
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_role
+      value: legal_heir
+  effects:
+  - type: emit_advice
+    tag: legal_heir_may_request_deregistration
+    message_ro: Moștenitorul legal este inclus între persoanele care pot solicita radierea.
+  - type: require_confirmation
+    tag: proof_of_legal_heir_capacity
+    message_ro: Confirmă documentul oficial prin care este dovedită calitatea de moștenitor legal.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.deregistration.role_missing
+  canonical_rule_id: vehicle_stolen.deregistration.role_missing
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: missing
+      field: applicant_role
+  effects:
+  - type: require_confirmation
+    tag: applicant_role_for_stolen_vehicle_deregistration
+    message_ro: Precizează dacă solicitantul este proprietarul sau moștenitorul legal.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.deregistration.role_other
+  canonical_rule_id: vehicle_stolen.deregistration.role_other
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_role
+      value: other
+  effects:
+  - type: block
+    code: unverified_deregistration_capacity
+    message_ro: Sursa verificată indică proprietarul și moștenitorii legali; o altă calitate nu este validată pentru
+      această rută.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.certificate.with_vehicle
+  canonical_rule_id: vehicle_stolen.certificate.with_vehicle
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: registration_certificate_with_vehicle
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: missing_registration_certificate_for_stolen_vehicle_deregistration
+    message_ro: Lista oficială publicată cere certificatul de înmatriculare; confirmă la serviciul competent soluția
+      acceptată când certificatul a fost furat odată cu vehiculul.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_docs
+  status: draft
+- id: rule.vehicle_stolen.plates.with_vehicle
+  canonical_rule_id: vehicle_stolen.plates.with_vehicle
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: registration_plates_with_vehicle
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.proof_replacing_stolen_registration_plates
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_docs
+  status: draft
+- id: rule.vehicle_stolen.vehicle.recovered
+  canonical_rule_id: vehicle_stolen.vehicle.recovered
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: vehicle_recovered
+      value: true
+  effects:
+  - type: require_confirmation
+    tag: vehicle_recovery_status_before_deregistration
+    message_ro: Confirmă la poliție și la serviciul de înmatriculări dacă temeiul de radiere pentru furt mai este
+      aplicabil după recuperarea vehiculului.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft
+- id: rule.vehicle_stolen.fiscal.unpaid
+  canonical_rule_id: vehicle_stolen.fiscal.unpaid
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: all_local_obligations_paid
+      value: false
+  effects:
+  - type: block
+    code: local_obligations_unpaid
+    message_ro: La radierea la cerere trebuie achitate obligațiile locale până la data radierii.
+  source_claim_ids:
+  - claim.vehicle_stolen.post_deregistration_tax
+  status: draft
+- id: rule.vehicle_stolen.fiscal.post_declaration
+  canonical_rule_id: vehicle_stolen.fiscal.post_declaration
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: exists
+      field: deregistration_date
+  effects:
+  - type: include_step
+    step_id: declare_deregistration_to_local_tax_authority
+  - type: set_deadline
+    step_id: declare_deregistration_to_local_tax_authority
+    value:
+      kind: relative_calendar_days
+      anchor: deregistration_date
+      days: 30
+  - type: attach_channel
+    channel_id: ch.local_tax_authority
+  source_claim_ids:
+  - claim.vehicle_stolen.post_deregistration_tax
+  status: draft
+- id: rule.vehicle_stolen.timis.fiscal_certificate
+  canonical_rule_id: vehicle_stolen.timis.fiscal_certificate
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: critical
+  effective_from: '2026-03-04'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: include_requirement
+    requirement_id: req.local_fiscal_clearance_certificate_all_obligations_paid
+  source_claim_ids:
+  - claim.vehicle_stolen.timis_fiscal_2026
+  status: draft
+- id: rule.vehicle_stolen.timis.channel
+  canonical_rule_id: vehicle_stolen.timis.channel
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  source_claim_ids:
+  - claim.vehicle_stolen.timis_contact
+  status: draft
+- id: rule.vehicle_stolen.other_county.channel
+  canonical_rule_id: vehicle_stolen.other_county.channel
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: neq
+      field: applicant_county
+      value: TM
+  effects:
+  - type: require_confirmation
+    tag: local_deregistration_channel_outside_pilot
+    message_ro: Confirmă serviciul și programarea din județul competent pentru radierea vehiculului furat.
+  source_claim_ids:
+  - claim.vehicle_stolen.competent_service
+  status: draft
+- id: rule.vehicle_stolen.representation.individual
+  canonical_rule_id: vehicle_stolen.representation.individual
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_type
+      value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.vehicle_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_stolen.representation.company
+  canonical_rule_id: vehicle_stolen.representation.company
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: applicant_type
+      value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.vehicle_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_stolen.representation.lawyer
+  canonical_rule_id: vehicle_stolen.representation.lawyer
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: representation_type
+      value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.vehicle_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_stolen.representation.authorized_individual
+  canonical_rule_id: vehicle_stolen.representation.authorized_individual
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: representation_type
+      value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.vehicle_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_stolen.representation.company_delegate
+  canonical_rule_id: vehicle_stolen.representation.company_delegate
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: in
+      field: desired_outcome
+      values:
+      - deregister
+      - both
+    - op: eq
+      field: representation_type
+      value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.vehicle_stolen.representation_forms
+  status: draft
+- id: rule.vehicle_stolen.insurer.deadline
+  canonical_rule_id: vehicle_stolen.insurer.deadline
+  event_type_id: life.vehicle_stolen
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: needs_insurer_notification_deadline
+    value: true
+  effects:
+  - type: require_confirmation
+    tag: insurance_contract_notification_deadline
+    message_ro: Termenul de notificare a asigurătorului depinde de contract și de procedura asigurătorului; nu este
+      stabilit de sursele acestui eveniment.
+  source_claim_ids:
+  - claim.vehicle_stolen.deregistration_grounds_heirs
+  status: draft

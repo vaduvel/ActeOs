@@ -1,0 +1,358 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.employment_history_proof
+event_type_id: ro.life.employment_history_proof
+required_facts:
+- history_period_bucket
+- has_reges_access
+- preferred_scope
+- needs_employer_certificate
+- employer_active
+- employer_in_insolvency_or_liquidation
+- data_complete_in_reges
+- has_data_discrepancy
+- needs_signed_electronic_extract
+status: draft
+rules:
+- id: rule.employment_history_proof.route.v1
+  canonical_rule_id: rule.employment_history_proof.route
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: access_reges_employee_portal
+  - type: include_step
+    step_id: generate_employment_history_extract
+  - type: include_step
+    step_id: verify_extract_completeness
+  source_claim_ids:
+  - clm.employment_history_proof.history_extract
+  - clm.employment_history_proof.history_reges_formats
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.no_access.v1
+  canonical_rule_id: rule.employment_history_proof.no_access
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: has_reges_access
+    value: false
+  effects:
+  - type: include_step
+    step_id: create_or_recover_reges_employee_access
+  - type: include_requirement
+    requirement_id: roeid_or_email_account_for_reges
+  source_claim_ids:
+  - clm.employment_history_proof.history_reges_access
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.individual.v1
+  canonical_rule_id: rule.employment_history_proof.individual
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: preferred_scope
+    value: individual
+  effects:
+  - type: emit_advice
+    tag: request_individual_reges_extract
+    message_ro: Generează extrasul individual în formatul necesar.
+  source_claim_ids:
+  - clm.employment_history_proof.history_reges_formats
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.centralized.v1
+  canonical_rule_id: rule.employment_history_proof.centralized
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: preferred_scope
+    value: centralized
+  effects:
+  - type: emit_advice
+    tag: request_centralized_reges_extract
+    message_ro: Folosește extrasul centralizator pentru înregistrările disponibile la nivel național.
+  source_claim_ids:
+  - clm.employment_history_proof.history_centralizer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.employer_certificate_active.v1
+  canonical_rule_id: rule.employment_history_proof.employer_certificate_active
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_employer_certificate
+      value: true
+    - op: eq
+      field: employer_active
+      value: true
+  effects:
+  - type: include_step
+    step_id: request_activity_and_seniority_document_from_employer
+  - type: include_requirement
+    requirement_id: employer_activity_duration_salary_and_seniority_document
+  source_claim_ids:
+  - clm.employment_history_proof.history_employer
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.insolvency.v1
+  canonical_rule_id: rule.employment_history_proof.insolvency
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_employer_certificate
+      value: true
+    - op: eq
+      field: employer_active
+      value: false
+    - op: eq
+      field: employer_in_insolvency_or_liquidation
+      value: true
+  effects:
+  - type: include_step
+    step_id: request_document_from_judicial_administrator_or_liquidator
+  - type: emit_advice
+    tag: insolvency_document_max_60_calendar_days
+    message_ro: Administratorul sau lichidatorul judiciar are termenul maxim publicat de 60 de zile calendaristice.
+  source_claim_ids:
+  - clm.employment_history_proof.history_insolvency
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.inactive_unknown_route.v1
+  canonical_rule_id: rule.employment_history_proof.inactive_unknown_route
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: needs_employer_certificate
+      value: true
+    - op: eq
+      field: employer_active
+      value: false
+    - op: eq
+      field: employer_in_insolvency_or_liquidation
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_inactive_employer_history_route
+    message_ro: Identifică deținătorul arhivei și instituția competentă înainte de solicitare.
+  source_claim_ids:
+  - clm.employment_history_proof.history_inactive_employer_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.employment_history_proof.legacy_period.v1
+  canonical_rule_id: rule.employment_history_proof.legacy_period
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: in
+    field: history_period_bucket
+    values:
+    - legacy_or_mixed
+    - unknown
+  effects:
+  - type: require_confirmation
+    tag: confirm_legacy_employment_record_coverage
+    message_ro: Nu presupune că extrasul digital acoperă integral perioada; verifică arhiva și carnetul/documentele istorice.
+  source_claim_ids:
+  - clm.employment_history_proof.history_legacy_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.employment_history_proof.incomplete_reges.v1
+  canonical_rule_id: rule.employment_history_proof.incomplete_reges
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: data_complete_in_reges
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: supplementary_employer_or_archive_documents
+  - type: require_confirmation
+    tag: confirm_missing_reges_periods
+    message_ro: Perioadele lipsă trebuie reconstruite din documente oficiale.
+  source_claim_ids:
+  - clm.employment_history_proof.history_legacy_gap
+  - clm.employment_history_proof.history_employer
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.employment_history_proof.discrepancy_active.v1
+  canonical_rule_id: rule.employment_history_proof.discrepancy_active
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_data_discrepancy
+      value: true
+    - op: eq
+      field: employer_active
+      value: true
+  effects:
+  - type: include_step
+    step_id: notify_active_employer_in_reges
+  source_claim_ids:
+  - clm.employment_history_proof.history_correction
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.employment_history_proof.discrepancy_inactive.v1
+  canonical_rule_id: rule.employment_history_proof.discrepancy_inactive
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: has_data_discrepancy
+      value: true
+    - op: eq
+      field: employer_active
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: confirm_correction_route_for_inactive_employer
+    message_ro: Corectarea datelor unui angajator inactiv trebuie direcționată către instituția/arhiva competentă.
+  source_claim_ids:
+  - clm.employment_history_proof.history_inactive_employer_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.employment_history_proof.signed_extract.v1
+  canonical_rule_id: rule.employment_history_proof.signed_extract
+  event_type_id: ro.life.employment_history_proof
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: needs_signed_electronic_extract
+    value: true
+  effects:
+  - type: emit_advice
+    tag: use_electronically_signed_reges_extract
+    message_ro: Selectează opțiunea de semnare electronică pentru documentul destinat terților.
+  source_claim_ids:
+  - clm.employment_history_proof.history_signed
+  - clm.employment_history_proof.history_reges_formats
+  override_rule_ids: []
+  status: active
+  reviewer_id: null

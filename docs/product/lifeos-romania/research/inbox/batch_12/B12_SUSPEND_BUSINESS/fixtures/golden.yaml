@@ -1,0 +1,249 @@
+batch_id: B12_SUSPEND_BUSINESS
+defaults:
+  event_type_id: life.suspend_business
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA suspendat 12 luni
+  facts:
+    entity_type: pfa
+    requested_duration_months: 12
+    currently_suspended: false
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+    included_steps:
+    - approve_pfa_interruption
+    - file_pfa_suspension_mention
+- id: F02
+  desc: SRL suspendat 36 luni
+  facts:
+    entity_type: srl
+    requested_duration_months: 36
+    currently_suspended: false
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_srl_temporary_inactivity
+    - file_srl_suspension_mention
+- id: F03
+  desc: tip entitate lipsă
+  facts:
+    requested_duration_months: 12
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F04
+  desc: durata lipsește
+  facts:
+    entity_type: pfa
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - suspension_duration_required
+- id: F05
+  desc: PFA suspendat 37 luni
+  facts:
+    entity_type: pfa
+    requested_duration_months: 37
+    currently_suspended: false
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - suspension_over_three_years
+- id: F06
+  desc: SRL suspendat 60 luni
+  facts:
+    entity_type: srl
+    requested_duration_months: 60
+    currently_suspended: false
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - suspension_over_three_years
+- id: F07
+  desc: PFA deja suspendat
+  facts:
+    entity_type: pfa
+    requested_duration_months: 12
+    currently_suspended: true
+    filing_actor: pfa_holder
+  expect:
+    status: blocked
+    blocks:
+    - already_suspended
+- id: F08
+  desc: SRL deja suspendat
+  facts:
+    entity_type: srl
+    requested_duration_months: 12
+    currently_suspended: true
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - already_suspended
+- id: F09
+  desc: decizie în ziua 15
+  facts:
+    entity_type: srl
+    requested_duration_months: 24
+    currently_suspended: false
+    decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F10
+  desc: decizie după 16 zile
+  facts:
+    entity_type: srl
+    requested_duration_months: 24
+    currently_suspended: false
+    decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F11
+  desc: PFA depune prin avocat
+  facts:
+    entity_type: pfa
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F12
+  desc: SRL depune prin mandatar autentic
+  facts:
+    entity_type: srl
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: authenticated_proxy
+  expect:
+    status: resolved
+- id: F13
+  desc: contabil fără procură
+  facts:
+    entity_type: srl
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: accountant_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F14
+  desc: depunere online cu QES
+  facts:
+    entity_type: srl
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+- id: F15
+  desc: depunere online fără QES
+  facts:
+    entity_type: srl
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F16
+  desc: PFA cu salariat
+  facts:
+    entity_type: pfa
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: pfa_holder
+    has_employees: true
+    tax_registrations_present: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tax_and_employment_effects
+- id: F17
+  desc: SRL plătitor TVA
+  facts:
+    entity_type: srl
+    requested_duration_months: 6
+    currently_suspended: false
+    filing_actor: legal_representative
+    has_employees: false
+    tax_registrations_present: true
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - tax_and_employment_effects
+- id: F18
+  desc: suspendare 30 luni
+  facts:
+    entity_type: srl
+    requested_duration_months: 30
+    currently_suspended: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    warnings:
+    - resume_before_three_year_limit
+- id: F19
+  desc: suspendare 35 luni
+  facts:
+    entity_type: pfa
+    requested_duration_months: 35
+    currently_suspended: false
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+    warnings:
+    - resume_before_three_year_limit
+- id: F20
+  desc: firmă cu acord comercial Timișoara
+  facts:
+    entity_type: srl
+    requested_duration_months: 12
+    currently_suspended: false
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - review_timisoara_agreement_during_suspension
+    confirmations:
+    - confirm_local_agreement_status
+- id: F21
+  desc: firmă fără acord local
+  facts:
+    entity_type: srl
+    requested_duration_months: 12
+    currently_suspended: false
+    filing_actor: legal_representative
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: false
+  expect:
+    status: resolved

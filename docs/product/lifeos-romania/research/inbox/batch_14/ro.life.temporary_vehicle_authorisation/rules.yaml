@@ -1,0 +1,416 @@
+schema_ref: https://acteos/schemas/rule.schema.json
+batch_id: B14_TEMPORARY_VEHICLE_AUTHORISATION
+alias_event_type_id: ro.life.temporary_vehicle_authorisation
+event_type_id: life.temporary_vehicle_authorisation
+status: draft
+required_facts:
+- applicant_type
+- applicant_county
+- vehicle_origin
+- previously_registered_abroad
+- foreign_registration_documents_available
+- requested_days
+- total_days_after_request
+- representation_type
+rules:
+- id: rule.temporary_vehicle_authorisation.base.route
+  canonical_rule_id: temporary_vehicle_authorisation.base.route
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: prepare_temporary_authorisation_file
+  - type: include_step
+    step_id: submit_temporary_authorisation_application
+  - type: include_requirement
+    requirement_id: req.valid_rca_copy_owner_name
+  - type: include_requirement
+    requirement_id: req.ownership_document_original_and_copy
+  - type: include_requirement
+    requirement_id: req.valid_identity_or_entity_documents
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: emit_advice
+    tag: temporary_authorisation_romania_only
+    message_ro: Autorizația provizorie permite circulația numai pe teritoriul României.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.competent_service
+  - claim.temporary_vehicle_authorisation.temporary_limit_territory_rca
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.duration.valid
+  canonical_rule_id: temporary_vehicle_authorisation.duration.valid
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: gte
+      field: requested_days
+      value: 1
+    - op: lte
+      field: total_days_after_request
+      value: 90
+  effects:
+  - type: emit_advice
+    tag: temporary_cumulative_limit_90_days
+    message_ro: Perioadele cumulate ale autorizațiilor provizorii nu pot depăși 90 de zile.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_limit_territory_rca
+  status: draft
+- id: rule.temporary_vehicle_authorisation.duration.over_90
+  canonical_rule_id: temporary_vehicle_authorisation.duration.over_90
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: gt
+    field: total_days_after_request
+    value: 90
+  effects:
+  - type: block
+    code: temporary_authorisation_over_90_days
+    message_ro: Perioada cumulată solicitată depășește maximumul verificat de 90 de zile.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_limit_territory_rca
+  status: draft
+- id: rule.temporary_vehicle_authorisation.duration.invalid
+  canonical_rule_id: temporary_vehicle_authorisation.duration.invalid
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: lte
+    field: requested_days
+    value: 0
+  effects:
+  - type: block
+    code: temporary_authorisation_invalid_duration
+    message_ro: Perioada solicitată trebuie să fie pozitivă.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_limit_territory_rca
+  status: draft
+- id: rule.temporary_vehicle_authorisation.foreign.previous_docs
+  canonical_rule_id: temporary_vehicle_authorisation.foreign.previous_docs
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_origin
+      value: foreign
+    - op: eq
+      field: previously_registered_abroad
+      value: true
+    - op: eq
+      field: foreign_registration_documents_available
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.foreign_registration_documents_original_and_copy
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.foreign.no_docs_five_days
+  canonical_rule_id: temporary_vehicle_authorisation.foreign.no_docs_five_days
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_origin
+      value: foreign
+    - op: eq
+      field: previously_registered_abroad
+      value: true
+    - op: eq
+      field: foreign_registration_documents_available
+      value: false
+  effects:
+  - type: emit_advice
+    tag: foreign_docs_missing_maximum_5_days
+    message_ro: Fără actele străine ale unui vehicul anterior înmatriculat, autorizația poate fi emisă pentru cel
+      mult 5 zile și nu dincolo de expirarea RCA.
+  - type: require_confirmation
+    tag: rca_expiry_limits_five_day_authorisation
+    message_ro: Confirmă data expirării RCA; perioada autorizată nu o poate depăși.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_five_days
+  status: draft
+- id: rule.temporary_vehicle_authorisation.foreign.no_docs_over_five
+  canonical_rule_id: temporary_vehicle_authorisation.foreign.no_docs_over_five
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: vehicle_origin
+      value: foreign
+    - op: eq
+      field: previously_registered_abroad
+      value: true
+    - op: eq
+      field: foreign_registration_documents_available
+      value: false
+    - op: gt
+      field: requested_days
+      value: 5
+  effects:
+  - type: block
+    code: foreign_vehicle_without_documents_over_5_days
+    message_ro: Fără documentele străine, perioada solicitată depășește limita verificată de 5 zile.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_five_days
+  status: draft
+- id: rule.temporary_vehicle_authorisation.rca.invalid
+  canonical_rule_id: temporary_vehicle_authorisation.rca.invalid
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: rca_valid
+    value: false
+  effects:
+  - type: block
+    code: invalid_rca
+    message_ro: Autorizația provizorie se poate emite numai cu RCA valabilă pe numele proprietarului.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_limit_territory_rca
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.seller.certificate
+  canonical_rule_id: temporary_vehicle_authorisation.seller.certificate
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: in
+    field: seller_type
+    values:
+    - leasing_company
+    - authorised_vehicle_dealer
+  effects:
+  - type: require_confirmation
+    tag: seller_temporary_authorisation_history_certificate
+    message_ro: Confirmă la serviciul competent certificatul temporar privind autorizațiile provizorii anterioare;
+      sursa operațională indică o condiție tranzitorie dependentă de soluția informatică.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.fees
+  canonical_rule_id: temporary_vehicle_authorisation.fees
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_advice
+    tag: temporary_authorisation_fee_13
+    message_ro: Contravaloarea publicată a autorizației provizorii este 13 lei.
+  - type: emit_advice
+    tag: temporary_plates_fee_separate
+    message_ro: Plăcuțele provizorii se plătesc separat; tipul și configurația trebuie confirmate pentru vehiculul
+      concret.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.fee_temporary
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.identity.individual
+  canonical_rule_id: temporary_vehicle_authorisation.identity.individual
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.valid_identity_document
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.representation_forms
+  status: draft
+- id: rule.temporary_vehicle_authorisation.identity.company
+  canonical_rule_id: temporary_vehicle_authorisation.identity.company
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_type
+    value: company
+  effects:
+  - type: include_requirement
+    requirement_id: req.legal_entity_documents
+  - type: include_requirement
+    requirement_id: req.legal_representative_identity
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.representation_forms
+  status: draft
+- id: rule.temporary_vehicle_authorisation.representation.lawyer
+  canonical_rule_id: temporary_vehicle_authorisation.representation.lawyer
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: lawyer
+  effects:
+  - type: include_requirement
+    requirement_id: req.lawyer_mandate
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.representation_forms
+  status: draft
+- id: rule.temporary_vehicle_authorisation.representation.authorized_individual
+  canonical_rule_id: temporary_vehicle_authorisation.representation.authorized_individual
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: authorized_individual
+  effects:
+  - type: include_requirement
+    requirement_id: req.notarial_power_of_attorney
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.representation_forms
+  status: draft
+- id: rule.temporary_vehicle_authorisation.representation.company_delegate
+  canonical_rule_id: temporary_vehicle_authorisation.representation.company_delegate
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: representation_type
+    value: company_delegate
+  effects:
+  - type: include_requirement
+    requirement_id: req.company_written_mandate
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.representation_forms
+  status: draft
+- id: rule.temporary_vehicle_authorisation.payment.proof
+  canonical_rule_id: temporary_vehicle_authorisation.payment.proof
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: req.temporary_authorisation_and_plate_payment_proof
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.payment.snep
+  canonical_rule_id: temporary_vehicle_authorisation.payment.snep
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: payment_via_snep
+    value: true
+  effects:
+  - type: emit_advice
+    tag: snep_payment_proof_exception
+    message_ro: Dovada plății nu se depune atunci când plata este identificată prin SNEP, potrivit procedurii publicate.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.temporary_docs
+  status: draft
+- id: rule.temporary_vehicle_authorisation.channel.timis
+  canonical_rule_id: temporary_vehicle_authorisation.channel.timis
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro.tm
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: eq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.spcrpciv_timis
+  - type: attach_channel
+    channel_id: ch.dgpci_booking
+  - type: emit_advice
+    tag: timis_verified_channel
+    message_ro: Pentru pilotul Timiș este publicat canalul SPCRPCIV Timiș și legătura DGPCI pentru programare/informare.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.timis_contact
+  status: draft
+- id: rule.temporary_vehicle_authorisation.channel.other_county
+  canonical_rule_id: temporary_vehicle_authorisation.channel.other_county
+  event_type_id: life.temporary_vehicle_authorisation
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2026-06-25'
+  when:
+    op: neq
+    field: applicant_county
+    value: TM
+  effects:
+  - type: attach_channel
+    channel_id: ch.dgpci_information
+  - type: require_confirmation
+    tag: local_channel_outside_pilot
+    message_ro: Confirmă serviciul, programarea și particularitățile locale pentru autorizare provizorie în județul
+      competent.
+  source_claim_ids:
+  - claim.temporary_vehicle_authorisation.competent_service
+  status: draft

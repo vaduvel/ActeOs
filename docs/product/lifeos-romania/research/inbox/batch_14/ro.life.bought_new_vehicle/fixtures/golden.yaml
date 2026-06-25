@@ -1,0 +1,921 @@
+batch_id: B14_BOUGHT_NEW_VEHICLE
+defaults:
+  alias_event_type_id: ro.life.bought_new_vehicle
+  event_type_id: life.bought_new_vehicle
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: BNV01
+  description: Persoană fizică, vehicul nou, dosar de bază în Timișoara
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV02
+  description: Persoană juridică reprezentată de delegat
+  facts:
+    applicant_type: company
+    applicant_county: TM
+    representation_type: company_delegate
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV03
+  description: Depunere prin avocat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: lawyer
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV04
+  description: Persoană fizică prin împuternicit
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: authorized_individual
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    - req.notarial_power_of_attorney
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV05
+  description: Vehicul în leasing
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: leasing
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.lease_contract_extract_with_required_data
+    - req.local_tax_declaration_for_mandated_holder
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV06
+  description: Plată în afara SNEP
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: false
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    - req.registration_and_plate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - timis_verified_channel
+- id: BNV07
+  description: Număr preferențial
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: preferential
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.preferential_combination_payment
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - preferential_combination_fee_45
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV08
+  description: Plăcuță tip B
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: B
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - plate_type_b_fee_27
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV09
+  description: Plăcuță tip C
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: C
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - plate_type_c_fee_22
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV10
+  description: Actul de proprietate nu este încă înregistrat fiscal
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: false
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: blocked
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV11
+  description: RCA nevalabilă
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: false
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: blocked
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV12
+  description: CIV nevalabilă
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: false
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: blocked
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV13
+  description: Utilizatorul încearcă ruta de vehicul nou pentru un vehicul uzat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: false
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: blocked
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV14
+  description: Intenție de circulație înaintea înmatriculării
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+    circulation_before_registration: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    warnings:
+    - must_register_before_circulation
+- id: BNV15
+  description: Solicitant din alt județ
+  facts:
+    applicant_type: individual
+    applicant_county: CJ
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: cluj-napoca
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - ownership_document_fiscally_registered
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    confirmations:
+    - local_channel_outside_pilot
+- id: BNV16
+  description: Lipsește tipul solicitantului
+  facts:
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: needs_facts
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - applicant_type
+- id: BNV17
+  description: Lipsește județul solicitantului
+  facts:
+    applicant_type: individual
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: needs_facts
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - ownership_document_fiscally_registered
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    missing_facts:
+    - applicant_county
+- id: BNV18
+  description: Lipsește tipul reprezentării
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: needs_facts
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - representation_type
+- id: BNV19
+  description: Lipsește situația înregistrării fiscale
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: needs_facts
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - ownership_document_registered_local_tax
+- id: BNV20
+  description: Persoană fizică cu domiciliul în străinătate și reședință în Timiș
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+    foreign_domicile: true
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: BNV21
+  description: Depunere la ghișeu fără număr preferențial
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: false
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    - req.registration_and_plate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - timis_verified_channel
+- id: BNV22
+  description: Vehicul nou și canal fiscal Atlas verificat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    representation_type: self
+    ownership_document_registered_local_tax: true
+    payment_via_snep: true
+    submission_mode: counter
+    tax_locality: timisoara
+    vehicle_is_new: true
+    rca_valid: true
+    civ_valid: true
+    acquisition_form: sale
+    plate_choice: standard
+    plate_type: A
+  expect:
+    status: resolved
+    included_steps:
+    - declare_vehicle_at_local_tax_authority
+    - prepare_new_vehicle_registration_file
+    - submit_registration_application
+    requirements:
+    - req.ownership_document_registered_local_tax
+    - req.valid_rca_copy_owner_name
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dfmt_atlas
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - new_vehicle_authenticity_exempt
+    - dfmt_atlas_current_channel
+    - ownership_document_fiscally_registered
+    - timis_counter_fiscal_document_rule
+    - registration_certificate_fee_49
+    - standard_plate_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel

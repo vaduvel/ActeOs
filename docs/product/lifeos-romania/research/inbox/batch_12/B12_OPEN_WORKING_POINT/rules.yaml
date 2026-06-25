@@ -1,0 +1,463 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_OPEN_WORKING_POINT
+event_type_id: life.open_working_point
+status: draft
+rules:
+- id: rule.open_point.choose_entity_branch
+  canonical_rule_id: open_point.choose_entity_branch
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Trebuie stabilit dacă punctul de lucru aparține unei PFA sau unei societăți.
+  source_claim_ids:
+  - claim.biz.open_point.pfa_register
+  - claim.biz.open_point.srl_constitutive
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+- id: rule.open_point.pfa_register
+  canonical_rule_id: open_point.pfa_register
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: entity_type
+    value: pfa
+  effects:
+  - type: include_step
+    step_id: register_pfa_working_point
+  - type: include_requirement
+    requirement_id: req.working_point_use_right_document
+  - type: include_requirement
+    requirement_id: req.onrc_operating_declaration
+  source_claim_ids:
+  - claim.biz.open_point.pfa_register
+  - claim.biz.open_point.pfa_use_right
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  legal_rank: OUG
+- id: rule.open_point.use_right_missing
+  canonical_rule_id: open_point.use_right_missing
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: has_use_right_document
+      value: false
+  effects:
+  - type: block
+    tag: working_point_use_right_missing
+    message_ro: Punctul de lucru PFA nu poate fi înregistrat fără dovada folosinței spațiului.
+  source_claim_ids:
+  - claim.biz.open_point.pfa_use_right
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - has_use_right_document
+  legal_rank: OUG
+- id: rule.open_point.pfa_activity_authorization
+  canonical_rule_id: open_point.pfa_activity_authorization
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: activity_already_registered_authorized
+      value: false
+  effects:
+  - type: include_step
+    step_id: register_or_authorize_new_activity
+  - type: block
+    tag: activity_not_registered_for_point
+    message_ro: Activitatea nouă trebuie înscrisă și autorizată înainte de desfășurare la punct.
+  source_claim_ids:
+  - claim.biz.open_point.pfa_activity
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - activity_already_registered_authorized
+  legal_rank: OUG
+- id: rule.open_point.srl_decision
+  canonical_rule_id: open_point.srl_decision
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '1990-12-17'
+  when:
+    op: eq
+    field: entity_type
+    value: srl
+  effects:
+  - type: include_step
+    step_id: approve_srl_secondary_office
+  - type: include_requirement
+    requirement_id: req.company_body_decision_for_secondary_office
+  - type: include_requirement
+    requirement_id: req.onrc_operating_declaration
+  source_claim_ids:
+  - claim.biz.open_point.srl_constitutive
+  - claim.biz.open_point.srl_decision
+  - claim.biz.open_point.onrc_path
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  legal_rank: Lege
+- id: rule.open_point.updated_articles_if_changed
+  canonical_rule_id: open_point.updated_articles_if_changed
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '1990-12-17'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: constitutive_act_is_modified
+      value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.amending_act
+  - type: include_requirement
+    requirement_id: req.updated_constitutive_act
+  source_claim_ids:
+  - claim.biz.open_point.updated_articles
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - constitutive_act_is_modified
+  legal_rank: Lege
+- id: rule.open_point.srl_deadline
+  canonical_rule_id: open_point.srl_deadline
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: exists
+      field: company_decision_date
+  effects:
+  - type: set_deadline
+    step_id: file_working_point_mention
+    value:
+      kind: relative_calendar_days
+      anchor: company_decision_date
+      days: 15
+  - type: include_step
+    step_id: file_working_point_mention
+  source_claim_ids:
+  - claim.biz.open_point.deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - company_decision_date
+  legal_rank: Lege
+- id: rule.open_point.signer
+  canonical_rule_id: open_point.signer
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: not_in
+      field: filing_actor
+      values:
+      - legal_representative
+      - authenticated_proxy
+      - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Cererea de mențiuni a societății are nevoie de un semnatar autorizat.
+  source_claim_ids:
+  - claim.biz.open_point.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - filing_actor
+  legal_rank: Lege
+- id: rule.open_point.pfa_signer
+  canonical_rule_id: open_point.pfa_signer
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: not_in
+      field: filing_actor
+      values:
+      - pfa_holder
+      - authenticated_proxy
+      - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Cererea PFA trebuie semnată de titular sau de un reprezentant admis de lege.
+  source_claim_ids:
+  - claim.biz.open_point.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - filing_actor
+  legal_rank: Lege
+- id: rule.open_point.online_qes
+  canonical_rule_id: open_point.online_qes
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Pregătește QES sau schimbă canalul de depunere.
+  source_claim_ids:
+  - claim.biz.open_point.channel
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.open_point.channels
+  canonical_rule_id: open_point.channels
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: operational
+  effective_from: '2022-11-26'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.onrc_counter_any_office
+  - type: attach_channel
+    channel_id: ch.onrc_post_courier
+  - type: attach_channel
+    channel_id: ch.onrc_online_portal
+  source_claim_ids:
+  - claim.biz.open_point.channel
+  status: draft
+  authority_level: national_normative
+  legal_rank: Lege
+- id: rule.open_point.timisoara_local
+  canonical_rule_id: open_point.timisoara_local
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_applicable
+      value: true
+  effects:
+  - type: include_step
+    step_id: obtain_timisoara_commercial_agreement_for_point
+  - type: require_confirmation
+    tag: confirm_current_local_case_fee_documents
+    message_ro: Selectează cazul exact în serviciul local pentru a afla documentele și taxa curente.
+  source_claim_ids:
+  - claim.biz.open_point.local_retail
+  - claim.biz.open_point.local_food
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_applicable
+- id: rule.open_point.food_extra_gates
+  canonical_rule_id: open_point.food_extra_gates
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_activity_family
+      value: food_service
+  effects:
+  - type: require_confirmation
+    tag: confirm_fire_environment_hours_gates
+    message_ro: Formularul local cere încadrarea pe securitate la incendiu, mediu și program după ora 22.
+  source_claim_ids:
+  - claim.biz.open_point.local_food
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_activity_family
+- id: rule.open_point.pfa_use_right_valid_on_start
+  canonical_rule_id: open_point.pfa_use_right_valid_on_start
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: use_right_valid_on_start_date
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: valid_use_right_on_start_date
+    message_ro: Dreptul de folosință trebuie să acopere data de la care punctul va funcționa; pregătește un titlu valabil
+      înainte de depunere/începere.
+  source_claim_ids:
+  - claim.biz.open_point.pfa_use_right
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - use_right_valid_on_start_date
+  legal_rank: OUG
+- id: rule.open_point.pfa_special_permit
+  canonical_rule_id: open_point.pfa_special_permit
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: special_permit_required
+      value: true
+    - op: eq
+      field: special_permit_obtained
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: sector_permit_before_operation
+    message_ro: Autorizația ONRC nu înlocuiește permisul sectorial. Nu începe activitatea până la confirmarea și obținerea
+      actului special aplicabil.
+  source_claim_ids:
+  - claim.biz.open_point.special_permits_pfa
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - special_permit_required
+  - special_permit_obtained
+  legal_rank: OUG
+- id: rule.open_point.other_uat_local_gap
+  canonical_rule_id: open_point.other_uat_local_gap
+  event_type_id: life.open_working_point
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: municipality_id
+    - op: neq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_agreement_applicable
+      value: true
+  effects:
+  - type: emit_warning
+    tag: verified_with_local_gap
+    message_ro: Cerințele locale au fost verificate numai pentru pilotul Timișoara; nu sunt generalizate la acest UAT.
+  - type: require_confirmation
+    tag: confirm_other_uat_local_rules
+    message_ro: Confirmă procedura, documentele și taxele pe sursa oficială a UAT-ului competent.
+  source_claim_ids:
+  - claim.biz.open_point.local_retail
+  - claim.biz.open_point.local_food
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_agreement_applicable
+  note: 'Regulă de siguranță: sursele citate verifică exclusiv Timișoara și justifică blocarea generalizării pentru alt UAT.'

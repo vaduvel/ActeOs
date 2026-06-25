@@ -1,0 +1,804 @@
+batch_id: B14_TEMPORARY_VEHICLE_AUTHORISATION
+defaults:
+  alias_event_type_id: ro.life.temporary_vehicle_authorisation
+  event_type_id: life.temporary_vehicle_authorisation
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: TVA01
+  description: Autorizație provizorie 30 zile pentru vehicul intern
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA02
+  description: Perioadă cumulată exact 90 zile
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 90
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA03
+  description: Perioadă cumulată 91 zile
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 31
+    total_days_after_request: 91
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA04
+  description: Perioadă solicitată zero
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 0
+    total_days_after_request: 0
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA05
+  description: Vehicul străin anterior înmatriculat cu acte disponibile
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: foreign
+    previously_registered_abroad: true
+    foreign_registration_documents_available: true
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.foreign_registration_documents_original_and_copy
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA06
+  description: Vehicul străin fără acte, solicitare 5 zile
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: foreign
+    previously_registered_abroad: true
+    foreign_registration_documents_available: false
+    requested_days: 5
+    total_days_after_request: 5
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - foreign_docs_missing_maximum_5_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - rca_expiry_limits_five_day_authorisation
+- id: TVA07
+  description: Vehicul străin fără acte, solicitare 6 zile
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: foreign
+    previously_registered_abroad: true
+    foreign_registration_documents_available: false
+    requested_days: 6
+    total_days_after_request: 6
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - foreign_docs_missing_maximum_5_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - rca_expiry_limits_five_day_authorisation
+- id: TVA08
+  description: RCA nevalabilă
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: false
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA09
+  description: Vehicul vândut de dealer autorizat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: authorised_vehicle_dealer
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - seller_temporary_authorisation_history_certificate
+- id: TVA10
+  description: Vehicul de la societate de leasing
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: leasing_company
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - seller_temporary_authorisation_history_certificate
+- id: TVA11
+  description: Persoană juridică prin delegat
+  facts:
+    applicant_type: company
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: company_delegate
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA12
+  description: Depunere prin avocat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: lawyer
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA13
+  description: Persoană fizică prin procură
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: authorized_individual
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    - req.notarial_power_of_attorney
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA14
+  description: Plată în afara SNEP
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: false
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    - req.temporary_authorisation_and_plate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - timis_verified_channel
+- id: TVA15
+  description: Solicitant din alt județ
+  facts:
+    applicant_type: individual
+    applicant_county: SB
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.sb
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    confirmations:
+    - local_channel_outside_pilot
+- id: TVA16
+  description: Lipsește originea vehiculului
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - vehicle_origin
+- id: TVA17
+  description: Lipsește istoricul înmatriculării străine
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - previously_registered_abroad
+- id: TVA18
+  description: Lipsește disponibilitatea actelor străine
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - foreign_registration_documents_available
+- id: TVA19
+  description: Lipsește numărul de zile solicitat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - requested_days
+- id: TVA20
+  description: Lipsește totalul cumulat
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: domestic
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - total_days_after_request
+- id: TVA21
+  description: Vehicul străin nou, neînmatriculat anterior
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: foreign
+    previously_registered_abroad: false
+    foreign_registration_documents_available: false
+    requested_days: 30
+    total_days_after_request: 30
+    representation_type: self
+    rca_valid: true
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+- id: TVA22
+  description: Vehicul străin fără acte și RCA nevalabilă
+  facts:
+    applicant_type: individual
+    applicant_county: TM
+    vehicle_origin: foreign
+    previously_registered_abroad: true
+    foreign_registration_documents_available: false
+    requested_days: 5
+    total_days_after_request: 5
+    representation_type: self
+    rca_valid: false
+    payment_via_snep: true
+    seller_type: private_or_other
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_temporary_authorisation_file
+    - submit_temporary_authorisation_application
+    requirements:
+    - req.valid_rca_copy_owner_name
+    - req.ownership_document_original_and_copy
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - temporary_authorisation_romania_only
+    - temporary_cumulative_limit_90_days
+    - foreign_docs_missing_maximum_5_days
+    - temporary_authorisation_fee_13
+    - temporary_plates_fee_separate
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - rca_expiry_limits_five_day_authorisation

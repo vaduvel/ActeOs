@@ -1,0 +1,417 @@
+batch_id: batch10.home_care_support
+defaults:
+  event_type_id: ro.life.home_care_support
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: fx.parent
+  desc: Îngrijirea unui părinte
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+- id: fx.child
+  desc: Îngrijirea unui copil
+  facts:
+    is_employee: true
+    relationship: child
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+- id: fx.spouse
+  desc: Îngrijirea soțului/soției
+  facts:
+    is_employee: true
+    relationship: spouse
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+- id: fx.household.same
+  desc: Persoană din aceeași gospodărie
+  facts:
+    is_employee: true
+    relationship: household_member
+    same_household: true
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+- id: fx.household.not_same
+  desc: Persoană care nu locuiește în aceeași gospodărie
+  facts:
+    is_employee: true
+    relationship: household_member
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: blocked
+- id: fx.other_relation
+  desc: Altă relație în afara sferei verificate
+  facts:
+    is_employee: true
+    relationship: other
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: blocked
+- id: fx.not_employee
+  desc: Solicitantul nu este salariat
+  facts:
+    is_employee: false
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: blocked
+- id: fx.no_medical_docs
+  desc: Problema medicală nu este documentată
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: false
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    requirements:
+    - documents_supporting_serious_medical_problem
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    confirmations:
+    - confirm_caregiver_medical_documents
+- id: fx.no_request
+  desc: Cererea scrisă nu este pregătită
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: false
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    requirements:
+    - written_caregiver_leave_request
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+- id: fx.used_4
+  desc: Patru zile au fost deja folosite
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 4
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+- id: fx.used_5
+  desc: Cele cinci zile au fost epuizate
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 5
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: blocked
+- id: fx.extra_days
+  desc: Cele cinci zile sunt epuizate, dar există prevedere suplimentară
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 5
+    collective_agreement_extra_days: true
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - confirm_collective_or_special_extra_caregiver_days
+- id: fx.emergency
+  desc: Urgență familială neprevăzută
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    - distinct_family_emergency_absence_up_to_10_days
+- id: fx.emergency.no_docs
+  desc: Urgență familială și documente medicale încă lipsă
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: false
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    requirements:
+    - documents_supporting_serious_medical_problem
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    - distinct_family_emergency_absence_up_to_10_days
+    confirmations:
+    - confirm_caregiver_medical_documents
+- id: fx.missing.is_employee
+  desc: Lipsește faptul obligatoriu `is_employee`
+  facts:
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_employee
+- id: fx.missing.relationship
+  desc: Lipsește faptul obligatoriu `relationship`
+  facts:
+    is_employee: true
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - relationship
+- id: fx.missing.same_household
+  desc: Lipsește faptul obligatoriu `same_household`
+  facts:
+    is_employee: true
+    relationship: parent
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    missing_facts:
+    - same_household
+- id: fx.missing.serious_medical_problem_documented
+  desc: Lipsește faptul obligatoriu `serious_medical_problem_documented`
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    missing_facts:
+    - serious_medical_problem_documented
+- id: fx.missing.written_request_ready
+  desc: Lipsește faptul obligatoriu `written_request_ready`
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    missing_facts:
+    - written_request_ready
+- id: fx.missing.days_used_this_year
+  desc: Lipsește faptul obligatoriu `days_used_this_year`
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    collective_agreement_extra_days: false
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    missing_facts:
+    - days_used_this_year
+- id: fx.missing.collective_agreement_extra_days
+  desc: Lipsește faptul obligatoriu `collective_agreement_extra_days`
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    need_is_emergency_unforeseen: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    missing_facts:
+    - collective_agreement_extra_days
+- id: fx.missing.need_is_emergency_unforeseen
+  desc: Lipsește faptul obligatoriu `need_is_emergency_unforeseen`
+  facts:
+    is_employee: true
+    relationship: parent
+    same_household: false
+    serious_medical_problem_documented: true
+    written_request_ready: true
+    days_used_this_year: 0
+    collective_agreement_extra_days: false
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_written_caregiver_leave_request
+    - attach_medical_supporting_documents
+    - submit_request_to_employer
+    advice_tags:
+    - caregiver_leave_paid_and_preserves_rights
+    missing_facts:
+    - need_is_emergency_unforeseen
+- id: fx.missing.all
+  desc: Lipsesc toate faptele obligatorii
+  facts: {}
+  expect:
+    status: needs_facts
+    missing_facts:
+    - is_employee
+    - relationship
+    - same_household
+    - serious_medical_problem_documented
+    - written_request_ready
+    - days_used_this_year
+    - collective_agreement_extra_days
+    - need_is_emergency_unforeseen

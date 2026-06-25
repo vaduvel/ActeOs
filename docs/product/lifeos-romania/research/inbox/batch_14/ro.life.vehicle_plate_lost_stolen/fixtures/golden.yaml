@@ -1,0 +1,711 @@
+batch_id: B14_VEHICLE_PLATE_LOST_STOLEN
+defaults:
+  alias_event_type_id: ro.life.vehicle_plate_lost_stolen
+  event_type_id: life.vehicle_plate_lost_stolen
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VPL01
+  description: O plăcuță tip A pierdută
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL02
+  description: Pereche tip A pierdută
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: pair
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL03
+  description: Plăcuță tip A furată
+  facts:
+    plate_issue_reason: stolen
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_plate_theft_proof
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL04
+  description: Plăcuță deteriorată
+  facts:
+    plate_issue_reason: damaged
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.previous_damaged_plate_or_plates
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL05
+  description: Plăcuțe reținute în străinătate
+  facts:
+    plate_issue_reason: retained_abroad
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.foreign_retention_proof
+    - req.proof_retention_reasons_ceased
+    - req.authorised_romanian_translation
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL06
+  description: Motiv neclasificat
+  facts:
+    plate_issue_reason: other
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - plate_replacement_reason
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL07
+  description: Plăcuță tip B
+  facts:
+    plate_issue_reason: lost
+    plate_type: B
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_b_fee_27
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL08
+  description: Plăcuță tip C
+  facts:
+    plate_issue_reason: lost
+    plate_type: C
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_c_fee_22
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL09
+  description: Pereche tip B declarată
+  facts:
+    plate_issue_reason: lost
+    plate_type: B
+    plates_affected: pair
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_b_fee_27
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - nonstandard_plate_pair_configuration
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL10
+  description: Termenul de 30 zile încă deschis
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL11
+  description: Termenul de 30 zile depășit
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-04-01'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    overdue_steps:
+    - request_replacement_plates_within_30_days
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-05-01'
+- id: VPL12
+  description: Furt în desfășurare/urgență
+  facts:
+    plate_issue_reason: stolen
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+    theft_in_progress_or_emergency: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_plate_theft_proof
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.emergency_112
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    warnings:
+    - use_112_for_emergency
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL13
+  description: Persoană juridică prin delegat
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: company
+    representation_type: company_delegate
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL14
+  description: Depunere prin avocat
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: lawyer
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL15
+  description: Plată în afara SNEP
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: false
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    - req.replacement_plate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL16
+  description: Solicitant din alt județ
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: CT
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.ct
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    confirmations:
+    - local_channel_outside_pilot
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL17
+  description: Lipsește motivul
+  facts:
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - plate_issue_reason
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL18
+  description: Lipsește tipul plăcuței
+  facts:
+    plate_issue_reason: lost
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - plate_type
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL19
+  description: Lipsește numărul de plăcuțe afectate
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - plates_affected
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL20
+  description: Lipsește data incidentului
+  facts:
+    plate_issue_reason: lost
+    plate_type: A
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_single_fee_26
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    missing_facts:
+    - incident_date
+- id: VPL21
+  description: Pereche tip A furată
+  facts:
+    plate_issue_reason: stolen
+    plate_type: A
+    plates_affected: pair
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.competent_authority_plate_theft_proof
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_a_pair_fee_52
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'
+- id: VPL22
+  description: Plăcuță tip D în pilotul Timiș
+  facts:
+    plate_issue_reason: lost
+    plate_type: D
+    plates_affected: one
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    incident_date: '2026-06-20'
+    payment_via_snep: true
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_replacement_plate_file
+    - submit_replacement_plate_application
+    - request_replacement_plates_within_30_days
+    requirements:
+    - req.valid_identity_or_entity_documents
+    - req.registration_plate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - plate_type_d_fee_25_timis
+    - snep_payment_proof_exception
+    - timis_verified_channel
+    confirmations:
+    - plate_type_d_current_technical_availability
+    deadlines:
+      request_replacement_plates_within_30_days: '2026-07-20'

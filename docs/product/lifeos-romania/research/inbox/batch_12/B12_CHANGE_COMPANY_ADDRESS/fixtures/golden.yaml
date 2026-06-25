@@ -1,0 +1,264 @@
+batch_id: B12_CHANGE_COMPANY_ADDRESS
+defaults:
+  event_type_id: life.change_company_address
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: F01
+  desc: PFA mutat în același județ
+  facts:
+    entity_type: pfa
+    new_address: <adresa_noua_in_judetul_Timis>
+    new_seat_use_right_document_available: true
+    county_changes: false
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+    included_steps:
+    - file_pfa_seat_change
+- id: F02
+  desc: PFA mutat în alt județ
+  facts:
+    entity_type: pfa
+    new_address: <adresa_noua_in_judetul_Arad>
+    new_seat_use_right_document_available: true
+    county_changes: true
+    filing_actor: pfa_holder
+  expect:
+    status: resolved
+    included_steps:
+    - file_pfa_cross_county_seat_change
+    advice:
+    - single_cross_county_decision
+- id: F03
+  desc: SRL mutat în același județ
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_SRL_in_judetul_Timis>
+    new_seat_use_right_document_available: true
+    county_changes: false
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    included_steps:
+    - approve_srl_seat_change
+    - file_srl_seat_change
+    requirements:
+    - req.amending_act
+    - req.updated_constitutive_act
+- id: F04
+  desc: SRL mutat în alt județ
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_SRL_in_judetul_Arad>
+    new_seat_use_right_document_available: true
+    county_changes: true
+    decision_date: '2026-06-20'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F05
+  desc: tip entitate lipsă
+  facts:
+    new_address: <adresa_noua_in_judetul_Timis>
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - entity_type_required
+- id: F06
+  desc: adresa nouă lipsește
+  facts:
+    entity_type: srl
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - new_address_required
+- id: F07
+  desc: lipsește dreptul de folosință
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_in_judetul_Timis>
+    new_seat_use_right_document_available: false
+    filing_actor: legal_representative
+  expect:
+    status: blocked
+    blocks:
+    - new_seat_use_right_missing
+    requirements:
+    - req.new_seat_use_right_document
+- id: F08
+  desc: sediu SRL în locuință fără activitate
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_locuinta_Timisoara>
+    new_seat_use_right_document_available: true
+    new_seat_is_dwelling: true
+    activity_at_new_seat: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    requirements:
+    - req.no_activity_at_registered_office_declaration
+- id: F09
+  desc: sediu SRL în locuință cu activitate
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_locuinta_Timisoara>
+    new_seat_use_right_document_available: true
+    new_seat_is_dwelling: true
+    activity_at_new_seat: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - condominium_formalities_required
+- id: F10
+  desc: sediu într-un spațiu comercial
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_spatiu_comercial_Timisoara>
+    new_seat_use_right_document_available: true
+    new_seat_is_dwelling: false
+    activity_at_new_seat: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F11
+  desc: dreptul vechiului sediu a expirat
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_Timisoara>
+    new_seat_use_right_document_available: true
+    current_seat_use_right_expired: true
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    warnings:
+    - dissolution_risk_due_to_seat
+- id: F12
+  desc: dreptul vechiului sediu este încă valabil
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_Timisoara>
+    new_seat_use_right_document_available: true
+    current_seat_use_right_expired: false
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+- id: F13
+  desc: decizie în ziua 15
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    decision_date: '2026-06-10'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: false
+- id: F14
+  desc: decizie după 16 zile
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    decision_date: '2026-06-09'
+    request_date: '2026-06-25'
+    filing_actor: legal_representative
+  expect:
+    status: resolved
+    deadline_days: 15
+    overdue: true
+- id: F15
+  desc: PFA depune prin avocat
+  facts:
+    entity_type: pfa
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    county_changes: false
+    filing_actor: lawyer
+  expect:
+    status: resolved
+- id: F16
+  desc: SRL depune prin mandatar autentic
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    filing_actor: authenticated_proxy
+  expect:
+    status: resolved
+- id: F17
+  desc: asociat fără reprezentare
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    filing_actor: associate_only
+  expect:
+    status: blocked
+    blocks:
+    - unauthorized_mention_signer
+- id: F18
+  desc: online cu QES
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: true
+  expect:
+    status: resolved
+- id: F19
+  desc: online fără QES
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    filing_actor: legal_representative
+    filing_channel: online
+    qes_available: false
+  expect:
+    status: needs_confirmation
+    confirmations:
+    - qualified_e_signature_required
+- id: F20
+  desc: acord comercial Timișoara existent
+  facts:
+    entity_type: srl
+    new_address: Timișoara
+    new_seat_use_right_document_available: true
+    municipality_id: ro.tm.timisoara
+    local_commercial_agreement_exists: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - modify_timisoara_agreement_for_seat
+- id: F21
+  desc: sediu în alt UAT cu acord local
+  facts:
+    entity_type: srl
+    new_address: <adresa_noua_in_alt_UAT>
+    new_seat_use_right_document_available: true
+    municipality_id: ro.cj.cluj
+    local_commercial_agreement_exists: true
+    filing_actor: legal_representative
+  expect:
+    status: needs_confirmation
+    warnings:
+    - verified_with_local_gap
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.cj
+  - ro.cj.cluj

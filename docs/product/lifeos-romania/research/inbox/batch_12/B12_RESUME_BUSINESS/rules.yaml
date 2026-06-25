@@ -1,0 +1,353 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: B12_RESUME_BUSINESS
+event_type_id: life.resume_business
+status: draft
+rules:
+- id: rule.resume.entity_required
+  canonical_rule_id: resume.entity_required
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: entity_type
+  effects:
+  - type: require_confirmation
+    tag: entity_type_required
+    message_ro: Precizează dacă reiei PFA sau SRL.
+  source_claim_ids:
+  - claim.biz.resume.pfa_guide
+  - claim.biz.resume.srl_guide
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - entity_type
+- id: rule.resume.must_be_suspended
+  canonical_rule_id: resume.must_be_suspended
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: currently_suspended
+    value: false
+  effects:
+  - type: block
+    tag: business_not_suspended
+    message_ro: Nu există o întrerupere temporară activă care să poată fi reluată.
+  source_claim_ids:
+  - claim.biz.resume.pfa_guide
+  - claim.biz.resume.srl_guide
+  status: draft
+  authority_level: national_operational
+  required_facts:
+  - currently_suspended
+- id: rule.resume.elapsed_required
+  canonical_rule_id: resume.elapsed_required
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: missing
+    field: suspension_elapsed_months
+  effects:
+  - type: require_confirmation
+    tag: suspension_elapsed_required
+    message_ro: Este necesară data mențiunii de suspendare pentru verificarea limitei de trei ani.
+  source_claim_ids:
+  - claim.biz.resume.pfa_limit
+  - claim.biz.resume.srl_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - suspension_elapsed_months
+- id: rule.resume.over_36_months
+  canonical_rule_id: resume.over_36_months
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: gt
+    field: suspension_elapsed_months
+    value: 36
+  effects:
+  - type: block
+    tag: three_year_limit_exceeded
+    message_ro: Perioada declarată depășește limita de trei ani; situația registrului trebuie verificată înaintea reluării.
+  - type: require_confirmation
+    tag: verify_current_registry_status
+    message_ro: Confirmă starea actuală a profesionistului în registrul comerțului.
+  source_claim_ids:
+  - claim.biz.resume.pfa_limit
+  - claim.biz.resume.srl_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - suspension_elapsed_months
+- id: rule.resume.pfa_route
+  canonical_rule_id: resume.pfa_route
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: pfa
+    - op: eq
+      field: currently_suspended
+      value: true
+    - op: lte
+      field: suspension_elapsed_months
+      value: 36
+  effects:
+  - type: include_step
+    step_id: file_pfa_resume_mention
+  source_claim_ids:
+  - claim.biz.resume.pfa_registered
+  - claim.biz.resume.pfa_guide
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - currently_suspended
+  - suspension_elapsed_months
+  legal_rank: OUG
+- id: rule.resume.srl_route
+  canonical_rule_id: resume.srl_route
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: entity_type
+      value: srl
+    - op: eq
+      field: currently_suspended
+      value: true
+    - op: lte
+      field: suspension_elapsed_months
+      value: 36
+  effects:
+  - type: include_step
+    step_id: approve_srl_resume
+  - type: include_step
+    step_id: file_srl_resume_mention
+  source_claim_ids:
+  - claim.biz.resume.srl_guide
+  - claim.biz.resume.srl_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - entity_type
+  - currently_suspended
+  - suspension_elapsed_months
+- id: rule.resume.activities_still_valid
+  canonical_rule_id: resume.activities_still_valid
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2008-04-25'
+  when:
+    op: eq
+    field: activities_still_registered_authorized
+    value: false
+  effects:
+  - type: include_step
+    step_id: update_and_authorize_activities
+  - type: block
+    tag: activity_update_before_operation
+    message_ro: Activitatea nu trebuie reluată pe coduri care nu mai sunt înregistrate și autorizate.
+  source_claim_ids:
+  - claim.biz.resume.activity_authorized
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - activities_still_registered_authorized
+  legal_rank: OUG
+- id: rule.resume.seat_valid
+  canonical_rule_id: resume.seat_valid
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: eq
+    field: seat_use_right_still_valid
+    value: false
+  effects:
+  - type: trigger_child_event
+    event_type_id: life.change_company_address
+  - type: block
+    tag: seat_right_not_valid
+    message_ro: Dreptul de folosință al sediului nu mai este valabil; rezolvă sediul înaintea reluării.
+  source_claim_ids:
+  - claim.biz.resume.srl_risk
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - seat_use_right_still_valid
+  legal_rank: Lege
+- id: rule.resume.mention_deadline
+  canonical_rule_id: resume.mention_deadline
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: exists
+    field: resume_decision_date
+  effects:
+  - type: set_deadline
+    tag: onrc_mention_15_days
+    value:
+      days: 15
+      from: resume_decision_date
+  - type: emit_warning
+    tag: deadline_check
+    message_ro: Verifică termenul de 15 zile pentru mențiunea de reluare.
+  source_claim_ids:
+  - claim.biz.resume.mention_deadline
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - resume_decision_date
+  legal_rank: Lege
+- id: rule.resume.signer
+  canonical_rule_id: resume.signer
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: not_in
+    field: filing_actor
+    values:
+    - pfa_holder
+    - legal_representative
+    - authenticated_proxy
+    - lawyer
+  effects:
+  - type: block
+    tag: unauthorized_mention_signer
+    message_ro: Semnatarul nu este autorizat în calitatea declarată.
+  source_claim_ids:
+  - claim.biz.resume.signer
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_actor
+  legal_rank: Lege
+- id: rule.resume.online_qes
+  canonical_rule_id: resume.online_qes
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: filing_channel
+      value: online
+    - op: eq
+      field: qes_available
+      value: false
+  effects:
+  - type: require_confirmation
+    tag: qualified_e_signature_required
+    message_ro: Depunerea electronică cere semnătură electronică calificată.
+  source_claim_ids:
+  - claim.biz.resume.electronic
+  status: draft
+  authority_level: national_normative
+  required_facts:
+  - filing_channel
+  - qes_available
+  legal_rank: Lege
+- id: rule.resume.local_agreement
+  canonical_rule_id: resume.local_agreement
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: eq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_activity
+      value: true
+    - op: eq
+      field: local_agreement_current
+      value: false
+  effects:
+  - type: include_step
+    step_id: obtain_or_modify_timisoara_agreement
+  - type: require_confirmation
+    tag: confirm_current_local_case_fee_documents
+    message_ro: Acordul local trebuie obținut sau actualizat înainte de activitatea comercială la locație.
+  source_claim_ids:
+  - claim.biz.resume.local_modify
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_activity
+  - local_agreement_current
+- id: rule.resume.other_uat_local_gap
+  canonical_rule_id: resume.other_uat_local_gap
+  event_type_id: life.resume_business
+  jurisdiction_ids:
+  - ro
+  severity: critical
+  effective_from: '2022-11-26'
+  when:
+    op: all
+    args:
+    - op: exists
+      field: municipality_id
+    - op: neq
+      field: municipality_id
+      value: ro.tm.timisoara
+    - op: eq
+      field: local_commercial_activity
+      value: true
+  effects:
+  - type: emit_warning
+    tag: verified_with_local_gap
+    message_ro: Acoperirea locală este verificată numai pentru pilotul Timișoara.
+  - type: require_confirmation
+    tag: confirm_other_uat_local_rules
+    message_ro: Confirmă pașii locali pe sursa oficială a UAT-ului competent.
+  source_claim_ids:
+  - claim.biz.resume.local_modify
+  status: draft
+  authority_level: uat
+  required_facts:
+  - municipality_id
+  - local_commercial_activity
+  note: 'Regulă de ne-generalizare: nu deduce documente, taxe sau termene pentru alt UAT.'

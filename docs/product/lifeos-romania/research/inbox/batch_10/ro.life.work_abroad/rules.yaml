@@ -1,0 +1,343 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.work_abroad
+event_type_id: ro.life.work_abroad
+required_facts:
+- employment_model
+- destination_scope
+- worker_citizenship_scope
+- profession_regulated
+- qualification_recognition_ready
+- social_security_status_confirmed
+- tax_residence_review_done
+- posting_reges_data_ready
+- posting_contract_terms_complete
+- jurisdiction_id
+status: draft
+rules:
+- id: rule.work_abroad.route.v1
+  canonical_rule_id: rule.work_abroad.route
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-21'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: identify_employment_model_and_destination
+  - type: include_step
+    step_id: verify_work_right_and_profession_rules
+  - type: include_step
+    step_id: confirm_social_security_coverage
+  - type: include_step
+    step_id: review_tax_residence_departure
+  source_claim_ids:
+  - clm.work_abroad.eu_no_permit
+  - clm.work_abroad.regulated_qualification
+  - clm.work_abroad.social_security_rule
+  - clm.work_abroad.z017
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.eu_direct_romanian.v1
+  canonical_rule_id: rule.work_abroad.eu_direct_romanian
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-21'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: employment_model
+      value: direct_host_employer
+    - op: eq
+      field: destination_scope
+      value: eu
+    - op: eq
+      field: worker_citizenship_scope
+      value: romanian_or_eu
+  effects:
+  - type: emit_advice
+    tag: eu_citizen_generally_no_work_permit_in_eu
+    message_ro: Cetățeanul UE nu are, de regulă, nevoie de permis de muncă în alt stat UE.
+  source_claim_ids:
+  - clm.work_abroad.eu_no_permit
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.country_specific_permit.v1
+  canonical_rule_id: rule.work_abroad.country_specific_permit
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-21'
+  effective_to: null
+  when:
+    op: any
+    args:
+    - op: eq
+      field: destination_scope
+      value: non_eu
+    - op: eq
+      field: worker_citizenship_scope
+      value: third_country
+  effects:
+  - type: require_confirmation
+    tag: confirm_destination_work_and_residence_right
+    message_ro: Dreptul de muncă și ședere trebuie verificat în legislația statului gazdă și pentru cetățenia persoanei.
+  source_claim_ids:
+  - clm.work_abroad.non_eu_permit_gap
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null
+- id: rule.work_abroad.regulated_not_ready.v1
+  canonical_rule_id: rule.work_abroad.regulated_not_ready
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: profession_regulated
+      value: true
+    - op: eq
+      field: qualification_recognition_ready
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: professional_qualification_recognition_in_destination
+  - type: block
+    code: regulated_profession_recognition_missing
+    message_ro: Nu presupune dreptul de exercitare înainte de recunoașterea cerută de statul gazdă.
+  source_claim_ids:
+  - clm.work_abroad.regulated_qualification
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.social_not_confirmed.v1
+  canonical_rule_id: rule.work_abroad.social_not_confirmed
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: social_security_status_confirmed
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: confirmed_social_security_coverage_and_required_portable_document
+  source_claim_ids:
+  - clm.work_abroad.social_security_rule
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.tax_not_reviewed.v1
+  canonical_rule_id: rule.work_abroad.tax_not_reviewed
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2023-02-23'
+  effective_to: null
+  when:
+    op: eq
+    field: tax_residence_review_done
+    value: false
+  effects:
+  - type: include_step
+    step_id: review_z017_tax_residence_departure_applicability
+  - type: emit_advice
+    tag: z017_is_departure_tax_residence_form
+    message_ro: Verifică dacă formularul Z017 și termenul său se aplică situației concrete.
+  source_claim_ids:
+  - clm.work_abroad.z017
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.posted_route.v1
+  canonical_rule_id: rule.work_abroad.posted_route
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: employment_model
+    value: posted_by_ro_employer
+  effects:
+  - type: include_step
+    step_id: verify_continued_relation_with_ro_employer
+  - type: include_step
+    step_id: verify_posting_contract_information
+  - type: include_step
+    step_id: record_transnational_posting_in_reges
+  - type: emit_advice
+    tag: posted_worker_may_remain_in_origin_social_system
+    message_ro: Verifică documentul de securitate socială aplicabil detașării temporare.
+  source_claim_ids:
+  - clm.work_abroad.posting_relationship
+  - clm.work_abroad.posting_contract
+  - clm.work_abroad.posting_reges
+  - clm.work_abroad.posted_social
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.posted_contract_incomplete.v1
+  canonical_rule_id: rule.work_abroad.posted_contract_incomplete
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: employment_model
+      value: posted_by_ro_employer
+    - op: eq
+      field: posting_contract_terms_complete
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: posting_duration_currency_payment_and_benefits_terms
+  source_claim_ids:
+  - clm.work_abroad.posting_contract
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.posted_reges_missing.v1
+  canonical_rule_id: rule.work_abroad.posted_reges_missing
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: critical
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: employment_model
+      value: posted_by_ro_employer
+    - op: eq
+      field: posting_reges_data_ready
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: posting_start_end_state_beneficiary_and_activity_for_reges
+  source_claim_ids:
+  - clm.work_abroad.posting_reges
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.timis_eures.v1
+  canonical_rule_id: rule.work_abroad.timis_eures
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  authority_level: county
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: in
+    field: jurisdiction_id
+    values:
+    - ro.tm
+    - ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: ajofm_timis_eures_and_european_forms
+  source_claim_ids:
+  - clm.work_abroad.eures_timisoara
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.work_abroad.other_eures.v1
+  canonical_rule_id: rule.work_abroad.other_eures
+  event_type_id: ro.life.work_abroad
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: not_in
+    field: jurisdiction_id
+    values:
+    - ro.tm
+    - ro.tm.timisoara
+  effects:
+  - type: attach_channel
+    channel_id: eures_romania_local_adviser
+  - type: require_confirmation
+    tag: confirm_local_eures_contact
+    message_ro: Canalul EURES local nu a fost verificat în acest batch.
+  source_claim_ids:
+  - clm.work_abroad.eures_timisoara
+  override_rule_ids: []
+  status: in_review
+  reviewer_id: null

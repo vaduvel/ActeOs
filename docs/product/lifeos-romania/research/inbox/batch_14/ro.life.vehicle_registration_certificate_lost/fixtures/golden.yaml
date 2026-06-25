@@ -1,0 +1,663 @@
+batch_id: B14_VEHICLE_REGISTRATION_CERTIFICATE_LOST
+defaults:
+  alias_event_type_id: ro.life.vehicle_registration_certificate_lost
+  event_type_id: life.vehicle_registration_certificate_lost
+  timezone: Europe/Bucharest
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.tm
+  - ro.tm.timisoara
+  reference_date: '2026-06-25'
+fixtures:
+- id: VCL01
+  description: Certificat pierdut de proprietarul înscris
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL02
+  description: Certificat furat
+  facts:
+    replacement_reason: stolen
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.competent_authority_certificate_theft_proof
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL03
+  description: Certificat deteriorat
+  facts:
+    replacement_reason: damaged
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.damaged_registration_certificate
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL04
+  description: Certificat reținut în străinătate
+  facts:
+    replacement_reason: retained_abroad
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_retention_proof
+    - req.proof_retention_reasons_ceased
+    - req.authorised_romanian_translation
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL05
+  description: Motiv rezidual neclasificat
+  facts:
+    replacement_reason: other
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+    confirmations:
+    - certificate_replacement_reason
+- id: VCL06
+  description: Cerere a deținătorului mandatat
+  facts:
+    replacement_reason: lost
+    applicant_role: mandated_holder
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - mandated_holder_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL07
+  description: Cerere a unei persoane fără calitate verificată
+  facts:
+    replacement_reason: lost
+    applicant_role: other
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL08
+  description: CIV nevalabilă
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: false
+    submission_mode: counter
+  expect:
+    status: blocked
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL09
+  description: Plată în afara SNEP
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: false
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    - req.registration_certificate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+- id: VCL10
+  description: Persoană juridică, proprietar înscris
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: company
+    representation_type: company_delegate
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL11
+  description: Depunere prin avocat
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: lawyer
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL12
+  description: Persoană fizică prin procură
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: authorized_individual
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    - req.notarial_power_of_attorney
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL13
+  description: Solicitant din alt județ
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: HD
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  jurisdiction_path:
+  - eu
+  - ro
+  - ro.hd
+  expect:
+    status: needs_confirmation
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - snep_payment_proof_exception
+    confirmations:
+    - local_channel_outside_pilot
+- id: VCL14
+  description: Lipsește motivul înlocuirii
+  facts:
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+    missing_facts:
+    - replacement_reason
+- id: VCL15
+  description: Lipsește rolul solicitantului
+  facts:
+    replacement_reason: lost
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+    missing_facts:
+    - applicant_role
+- id: VCL16
+  description: Lipsește județul
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - snep_payment_proof_exception
+    missing_facts:
+    - applicant_county
+- id: VCL17
+  description: Lipsește tipul solicitantului
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+    missing_facts:
+    - applicant_type
+- id: VCL18
+  description: Lipsește reprezentarea
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: needs_facts
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+    missing_facts:
+    - representation_type
+- id: VCL19
+  description: Certificat deteriorat, plată non-SNEP
+  facts:
+    replacement_reason: damaged
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: false
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.damaged_registration_certificate
+    - req.valid_identity_document
+    - req.registration_certificate_payment_proof
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+- id: VCL20
+  description: Certificat furat, persoană juridică
+  facts:
+    replacement_reason: stolen
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: company
+    representation_type: company_delegate
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.competent_authority_certificate_theft_proof
+    - req.legal_entity_documents
+    - req.legal_representative_identity
+    - req.company_written_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL21
+  description: Reținere externă prin avocat
+  facts:
+    replacement_reason: retained_abroad
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: lawyer
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: counter
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.foreign_retention_proof
+    - req.proof_retention_reasons_ceased
+    - req.authorised_romanian_translation
+    - req.valid_identity_document
+    - req.lawyer_mandate
+    channels:
+    - ch.dgpci_information
+    - ch.spcrpciv_timis
+    - ch.dgpci_booking
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_counter_or_booking
+    - snep_payment_proof_exception
+- id: VCL22
+  description: Solicitare online a duplicatului în Timiș
+  facts:
+    replacement_reason: lost
+    applicant_role: registered_owner
+    applicant_county: TM
+    applicant_type: individual
+    representation_type: self
+    payment_via_snep: true
+    civ_valid: true
+    submission_mode: online
+  expect:
+    status: resolved
+    included_steps:
+    - prepare_registration_certificate_replacement_file
+    - submit_to_original_registering_authority
+    requirements:
+    - req.valid_vehicle_identity_card_civ
+    - req.registration_certificate_loss_declaration
+    - req.verified_dgpci_online_account
+    - req.valid_identity_document
+    channels:
+    - ch.dgpci_information
+    - ch.dgpci_online
+    advice_tags:
+    - registered_owner_can_request_duplicate
+    - registration_certificate_fee_49
+    - timis_online_duplicate_available
+    - snep_payment_proof_exception

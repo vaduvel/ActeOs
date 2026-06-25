@@ -1,0 +1,324 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: batch10.changed_job
+event_type_id: ro.life.changed_job
+required_facts:
+- old_end_method
+- role_level
+- notice_waived_or_employer_breach
+- received_termination_document
+- received_history_proof
+- has_new_offer
+- workplace_or_profession_changed
+- medical_file_copy_available
+- wants_employment_services
+status: draft
+rules:
+- id: rule.changed_job.route.v1
+  canonical_rule_id: rule.changed_job.route
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: close_previous_employment_record
+  - type: include_step
+    step_id: collect_termination_and_history_documents
+  - type: include_step
+    step_id: prepare_new_employment_start
+  source_claim_ids:
+  - clm.changed_job.history_employer
+  - clm.changed_job.cim_written
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.resignation_execution.v1
+  canonical_rule_id: rule.changed_job.resignation_execution
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: old_end_method
+      value: resignation
+    - op: eq
+      field: role_level
+      value: execution
+    - op: eq
+      field: notice_waived_or_employer_breach
+      value: false
+  effects:
+  - type: emit_advice
+    tag: resignation_notice_max_20_working_days
+    message_ro: Pentru funcții de execuție, preavizul contractual nu poate depăși 20 de zile lucrătoare.
+  source_claim_ids:
+  - clm.changed_job.resignation_notice
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.resignation_management.v1
+  canonical_rule_id: rule.changed_job.resignation_management
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: old_end_method
+      value: resignation
+    - op: eq
+      field: role_level
+      value: management
+    - op: eq
+      field: notice_waived_or_employer_breach
+      value: false
+  effects:
+  - type: emit_advice
+    tag: resignation_notice_max_45_working_days
+    message_ro: Pentru funcții de conducere, preavizul contractual nu poate depăși 45 de zile lucrătoare.
+  source_claim_ids:
+  - clm.changed_job.resignation_notice
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.resignation_without_notice.v1
+  canonical_rule_id: rule.changed_job.resignation_without_notice
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: old_end_method
+      value: resignation
+    - op: eq
+      field: notice_waived_or_employer_breach
+      value: true
+  effects:
+  - type: emit_advice
+    tag: resignation_without_notice_document_basis
+    message_ro: Păstrează dovada renunțării angajatorului la preaviz ori a neîndeplinirii obligațiilor sale.
+  source_claim_ids:
+  - clm.changed_job.resignation_waiver
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.dismissal_notice.v1
+  canonical_rule_id: rule.changed_job.dismissal_notice
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: old_end_method
+    value: nonpersonal_dismissal
+  effects:
+  - type: emit_advice
+    tag: dismissal_notice_min_20_working_days
+    message_ro: Concedierea pentru motive neimputabile presupune un preaviz de cel puțin 20 de zile lucrătoare.
+  source_claim_ids:
+  - clm.changed_job.dismissal_notice
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.missing_termination_document.v1
+  canonical_rule_id: rule.changed_job.missing_termination_document
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2025-04-01'
+  effective_to: null
+  when:
+    op: eq
+    field: received_termination_document
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: termination_document_from_previous_employer
+  source_claim_ids:
+  - clm.changed_job.termination_decision
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.missing_history_proof.v1
+  canonical_rule_id: rule.changed_job.missing_history_proof
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: received_history_proof
+    value: false
+  effects:
+  - type: include_requirement
+    requirement_id: employment_activity_and_seniority_document
+  - type: include_step
+    step_id: request_history_document_or_reges_extract
+  source_claim_ids:
+  - clm.changed_job.history_employer
+  - clm.changed_job.history_extract
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.new_offer.v1
+  canonical_rule_id: rule.changed_job.new_offer
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-04-27'
+  effective_to: null
+  when:
+    op: eq
+    field: has_new_offer
+    value: true
+  effects:
+  - type: include_step
+    step_id: verify_new_contract_before_start
+  - type: trigger_child_event
+    event_type_id: ro.life.started_job
+  source_claim_ids:
+  - clm.changed_job.cim_written
+  - clm.changed_job.cim_register
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.employment_services.v1
+  canonical_rule_id: rule.changed_job.employment_services
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2026-01-01'
+  effective_to: null
+  when:
+    op: eq
+    field: wants_employment_services
+    value: true
+  effects:
+  - type: include_step
+    step_id: register_for_employment_services
+  - type: attach_channel
+    channel_id: ajofm_by_domicile_or_residence
+  - type: emit_advice
+    tag: employed_person_can_seek_job_change_support
+    message_ro: Serviciile de ocupare sunt disponibile și persoanei încadrate care dorește schimbarea locului de muncă.
+  source_claim_ids:
+  - clm.changed_job.jobseeker_change
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.occupational_exam.v1
+  canonical_rule_id: rule.changed_job.occupational_exam
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2012-01-19'
+  effective_to: null
+  when:
+    op: eq
+    field: workplace_or_profession_changed
+    value: true
+  effects:
+  - type: include_step
+    step_id: complete_new_occupational_health_exam
+  source_claim_ids:
+  - clm.changed_job.occupational_change
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
+- id: rule.changed_job.medical_file_missing.v1
+  canonical_rule_id: rule.changed_job.medical_file_missing
+  event_type_id: ro.life.changed_job
+  jurisdiction_ids:
+  - ro
+  authority_level: national_operational
+  competence_scope: []
+  legal_rank: null
+  required_facts: []
+  severity: operational
+  effective_from: '2012-01-19'
+  effective_to: null
+  when:
+    op: all
+    args:
+    - op: eq
+      field: workplace_or_profession_changed
+      value: true
+    - op: eq
+      field: medical_file_copy_available
+      value: false
+  effects:
+  - type: include_requirement
+    requirement_id: copy_of_previous_occupational_medical_file
+  source_claim_ids:
+  - clm.changed_job.occupational_file
+  override_rule_ids: []
+  status: active
+  reviewer_id: null
