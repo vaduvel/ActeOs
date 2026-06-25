@@ -1,0 +1,84 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_ID_CARD_CHANGE_ADDRESS
+event_type_id: life.id_card_change_address
+status: draft
+rules:
+  - id: rule.addr.ci_15d
+    canonical_rule_id: id_card_change_address.ci_new_doc_15d
+    event_type_id: life.id_card_change_address
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: critical
+    effective_from: '2005-07-20'
+    when:
+      op: eq
+      field: change_type
+      value: domiciliu
+    effects:
+      - { type: include_step, step_id: renew_identity_card }
+      - { type: set_deadline, step_id: renew_identity_card, value: { kind: relative_days, anchor: move_date, days: 15 } }
+      - { type: include_requirement, requirement_id: req.proof_of_address }
+    source_claim_ids: [claim.ci.deadline_15d, claim.ci.docs, claim.ci.proof_address_cf30]
+    status: draft
+  - id: rule.addr.cei_no_new_doc
+    canonical_rule_id: id_card_change_address.cei_no_new_doc
+    event_type_id: life.id_card_change_address
+    jurisdiction_ids: [ro]
+    authority_level: national_operational
+    severity: critical
+    effective_from: '2025-04-24'
+    when:
+      op: and
+      clauses:
+        - { op: eq, field: id_card_type, value: cei }
+        - { op: eq, field: change_type, value: domiciliu }
+    effects:
+      - { type: override_rule, target_rule_id: rule.addr.ci_15d }
+      - { type: emit_warning, message_ro: 'Pentru cartea electronica de identitate, schimbarea adresei nu necesita un nou act fizic (de confirmat).' }
+    source_claim_ids: [claim.cei.address_change_no_new_doc]
+    status: in_review
+    note: in_review pana la confirmarea claim.cei.address_change_no_new_doc.
+  - id: rule.addr.host_consent
+    canonical_rule_id: id_card_change_address.host_consent
+    event_type_id: life.id_card_change_address
+    jurisdiction_ids: [ro]
+    authority_level: national_normative
+    severity: operational
+    effective_from: '2021-04-01'
+    when:
+      op: eq
+      field: new_address_relation
+      value: host_consent
+    effects:
+      - { type: include_requirement, requirement_id: req.host_consent_declaration }
+      - { type: emt_warning_placeholder, message_ro: 'Ai nevoie de declaratia de primire in spatiu a gazduitorului.' }
+    source_claim_ids: [claim.ci.host_consent]
+    status: draft
+  - id: rule.addr.resedinta
+    canonical_rule_id: id_card_change_address.residence_mention
+    event_type_id: life.id_card_change_address
+    jurisdiction_ids: [ro]
+    severity: operational
+    effective_from: '2005-07-20'
+    when:
+      op: eq
+      field: change_type
+      value: resedinta
+    effects:
+      - { type: include_step, step_id: register_residence }
+      - { type: emit_warning, message_ro: 'Pentru resedinta se inscrie mentiunea de resedinta, fara schimbarea domiciliului din act.' }
+    source_claim_ids: [claim.ci.docs]
+    status: in_review
+    note: regula de resedinta necesita confirmarea procedurii de mentiune (gap).
+  - id: rule.addr.timisoara_channel
+    canonical_rule_id: id_card_change_address.timisoara_channel
+    event_type_id: life.id_card_change_address
+    jurisdiction_ids: [ro.tm.timisoara]
+    authority_level: institution
+    severity: explanatory
+    effective_from: '2025-04-24'
+    when: { op: const, value: true }
+    effects:
+      - { type: attach_channel, channel_id: ch.dep_timisoara }
+    source_claim_ids: [claim.timisoara.dep_channel]
+    status: draft
