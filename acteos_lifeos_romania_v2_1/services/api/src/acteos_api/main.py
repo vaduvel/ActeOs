@@ -1,7 +1,8 @@
-"""FastAPI application factory for the ActeOS API (discovery slice).
+"""FastAPI application factory for the ActeOS API.
 
 Adds a request-id middleware and maps DiscoveryError + validation errors to the
-ErrorResponse contract shape. Health endpoints are unauthenticated.
+ErrorResponse contract shape. Health endpoints are unauthenticated. Mounts the
+discovery slice (intent-first) and the cases slice (deterministic resolution).
 """
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from .cases import router as cases_router
 from .discovery import DiscoveryError, router as discovery_router
 from .schemas import MessageResponse
 
@@ -28,7 +30,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="ActeOS API",
         version="1.1.0",
-        description="ActeOS / LifeOS România v2.1 — discovery slice (intent-first).",
+        description="ActeOS / LifeOS Romania v2.1 -- discovery + cases slices.",
     )
 
     @app.middleware("http")
@@ -54,7 +56,7 @@ def create_app() -> FastAPI:
             status_code=422,
             content=_error_payload(
                 "VALIDATION_ERROR",
-                "Cerere invalidă.",
+                "Cerere invalida.",
                 request_id,
                 False,
                 details={"errors": exc.errors()},
@@ -62,6 +64,7 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(discovery_router)
+    app.include_router(cases_router)
 
     @app.get("/health/live", response_model=MessageResponse, tags=["Health"])
     def health_live() -> MessageResponse:

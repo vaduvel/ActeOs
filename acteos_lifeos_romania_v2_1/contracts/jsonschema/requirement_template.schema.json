@@ -1,0 +1,57 @@
+{
+  "$id": "https://acteos.example/schemas/requirement_template.schema.json",
+  "title": "Requirement Template",
+  "description": "Reusable journey requirement authored in a batch templates.yaml. Maps to content.requirement_templates. Only 'id' is required at the schema gate, but when 'obligation'/'timing' are present they must use the DB-allowed enum values; the publish compiler defers requirements missing title_ro or with absent/invalid obligation/timing rather than fabricating semantics.",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title_ro": {
+      "type": "string"
+    },
+    "description_ro": {
+      "type": "string"
+    },
+    "obligation": {
+      "type": "string",
+      "enum": [
+        "mandatory",
+        "conditional",
+        "optional"
+      ]
+    },
+    "timing": {
+      "type": "string",
+      "enum": [
+        "now",
+        "later"
+      ]
+    },
+    "accepted_forms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validity": {
+      "type": "object"
+    },
+    "readiness_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

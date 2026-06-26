@@ -5,6 +5,12 @@ Requires jsonschema>=4.18 (ships the ``referencing`` library); part of the
 and each source claim against contracts/source_claim.schema.json. The predicate
 $ref is resolved via a referencing Registry keyed by each schema's $id.
 
+When the step/requirement template schemas are present in the loaded schema set,
+each entry in a batch ``templates.yaml`` (``step_templates`` /
+``requirement_templates``) is validated too. Template validation is *guarded*:
+if those schemas are absent (e.g. a caller passing a minimal schema dict), the
+template checks are skipped rather than raising.
+
 Also performs a cross-check that every rule.source_claim_ids entry resolves to a
 claim declared in source_claims.yaml (a common authoring drift).
 """
@@ -28,7 +34,14 @@ CONTRACTS_SUBDIR = "contracts"
 RULE_SCHEMA = "rule.schema.json"
 CLAIM_SCHEMA = "source_claim.schema.json"
 PREDICATE_SCHEMA = "predicate.schema.json"
+STEP_TEMPLATE_SCHEMA = "step_template.schema.json"
+REQUIREMENT_TEMPLATE_SCHEMA = "requirement_template.schema.json"
 DEFAULT_INBOX = "research/inbox"
+
+# Schemas always loaded from disk. Template schemas are loaded best-effort so an
+# older contracts/ checkout without them does not break rule/claim validation.
+_REQUIRED_SCHEMAS = (RULE_SCHEMA, CLAIM_SCHEMA, PREDICATE_SCHEMA)
+_OPTIONAL_SCHEMAS = (STEP_TEMPLATE_SCHEMA, REQUIREMENT_TEMPLATE_SCHEMA)
 
 
 @dataclass
@@ -44,9 +57,14 @@ class ValidationReport:
 def load_schemas(contracts_dir: Any) -> dict[str, Any]:
     base = Path(contracts_dir)
     out: dict[str, Any] = {}
-    for name in (RULE_SCHEMA, CLAIM_SCHEMA, PREDICATE_SCHEMA):
+    for name in _REQUIRED_SCHEMAS:
         with (base / name).open("r", encoding="utf-8") as fh:
             out[name] = json.load(fh)
+    for name in _OPTIONAL_SCHEMAS:
+        path = base / name
+        if path.exists():
+            with path.open("r", encoding="utf-8") as fh:
+                out[name] = json.load(fh)
     return out
 
 
@@ -78,6 +96,22 @@ def validate_batch(batch: Mapping[str, Any], schemas: Mapping[str, Any]) -> Vali
     for claim in claims_doc.get("claims", []):
         for err in sorted(claim_validator.iter_errors(claim), key=lambda e: list(e.path)):
             report.errors.append(_fmt(f"claim {claim.get('id', '?')}", err))
+
+    # Template validation is guarded: only runs when the schemas are available
+    # AND the batch declares a templates document.
+    templates_doc = batch.get("templates") or {}
+    step_schema = schemas.get(STEP_TEMPLATE_SCHEMA)
+    if step_schema is not None:
+        step_validator = Draft202012Validator(step_schema, registry=registry)
+        for tpl in templates_doc.get("step_templates", []):
+            for err in sorted(step_validator.iter_errors(tpl), key=lambda e: list(e.path)):
+                report.errors.append(_fmt(f"step_template {tpl.get('id', '?')}", err))
+    req_schema = schemas.get(REQUIREMENT_TEMPLATE_SCHEMA)
+    if req_schema is not None:
+        req_validator = Draft202012Validator(req_schema, registry=registry)
+        for tpl in templates_doc.get("requirement_templates", []):
+            for err in sorted(req_validator.iter_errors(tpl), key=lambda e: list(e.path)):
+                report.errors.append(_fmt(f"requirement_template {tpl.get('id', '?')}", err))
 
     claim_ids = {c.get("id") for c in claims_doc.get("claims", [])}
     for rule in ruleset.get("rules", []):
