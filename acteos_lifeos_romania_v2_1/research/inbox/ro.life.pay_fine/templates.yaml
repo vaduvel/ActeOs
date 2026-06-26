@@ -1,0 +1,112 @@
+step_templates:
+  - id: pay_half_of_statutory_minimum_within_window
+    semantic_key: pay_half_of_statutory_minimum_within_window
+    title_ro: "Plătește în 15 zile jumătate din minimul legal"
+    instruction_ro: >-
+      Pentru amenzile din regula generală, plătește în cel mult 15 zile de la
+      înmânarea sau comunicarea procesului-verbal jumătate din minimul amenzii
+      prevăzute de actul normativ, numai dacă procesul-verbal menționează această
+      posibilitate și minimul legal este identificat.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dovada plății include data și ora plății."
+    recovery_actions_ro:
+      - "Dacă procesul-verbal nu menționează plata redusă sau minimul legal nu este identificat, nu calcula suma și verifică actul sancționator."
+    status: draft
+  - id: verify_full_fine_balance_and_pay
+    semantic_key: verify_full_fine_balance_and_pay
+    title_ro: "Verifică soldul integral și plătește amenda"
+    instruction_ro: >-
+      Dacă fereastra generală de 15 zile a trecut, verifică soldul integral și
+      datele de plată din procesul-verbal sau din canalul oficial compatibil cu
+      bugetul beneficiar înainte să faci plata.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dovada plății păstrată cu datele de plată folosite."
+    recovery_actions_ro:
+      - "Dacă bugetul beneficiar sau contul corect nu sunt clare, identifică-le înainte de plată."
+    status: draft
+  - id: pay_half_of_applied_construction_fine_within_window
+    semantic_key: pay_half_of_applied_construction_fine_within_window
+    title_ro: "Plătește în 15 zile jumătate din amenda aplicată"
+    instruction_ro: >-
+      Pentru traseul special din construcții și urbanism, plătește în cel mult
+      15 zile jumătate din amenda aplicată de agentul constatator doar dacă
+      procesul-verbal menționează plata redusă, excepția legală nu se aplică și
+      cuantumul amenzii aplicate este cunoscut.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dovada plății include data și ora plății."
+    recovery_actions_ro:
+      - "Dacă excepția legală se aplică sau cuantumul amenzii aplicate nu este cunoscut, nu calcula jumătatea."
+    status: draft
+  - id: verify_full_construction_fine_balance
+    semantic_key: verify_full_construction_fine_balance
+    title_ro: "Verifică amenda integrală din construcții"
+    instruction_ro: >-
+      Dacă excepția legală exclude plata redusă pentru construcții și urbanism,
+      verifică soldul integral și datele de plată din procesul-verbal înainte să
+      plătești.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dovada plății este păstrată împreună cu datele de plată folosite."
+    recovery_actions_ro:
+      - "Dacă nu este clar dacă excepția legală se aplică, verifică descrierea faptei și autorizația."
+    status: draft
+  - id: prepare_contravention_complaint
+    semantic_key: prepare_contravention_complaint
+    title_ro: "Pregătește plângerea contravențională"
+    instruction_ro: >-
+      Dacă vrei să contești procesul-verbal, pregătește plângerea în termen de
+      15 zile de la înmânare sau comunicare și verifică instanța competentă și
+      modalitatea de depunere indicate în procesul-verbal și lege.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Dovada depunerii plângerii în termenul aplicabil."
+    recovery_actions_ro:
+      - "Dacă instanța competentă sau modalitatea de depunere nu sunt clare, confirmă-le din procesul-verbal și actul sancționator."
+    status: draft
+
+requirement_templates:
+  - id: req.statute_minimum_amount_and_payment_reference
+    title_ro: "Minimul legal al amenzii și datele de plată"
+    description_ro: >-
+      Identifică minimul amenzii prevăzute de actul normativ și datele de plată
+      folosite pentru plata redusă din regula generală.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Actul normativ indicat în procesul-verbal."
+      - "Datele de plată din procesul-verbal sau din canalul oficial compatibil."
+    readiness_checks:
+      - "Minimul amenzii prevăzute de actul normativ este identificat."
+      - "Procesul-verbal menționează posibilitatea plății reduse."
+    status: draft
+  - id: req.identify_statutory_minimum
+    title_ro: "Actul sancționator și minimul legal"
+    description_ro: >-
+      Când minimul amenzii nu este cunoscut, identifică actul sancționator și
+      minimul legal înainte să calculezi suma redusă.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Actul normativ prin care este stabilită și sancționată contravenția."
+    readiness_checks:
+      - "Actul sancționator este identificat."
+      - "Minimul legal al amenzii este cunoscut înainte de calcul."
+    status: draft
+  - id: req.applied_fine_amount_and_payment_reference
+    title_ro: "Cuantumul amenzii aplicate și datele de plată"
+    description_ro: >-
+      Pentru traseul special din construcții și urbanism, identifică amenda
+      aplicată de agentul constatator și datele de plată folosite pentru plata
+      redusă.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procesul-verbal cu cuantumul amenzii aplicate."
+      - "Datele de plată din procesul-verbal sau din canalul oficial compatibil."
+    readiness_checks:
+      - "Cuantumul amenzii aplicate este identificat."
+      - "Procesul-verbal menționează posibilitatea plății reduse."
+    status: draft

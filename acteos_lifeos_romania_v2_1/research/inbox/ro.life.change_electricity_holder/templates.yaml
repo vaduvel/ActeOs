@@ -1,0 +1,67 @@
+step_templates:
+  - id: change_electricity_holder
+    semantic_key: change_electricity_holder
+    title_ro: "Solicită schimbarea titularului contractului de energie electrică"
+    instruction_ro: >-
+      Pregătește documentele folosite la contractul nou pentru schimbarea
+      titularului: actul de identitate, actul care atestă dreptul locativ asupra
+      spațiului și indexul contorului la zi; dacă ruta este după deces, se
+      adaugă și certificatul de deces al titularului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de schimbare a titularului este trimisă împreună cu documentele și indexul contorului."
+    recovery_actions_ro:
+      - "Dacă termenul de intrare în vigoare sau documentele suplimentare nu sunt clare, confirmă-le cu furnizorul."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_id
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Pentru schimbarea titularului este cerut actul de identitate al
+      solicitantului, în copie și original.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "BI/CI în copie și original."
+    readiness_checks:
+      - "Actul de identitate este valabil."
+      - "Copia și originalul sunt disponibile pentru depunere."
+    status: draft
+  - id: req.proof_of_space
+    title_ro: "Act care atestă dreptul locativ"
+    description_ro: >-
+      Pentru schimbarea titularului este cerut actul de deținere legală a
+      spațiului, precum proprietatea sau închirierea.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate."
+      - "Contract de închiriere."
+    readiness_checks:
+      - "Documentul arată proprietatea sau închirierea spațiului."
+    status: draft
+  - id: req.meter_index
+    title_ro: "Indexul contorului la zi"
+    description_ro: >-
+      Schimbarea titularului cere indexul contorului de energie electrică la zi.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Indexul contorului la zi."
+    readiness_checks:
+      - "Indexul curent al contorului este notat."
+    status: draft
+  - id: req.death_certificate
+    title_ro: "Certificatul de deces al titularului"
+    description_ro: >-
+      Pentru preluarea contractului după deces se cere copia certificatului de
+      deces al titularului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a certificatului de deces al titularului."
+    readiness_checks:
+      - "Ruta este cea de preluare după deces."
+      - "Copia certificatului de deces este disponibilă."
+    status: draft

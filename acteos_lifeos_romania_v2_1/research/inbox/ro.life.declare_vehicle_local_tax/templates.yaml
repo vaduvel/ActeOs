@@ -1,0 +1,66 @@
+step_templates:
+  - id: file_vehicle_tax_declaration
+    semantic_key: file_vehicle_tax_declaration
+    title_ro: "Depune declarația fiscală pentru mijlocul de transport"
+    instruction_ro: >-
+      Depune declarația fiscală la organul fiscal local în termen de 30 de zile
+      de la data dobândirii și pregătește documentele indicate pentru declararea
+      mijlocului de transport, inclusiv formularul corect după clasa de greutate.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Declarația fiscală este depusă la organul fiscal local în termenul de 30 de zile."
+    recovery_actions_ro:
+      - "Dacă vehiculul este peste 12 tone, folosește formularul distinct."
+      - "Dacă dobândirea este prin cumpărare din România, verifică și certificatul fiscal al vânzătorului."
+    status: draft
+
+requirement_templates:
+  - id: req.vehicle_tax_form
+    title_ro: "Declarația fiscală pentru mijlocul de transport"
+    description_ro: >-
+      Pentru declararea mijlocului de transport este necesară declarația fiscală
+      folosită la organul fiscal local.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declarație fiscală pentru mijloace de transport."
+    readiness_checks:
+      - "Formularul de declarație fiscală este pregătit pentru depunere."
+    status: draft
+  - id: req.vehicle_tax_form_over_12t
+    title_ro: "Formularul distinct pentru peste 12 tone"
+    description_ro: >-
+      Pentru mijloacele de transport peste 12 tone se folosește formularul de
+      declarație distinct.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarație fiscală distinctă pentru mijloace de transport peste 12 tone."
+    readiness_checks:
+      - "Vehiculul este încadrat la peste 12 tone."
+    status: draft
+  - id: req.seller_fiscal_certificate
+    title_ro: "Certificatul fiscal al vânzătorului"
+    description_ro: >-
+      Pentru dobândirea prin cumpărare din România este necesar certificatul
+      fiscal al vânzătorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificatul fiscal al vânzătorului."
+    readiness_checks:
+      - "Dobândirea este prin cumpărare din România."
+      - "Certificatul fiscal al vânzătorului este disponibil."
+    status: draft
+  - id: req.salubritate_contract
+    title_ro: "Dovada contractului cu operatorul de salubritate"
+    description_ro: >-
+      Unele direcții fiscale locale cer dovada contractului cu operatorul de
+      salubritate la declararea vehiculului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada încheierii contractului cu operatorul de salubritate autorizat."
+    readiness_checks:
+      - "Cerința locală este confirmată la direcția fiscală competentă."
+    status: draft

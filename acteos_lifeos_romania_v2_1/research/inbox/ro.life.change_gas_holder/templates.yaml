@@ -1,0 +1,82 @@
+step_templates:
+  - id: change_gas_holder
+    semantic_key: change_gas_holder
+    title_ro: "Solicită schimbarea titularului contractului de gaze"
+    instruction_ro: >-
+      Pregătește documentele folosite la contractul nou pentru modificarea
+      titularului: copia actului de identitate, declarația pe propria răspundere
+      privind calitatea folosirii imobilului sau actul de proprietate, poza
+      contorului de gaz cu seria și indexul și codul locului de consum de pe
+      factură; dacă ruta este după deces, se adaugă și certificatul de deces al
+      titularului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Documentele pentru schimbarea titularului sunt depuse împreună cu datele locului de consum."
+    recovery_actions_ro:
+      - "Dacă ești proprietar, poți folosi actul de proprietate în locul declarației pe propria răspundere."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_id
+    title_ro: "Copie a actului de identitate"
+    description_ro: >-
+      Pentru modificarea titularului contractului de gaze este necesară copia
+      actului de identitate al solicitantului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copie a actului de identitate."
+    readiness_checks:
+      - "Copia actului de identitate este lizibilă."
+    status: draft
+  - id: req.declaratie_calitate_folosinta
+    title_ro: "Declarație privind calitatea folosirii imobilului"
+    description_ro: >-
+      Pentru modificarea titularului este necesară declarația pe propria
+      răspundere privind calitatea în care folosești imobilul sau actul de
+      proprietate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declarație pe propria răspundere privind calitatea folosirii imobilului."
+      - "Act de proprietate."
+    readiness_checks:
+      - "Este clar în ce calitate folosești imobilul."
+    status: draft
+  - id: req.gas_meter_photo
+    title_ro: "Poză a contorului de gaz"
+    description_ro: >-
+      Pentru modificarea titularului este necesară poza contorului de gaz cu
+      seria și indexul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Poză a contorului de gaz cu seria și indexul."
+    readiness_checks:
+      - "Seria și indexul contorului sunt vizibile în poză."
+    status: draft
+  - id: req.cod_loc_consum
+    title_ro: "Codul locului de consum"
+    description_ro: >-
+      Pentru modificarea titularului este necesar codul locului de consum de pe
+      factura de gaze naturale.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Codul locului de consum de pe factura de gaze naturale."
+    readiness_checks:
+      - "Codul locului de consum este extras de pe factură."
+    status: draft
+  - id: req.death_certificate
+    title_ro: "Certificatul de deces al titularului"
+    description_ro: >-
+      Pentru ruta de preluare după deces se cere copia certificatului de deces
+      al titularului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a certificatului de deces al titularului."
+    readiness_checks:
+      - "Ruta este cea de preluare după deces."
+      - "Copia certificatului de deces este disponibilă."
+    status: draft
