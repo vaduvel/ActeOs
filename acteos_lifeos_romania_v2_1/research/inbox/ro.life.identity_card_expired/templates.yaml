@@ -1,0 +1,67 @@
+# Step & requirement templates for ro.life.identity_card_expired
+# (life.id_card_expired).
+#
+# Transcribed FAITHFULLY from event_card.md (batch R1A-3, accessed_at
+# 2026-06-25), rules.yaml and source_claims.yaml. No legal text is fabricated:
+# every title/instruction/obligation/timing/accepted_form below is grounded in
+# the documented OUG 97/2005 (art. 19-20) / SPCLEP primary-source content.
+#
+# IMPORTANT: the open sanction-source conflict (40-80 lei vs 500-1000 lei) is
+# NOT resolved here. No fine amount is stated in any template; the rule
+# rule.exp.sanction_conflict blocks display of a single amount until the
+# conflict is resolved from the consolidated OUG 97/2005 contraventional text.
+#
+# issue_provisional_card is gated at runtime by rule.exp.provisional
+# (when has_all_documents=false). Status is draft because the event card is
+# still research_inbox (neaprobat); the publish certification gate governs
+# promotion.
+
+step_templates:
+  - id: renew_identity_card
+    semantic_key: renew_identity_card
+    title_ro: "Solicită un nou act de identitate înainte de expirare"
+    instruction_ro: >-
+      Solicită noul act de identitate în fereastra dintre 180 de zile și 15 zile
+      înainte de expirarea actului curent (OUG 97/2005, art. 19). Te prezinți la
+      DEP/SPCLEP de la domiciliu sau reședință, cu certificatele de stare civilă
+      și dovada adresei. Păstrezi actul vechi până la ridicarea celui nou, când îl
+      predai. Dacă termenul a fost depășit, prezintă-te urgent la DEP.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru noul act de identitate a fost înregistrată la DEP/SPCLEP"
+    recovery_actions_ro:
+      - "Dacă ești mai devreme de 180 de zile față de expirare, revii când se deschide fereastra de solicitare"
+      - "Dacă termenul de 15 zile înainte de expirare a fost depășit, prezintă-te urgent la DEP"
+    status: draft
+
+  - id: issue_provisional_card
+    semantic_key: issue_provisional_card
+    title_ro: "Obține o carte de identitate provizorie (dacă lipsesc documente)"
+    instruction_ro: >-
+      Dacă nu poți prezenta unul sau mai multe dintre documentele necesare
+      (certificate de stare civilă sau dovada adresei), se poate elibera o carte
+      de identitate provizorie (OUG 97/2005, art. 20). Valabilitatea ei se
+      stabilește de SPCLEP, între 30 de zile și un an. Adu cererea-tip și 3
+      fotografii, însoțite de documentele pe care le deții.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cartea de identitate provizorie a fost eliberată de SPCLEP"
+    recovery_actions_ro:
+      - "Completează documentele lipsă pentru a obține ulterior actul de identitate definitiv"
+    status: draft
+
+requirement_templates:
+  - id: req.three_photos
+    title_ro: "Trei fotografii 3/4 cm"
+    description_ro: >-
+      Pentru cartea de identitate provizorie: 3 fotografii mărimea 3/4 cm, având
+      la bază o bandă albă de 7 mm, însoțite de cererea-tip.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "3 fotografii 3/4 cm cu bandă albă de 7 mm la bază"
+    readiness_checks:
+      - "Sunt 3 fotografii la dimensiunea 3/4 cm"
+      - "Fotografiile au banda albă de 7 mm la bază"
+      - "Necesare doar pe traseul cărții de identitate provizorii"
+    status: draft
