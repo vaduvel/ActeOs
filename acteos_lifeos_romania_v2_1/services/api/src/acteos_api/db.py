@@ -3,7 +3,9 @@
 The API serves from pure in-memory adapters by default; a PostgreSQL engine is
 created only when ``ACTEOS_DATABASE_URL`` is configured. This keeps local dev
 and the test suite free of a database dependency while making the production
-adapter a one-env-var switch.
+adapters (content publish + case persistence) a one-env-var switch. The URL may
+point at any Postgres 18.x instance, including managed Supabase; no
+vendor-specific client is used.
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
+from .case_store import SqlAlchemyCaseRepository
 from .content_publish import SqlAlchemyContentRepository
 
 
@@ -47,3 +50,10 @@ def get_content_repository() -> SqlAlchemyContentRepository | None:
     if engine is None:
         return None
     return SqlAlchemyContentRepository(engine)
+
+
+def get_case_repository() -> SqlAlchemyCaseRepository | None:
+    engine = get_engine()
+    if engine is None:
+        return None
+    return SqlAlchemyCaseRepository(engine)
