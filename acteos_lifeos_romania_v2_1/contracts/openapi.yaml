@@ -1469,10 +1469,9 @@ components:
       - timezone
       - jurisdiction_path
       properties:
-        event_type_id:
-          type:
-          - string
-          - 'null'
+        intent_type_id:
+          type: string
+          pattern: ^ro\.intent\.[a-z0-9_.-]+$
         reference_date:
           type: string
           format: date
@@ -1484,24 +1483,23 @@ components:
           minItems: 2
           items:
             type: string
-        subject_ref:
+        event_type_id:
           type:
           - string
           - 'null'
-        source_text:
+          pattern: ^ro\.life\.[a-z0-9_.-]+$
+        user_id:
           type:
           - string
           - 'null'
-          maxLength: 500
-        intent_type_id:
-          type: string
-        event_context_ids:
-          type: array
-          items:
-            type: string
-          uniqueItems: true
+        installation_id:
+          type:
+          - string
+          - 'null'
         discovery_source:
-          type: string
+          type:
+          - string
+          - 'null'
           enum:
           - search
           - category
@@ -1509,25 +1507,35 @@ components:
           - related_intent
           - deep_link
           - legacy_event
+          - null
+        facts:
+          type: object
+          additionalProperties: true
     CaseResponse:
       type: object
       required:
       - id
       - intent_type_id
+      - event_type_id
       - reference_date
       - timezone
       - jurisdiction_path
-      - facts
       - status
       - version
+      - facts_hash
+      - engine_version
+      - ruleset_version
+      - events
+      - resolution_trace
+      - created_at
       properties:
         id:
           type: string
           format: uuid
+        intent_type_id:
+          type: string
         event_type_id:
-          type:
-          - string
-          - 'null'
+          type: string
         reference_date:
           type: string
           format: date
@@ -1537,31 +1545,158 @@ components:
           type: array
           items:
             type: string
-        subject_ref:
-          type:
-          - string
-          - 'null'
-        facts:
-          type: object
-          additionalProperties: true
         status:
           type: string
         version:
           type: integer
+        facts_hash:
+          type: string
+        engine_version:
+          type: string
+        ruleset_version:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventResolution'
+        resolution_trace:
+          $ref: '#/components/schemas/ResolutionTrace'
         created_at:
           type: string
           format: date-time
-        updated_at:
+    EventResolution:
+      type: object
+      required:
+      - event_type_id
+      - status
+      - included_steps
+      - requirements
+      - obligations
+      - channels
+      - advice
+      - warnings
+      - confirmations
+      - conflicts
+      - blocks
+      - deadlines
+      - overdue_steps
+      - child_events
+      - missing_facts
+      - overridden_rules
+      - fired_rule_ids
+      - excluded_rule_ids
+      properties:
+        event_type_id:
           type: string
-          format: date-time
-        intent_type_id:
+        status:
           type: string
-        event_context_ids:
+        included_steps:
           type: array
           items:
             type: string
-        discovery_source:
+        requirements:
+          type: array
+          items:
+            type: string
+        obligations:
+          type: object
+          additionalProperties: true
+        channels:
+          type: array
+          items:
+            type: string
+        deadlines:
+          type: object
+          additionalProperties: true
+        advice:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        warnings:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        confirmations:
+          type: array
+          items:
+            type: string
+        conflicts:
+          type: array
+          items:
+            type: string
+        blocks:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        overdue_steps:
+          type: array
+          items:
+            type: string
+        child_events:
+          type: array
+          items:
+            type: string
+        missing_facts:
+          type: array
+          items:
+            type: string
+        overridden_rules:
+          type: array
+          items:
+            type: string
+        fired_rule_ids:
+          type: array
+          items:
+            type: string
+        excluded_rule_ids:
+          type: array
+          items:
+            type: string
+    ResolutionTrace:
+      type: object
+      required:
+      - facts_hash
+      - engine_version
+      - included_rule_ids
+      - excluded_rule_ids
+      - ruleset_version
+      - root_event_type_id
+      - event_type_ids
+      properties:
+        facts_hash:
           type: string
+        engine_version:
+          type: string
+        included_rule_ids:
+          type: array
+          items:
+            type: string
+        excluded_rule_ids:
+          type: array
+          items:
+            type: string
+        ruleset_version:
+          type: string
+        reference_date:
+          type:
+          - string
+          - 'null'
+        root_event_type_id:
+          type: string
+        event_type_ids:
+          type: array
+          items:
+            type: string
+        has_unknown_events:
+          type: boolean
+          default: false
+        intent_type_id:
+          type:
+          - string
+          - 'null'
     UpdateFactsRequest:
       type: object
       required:

@@ -5,22 +5,56 @@
   "required": [
     "id",
     "intent_type_id",
+    "event_type_id",
     "reference_date",
     "timezone",
     "jurisdiction_path",
     "status",
     "version"
   ],
+  "anyOf": [
+    {
+      "required": ["user_id"],
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    {
+      "required": ["installation_id"],
+      "properties": {
+        "installation_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  ],
   "properties": {
     "id": {
       "type": "string",
       "format": "uuid"
     },
+    "user_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "installation_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "intent_type_id": {
+      "type": "string",
+      "pattern": "^ro\\.intent\\.[a-z0-9_.-]+$"
+    },
     "event_type_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string",
+      "pattern": "^ro\\.life\\.[a-z0-9_.-]+$"
+    },
+    "subject_ref": {
+      "type": ["string", "null"]
     },
     "reference_date": {
       "type": "string",
@@ -37,54 +71,20 @@
         "type": "string"
       }
     },
-    "subject_ref": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
     "facts": {
       "type": "object"
     },
+    "discovery_source": {
+      "type": ["string", "null"],
+      "enum": ["search", "category", "quick_action", "related_intent", "deep_link", "legacy_event", null]
+    },
     "status": {
       "type": "string",
-      "enum": [
-        "draft",
-        "needs_facts",
-        "resolved",
-        "needs_confirmation",
-        "conflicting",
-        "blocked",
-        "completed",
-        "cancelled"
-      ]
+      "enum": ["draft", "needs_facts", "resolved", "needs_confirmation", "conflicting", "blocked", "completed", "cancelled"]
     },
     "version": {
       "type": "integer",
       "minimum": 1
-    },
-    "intent_type_id": {
-      "type": "string",
-      "pattern": "^ro\\.intent\\.[a-z0-9_.-]+$"
-    },
-    "event_context_ids": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^ro\\.life\\.[a-z0-9_.-]+$"
-      }
-    },
-    "discovery_source": {
-      "type": "string",
-      "enum": [
-        "search",
-        "category",
-        "quick_action",
-        "related_intent",
-        "deep_link",
-        "legacy_event"
-      ]
     }
   },
   "additionalProperties": false,

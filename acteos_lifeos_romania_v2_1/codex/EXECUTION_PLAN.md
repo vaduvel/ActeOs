@@ -4,7 +4,7 @@
 - **Plan owner:** principal implementation agent
 - **Product owner:** ActeOS Product Team
 - **Created:** 2026-06-25
-- **Last updated:** 2026-06-25
+- **Last updated:** 2026-06-26
 - **Canonical backlog:** `codex/TASK_BACKLOG.yaml`
 - **Phase prompts:** `codex/PHASE_PROMPTS.md`
 - **Definition of Done:** `docs/22_DEFINITION_OF_DONE.md`
@@ -251,6 +251,8 @@ Pentru release se adaugă E2E mobile/web, a11y, security scans, migration rehear
 - [x] 2026-06-25T06:00:00Z — vision, doctrine, PRD, architecture, data, API, security și operations specification create.
 - [x] 2026-06-25T06:00:00Z — event atlas, schemas, SQL, backlog și pack validator create.
 - [x] 2026-06-25T06:00:00Z — Codex instructions, ExecPlan convention și repo-scoped skills create.
+- [x] 2026-06-26T10:14:00Z — M3 (parțial): case store persistat în DB merge-uit (PR #4). `app.cases`/`app.journeys` ca SQLAlchemy Core, snapshot JSONB lossless `resolution_snapshot` (migrația `db/0002`), identitate anonymous-first (`installation_id`/`user_id` opționale + `case_identity_ck`), Postgres vendor-neutral via `ACTEOS_DATABASE_URL`, pattern port+adaptor (in-memory rămâne default). Engine 83 + API 52 verzi, zero SAWarnings. Rămâne pentru gate M3: integration tests cu Postgres real, RLS negative tests, append-only audit, replay test, proiecții normalizate `journey_steps`/`journey_requirements`.
+- [x] 2026-06-26T10:14:00Z — certificare R1: piloții `minor_passport`, `identity_card_lost` (PR #2) și `identity_card_expired` (PR #3) certificați `conditional_go` și merge-uiți; gate-ul de certificare maturizat (ADR-016). `identity_card_change_address` deferred — blocat pe research (claim `cei.address_change_no_new_doc`).
 - [ ] M0 implementation started.
 - [ ] M1 complete.
 - [ ] M2 complete.
@@ -265,6 +267,10 @@ Pentru release se adaugă E2E mobile/web, a11y, security scans, migration rehear
 ## 10. Surprises and discoveries
 
 - Niciuna la începutul implementării. Adaugă aici rezultate care schimbă planul, nu simple defecte de rutină.
+- 2026-06-26 — „Verde local” ≠ „verde în main”: un fix de date (`authority_level`) raportat verde era doar în working tree, necomis; orice fix trebuie comis + pushed și revalidat după `git reset --hard <SHA>` + `git status` clean.
+- 2026-06-26 — Reguli al căror scop chiar este declararea unui conflict produceau `no_go` fals; gate-ul a fost rafinat (ADR-016) → `conditional_go`, fără a slăbi ADR-010.
+- 2026-06-26 — Divergență sistemică de naming `life.id_card_*` (research) vs canonic `life.identity_card_*` (catalog): warning non-blocant la dry-run, dar FK-fail la `--apply`; reconciliere în lane-ul de research.
+- 2026-06-26 — `ro.life.identity_card_stolen` este duplicat byte-identic cu `identity_card_lost`; risc de coliziune `unique(canonical_rule_id, revision)` la publish full-R1; necesită dedupe + decizie de taxonomie.
 
 ## 11. Decision log
 
@@ -272,6 +278,8 @@ Pentru release se adaugă E2E mobile/web, a11y, security scans, migration rehear
 - 2026-06-25 — deterministic runtime; LLM numai în pipeline-ul asistat de cercetare.
 - 2026-06-25 — anonymous-first și local-first pentru documente.
 - 2026-06-25 — R1 activează evenimente numai după evidence/freshness/release gates.
+- 2026-06-26 — ADR-016: gate-ul de certificare distinge regulile de declarare a conflictului (→ `conditional_go`) de cele care afirmă conținut (rămân hard-block).
+- 2026-06-26 — ADR-017: persistența cazului prin snapshot JSONB lossless + identitate anonymous-first; Postgres vendor-neutral (Supabase ca gazdă, fără cuplare la SDK).
 
 ## 12. Outcomes and retrospective
 

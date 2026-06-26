@@ -11,6 +11,11 @@ encode (semantic step/requirement/channel ids, authored advice/warnings,
 deadlines, blocks, missing facts). Materializing human-facing step content
 (title_ro/instruction_ro) requires published step/requirement templates and is a
 separate slice; see acteos_rule_engine.authoring.resolution.
+
+Persistence is behind the CaseRepository port: an in-memory adapter by default,
+or the PostgreSQL adapter (app.cases + app.journeys) when ACTEOS_DATABASE_URL is
+configured. Subject identity is anonymous-first (installation_id) with optional
+authenticated user_id; the database enforces that at least one is present.
 """
 from __future__ import annotations
 
@@ -43,9 +48,29 @@ DiscoverySource = Literal[
     "legacy_event",
 ]
 
+# Case-level resolution statuses that mean the route is not cleanly trusted yet
+# and a journey should surface for review (drives app.journeys.trust_state).
+_REVIEW_STATUSES = frozenset({"conflicting", "needs_confirmation", "blocked"})
+
 
 class CaseError(DiscoveryError):
     """Case-domain error; reuses the ErrorResponse handler via DiscoveryError."""
+
+
+def _trust_state(resolution: dict) -> str:
+    """Derive a journey trust_state from the resolution (provisional mapping).
+
+    A clean resolution is ``trusted``; an unresolved source conflict, a required
+    confirmation, a block, or any event carrying conflicts/blocks downgrades to
+    ``needs_review`` so the journey is not presented as fully settled.
+    """
+
+    if resolution.get("status") in _REVIEW_STATUSES:
+        return "needs_review"
+    for event in resolution.get("events", []) or []:
+        if event.get("conflicts") or event.get("blocks"):
+            return "needs_review"
+    return "trusted"
 
 
 # -- request/response models (mirror contracts/jsonschema/case.schema.json) ----
@@ -56,6 +81,8 @@ class CreateCaseRequest(BaseModel):
     jurisdiction_path: list[str] = Field(min_length=2)
     event_type_id: str | None = Field(default=None, pattern=r"^ro\.life\.[a-z0-9_.-]+$")
     subject_ref: str | None = None
+    user_id: str | None = None
+    installation_id: str | None = None
     discovery_source: DiscoverySource | None = None
     facts: dict[str, Any] = Field(default_factory=dict)
 
@@ -183,12 +210,15 @@ class CaseService:
             "timezone": req.timezone,
             "jurisdiction_path": list(req.jurisdiction_path),
             "subject_ref": req.subject_ref,
+            "user_id": req.user_id,
+            "installation_id": req.installation_id,
             "discovery_source": req.discovery_source,
             "status": resolution["status"],
             "version": 1,
             "facts_hash": resolution["facts_hash"],
             "engine_version": resolution["engine_version"],
             "ruleset_version": resolution["ruleset_version"],
+            "trust_state": _trust_state(resolution),
             "events": resolution["events"],
             "resolution_trace": resolution["resolution_trace"],
             "created_at": datetime.now(timezone.utc).isoformat(),
@@ -232,7 +262,9 @@ def _inbox_path() -> str:
 
 @lru_cache(maxsize=1)
 def get_case_service() -> CaseService:
-    return CaseService.from_paths(_taxonomy_path(), _inbox_path())
+    from .db import get_case_repository
+
+    return CaseService.from_paths(_taxonomy_path(), _inbox_path(), repository=get_case_repository())
 
 
 router = APIRouter(prefix="/v1", tags=["Cases"])
