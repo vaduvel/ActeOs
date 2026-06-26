@@ -9,12 +9,17 @@ from acteos_api.content_publish import (
     SqlAlchemyContentRepository,
     build_event_type_statements,
     build_publish_statements,
+    build_requirement_template_statements,
+    build_step_template_statements,
+    compiled_requirement_template_sql,
     compiled_sql,
+    compiled_step_template_sql,
     missing_event_types,
     validate_content_rows,
 )
 from acteos_rule_engine.authoring.event_types import compile_event_types
 from acteos_rule_engine.authoring.publish import PublishError, compile_bundle
+from acteos_rule_engine.authoring.templates import compile_templates
 
 _CATALOG = {
     "schema_version": "2.0.0",
@@ -33,9 +38,34 @@ _CATALOG = {
     },
 }
 
+_TEMPLATES_DOC = {
+    "step_templates": [
+        {"id": "apply_x", "title_ro": "Depune", "instruction_ro": "Mergi la ghiseu."}
+    ],
+    "requirement_templates": [
+        {
+            "id": "req.x",
+            "title_ro": "Certificat",
+            "obligation": "mandatory",
+            "timing": "now",
+        }
+    ],
+}
+
 
 def _event_records():
     return compile_event_types(_CATALOG, scope=("R1",))
+
+
+def _compiled_templates():
+    batch = {
+        "batch_dir": "ro.life.test",
+        "ruleset": {"batch_id": "ro.life.test", "rules": []},
+        "fixtures": {},
+        "claims": None,
+        "templates": _TEMPLATES_DOC,
+    }
+    return compile_templates([batch])
 
 
 def _claim(cid="claim.x"):
@@ -210,3 +240,73 @@ def test_event_type_validation_flags_missing_title():
     rows = {"content.life_event_types": [{"id": "life.x", "title_ro": None}]}
     violations = validate_content_rows(rows)
     assert any(value.endswith(":title_ro") for value in violations)
+
+
+def test_step_template_statement_targets_table():
+    ct = _compiled_templates()
+    statements = build_step_template_statements(ct.step_templates)
+    assert [s.table.name for s in statements] == ["step_templates"]
+
+
+def test_requirement_template_statement_targets_table():
+    ct = _compiled_templates()
+    statements = build_requirement_template_statements(ct.requirement_templates)
+    assert [s.table.name for s in statements] == ["requirement_templates"]
+
+
+def test_compiled_template_sql_targets_content_tables():
+    ct = _compiled_templates()
+    joined = "\n".join(
+        compiled_step_template_sql(ct.step_templates)
+        + compiled_requirement_template_sql(ct.requirement_templates)
+    ).upper()
+    assert "CONTENT.STEP_TEMPLATES" in joined
+    assert "CONTENT.REQUIREMENT_TEMPLATES" in joined
+    assert "ON CONFLICT" in joined
+
+
+def test_step_template_validation_flags_missing_instruction():
+    rows = {
+        "content.step_templates": [
+            {
+                "id": "s",
+                "semantic_key": "s",
+                "title_ro": "t",
+                "instruction_ro": None,
+                "sequence_hint": 100,
+                "status": "draft",
+            }
+        ]
+    }
+    violations = validate_content_rows(rows)
+    assert any(value.endswith(":instruction_ro") for value in violations)
+
+
+def test_requirement_template_validation_flags_missing_obligation():
+    rows = {
+        "content.requirement_templates": [
+            {"id": "r", "title_ro": "t", "obligation": None, "timing": "now", "status": "draft"}
+        ]
+    }
+    violations = validate_content_rows(rows)
+    assert any(value.endswith(":obligation") for value in violations)
+
+
+def test_publish_release_inserts_templates_between_event_types_and_rules():
+    bundle = compile_bundle([_batch([_rule()])])
+    ct = _compiled_templates()
+    engine = _FakeEngine()
+    repo = SqlAlchemyContentRepository(engine)
+    result = repo.publish_release(
+        bundle, _event_records(), ct.step_templates, ct.requirement_templates
+    )
+    assert [s.table.name for s in engine.conn.executed] == [
+        "life_event_types",
+        "step_templates",
+        "requirement_templates",
+        "rule_sets",
+        "rule_revisions",
+        "rule_set_members",
+    ]
+    assert result.step_template_count == 1
+    assert result.requirement_template_count == 1

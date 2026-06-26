@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""CLI: compile certified inbox batches + event catalog -> content.* publish.
+"""CLI: compile certified inbox batches + event catalog + templates -> content.*.
 
-This is the operational entry point that ties the three pure compilers together
-and drives the Postgres content adapter:
+This is the operational entry point that ties the pure compilers together and
+drives the Postgres content adapter:
 
     compile_event_types(catalog)  ->  content.life_event_types rows
+    compile_templates(batches)    ->  content.step_templates / requirement_templates
     compile_bundle(batches)       ->  content.rule_sets / rule_revisions / members
     SqlAlchemyContentRepository.publish_release(...)  ->  one FK-safe transaction
 
 Two modes:
     dry-run (default)  Compiles everything in memory, prints the FK-ordered SQL
-                       (life_event_types -> rule_sets -> rule_revisions ->
+                       (life_event_types -> step_templates ->
+                       requirement_templates -> rule_sets -> rule_revisions ->
                        rule_set_members) and a summary. Touches no database.
     --apply            Opens an engine from --database-url / ACTEOS_DATABASE_URL
                        and writes the release in a single transaction.
@@ -23,11 +25,6 @@ Exit codes:
     0  dry-run compiled OK, or --apply wrote the release
     2  certification verdict is conditional_go without --allow-conditional
     1  no_go / usage error / uncovered event types / missing database url
-
-Usage:
-    python -m acteos_api.publish_db                       # dry-run, all R1
-    python -m acteos_api.publish_db --batch ro.life.minor_passport
-    python -m acteos_api.publish_db --apply --database-url postgresql+psycopg://...
 """
 
 from __future__ import annotations
@@ -39,18 +36,25 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from acteos_rule_engine.authoring.event_types import compile_event_types
 from acteos_rule_engine.authoring.publish import (
     PublishError,
     PublishedBundle,
     compile_bundle,
+)
+from acteos_rule_engine.authoring.event_types import compile_event_types
+from acteos_rule_engine.authoring.templates import (
+    CompiledTemplates,
+    compile_templates,
+    template_coverage,
 )
 
 from .content_publish import (
     ContentPublishError,
     SqlAlchemyContentRepository,
     compiled_event_type_sql,
+    compiled_requirement_template_sql,
     compiled_sql,
+    compiled_step_template_sql,
     missing_event_types,
 )
 
@@ -68,16 +72,28 @@ class DryRunPlan:
     version: str
     manifest_sha256: str
     event_type_count: int
+    step_template_count: int
+    requirement_template_count: int
     event_type_sql: list[str]
+    step_template_sql: list[str]
+    requirement_template_sql: list[str]
     publish_sql: list[str]
     missing_event_types: list[str]
+    missing_steps: list[str]
+    missing_requirements: list[str]
     deferred_rule_ids: list[str]
+    deferred_templates: list[str]
     summary: dict[str, Any]
 
     @property
     def statements_sql(self) -> list[str]:
-        """All INSERTs in FK-safe order (event types first, then the bundle)."""
-        return [*self.event_type_sql, *self.publish_sql]
+        """All INSERTs in FK-safe order (event types, templates, then bundle)."""
+        return [
+            *self.event_type_sql,
+            *self.step_template_sql,
+            *self.requirement_template_sql,
+            *self.publish_sql,
+        ]
 
 
 def compile_release(
@@ -87,22 +103,24 @@ def compile_release(
     scope: Iterable[str] = ("R1",),
     schemas: Mapping[str, Any] | None = None,
     allow_conditional: bool = False,
-) -> tuple[list[Any], PublishedBundle]:
-    """Compile event-type records and the rule bundle for one release scope.
+) -> tuple[list[Any], CompiledTemplates, PublishedBundle]:
+    """Compile event-type records, templates and the rule bundle for one scope.
 
     Pure and side-effect free. Raises :class:`PublishError` if certification is
     ``no_go`` (always) or ``conditional_go`` without ``allow_conditional``.
     """
 
     scope_tuple = tuple(scope)
+    batches = list(batches)
     event_records = compile_event_types(catalog, scope=scope_tuple)
+    templates = compile_templates(batches)
     bundle = compile_bundle(
-        list(batches),
+        batches,
         scope=scope_tuple,
         schemas=schemas,
         allow_conditional=allow_conditional,
     )
-    return event_records, bundle
+    return event_records, templates, bundle
 
 
 def build_dry_run(
@@ -117,12 +135,12 @@ def build_dry_run(
     """Compile a release into a printable, DB-free :class:`DryRunPlan`.
 
     ``strict=False`` (default) renders only the publishable subset of rule
-    revisions (rules with ``effective_from``); deferred rules are surfaced in
-    ``deferred_rule_ids`` rather than fabricated. ``strict=True`` re-raises
+    revisions (rules with ``effective_from``); deferred rules and incomplete
+    templates are surfaced rather than fabricated. ``strict=True`` re-raises
     :class:`PublishError` if any rule lacks ``effective_from``.
     """
 
-    event_records, bundle = compile_release(
+    event_records, templates, bundle = compile_release(
         catalog,
         batches,
         scope=scope,
@@ -130,21 +148,37 @@ def build_dry_run(
         allow_conditional=allow_conditional,
     )
     missing = missing_event_types(bundle, event_records)
-    event_type_sql = compiled_event_type_sql(event_records)
-    publish_sql = compiled_sql(bundle, strict=strict)
+    coverage = template_coverage(
+        referenced_step_ids=bundle.referenced_step_ids,
+        referenced_requirement_ids=bundle.referenced_requirement_ids,
+        compiled=templates,
+    )
 
     summary = dict(bundle.summary())
     summary["event_type_count"] = len(event_records)
+    summary["step_template_count"] = len(templates.step_templates)
+    summary["requirement_template_count"] = len(templates.requirement_templates)
     summary["missing_event_types"] = missing
+    summary["missing_steps"] = coverage.missing_steps
+    summary["missing_requirements"] = coverage.missing_requirements
 
     return DryRunPlan(
         version=bundle.version,
         manifest_sha256=bundle.manifest_sha256,
         event_type_count=len(event_records),
-        event_type_sql=event_type_sql,
-        publish_sql=publish_sql,
+        step_template_count=len(templates.step_templates),
+        requirement_template_count=len(templates.requirement_templates),
+        event_type_sql=compiled_event_type_sql(event_records),
+        step_template_sql=compiled_step_template_sql(templates.step_templates),
+        requirement_template_sql=compiled_requirement_template_sql(
+            templates.requirement_templates
+        ),
+        publish_sql=compiled_sql(bundle, strict=strict),
         missing_event_types=missing,
+        missing_steps=coverage.missing_steps,
+        missing_requirements=coverage.missing_requirements,
         deferred_rule_ids=[r.canonical_rule_id for r in bundle.deferred_revisions()],
+        deferred_templates=list(templates.deferred),
         summary=summary,
     )
 
@@ -154,20 +188,24 @@ def _print_plan(plan: DryRunPlan) -> None:
     print("=" * 72)
     print("ActeOS DB Publish - DRY RUN (no database writes)")
     print("=" * 72)
-    print(f"version           : {plan.version}")
-    print(f"manifest_sha256   : {plan.manifest_sha256}")
-    print(f"event types       : {plan.event_type_count}")
+    print(f"version            : {plan.version}")
+    print(f"manifest_sha256    : {plan.manifest_sha256}")
+    print(f"event types        : {plan.event_type_count}")
+    print(f"step templates     : {plan.step_template_count}")
+    print(f"requirement tmpls  : {plan.requirement_template_count}")
     print(
-        f"rule revisions    : {s['rule_revision_count']} "
+        f"rule revisions     : {s['rule_revision_count']} "
         f"(publishable {s['publishable_rule_count']}, deferred {s['deferred_rule_count']})"
     )
-    print(f"required events   : {len(s['required_event_type_ids'])}")
-    print(f"missing events    : {len(plan.missing_event_types)}")
-    print(f"certification     : {s['certification_verdict']}")
+    print(f"required events    : {len(s['required_event_type_ids'])}")
+    print(f"missing events     : {len(plan.missing_event_types)}")
+    print(f"missing steps      : {len(plan.missing_steps)}")
+    print(f"missing reqs       : {len(plan.missing_requirements)}")
+    print(f"certification      : {s['certification_verdict']}")
     print()
     print(
-        f"-- {len(plan.event_type_sql)} event-type statement(s), "
-        f"{len(plan.publish_sql)} bundle statement(s) --"
+        f"-- {len(plan.event_type_sql)} event-type, {len(plan.step_template_sql)} step, "
+        f"{len(plan.requirement_template_sql)} requirement, {len(plan.publish_sql)} bundle statement(s) --"
     )
     for sql in plan.statements_sql:
         print()
@@ -178,9 +216,21 @@ def _print_plan(plan: DryRunPlan) -> None:
         print("         (--apply will refuse until the catalog covers them):")
         for event_id in plan.missing_event_types:
             print(f"  - {event_id}")
+    if plan.missing_steps or plan.missing_requirements:
+        print()
+        print("UNRESOLVED journey content (no authored template yet):")
+        for sid in plan.missing_steps:
+            print(f"  - step: {sid}")
+        for rid in plan.missing_requirements:
+            print(f"  - requirement: {rid}")
+    if plan.deferred_templates:
+        print()
+        print("DEFERRED templates (incomplete authoring):")
+        for entry in plan.deferred_templates:
+            print(f"  - {entry}")
     if plan.deferred_rule_ids:
         print()
-        print("DEFERRED (no effective_from -> excluded from content.rule_revisions):")
+        print("DEFERRED rules (no effective_from -> excluded from content.rule_revisions):")
         for rid in plan.deferred_rule_ids:
             print(f"  - {rid}")
 
@@ -298,7 +348,7 @@ def main(argv: list[str] | None = None) -> int:
     from sqlalchemy import create_engine
 
     engine = create_engine(database_url, future=True, pool_pre_ping=True)
-    event_records, bundle = compile_release(
+    event_records, templates, bundle = compile_release(
         catalog,
         batches,
         scope=scope,
@@ -307,7 +357,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     repo = SqlAlchemyContentRepository(engine)
     try:
-        result = repo.publish_release(bundle, event_records, strict=args.strict)
+        result = repo.publish_release(
+            bundle,
+            event_records,
+            templates.step_templates,
+            templates.requirement_templates,
+            strict=args.strict,
+        )
     except ContentPublishError as exc:
         print(f"PUBLISH REFUSED: {exc}", file=sys.stderr)
         return 1
@@ -316,11 +372,13 @@ def main(argv: list[str] | None = None) -> int:
     print("=" * 72)
     print("APPLIED to content.* schema")
     print("=" * 72)
-    print(f"version           : {result.version}")
-    print(f"event types       : {result.event_type_count}")
-    print(f"rule sets         : {result.rule_set_count}")
-    print(f"rule revisions    : {result.rule_revision_count}")
-    print(f"rule set members  : {result.rule_set_member_count}")
+    print(f"version            : {result.version}")
+    print(f"event types        : {result.event_type_count}")
+    print(f"step templates     : {result.step_template_count}")
+    print(f"requirement tmpls  : {result.requirement_template_count}")
+    print(f"rule sets          : {result.rule_set_count}")
+    print(f"rule revisions     : {result.rule_revision_count}")
+    print(f"rule set members   : {result.rule_set_member_count}")
     return 0
 
 

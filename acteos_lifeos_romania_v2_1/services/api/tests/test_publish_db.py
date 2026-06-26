@@ -26,6 +26,15 @@ _CATALOG = {
 
 _EMPTY_CATALOG = {"schema_version": "2.0.0", "waves": {}}
 
+_TEMPLATES_DOC = {
+    "step_templates": [
+        {"id": "apply_x", "title_ro": "Depune", "instruction_ro": "Mergi la ghiseu."}
+    ],
+    "requirement_templates": [
+        {"id": "req.x", "title_ro": "Certificat", "obligation": "mandatory", "timing": "now"}
+    ],
+}
+
 
 def _claim(cid="claim.x"):
     return {
@@ -63,12 +72,23 @@ def _rule(rule_id="rule.x", *, effective_from="2021-03-12", effects=None,
     return rule
 
 
-def _batch(rules, claims=None, batch_id="ro.life.test"):
+def _rule_with_refs():
+    return _rule(
+        rule_id="refs",
+        effects=[
+            {"type": "include_step", "step_id": "apply_x"},
+            {"type": "include_requirement", "requirement_id": "req.x"},
+        ],
+    )
+
+
+def _batch(rules, claims=None, templates=None, batch_id="ro.life.test"):
     return {
         "batch_dir": batch_id,
         "ruleset": {"batch_id": batch_id, "event_type_id": "life.test", "rules": rules},
         "fixtures": {},
         "claims": {"batch_id": batch_id, "claims": claims if claims is not None else [_claim()]},
+        "templates": templates,
     }
 
 
@@ -76,7 +96,6 @@ def test_build_dry_run_emits_fk_ordered_sql():
     plan = build_dry_run(_CATALOG, [_batch([_rule()])])
     assert isinstance(plan, DryRunPlan)
     joined = "\n".join(plan.statements_sql).upper()
-    # All four content tables, event types first.
     assert joined.index("CONTENT.LIFE_EVENT_TYPES") < joined.index("CONTENT.RULE_SETS")
     assert joined.index("CONTENT.RULE_SETS") < joined.index("CONTENT.RULE_REVISIONS")
     assert joined.index("CONTENT.RULE_REVISIONS") < joined.index("CONTENT.RULE_SET_MEMBERS")
@@ -96,7 +115,6 @@ def test_build_dry_run_summary_counts():
 
 
 def test_build_dry_run_reports_missing_event_types():
-    # Catalog covers nothing, but the bundle requires life.test.
     plan = build_dry_run(_EMPTY_CATALOG, [_batch([_rule()])])
     assert plan.event_type_count == 0
     assert plan.event_type_sql == []
@@ -114,7 +132,6 @@ def test_build_dry_run_non_strict_defers_rules_without_effective_from():
     plan = build_dry_run(_CATALOG, [_batch([advisory])], strict=False)
     assert plan.deferred_rule_ids == ["ro.life.test.adv"]
     assert plan.summary["publishable_rule_count"] == 0
-    # Non-strict still emits the rule_set + event-type rows, but no revisions.
     joined = "\n".join(plan.publish_sql).upper()
     assert "CONTENT.RULE_REVISIONS" not in joined
 
@@ -132,11 +149,30 @@ def test_build_dry_run_strict_refuses_deferred_rules():
 
 
 def test_build_dry_run_no_go_bundle_propagates():
-    # Normative rule without a backing claim -> certification no_go.
     with pytest.raises(PublishError) as exc:
         build_dry_run(_CATALOG, [_batch([_rule(source_claim_ids=())])])
     assert exc.value.report is not None
     assert exc.value.report.verdict == "no_go"
+
+
+def test_build_dry_run_includes_template_sql_when_authored():
+    plan = build_dry_run(_CATALOG, [_batch([_rule_with_refs()], templates=_TEMPLATES_DOC)])
+    assert plan.step_template_count == 1
+    assert plan.requirement_template_count == 1
+    assert plan.missing_steps == []
+    assert plan.missing_requirements == []
+    joined = "\n".join(plan.statements_sql).upper()
+    assert joined.index("CONTENT.LIFE_EVENT_TYPES") < joined.index("CONTENT.STEP_TEMPLATES")
+    assert joined.index("CONTENT.STEP_TEMPLATES") < joined.index("CONTENT.REQUIREMENT_TEMPLATES")
+    assert joined.index("CONTENT.REQUIREMENT_TEMPLATES") < joined.index("CONTENT.RULE_SETS")
+
+
+def test_build_dry_run_reports_template_coverage_gap():
+    plan = build_dry_run(_CATALOG, [_batch([_rule_with_refs()], templates=None)])
+    assert plan.step_template_count == 0
+    assert plan.requirement_template_count == 0
+    assert plan.missing_steps == ["apply_x"]
+    assert plan.missing_requirements == ["req.x"]
 
 
 def test_main_returns_1_when_catalog_missing(tmp_path):

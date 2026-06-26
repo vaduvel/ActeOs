@@ -1,15 +1,17 @@
 """Publish a compiled release into the ``content.*`` schema.
 
 This is the production persistence adapter behind a port. It consumes
-``PublishedBundle.as_content_rows()`` from the engine's publish compiler plus the
-``EventTypeRecord`` rows from the event-catalog compiler, and:
+``PublishedBundle.as_content_rows()`` from the engine's publish compiler, the
+``EventTypeRecord`` rows from the event-catalog compiler, and the
+``StepTemplateRecord`` / ``RequirementTemplateRecord`` rows from the template
+compiler, and:
 
 1. enforces the database NOT NULL invariants *before* touching the DB
    (``validate_content_rows``), so a malformed bundle is refused with a clear
    message instead of a raw IntegrityError;
 2. builds ordered, idempotent ``INSERT ... ON CONFLICT DO NOTHING`` statements in
-   FK-safe order (life_event_types -> rule_sets -> rule_revisions ->
-   rule_set_members);
+   FK-safe order (life_event_types -> step_templates -> requirement_templates ->
+   rule_sets -> rule_revisions -> rule_set_members);
 3. executes them inside a single transaction via a SQLAlchemy ``Engine``.
 
 Statement building and validation are pure and unit tested without a live
@@ -26,8 +28,19 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from acteos_rule_engine.authoring.event_types import EventTypeRecord
 from acteos_rule_engine.authoring.publish import PublishedBundle
+from acteos_rule_engine.authoring.templates import (
+    RequirementTemplateRecord,
+    StepTemplateRecord,
+)
 
-from .content_tables import life_event_types, rule_revisions, rule_set_members, rule_sets
+from .content_tables import (
+    life_event_types,
+    requirement_templates,
+    rule_revisions,
+    rule_set_members,
+    rule_sets,
+    step_templates,
+)
 
 
 class ContentPublishError(RuntimeError):
@@ -40,6 +53,21 @@ REQUIRED_NOT_NULL: dict[str, tuple[str, ...]] = {
     "content.life_event_types": (
         "id",
         "title_ro",
+    ),
+    "content.step_templates": (
+        "id",
+        "semantic_key",
+        "title_ro",
+        "instruction_ro",
+        "sequence_hint",
+        "status",
+    ),
+    "content.requirement_templates": (
+        "id",
+        "title_ro",
+        "obligation",
+        "timing",
+        "status",
     ),
     "content.rule_sets": (
         "id",
@@ -100,6 +128,8 @@ class PublishResult:
     rule_revision_count: int
     rule_set_member_count: int
     event_type_count: int = 0
+    step_template_count: int = 0
+    requirement_template_count: int = 0
 
 
 def build_event_type_statements(
@@ -121,6 +151,52 @@ def build_event_type_statements(
         return []
     return [
         pg_insert(life_event_types).values(rows).on_conflict_do_nothing(index_elements=["id"])
+    ]
+
+
+def build_step_template_statements(
+    records: Sequence[StepTemplateRecord],
+    *,
+    validate: bool = True,
+) -> list[Any]:
+    """Build an idempotent INSERT for content.step_templates."""
+
+    rows = [r.as_content_row() for r in records]
+    if validate:
+        violations = validate_content_rows({"content.step_templates": rows})
+        if violations:
+            raise ContentPublishError(
+                "step_templates rows violate NOT NULL invariants: "
+                + ", ".join(violations[:20])
+            )
+    if not rows:
+        return []
+    return [
+        pg_insert(step_templates).values(rows).on_conflict_do_nothing(index_elements=["id"])
+    ]
+
+
+def build_requirement_template_statements(
+    records: Sequence[RequirementTemplateRecord],
+    *,
+    validate: bool = True,
+) -> list[Any]:
+    """Build an idempotent INSERT for content.requirement_templates."""
+
+    rows = [r.as_content_row() for r in records]
+    if validate:
+        violations = validate_content_rows({"content.requirement_templates": rows})
+        if violations:
+            raise ContentPublishError(
+                "requirement_templates rows violate NOT NULL invariants: "
+                + ", ".join(violations[:20])
+            )
+    if not rows:
+        return []
+    return [
+        pg_insert(requirement_templates)
+        .values(rows)
+        .on_conflict_do_nothing(index_elements=["id"])
     ]
 
 
@@ -182,6 +258,26 @@ def compiled_event_type_sql(records: Sequence[EventTypeRecord]) -> list[str]:
     ]
 
 
+def compiled_step_template_sql(records: Sequence[StepTemplateRecord]) -> list[str]:
+    """Render the Postgres SQL for the step-template INSERT (dry-run / ops)."""
+
+    return [
+        str(stmt.compile(dialect=postgresql.dialect()))
+        for stmt in build_step_template_statements(records)
+    ]
+
+
+def compiled_requirement_template_sql(
+    records: Sequence[RequirementTemplateRecord],
+) -> list[str]:
+    """Render the Postgres SQL for the requirement-template INSERT (dry-run / ops)."""
+
+    return [
+        str(stmt.compile(dialect=postgresql.dialect()))
+        for stmt in build_requirement_template_statements(records)
+    ]
+
+
 def missing_event_types(
     bundle: PublishedBundle,
     records: Iterable[EventTypeRecord],
@@ -220,10 +316,16 @@ class SqlAlchemyContentRepository:
         self,
         bundle: PublishedBundle,
         event_type_records: Sequence[EventTypeRecord],
+        step_template_records: Sequence[StepTemplateRecord] = (),
+        requirement_template_records: Sequence[RequirementTemplateRecord] = (),
         *,
         strict: bool = True,
     ) -> PublishResult:
-        """Insert event types then the rule bundle (FK-safe) in one transaction."""
+        """Insert event types, templates, then the rule bundle (FK-safe).
+
+        One transaction, ordered life_event_types -> step_templates ->
+        requirement_templates -> rule_sets -> rule_revisions -> rule_set_members.
+        """
 
         missing = missing_event_types(bundle, event_type_records)
         if missing:
@@ -232,8 +334,11 @@ class SqlAlchemyContentRepository:
                 + ", ".join(missing)
             )
         rows = bundle.as_content_rows(strict=strict)
-        statements = build_event_type_statements(event_type_records) + build_publish_statements(
-            bundle, strict=strict
+        statements = (
+            build_event_type_statements(event_type_records)
+            + build_step_template_statements(step_template_records)
+            + build_requirement_template_statements(requirement_template_records)
+            + build_publish_statements(bundle, strict=strict)
         )
         with self._engine.begin() as conn:
             for stmt in statements:
@@ -245,6 +350,8 @@ class SqlAlchemyContentRepository:
             rule_revision_count=len(rows["content.rule_revisions"]),
             rule_set_member_count=len(rows["content.rule_set_members"]),
             event_type_count=len(event_type_records),
+            step_template_count=len(step_template_records),
+            requirement_template_count=len(requirement_template_records),
         )
 
     def compiled_sql(self, bundle: PublishedBundle, *, strict: bool = True) -> list[str]:
