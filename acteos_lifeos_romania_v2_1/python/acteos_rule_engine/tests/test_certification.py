@@ -166,6 +166,29 @@ def test_conflict_declaration_rule_with_conflicting_claim_is_conditional():
     assert "CRITICAL_CLAIM_NOT_ACTIVE" not in _codes(report.findings)
 
 
+def test_conflict_declaration_rule_with_advisory_warning_is_conditional():
+    """A conflict-declaration rule may ALSO emit an explanatory warning
+    (emit_warning) alongside block; advisory effects must NOT disqualify the
+    handled-conflict downgrade. Regression for ro.life.identity_card_expired
+    (rule.exp.sanction_conflict uses emit_warning + block)."""
+    rule = _rule(
+        rule_id="rule.conflict.warned",
+        severity="critical",
+        effects=[
+            {"type": "emit_warning", "message_ro": "sources disagree"},
+            {"type": "block", "message_ro": "suppress amount"},
+        ],
+        source_claim_ids=("claim.conflict",),
+    )
+    claim = _claim(cid="claim.conflict", confidence="conflicting", status="conflicting")
+    claim["contradiction_claim_ids"] = ["claim.other"]
+    report = certify_batches([_batch([rule], claims=[claim])])
+    assert report.verdict == VERDICT_CONDITIONAL
+    assert "CRITICAL_CONFLICT_DECLARED" in _codes(report.warnings)
+    assert "CRITICAL_CLAIM_BAD_CONFIDENCE" not in _codes(report.findings)
+    assert "CRITICAL_CLAIM_NOT_ACTIVE" not in _codes(report.findings)
+
+
 def test_content_rule_with_conflicting_claim_still_blocks():
     """A critical rule that also asserts content (include_step) must NOT benefit
     from the conflict-declaration downgrade; it still hard-blocks."""
