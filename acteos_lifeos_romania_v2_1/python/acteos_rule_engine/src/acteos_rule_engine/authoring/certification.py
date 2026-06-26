@@ -48,15 +48,24 @@ ADVISORY_EFFECT_TYPES: frozenset[str] = frozenset(EFFECT_TYPES) - NORMATIVE_EFFE
 
 # Effects that exist to DECLARE and contain an unresolved conflict rather than
 # to assert a citizen obligation. Per the v2.1 conflict model (see effects.py /
-# ADR-015) source conflicts are surfaced via ``block`` (plus ``require_confirmation``);
-# ``flag_conflict`` is the documented extension. A rule whose effects are drawn
-# EXCLUSIVELY from this set suppresses an uncertain value and asks for
-# confirmation -- it does not assert content -- so a contradicted claim it cites
-# is a handled conflict, not an uncited obligation. NOTE: this set deliberately
-# overlaps both partitions above and is NOT part of the normative/advisory
-# partition.
+# ADR-015) source conflicts are surfaced via ``block`` (plus
+# ``require_confirmation``); ``flag_conflict`` is the documented extension. A
+# rule that uses one of these effects and asserts no content (see
+# CONTENT_ASSERTING_EFFECT_TYPES) is declaring a handled conflict; purely
+# advisory effects (emit_warning / emit_advice / attach_channel /
+# set_freshness_state) may accompany the declaration. NOTE: this set
+# deliberately overlaps the normative partition (``block``) and is NOT itself
+# part of the normative/advisory partition.
 CONFLICT_DECLARATION_EFFECT_TYPES: frozenset[str] = frozenset(
     {"block", "require_confirmation", "flag_conflict"}
+)
+
+# Effects that assert an actual citizen obligation / journey content sourced
+# from a claim: the normative effects minus the conflict-handling ``block``. A
+# rule that uses any of these is asserting content, so if it cites a conflicting
+# claim it must still HARD-BLOCK -- even when it ALSO declares a conflict.
+CONTENT_ASSERTING_EFFECT_TYPES: frozenset[str] = (
+    NORMATIVE_EFFECT_TYPES - CONFLICT_DECLARATION_EFFECT_TYPES
 )
 
 # Confidence values acceptable for a *critical* normative rule.
@@ -170,21 +179,27 @@ def _is_normative(rule: Mapping[str, Any]) -> bool:
     return any(t in NORMATIVE_EFFECT_TYPES for t in _rule_effect_types(rule))
 
 
-def _is_conflict_declaration_only(rule: Mapping[str, Any]) -> bool:
-    """True when a rule's effects ONLY declare/contain a conflict.
+def _is_conflict_declaration(rule: Mapping[str, Any]) -> bool:
+    """True when a rule DECLARES/contains a conflict without asserting content.
 
-    Such a rule (``block`` / ``require_confirmation`` / ``flag_conflict`` and
-    nothing that asserts a citizen obligation) exists to *suppress* an uncertain
-    value and request confirmation -- per the v2.1 conflict model it is the
-    intended way to surface an unresolved source conflict. A contradicted claim
-    it cites is therefore a handled conflict rather than an uncited obligation.
+    Such a rule has at least one conflict-handling effect
+    (``block`` / ``require_confirmation`` / ``flag_conflict``) and asserts no
+    sourced citizen obligation (none of ``include_step`` / ``include_requirement``
+    / ``set_deadline`` / ``set_requirement_obligation`` / ``exclude_step`` /
+    ``override_rule`` / ``trigger_child_event``). Purely advisory effects
+    (``emit_warning`` / ``emit_advice`` / ``attach_channel`` /
+    ``set_freshness_state``) are explanatory and allowed alongside the
+    declaration -- per the v2.1 conflict model this is the intended way to
+    surface an unresolved source conflict, so a contradicted claim it cites is
+    a handled conflict rather than an uncited obligation. The uncertain value
+    is already suppressed by the rule's ``block``.
     """
     types = _rule_effect_types(rule)
     if not types:
         return False
     if not any(t in CONFLICT_DECLARATION_EFFECT_TYPES for t in types):
         return False
-    return all(t in CONFLICT_DECLARATION_EFFECT_TYPES for t in types)
+    return not any(t in CONTENT_ASSERTING_EFFECT_TYPES for t in types)
 
 
 def _claims_index(batch: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
@@ -209,7 +224,7 @@ def _certify_rule(
     rule_id = str(rule_id_raw) if rule_id_raw is not None else None
     is_critical = rule.get("severity") == "critical"
     normative = _is_normative(rule)
-    conflict_declaration = _is_conflict_declaration_only(rule)
+    conflict_declaration = _is_conflict_declaration(rule)
 
     raw_claim_ids = rule.get("source_claim_ids") or []
     claim_ids = [c for c in raw_claim_ids if isinstance(c, str)]
@@ -269,11 +284,12 @@ def _certify_rule(
         snapshot_id = claim.get("snapshot_id")
 
         if is_critical:
-            # A conflict-declaration-only rule (block/require_confirmation/
-            # flag_conflict and nothing that asserts content) that cites an
-            # EXPLICITLY contradicted claim is the intended, handled way to
-            # surface an unresolved source conflict: the uncertain value is
-            # already suppressed by the rule. Treat it as a conditional_go
+            # A conflict-declaration rule (block/require_confirmation/
+            # flag_conflict, possibly with advisory emit_warning/emit_advice,
+            # and NOTHING that asserts content) that cites an EXPLICITLY
+            # contradicted claim is the intended, handled way to surface an
+            # unresolved source conflict: the uncertain value is already
+            # suppressed by the rule's block. Treat it as a conditional_go
             # caveat rather than a hard no_go blocker. `expired` is a freshness
             # failure (stale source), not a declared conflict, so it is not
             # downgraded here and still blocks via the branch below.
