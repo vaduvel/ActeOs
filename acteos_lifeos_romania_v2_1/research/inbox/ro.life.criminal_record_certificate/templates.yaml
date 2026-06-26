@@ -1,0 +1,97 @@
+# Step & requirement templates for ro.life.criminal_record_certificate (life.criminal_record_certificate).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: request_criminal_record
+    semantic_key: request_criminal_record
+    title_ro: "Depune cererea de certificat de cazier judiciar"
+    instruction_ro: >-
+      Depune cererea-tip la unitatea de poliție cu ghișeu de cazier sau pe canalele oficiale unde
+      este disponibilă procedura online pentru persoanele pentru care această opțiune este cazul.
+      Pentru solicitare prezentază actul de identitate în original și valabil.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea a fost depusă pe modalitatea aleasă"
+      - "Actul de identitate în original este în dosar"
+    recovery_actions_ro:
+      - "Dacă nu ai toate documentele, reînregistrează cererea după completarea completă"
+      - "Dacă situația este schimbată (vârsta sau calitatea de reprezentant), actualizează facturile din dosar"
+    status: draft
+
+  - id: use_criminal_record
+    semantic_key: use_criminal_record
+    title_ro: "Folosește certificatul în termen de valabilitate"
+    instruction_ro: >-
+      Certificatul de cazier are valabilitate de 6 luni de la data eliberării. Planifică depunerea
+      la termenul de valabilitate indicat în document.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Data emiterii este înregistrată"
+      - "Data de utilizare ține cont de termenul de 6 luni"
+    recovery_actions_ro:
+      - "Dacă s-a depășit termenul de 6 luni, depune o nouă solicitare"
+    status: draft
+
+requirement_templates:
+  - id: req.valid_id
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Act de identitate al solicitantului, în original, valabil la momentul depunerii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Carte de identitate valabilă, în original"
+    readiness_checks:
+      - "Actul de identitate este original și valabil"
+    status: draft
+
+  - id: req.cerere_tip
+    title_ro: "Cerere-tip pentru cazier judiciar"
+    description_ro: >-
+      Cererea-tip de cazier judiciar completată, inclusiv motivul solicitării.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere-tip (documentul de depunere)"
+    readiness_checks:
+      - "Cererea-tip este completată corespunzător"
+    status: draft
+
+  - id: req.legal_representative
+    title_ro: "Documente pentru reprezentantul legal"
+    description_ro: >-
+      Când solicitantul este sub 14 ani, cererea se depune prin reprezentant legal.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acte ale reprezentantului legal (conform fluxului de reprezentare)"
+    readiness_checks:
+      - "Documentele dovedesc rolul de reprezentare legală"
+    status: draft
+
+  - id: req.notarial_power_of_attorney
+    title_ro: "Împuternicire pentru depunerea prin mandat"
+    description_ro: >-
+      Procura notarială sau împuternicire avocațială atunci când cererea este depusă de un
+      imputernicit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procură notarială (sau împuternicire avocațială)"
+    readiness_checks:
+      - "Împuternicirea acoperă depunerea certificatului de cazier"
+    status: draft
+
+  - id: req.proxy_id_card
+    title_ro: "Act de identitate al imputernicitului"
+    description_ro: >-
+      Copia actului de identitate al imputernicitului, când cererea este depusă de acesta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie act de identitate al imputernicitului"
+    readiness_checks:
+      - "Copia este lizibilă și acoperă persoana care depune cererea"
+    status: draft

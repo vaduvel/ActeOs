@@ -1,0 +1,169 @@
+# Step & requirement templates for ro.life.child_allowance (life.child_allowance).
+#
+# Authoring note: transcribed from event_card + source claims only. No new juridical text
+# sau valori numerice au fost introduse fără sursă.
+
+step_templates:
+  - id: apply_child_allowance
+    semantic_key: apply_child_allowance
+    title_ro: "Depune cerere de alocație pentru copil"
+    instruction_ro: >-
+      Completează dosarul de cerere și atașează actul de naștere al copilului, actele solicitantului
+      și documentele prevăzute pentru cazul copilului (în funcție de vârstă și statut).
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de alocație este depusă"
+    recovery_actions_ro:
+      - "Dacă situația de eligibilitate se schimbă, reîncarcă dosarul complet"
+    status: draft
+
+  - id: apply_or_continue_child_allowance
+    semantic_key: apply_or_continue_child_allowance
+    title_ro: "Continuare sau reactualizare alocație după 18 ani"
+    instruction_ro: >-
+      Pentru tineri de la 18 ani (în liceu/profesional sau cu dizabilități autorizate), depune
+      documentele de statut de studiu/medicale conform condițiilor.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul de continuare alocație este actualizat"
+    recovery_actions_ro:
+      - "Dacă există excludere de repetare a anului fără certificat medical, verifică condițiile legale"
+    status: draft
+
+  - id: retroactive_payment_limit
+    semantic_key: retroactive_payment_limit
+    title_ro: "Confirmă fereastra de plată retroactivă"
+    instruction_ro: >-
+      Pentru cererile depuse ulterior nașterii, respectă limita de retroactivitate de până la
+      12 luni de la data relevantei cereri.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Data cererii a fost introdusă pentru calculul termenului retroactiv"
+    recovery_actions_ro:
+      - "Dacă cererea depășește intervalul admis, solicită recalcul pe baza termenelor actuale"
+    status: draft
+
+  - id: report_allowance_change
+    semantic_key: report_allowance_change
+    title_ro: "Notifică modificările care afectează dreptul"
+    instruction_ro: >-
+      Notifică schimbările legate de componența familiei, domiciliu/reședință sau alte date care afectează
+      dreptul în termen de cel mult 15 zile.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Modificarea relevantă a fost comunicată"
+    recovery_actions_ro:
+      - "Dacă ai depășit termenul de comunicare, anunță imediat autoritatea"
+    status: draft
+
+requirement_templates:
+  - id: req.application
+    title_ro: "Cerere pentru alocația de stat"
+    description_ro: >-
+      Cererea formală de acordare/începere sau continuare alocație.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere completată"
+    readiness_checks:
+      - "Cererea este transmisă prin canal oficial prevăzut"
+    status: draft
+
+  - id: req.child_birth_certificate
+    title_ro: "Certificat de naștere al copilului"
+    description_ro: >-
+      Certificatul de naștere al copilului pentru verificarea vârstei și eligibilității.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de naștere"
+    readiness_checks:
+      - "Certificatul corespunde copilului din dosar"
+    status: draft
+
+  - id: req.applicant_identity_document
+    title_ro: "Act de identitate al solicitantului"
+    description_ro: >-
+      Actul de identitate al solicitantului alocației, prezentat în original.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al solicitantului"
+    readiness_checks:
+      - "Actul este valabil și aparține solicitantului"
+    status: draft
+
+  - id: req.school_enrollment_proof
+    title_ro: "Adeverință de înscriere la școală"
+    description_ro: >-
+      Adeverința de școlarizare/înscriere pentru copiii peste 18 ani în învățământ liceal sau
+      profesional, conform regulilor de prelungire.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverință de la unitatea de învățământ"
+    readiness_checks:
+      - "Adeverința acoperă statusul de școlarizare relevant"
+    status: draft
+
+  - id: req.disability_certificate
+    title_ro: "Certificat de handicap"
+    description_ro: >-
+      Certificat medical privind handicapul pentru beneficiarii peste 18 ani din învățământ preuniversitar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de handicap"
+    readiness_checks:
+      - "Certificatul este valabil pentru situația declarată"
+    status: draft
+
+  - id: req.medical_certificate_repeat_reason
+    title_ro: "Certificat medical de motiv medical de repetare"
+    description_ro: >-
+      Certificat din motiv medical atunci când repetarea anului școlar este justificată.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat medical"
+    readiness_checks:
+      - "Certificatul justifică motivul medical al repetiției"
+    status: draft
+
+  - id: req.residence_documents
+    title_ro: "Documente de rezidență pentru copil străin/apatrid"
+    description_ro: >-
+      Documente care atestă rezidența în România pentru copii cetățeni străini sau apatrizi care locuiesc cu părinții.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente de rezidență în România"
+    readiness_checks:
+      - "Documentele arată statutul de rezidență pe plan familial"
+    status: draft
+
+  - id: req.parent_agreement_or_legal_decision
+    title_ro: "Acordul părinților sau hotărârea aplicabilă"
+    description_ro: >-
+      Acordul părintesc sau actul notarial/instanțial pentru desemnarea persoanei care primește plata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acord părintesc"
+      - "Hotărâre de custodie"
+      - "Act notarial aplicabil"
+    readiness_checks:
+      - "Documentele indică persoana de plată agreată"
+    status: draft
+
+  - id: req.legal_representative_consent
+    title_ro: "Consimțământ reprezentant legal (plată directă copil)"
+    description_ro: >-
+      Consimțământul reprezentantului legal dacă copilul solicită plată directă după 14 ani.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Consimțământul reprezentantului legal"
+    readiness_checks:
+      - "Consimțământul acoperă plata directă a copilului"
+    status: draft
