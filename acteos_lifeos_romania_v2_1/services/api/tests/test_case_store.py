@@ -56,8 +56,10 @@ def test_prepare_rows_projects_both_tables():
     assert journey_row["revision"] == 1
     assert journey_row["reference_date"] == date(2026, 6, 26)
     # the snapshot is the lossless case aggregate
-    assert journey_row["resolution_snapshot"]["events"] == case_row and False or True
-    assert journey_row["resolution_snapshot"]["id"] == case_row["id"]
+    snapshot = journey_row["resolution_snapshot"]
+    assert snapshot["id"] == case_row["id"]
+    assert snapshot["events"] == _case()["events"]
+    assert snapshot["resolution_trace"] == _case()["resolution_trace"]
 
 
 def test_valid_rows_have_no_violations():
