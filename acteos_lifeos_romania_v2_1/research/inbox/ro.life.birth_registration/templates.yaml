@@ -1,0 +1,170 @@
+# Step & requirement templates for ro.life.birth_registration (life.birth_registration).
+#
+# Authoring note: transcribed from event_card + rules/source_claims only; no extra legal
+# content or invented amounts were added.
+
+step_templates:
+  - id: declare_birth
+    semantic_key: declare_birth
+    title_ro: "Înregistrează nașterea copilului"
+    instruction_ro: >-
+      Depune declarația de naștere în termenul legal aplicabil tipului de caz, folosind
+      documentele medicale și actele de identitate solicitate.
+      Înregistrează nașterea pentru stabilirea filiației și a datelor copilului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Declarația de naștere a fost depusă"
+      - "Data limită aferentă cazului a fost confirmată"
+    recovery_actions_ro:
+      - "Dacă lipsesc actele de bază, completează dosarul cu documentele prevăzute de regulă"
+    status: draft
+
+  - id: special_registration
+    semantic_key: special_registration
+    title_ro: "Înregistrează situația de copil găsit sau abandonat în maternitate"
+    instruction_ro: >-
+      Pentru copilul găsit sau părăsit în maternitate/unitate sanitară, completează traseul de
+      înregistrare punctual pe termen de 30 de zile.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul de înregistrare specială a fost depus"
+    recovery_actions_ro:
+      - "Dacă nu se clarifică statutul cazului, verifică dacă documentele suplimentare sunt necesare"
+    status: draft
+
+  - id: request_late_registration_mayor_approval
+    semantic_key: request_late_registration_mayor_approval
+    title_ro: "Solicită aprobare primărie pentru întârziere sub 1 an"
+    instruction_ro: >-
+      Pentru înregistrare întârziată (peste 30 de zile, până la 1 an), depune cererea scrisă
+      cu aprobarea primarului.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea scrisă pentru aprobare a fost transmisă"
+    recovery_actions_ro:
+      - "Dacă nu ai primit răspuns, verifică stadiul autorizării"
+    status: draft
+
+  - id: authority_resolution
+    semantic_key: authority_resolution
+    title_ro: "Așteaptă soluționarea administrativă"
+    instruction_ro: >-
+      Urmărește termenul de soluționare de la autoritate după transmiterea cererii (30 sau 90 zile
+      conform situației).
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Rezolvarea autorității a fost obținută"
+    recovery_actions_ro:
+      - "Dacă termenul a fost depășit, verifică starea dosarului și solicită statusul"
+    status: draft
+
+  - id: request_tardy_registration
+    semantic_key: request_tardy_registration
+    title_ro: "Solicită înregistrare tardivă peste 1 an"
+    instruction_ro: >-
+      Pentru întârzieri peste un an, depune cererea prevăzută pentru înregistrare tardivă și urmărește
+      avizul conformului județean + aprobarea primarului.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Cererea de înregistrare tardivă a fost depusă"
+    recovery_actions_ro:
+      - "Dacă dosarul nu este complet conform avizelor cerute, adaugă documentele lipsă"
+    status: draft
+
+requirement_templates:
+  - id: req.birth_medical_certificate
+    title_ro: "Certificat medical constatator al nașterii"
+    description_ro: >-
+      Documentul medical care atestă nașterea copilului, utilizat la înregistrarea nașterii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat medical constatator al nașterii"
+    readiness_checks:
+      - "Certificatul este vizibil și corespunzător cazului"
+    status: draft
+
+  - id: req.mother_identity_document
+    title_ro: "Act de identitate al mamei"
+    description_ro: >-
+      Actul de identitate al mamei solicitanților, prezentat la înregistrare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al mamei"
+    readiness_checks:
+      - "Actul de identitate al mamei este valabil"
+    status: draft
+
+  - id: req.declarant_identity_document
+    title_ro: "Act de identitate al declarantului"
+    description_ro: >-
+      Actul de identitate al persoanei declarante atunci când aceasta nu este mama.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al declarantului"
+    readiness_checks:
+      - "Declarantul confirmă datele și rolul din dosar"
+    status: draft
+
+  - id: req.parents_marriage_certificate
+    title_ro: "Certificat de căsătorie al părinților"
+    description_ro: >-
+      Certificatul de căsătorie al părinților, când cazul indică părinți căsătoriți.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de căsătorie al părinților"
+    readiness_checks:
+      - "Certificatul acoperă cazul declarativ"
+    status: draft
+
+  - id: req.parents_child_surname_declaration
+    title_ro: "Declarație privind numele copilului"
+    description_ro: >-
+      Declarație necesară când părinții căsătoriți au nume diferite și este necesară stabilirea numelui.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarație pe numele copilului"
+    readiness_checks:
+      - "Declarația include opțiunea de nume conform reglementărilor"
+    status: draft
+
+  - id: req.paternity_recognition_declaration
+    title_ro: "Declarație de recunoaștere paternitate"
+    description_ro: >-
+      Declarația tatălui în cazul în care recunoaște copilul la înregistrare, în situația părinților
+      neînrudiți.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarație tată-recunoaștere"
+    readiness_checks:
+      - "Declarația de recunoaștere este semnată și depusă la registru"
+    status: draft
+
+  - id: req.mother_surname_consent
+    title_ro: "Consimțământ privind numele copilului"
+    description_ro: >-
+      Declarația de acord privind numele copilului în cazul în care părinții nu au același nume.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarație de acord privind numele copilului"
+    readiness_checks:
+      - "Declarația include opțiunea de nume agreată"
+    status: draft
+
+  - id: req.county_conforming_opinion
+    title_ro: "Aviz de conformitate județean"
+    description_ro: >-
+      Avizul conform județean necesar pentru înregistrarea tardivă peste un an.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Aviz conform județean"
+    readiness_checks:
+      - "Avizul este emis și vizibil în dosar"
+    status: draft

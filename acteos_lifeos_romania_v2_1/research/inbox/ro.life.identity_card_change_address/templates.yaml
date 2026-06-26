@@ -1,0 +1,64 @@
+# Step & requirement templates for ro.life.identity_card_change_address (life.id_card_change_address).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text or amounts were invented.
+
+step_templates:
+  - id: renew_identity_card
+    semantic_key: renew_identity_card
+    title_ro: "Actualizează actul de identitate la schimbarea domiciliului"
+    instruction_ro: >-
+      Dacă ai schimbat domiciliul, solicită eliberarea unui nou act de identitate în termen de
+      15 zile, conform obligației din OUG 97/2005 (art. 19 alin. (1) lit. b).
+      Include actul anterior, certificatele de stare civilă și documentul cu care dovedești adresa.
+      Verifică informația exactă dacă deții carte de identitate electronică (CEI).
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de nou act de identitate a fost depusă"
+      - "Data depunerii permite verificarea termenului de 15 zile"
+    recovery_actions_ro:
+      - "Dacă ai depășit termenul, programează programarea imediat și depune dosarul"
+    status: draft
+
+  - id: register_residence
+    semantic_key: register_residence
+    title_ro: "Înregistrează mențiunea de reședință"
+    instruction_ro: >-
+      Pentru schimbarea reședinței, completează dosarul de mențiune a reședinței fără a schimba
+      domiciliul din act.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea de înscriere a reședinței a fost depusă"
+    recovery_actions_ro:
+      - "Dacă documentele de dovadă sunt incomplete, reîncarcă un document de adresă din sursele acceptate"
+    status: draft
+
+requirement_templates:
+  - id: req.proof_of_address
+    title_ro: "Dovada adresei de domiciliu/reședință"
+    description_ro: >-
+      Orice document oficial care confirmă adresa declarată (act de proprietate, contract de
+      închiriere sau extras de carte funciară recent).
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de proprietate"
+      - "Contract de închiriere"
+      - "Extras de carte funciară"
+      - "Alt document oficial de adresă"
+    readiness_checks:
+      - "Documentul indică adresa exactă declarată la evidența actului"
+    status: draft
+
+  - id: req.host_consent_declaration
+    title_ro: "Declarația de consimțământ a gazdei"
+    description_ro: >-
+      Declarație de primire în spațiu emisă de gazdă, necesară când adresa nu este în proprietatea
+      solicitantului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarație de primire în spațiu (gazdă)"
+    readiness_checks:
+      - "Declarația acoperă adresa de domiciliu/reședință"
+    status: draft

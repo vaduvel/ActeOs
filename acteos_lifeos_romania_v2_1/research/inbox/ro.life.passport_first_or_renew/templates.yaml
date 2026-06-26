@@ -1,0 +1,56 @@
+# Step & requirement templates for ro.life.passport_first_or_renew (life.passport_first_or_renew).
+#
+# Authoring note: transcribed from event_card + source claims only; no extra legal text or
+# unsupported values were introduced.
+
+step_templates:
+  - id: apply_passport
+    semantic_key: apply_passport
+    title_ro: "Depune cererea de pașaport"
+    instruction_ro: >-
+      Prezintă te personal cererea de pașaport simplu electronic sau temporar la punctul de programare
+      (HUB MAI) împreună cu actul de identitate valabil, dovada plății și pașaportul anterior, dacă există.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea a fost depusă personal"
+      - "Documentele obligatorii au fost atașate"
+    recovery_actions_ro:
+      - "Dacă lipsește un document obligatoriu, solicită emiterea / completarea acestuia și reîncarcă dosarul"
+    status: draft
+
+requirement_templates:
+  - id: req.valid_id
+    title_ro: "Act de identitate valabil în original"
+    description_ro: >-
+      Carte de identitate/CIP/buletin valabil, în original, conform condițiilor personale.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Carte de identitate / CI / CIP/Buletin valabil, în original"
+    readiness_checks:
+      - "Actul de identitate este valabil și în original"
+    status: draft
+
+  - id: req.payment_proof
+    title_ro: "Dovada plății taxei de pașaport"
+    description_ro: >-
+      Dovada achitării contravalorii pentru eliberarea pașaportului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada plății (CEC Bank / platforma de plată indicată)"
+    readiness_checks:
+      - "Plata este vizibilă pentru dosarul de pașaport"
+    status: draft
+
+  - id: req.previous_passport
+    title_ro: "Pașaportul anterior"
+    description_ro: >-
+      Pașaportul anterior, dacă există, prezentat la depunere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Pașaportul anterior"
+    readiness_checks:
+      - "Copia sau originalul pașaportului anterior este depus conform cerințelor"
+    status: draft
