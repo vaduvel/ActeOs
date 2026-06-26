@@ -143,3 +143,43 @@ def test_is_releasable_respects_allow_conditional():
     assert report.verdict == VERDICT_CONDITIONAL
     assert report.is_releasable(allow_conditional=False) is False
     assert report.is_releasable(allow_conditional=True) is True
+
+
+def test_conflict_declaration_rule_with_conflicting_claim_is_conditional():
+    """A block/require_confirmation-only critical rule that cites an explicitly
+    contradicted claim is a HANDLED conflict: conditional_go, not no_go."""
+    rule = _rule(
+        rule_id="rule.conflict",
+        severity="critical",
+        effects=[
+            {"type": "block", "message_ro": "suppress amount"},
+            {"type": "require_confirmation", "message_ro": "confirm amount"},
+        ],
+        source_claim_ids=("claim.conflict",),
+    )
+    claim = _claim(cid="claim.conflict", confidence="conflicting", status="conflicting")
+    claim["contradiction_claim_ids"] = ["claim.other"]
+    report = certify_batches([_batch([rule], claims=[claim])])
+    assert report.verdict == VERDICT_CONDITIONAL
+    assert "CRITICAL_CONFLICT_DECLARED" in _codes(report.warnings)
+    assert "CRITICAL_CLAIM_BAD_CONFIDENCE" not in _codes(report.findings)
+    assert "CRITICAL_CLAIM_NOT_ACTIVE" not in _codes(report.findings)
+
+
+def test_content_rule_with_conflicting_claim_still_blocks():
+    """A critical rule that also asserts content (include_step) must NOT benefit
+    from the conflict-declaration downgrade; it still hard-blocks."""
+    rule = _rule(
+        rule_id="rule.mixed",
+        severity="critical",
+        effects=[
+            {"type": "include_step", "step_id": "s1"},
+            {"type": "block", "message_ro": "x"},
+        ],
+        source_claim_ids=("claim.conflict",),
+    )
+    claim = _claim(cid="claim.conflict", confidence="conflicting", status="conflicting")
+    claim["contradiction_claim_ids"] = ["claim.other"]
+    report = certify_batches([_batch([rule], claims=[claim])])
+    assert report.verdict == VERDICT_NO_GO
+    assert "CRITICAL_CLAIM_BAD_CONFIDENCE" in _codes(report.findings)

@@ -13,9 +13,9 @@ loading batches from disk before delegating to :func:`certify_batches`.
 Design references (grounded in repo, not guessed):
 - Effect types: ``acteos_rule_engine.authoring.effects.EFFECT_TYPES``.
 - Batch shape: ``acteos_rule_engine.authoring.loader.load_batch`` returns
-  ``{\"batch_dir\", \"ruleset\", \"fixtures\", \"claims\"}`` where ``ruleset`` is the
-  parsed ``rules.yaml`` (``{\"rules\": [...]}``) and ``claims`` is the parsed
-  ``source_claims.yaml`` (``{\"claims\": [...]}``) or ``None``.
+  ``{"batch_dir", "ruleset", "fixtures", "claims"}`` where ``ruleset`` is the
+  parsed ``rules.yaml`` (``{"rules": [...]}``) and ``claims`` is the parsed
+  ``source_claims.yaml`` (``{"claims": [...]}``) or ``None``.
 - Severity enum (rule.schema.json): critical | operational | explanatory.
 - Claim confidence enum (source_claim.schema.json): verified |
   verified_with_local_gap | needs_confirmation | conflicting | expired.
@@ -45,6 +45,19 @@ NORMATIVE_EFFECT_TYPES: frozenset[str] = frozenset(
 
 # Advisory effects: helpful, but do not by themselves create an obligation.
 ADVISORY_EFFECT_TYPES: frozenset[str] = frozenset(EFFECT_TYPES) - NORMATIVE_EFFECT_TYPES
+
+# Effects that exist to DECLARE and contain an unresolved conflict rather than
+# to assert a citizen obligation. Per the v2.1 conflict model (see effects.py /
+# ADR-015) source conflicts are surfaced via ``block`` (plus ``require_confirmation``);
+# ``flag_conflict`` is the documented extension. A rule whose effects are drawn
+# EXCLUSIVELY from this set suppresses an uncertain value and asks for
+# confirmation -- it does not assert content -- so a contradicted claim it cites
+# is a handled conflict, not an uncited obligation. NOTE: this set deliberately
+# overlaps both partitions above and is NOT part of the normative/advisory
+# partition.
+CONFLICT_DECLARATION_EFFECT_TYPES: frozenset[str] = frozenset(
+    {"block", "require_confirmation", "flag_conflict"}
+)
 
 # Confidence values acceptable for a *critical* normative rule.
 CRITICAL_OK_CONFIDENCE: frozenset[str] = frozenset(
@@ -157,6 +170,23 @@ def _is_normative(rule: Mapping[str, Any]) -> bool:
     return any(t in NORMATIVE_EFFECT_TYPES for t in _rule_effect_types(rule))
 
 
+def _is_conflict_declaration_only(rule: Mapping[str, Any]) -> bool:
+    """True when a rule's effects ONLY declare/contain a conflict.
+
+    Such a rule (``block`` / ``require_confirmation`` / ``flag_conflict`` and
+    nothing that asserts a citizen obligation) exists to *suppress* an uncertain
+    value and request confirmation -- per the v2.1 conflict model it is the
+    intended way to surface an unresolved source conflict. A contradicted claim
+    it cites is therefore a handled conflict rather than an uncited obligation.
+    """
+    types = _rule_effect_types(rule)
+    if not types:
+        return False
+    if not any(t in CONFLICT_DECLARATION_EFFECT_TYPES for t in types):
+        return False
+    return all(t in CONFLICT_DECLARATION_EFFECT_TYPES for t in types)
+
+
 def _claims_index(batch: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
     claims_doc = batch.get("claims")
     index: dict[str, Mapping[str, Any]] = {}
@@ -179,6 +209,7 @@ def _certify_rule(
     rule_id = str(rule_id_raw) if rule_id_raw is not None else None
     is_critical = rule.get("severity") == "critical"
     normative = _is_normative(rule)
+    conflict_declaration = _is_conflict_declaration_only(rule)
 
     raw_claim_ids = rule.get("source_claim_ids") or []
     claim_ids = [c for c in raw_claim_ids if isinstance(c, str)]
@@ -238,36 +269,65 @@ def _certify_rule(
         snapshot_id = claim.get("snapshot_id")
 
         if is_critical:
-            if confidence in HARD_BAD_CONFIDENCE:
+            # A conflict-declaration-only rule (block/require_confirmation/
+            # flag_conflict and nothing that asserts content) that cites an
+            # EXPLICITLY contradicted claim is the intended, handled way to
+            # surface an unresolved source conflict: the uncertain value is
+            # already suppressed by the rule. Treat it as a conditional_go
+            # caveat rather than a hard no_go blocker. `expired` is a freshness
+            # failure (stale source), not a declared conflict, so it is not
+            # downgraded here and still blocks via the branch below.
+            declared_conflict = (
+                conflict_declaration
+                and bool(claim.get("contradiction_claim_ids"))
+                and (confidence == "conflicting" or status == "conflicting")
+            )
+            if declared_conflict:
                 findings.append(
                     Finding(
-                        BLOCKER,
-                        "CRITICAL_CLAIM_BAD_CONFIDENCE",
-                        f"Critical rule relies on claim '{cid}' with confidence '{confidence}'.",
+                        WARNING,
+                        "CRITICAL_CONFLICT_DECLARED",
+                        (
+                            f"Critical conflict-declaration rule surfaces an unresolved "
+                            f"source conflict via claim '{cid}' (confidence={confidence!r}, "
+                            f"status={status!r}); the user-facing value is suppressed by the "
+                            f"rule's block/require_confirmation pending resolution."
+                        ),
                         batch_id,
                         rule_id,
                     )
                 )
-            elif confidence not in CRITICAL_OK_CONFIDENCE:
-                findings.append(
-                    Finding(
-                        BLOCKER,
-                        "CRITICAL_CLAIM_UNVERIFIED",
-                        f"Critical rule relies on claim '{cid}' with non-verified confidence '{confidence}'.",
-                        batch_id,
-                        rule_id,
+            else:
+                if confidence in HARD_BAD_CONFIDENCE:
+                    findings.append(
+                        Finding(
+                            BLOCKER,
+                            "CRITICAL_CLAIM_BAD_CONFIDENCE",
+                            f"Critical rule relies on claim '{cid}' with confidence '{confidence}'.",
+                            batch_id,
+                            rule_id,
+                        )
                     )
-                )
-            if status not in (None, "active"):
-                findings.append(
-                    Finding(
-                        BLOCKER,
-                        "CRITICAL_CLAIM_NOT_ACTIVE",
-                        f"Critical rule relies on claim '{cid}' with status '{status}'.",
-                        batch_id,
-                        rule_id,
+                elif confidence not in CRITICAL_OK_CONFIDENCE:
+                    findings.append(
+                        Finding(
+                            BLOCKER,
+                            "CRITICAL_CLAIM_UNVERIFIED",
+                            f"Critical rule relies on claim '{cid}' with non-verified confidence '{confidence}'.",
+                            batch_id,
+                            rule_id,
+                        )
                     )
-                )
+                if status not in (None, "active"):
+                    findings.append(
+                        Finding(
+                            BLOCKER,
+                            "CRITICAL_CLAIM_NOT_ACTIVE",
+                            f"Critical rule relies on claim '{cid}' with status '{status}'.",
+                            batch_id,
+                            rule_id,
+                        )
+                    )
         else:
             if confidence in HARD_BAD_CONFIDENCE:
                 findings.append(
