@@ -1,0 +1,107 @@
+# Step & requirement templates for ro.life.minor_passport (life.minor_passport).
+#
+# Transcribed FAITHFULLY from event_card.md (batch R1B-2, accessed_at 2026-06-25)
+# and the step/requirement ids referenced by rules.yaml. No legal text is
+# fabricated: every title/instruction/obligation/timing/accepted_form below is
+# grounded in the documented DGP primary-source content on the event card.
+# Status is draft because the event card is still research_inbox (neaprobat);
+# the publish certification gate governs promotion.
+
+step_templates:
+  - id: apply_minor_passport
+    semantic_key: apply_minor_passport
+    title_ro: "Depune cererea de pașaport pentru minor"
+    instruction_ro: >-
+      Prezintă-te la ghișeul SPCEEPS cu minorul și părinții. Pentru minorii sub
+      14 ani, cererea se depune de ambii părinți (sau de un părinte cu procură
+      specială/acord scris al celuilalt părinte ori de reprezentantul legal).
+      Prezența minorului și a părinților este obligatorie la depunere. Adu
+      certificatul de naștere al minorului în original, actele de identitate
+      valabile ale părinților, dovada plății taxei și pașaportul anterior al
+      minorului dacă există.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de pașaport a fost înregistrată la ghișeul SPCEEPS"
+    recovery_actions_ro:
+      - "Dacă nu sunt prezenți ambii părinți, prezintă procură specială/acord scris al celuilalt părinte, hotărâre de încredințare sau act de deces al celuilalt părinte"
+      - "Dacă minorul nu poate fi prezent, adu 2 fotografii 3,5 × 4,5 cm"
+    status: draft
+
+requirement_templates:
+  - id: req.minor_birth_certificate
+    title_ro: "Certificatul de naștere al minorului"
+    description_ro: "Certificatul de naștere al minorului, în original."
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Original"
+    readiness_checks:
+      - "Documentul este prezentat în original"
+    status: draft
+
+  - id: req.parents_id
+    title_ro: "Actele de identitate ale părinților"
+    description_ro: "Actele de identitate ale părinților, valabile."
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Carte de identitate valabilă"
+    readiness_checks:
+      - "Actele de identitate ale părinților sunt valabile (neexpirate)"
+    status: draft
+
+  - id: req.payment_proof
+    title_ro: "Dovada plății taxei de pașaport"
+    description_ro: >-
+      Dovada plății taxei de pașaport: 234 lei (electronic, sub 12 ani),
+      258 lei (electronic, peste 12 ani) sau 96 lei (pașaport temporar).
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Chitanță / dovadă a plății taxei"
+    readiness_checks:
+      - "Suma achitată corespunde tipului de pașaport și vârstei minorului"
+    status: draft
+
+  - id: req.single_parent_doc
+    title_ro: "Document pentru depunerea fără ambii părinți"
+    description_ro: >-
+      Când nu sunt prezenți/nu consimt ambii părinți: procură specială sau acord
+      scris al celuilalt părinte, hotărâre de încredințare ori act de deces al
+      celuilalt părinte.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procură specială"
+      - "Acord scris al celuilalt părinte"
+      - "Hotărâre de încredințare"
+      - "Act de deces al celuilalt părinte"
+    readiness_checks:
+      - "Documentul acoperă lipsa consimțământului ambilor părinți"
+    status: draft
+
+  - id: req.two_photos_minor
+    title_ro: "Două fotografii ale minorului (3,5 × 4,5 cm)"
+    description_ro: >-
+      Necesare dacă minorul nu este prezent la depunere: 2 fotografii
+      3,5 × 4,5 cm.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "2 fotografii 3,5 × 4,5 cm"
+    readiness_checks:
+      - "Fotografiile respectă dimensiunea 3,5 × 4,5 cm"
+    status: draft
+
+  - id: req.minor_id_card
+    title_ro: "Cartea de identitate a minorului (peste 14 ani)"
+    description_ro: >-
+      Pentru minorii peste 14 ani: cartea de identitate valabilă, prezentată la
+      ridicarea personală a pașaportului, însoțit de un părinte.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "Carte de identitate valabilă"
+    readiness_checks:
+      - "Cartea de identitate a minorului este valabilă"
+    status: draft
