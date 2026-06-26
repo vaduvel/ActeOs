@@ -1,39 +1,46 @@
-"""Publish a compiled release bundle into the ``content.*`` schema.
+"""Publish a compiled release into the ``content.*`` schema.
 
 This is the production persistence adapter behind a port. It consumes
-``PublishedBundle.as_content_rows()`` from the engine's publish compiler and:
+``PublishedBundle.as_content_rows()`` from the engine's publish compiler plus the
+``EventTypeRecord`` rows from the event-catalog compiler, and:
 
 1. enforces the database NOT NULL invariants *before* touching the DB
    (``validate_content_rows``), so a malformed bundle is refused with a clear
    message instead of a raw IntegrityError;
 2. builds ordered, idempotent ``INSERT ... ON CONFLICT DO NOTHING`` statements in
-   FK-safe order (rule_sets -> rule_revisions -> rule_set_members);
+   FK-safe order (life_event_types -> rule_sets -> rule_revisions ->
+   rule_set_members);
 3. executes them inside a single transaction via a SQLAlchemy ``Engine``.
 
-The statement-building and validation are pure and unit tested without a live
-database; only :meth:`SqlAlchemyContentRepository.publish` needs a real engine.
+Statement building and validation are pure and unit tested without a live
+database; only the ``publish*`` methods need a real engine.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping, Protocol
+from typing import Any, Iterable, Mapping, Protocol, Sequence
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from acteos_rule_engine.authoring.event_types import EventTypeRecord
 from acteos_rule_engine.authoring.publish import PublishedBundle
 
-from .content_tables import rule_revisions, rule_set_members, rule_sets
+from .content_tables import life_event_types, rule_revisions, rule_set_members, rule_sets
 
 
 class ContentPublishError(RuntimeError):
-    """Raised when a bundle cannot be safely written to the content schema."""
+    """Raised when a release cannot be safely written to the content schema."""
 
 
 # NOT NULL columns we populate per table (db/0001_init.sql). Columns with DB
 # defaults (created_at, status defaults) or nullable columns are omitted.
 REQUIRED_NOT_NULL: dict[str, tuple[str, ...]] = {
+    "content.life_event_types": (
+        "id",
+        "title_ro",
+    ),
     "content.rule_sets": (
         "id",
         "version",
@@ -92,6 +99,29 @@ class PublishResult:
     rule_set_count: int
     rule_revision_count: int
     rule_set_member_count: int
+    event_type_count: int = 0
+
+
+def build_event_type_statements(
+    records: Sequence[EventTypeRecord],
+    *,
+    validate: bool = True,
+) -> list[Any]:
+    """Build an idempotent INSERT for content.life_event_types."""
+
+    rows = [r.as_content_row() for r in records]
+    if validate:
+        violations = validate_content_rows({"content.life_event_types": rows})
+        if violations:
+            raise ContentPublishError(
+                "life_event_types rows violate NOT NULL invariants: "
+                + ", ".join(violations[:20])
+            )
+    if not rows:
+        return []
+    return [
+        pg_insert(life_event_types).values(rows).on_conflict_do_nothing(index_elements=["id"])
+    ]
 
 
 def build_publish_statements(
@@ -100,7 +130,7 @@ def build_publish_statements(
     strict: bool = True,
     validate: bool = True,
 ) -> list[Any]:
-    """Build ordered, idempotent INSERT statements for a bundle."""
+    """Build ordered, idempotent INSERT statements for a rule bundle."""
 
     rows = bundle.as_content_rows(strict=strict)
     if validate:
@@ -143,12 +173,31 @@ def compiled_sql(bundle: PublishedBundle, *, strict: bool = True) -> list[str]:
     ]
 
 
+def compiled_event_type_sql(records: Sequence[EventTypeRecord]) -> list[str]:
+    """Render the Postgres SQL for the event-type INSERT (dry-run / ops)."""
+
+    return [
+        str(stmt.compile(dialect=postgresql.dialect()))
+        for stmt in build_event_type_statements(records)
+    ]
+
+
+def missing_event_types(
+    bundle: PublishedBundle,
+    records: Iterable[EventTypeRecord],
+) -> list[str]:
+    """Event types the bundle references but the catalog rows do not cover."""
+
+    covered = {r.id for r in records}
+    return sorted(e for e in bundle.required_event_type_ids if e not in covered)
+
+
 class ContentRepository(Protocol):
     def publish(self, bundle: PublishedBundle) -> PublishResult: ...
 
 
 class SqlAlchemyContentRepository:
-    """Writes a release bundle to the content schema in one transaction."""
+    """Writes a release to the content schema in one transaction."""
 
     def __init__(self, engine: Any) -> None:
         self._engine = engine
@@ -165,6 +214,37 @@ class SqlAlchemyContentRepository:
             rule_set_count=len(rows["content.rule_sets"]),
             rule_revision_count=len(rows["content.rule_revisions"]),
             rule_set_member_count=len(rows["content.rule_set_members"]),
+        )
+
+    def publish_release(
+        self,
+        bundle: PublishedBundle,
+        event_type_records: Sequence[EventTypeRecord],
+        *,
+        strict: bool = True,
+    ) -> PublishResult:
+        """Insert event types then the rule bundle (FK-safe) in one transaction."""
+
+        missing = missing_event_types(bundle, event_type_records)
+        if missing:
+            raise ContentPublishError(
+                "bundle references event types absent from catalog rows: "
+                + ", ".join(missing)
+            )
+        rows = bundle.as_content_rows(strict=strict)
+        statements = build_event_type_statements(event_type_records) + build_publish_statements(
+            bundle, strict=strict
+        )
+        with self._engine.begin() as conn:
+            for stmt in statements:
+                conn.execute(stmt)
+        return PublishResult(
+            version=bundle.version,
+            manifest_sha256=bundle.manifest_sha256,
+            rule_set_count=len(rows["content.rule_sets"]),
+            rule_revision_count=len(rows["content.rule_revisions"]),
+            rule_set_member_count=len(rows["content.rule_set_members"]),
+            event_type_count=len(event_type_records),
         )
 
     def compiled_sql(self, bundle: PublishedBundle, *, strict: bool = True) -> list[str]:

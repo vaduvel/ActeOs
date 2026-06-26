@@ -1,7 +1,7 @@
 """SQLAlchemy Core metadata for the publishable ``content.*`` tables.
 
-These ``Table`` definitions mirror ``db/0001_init.sql`` exactly for the three
-tables a release bundle writes: ``content.rule_sets``,
+These ``Table`` definitions mirror ``db/0001_init.sql`` exactly for the tables a
+release writes: ``content.life_event_types`` (FK parent), ``content.rule_sets``,
 ``content.rule_revisions`` and ``content.rule_set_members``. They exist only to
 compile parameterized INSERT statements against the already-migrated database;
 they never emit DDL (enums use ``create_type=False`` and no ForeignKey objects
@@ -50,6 +50,22 @@ freshness_class = ENUM(
     name="freshness_class",
     schema="content",
     create_type=False,
+)
+
+life_event_types = Table(
+    "life_event_types",
+    metadata,
+    Column("id", Text, primary_key=True),
+    Column("category_id", Text),
+    Column("title_ro", Text, nullable=False),
+    Column("description_ro", Text),
+    Column("trigger_phrases_ro", JSONB),
+    Column("parent_event_id", Text),
+    Column("release_wave", Text),
+    Column("research_status", Text),
+    Column("production_status", Text),
+    Column("schema_version", Text),
+    schema="content",
 )
 
 rule_sets = Table(

@@ -7,11 +7,35 @@ import pytest
 from acteos_api.content_publish import (
     ContentPublishError,
     SqlAlchemyContentRepository,
+    build_event_type_statements,
     build_publish_statements,
     compiled_sql,
+    missing_event_types,
     validate_content_rows,
 )
+from acteos_rule_engine.authoring.event_types import compile_event_types
 from acteos_rule_engine.authoring.publish import PublishError, compile_bundle
+
+_CATALOG = {
+    "schema_version": "2.0.0",
+    "waves": {
+        "R1A": [
+            {
+                "id": "ro.life.test",
+                "category_id": "identity_documents",
+                "title_ro": "Test",
+                "trigger_phrases_ro": ["test"],
+                "release_wave": "R1A",
+                "research_status": "required",
+                "production_status": "not_available",
+            }
+        ]
+    },
+}
+
+
+def _event_records():
+    return compile_event_types(_CATALOG, scope=("R1",))
 
 
 def _claim(cid="claim.x"):
@@ -89,7 +113,6 @@ class _FakeEngine:
 def test_build_three_statements():
     bundle = compile_bundle([_batch([_rule()])])
     statements = build_publish_statements(bundle)
-    assert len(statements) == 3
     assert [s.table.name for s in statements] == [
         "rule_sets",
         "rule_revisions",
@@ -112,15 +135,6 @@ def test_validate_flags_missing_not_null():
     rows["content.rule_revisions"][0]["authority_level"] = None
     violations = validate_content_rows(rows)
     assert any(value.endswith(":authority_level") for value in violations)
-
-
-def test_build_statements_refuses_missing_not_null():
-    bundle = compile_bundle([_batch([_rule()])])
-    # Monkeypatch the produced rows by wrapping as_content_rows is overkill;
-    # instead assert validate_content_rows is wired by feeding a bad bundle row.
-    rows = bundle.as_content_rows()
-    rows["content.rule_revisions"][0]["authority_level"] = None
-    assert validate_content_rows(rows)
 
 
 def test_publish_executes_in_fk_order_with_fake_engine():
@@ -162,3 +176,37 @@ def test_deferred_bundle_strict_refuses():
 
 def test_content_publish_error_is_runtimeerror():
     assert issubclass(ContentPublishError, RuntimeError)
+
+
+def test_event_type_statement_targets_life_event_types():
+    statements = build_event_type_statements(_event_records())
+    assert [s.table.name for s in statements] == ["life_event_types"]
+
+
+def test_publish_release_inserts_event_types_first():
+    bundle = compile_bundle([_batch([_rule()])])
+    engine = _FakeEngine()
+    repo = SqlAlchemyContentRepository(engine)
+    result = repo.publish_release(bundle, _event_records())
+    assert [s.table.name for s in engine.conn.executed] == [
+        "life_event_types",
+        "rule_sets",
+        "rule_revisions",
+        "rule_set_members",
+    ]
+    assert result.event_type_count == 1
+    assert result.rule_revision_count == 1
+
+
+def test_publish_release_refuses_uncovered_event_type():
+    bundle = compile_bundle([_batch([_rule()])])
+    repo = SqlAlchemyContentRepository(_FakeEngine())
+    assert missing_event_types(bundle, []) == ["life.test"]
+    with pytest.raises(ContentPublishError):
+        repo.publish_release(bundle, [])
+
+
+def test_event_type_validation_flags_missing_title():
+    rows = {"content.life_event_types": [{"id": "life.x", "title_ro": None}]}
+    violations = validate_content_rows(rows)
+    assert any(value.endswith(":title_ro") for value in violations)
