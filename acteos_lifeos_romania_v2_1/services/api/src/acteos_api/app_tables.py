@@ -7,17 +7,20 @@ plus a read-only view of ``content.rule_sets`` used to resolve a served
 emit DDL (enums use ``create_type=False`` and no ForeignKey objects are declared
 here -- the migrated database owns those constraints). They exist only to
 compile parameterized INSERT/SELECT statements against the already-migrated
-database.
+database. The ``id`` ``server_default``s mirror the schema's
+``gen_random_uuid()`` so the insert compiler treats an omitted journey id as
+DB-generated (no SAWarning) instead of a missing primary key.
 """
 
 from __future__ import annotations
 
-from sqlalchemy import CHAR, Column, Date, DateTime, Integer, MetaData, Table, Text
+from sqlalchemy import CHAR, Column, Date, DateTime, Integer, MetaData, Table, Text, text
 from sqlalchemy.dialects.postgresql import ARRAY, ENUM, JSONB, UUID
 
 metadata = MetaData()
 
 _UUID = UUID(as_uuid=False)
+_GEN_UUID = text("gen_random_uuid()")
 
 # app.* enum types (already created by db/0001_init.sql).
 case_status = ENUM(
@@ -48,7 +51,7 @@ journey_status = ENUM(
 cases = Table(
     "cases",
     metadata,
-    Column("id", _UUID, primary_key=True),
+    Column("id", _UUID, primary_key=True, server_default=_GEN_UUID),
     Column("user_id", _UUID),
     Column("installation_id", _UUID),
     Column("event_type_id", Text, nullable=False),
@@ -66,7 +69,7 @@ cases = Table(
 journeys = Table(
     "journeys",
     metadata,
-    Column("id", _UUID, primary_key=True),
+    Column("id", _UUID, primary_key=True, server_default=_GEN_UUID),
     Column("case_id", _UUID, nullable=False),
     Column("revision", Integer, nullable=False),
     Column("previous_journey_id", _UUID),
