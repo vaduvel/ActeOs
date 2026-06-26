@@ -1,0 +1,126 @@
+# Step & requirement templates for ro.life.identity_card_lost /
+# identity_card_stolen (life.id_card_lost_stolen).
+#
+# Transcribed FAITHFULLY from event_card.md (batch R1A-4, accessed_at
+# 2026-06-25) and the step/requirement ids referenced by rules.yaml. No legal
+# text is fabricated: every title/instruction/obligation/timing/accepted_form
+# below is grounded in the documented SPCLEP / OUG 97/2005 primary-source
+# content on the event card.
+#
+# IMPORTANT: the open sanction-source conflict (40-80 lei vs 500-1000 lei) is
+# NOT resolved here. No fine amount is stated in any template; the rule
+# rule.lost.sanction_conflict blocks display until the conflict is resolved.
+#
+# report_theft_police covers the theft branch and is gated at runtime by
+# rule.lost.police_24h (when loss_type=stolen). Status is draft because the
+# event card is still research_inbox (neaprobat); the publish certification
+# gate governs promotion.
+
+step_templates:
+  - id: report_theft_police
+    semantic_key: report_theft_police
+    title_ro: "Reclamă furtul la poliție"
+    instruction_ro: >-
+      Dacă actul de identitate ți-a fost furat, depune o sesizare la secția de
+      poliție competentă în 24 de ore de la constatarea furtului. Păstrează
+      numărul/dovada de înregistrare a sesizării, deoarece o vei folosi la
+      depunerea cererii pentru un nou act de identitate. Pasul se aplică doar
+      în cazul furtului; pentru pierdere sau distrugere te anunți direct la
+      SPCLEP, fără reclamație la poliție.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Sesizarea de furt a fost înregistrată la poliție (cu număr de înregistrare)"
+    recovery_actions_ro:
+      - "Dacă au trecut peste 24 de ore, depune sesizarea cât mai curând și păstrează dovada de înregistrare"
+    status: draft
+
+  - id: request_new_identity_card
+    semantic_key: request_new_identity_card
+    title_ro: "Solicită un nou act de identitate la SPCLEP"
+    instruction_ro: >-
+      Solicită un nou act de identitate în 15 zile de la pierdere/furt/distrugere,
+      la SPCLEP de la domiciliu sau reședință. Pentru pierdere sau distrugere te
+      anunți direct la SPCLEP, fără reclamație la poliție. Adu cererea (Anexa 11),
+      certificatele de stare civilă și dovada adresei; dacă imaginea ta facială
+      nu este în R.N.E.P., adu și un document oficial cu fotografie recentă.
+      Actul declarat pierdut/furat/distrus este nul de drept și nu mai poate fi
+      folosit.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea pentru un nou act de identitate a fost înregistrată la SPCLEP"
+    recovery_actions_ro:
+      - "Dacă ai depășit termenul de 15 zile, programează-te și depune cererea cât mai curând la SPCLEP"
+      - "Dacă găsești ulterior actul declarat, predă-l în 48 de ore la SPCLEP unde ai declarat evenimentul"
+    status: draft
+
+requirement_templates:
+  - id: req.anexa11
+    title_ro: "Cererea pentru eliberarea actului de identitate (Anexa 11)"
+    description_ro: >-
+      Cererea-tip pentru eliberarea unui nou act de identitate (Anexa 11),
+      completată și semnată.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere tip Anexa 11"
+    readiness_checks:
+      - "Cererea Anexa 11 este completată și semnată"
+    status: draft
+
+  - id: req.civil_status_certificates
+    title_ro: "Certificatele de stare civilă"
+    description_ro: >-
+      Certificatele de stare civilă (de naștere și, după caz, de căsătorie),
+      prezentate în original.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de naștere (original)"
+      - "Certificat de căsătorie (original), după caz"
+    readiness_checks:
+      - "Certificatele de stare civilă sunt prezentate în original"
+    status: draft
+
+  - id: req.proof_of_address
+    title_ro: "Dovada adresei de domiciliu sau reședință"
+    description_ro: >-
+      Documentul care face dovada adresei de domiciliu sau reședință declarate.
+      Când domiciliezi la o gazdă este necesară, suplimentar, declarația de
+      primire în spațiu a gazdei.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate"
+      - "Contract de închiriere / comodat"
+      - "Alt document care atestă adresa"
+    readiness_checks:
+      - "Documentul atestă adresa de domiciliu/reședință declarată"
+    status: draft
+
+  - id: req.recent_photo_document
+    title_ro: "Document oficial cu fotografie recentă"
+    description_ro: >-
+      Necesar dacă imaginea ta facială nu este în R.N.E.P.: un document oficial
+      cu fotografie recentă (permis de conducere sau pașaport).
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Permis de conducere"
+      - "Pașaport"
+    readiness_checks:
+      - "Documentul conține o fotografie recentă"
+      - "Necesar doar dacă imaginea facială nu este în R.N.E.P."
+    status: draft
+
+  - id: req.host_consent_declaration
+    title_ro: "Declarația de consimțământ a gazdei"
+    description_ro: >-
+      Când stabilești domiciliul/reședința la o gazdă: declarația de primire în
+      spațiu (consimțământul gazdei).
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarație de primire în spațiu a gazdei"
+    readiness_checks:
+      - "Declarația gazdei acoperă adresa declarată"
+    status: draft
