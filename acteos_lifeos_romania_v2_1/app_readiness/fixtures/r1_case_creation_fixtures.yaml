@@ -1,0 +1,725 @@
+fixtures:
+- id: fixture.case.identity_card_expired.basic_01
+  event_id: ro.life.identity_card_expired
+  request:
+    intent_type_id: ro.intent.identity.renew_expired_id
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000001
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Solicită un nou act de identitate înainte de expirare
+    contains_requirements:
+    - Trei fotografii 3/4 cm
+    contains_warnings:
+    - Poti solicita noul act cu cel mult 180 de zile inainte de expirare, dar nu mai putin de 15 zile inainte.
+    - Esti mai devreme de 180 de zile fata de expirare; cererea se poate depune incepand cu acel moment.
+    - Sanctiunea contraventionala difera intre sursele oficiale (40-80 lei vs 500-1000 lei). Confirma cuantumul curent inainte de afisare.
+    source_files:
+    - research/inbox/ro.life.identity_card_expired/source_claims.yaml
+    - research/inbox/ro.life.identity_card_expired/rules.yaml
+    - research/inbox/ro.life.identity_card_expired/templates.yaml
+- id: fixture.case.identity_card_lost.basic_02
+  event_id: ro.life.identity_card_lost
+  request:
+    intent_type_id: ro.intent.identity.replace_lost_id
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000002
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Reclamă furtul la poliție
+    contains_requirements:
+    - Cererea pentru eliberarea actului de identitate (Anexa 11)
+    - Certificatele de stare civilă
+    - Dovada adresei de domiciliu sau reședință
+    - Document oficial cu fotografie recentă
+    - Declarația de consimțământ a gazdei
+    contains_warnings:
+    - Pierderea/distrugerea se anunta direct la SPCLEP de la domiciliu/resedinta, fara reclamatie la politie.
+    - Daca imaginea ta nu e in R.N.E.P., adu un document oficial cu fotografie recenta (permis sau pasaport).
+    - Confirma cuantumul curent al sanctiunii din sursa normativa.
+    source_files:
+    - research/inbox/ro.life.identity_card_lost/source_claims.yaml
+    - research/inbox/ro.life.identity_card_lost/rules.yaml
+    - research/inbox/ro.life.identity_card_lost/templates.yaml
+- id: fixture.case.identity_card_stolen.basic_03
+  event_id: ro.life.identity_card_stolen
+  request:
+    intent_type_id: ro.intent.identity.replace_stolen_id
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000003
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Pierderea/distrugerea se anunta direct la SPCLEP de la domiciliu/resedinta, fara reclamatie la politie.
+    - Daca imaginea ta nu e in R.N.E.P., adu un document oficial cu fotografie recenta (permis sau pasaport).
+    - Confirma cuantumul curent al sanctiunii din sursa normativa.
+    source_files:
+    - research/inbox/ro.life.identity_card_stolen/source_claims.yaml
+    - research/inbox/ro.life.identity_card_stolen/rules.yaml
+- id: fixture.case.identity_card_change_address.basic_04
+  event_id: ro.life.identity_card_change_address
+  request:
+    intent_type_id: ro.intent.identity.change_address_on_id
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000004
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps:
+    - Actualizează actul de identitate la schimbarea domiciliului
+    contains_requirements:
+    - Dovada adresei de domiciliu/reședință
+    - Declarația de consimțământ a gazdei
+    contains_warnings:
+    - Pentru cartea electronica de identitate, schimbarea adresei nu necesita un nou act fizic (de confirmat).
+    - Ai nevoie de declaratia de primire in spatiu a gazduitorului.
+    source_files:
+    - research/inbox/ro.life.identity_card_change_address/source_claims.yaml
+    - research/inbox/ro.life.identity_card_change_address/rules.yaml
+    - research/inbox/ro.life.identity_card_change_address/templates.yaml
+- id: fixture.case.lost_all_documents.basic_05
+  event_id: ro.life.lost_all_documents
+  request:
+    intent_type_id: ro.intent.identity.recover_lost_documents_bundle
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000005
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Reface intai cartea de identitate; restul documentelor necesita un act de identitate valid.
+    - 'Pierdere (nu furt): de regula nu este necesara sesizarea la politie.'
+    - Confirma formularea oficiala SPCLEP privind pierderea vs furtul.
+    source_files:
+    - research/inbox/ro.life.lost_all_documents/source_claims.yaml
+    - research/inbox/ro.life.lost_all_documents/rules.yaml
+- id: fixture.case.moved_home.basic_06
+  event_id: ro.life.moved_home
+  request:
+    intent_type_id: ro.intent.identity.change_address_on_id
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000006
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: &id001 []
+    contains_warnings:
+    - Ai 15 zile de la mutare sa soliciti noul act de identitate. Nerespectarea se sanctioneaza contraventional (40-80 lei).
+    - La cartea electronica de identitate (CEI) schimbarea adresei se poate face fara un act nou. Confirma procedura curenta la DEP inainte de a renunta la actualizare.
+    source_files: &id002
+    - research/inbox/ro.life.moved_home/source_claims.yaml
+    - research/inbox/ro.life.moved_home/rules.yaml
+- id: fixture.case.moved_to_another_city.basic_07
+  event_id: ro.life.moved_to_another_city
+  request:
+    intent_type_id: ro.intent.identity.change_address_on_id
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000007
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - La schimbarea localitatii, impozitul auto trece la noua UAT; declara vehiculul la noul organ fiscal local.
+    - Pentru copii, initiaza transferul/inscrierea la unitatea de invatamant de la noua adresa.
+    - Procedura exacta de transfer fiscal intre UAT se confirma din Codul fiscal.
+    source_files:
+    - research/inbox/ro.life.moved_to_another_city/source_claims.yaml
+    - research/inbox/ro.life.moved_to_another_city/rules.yaml
+- id: fixture.case.bought_used_vehicle_ro.basic_08
+  event_id: ro.life.bought_used_vehicle_ro
+  request:
+    intent_type_id: ro.intent.vehicle.register_used_purchase_ro
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000008
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Ai nevoie de RCA valabil pe numele tau inainte de transcriere.
+    - Daca nu pastrezi numerele vechi, platesti pentru placute noi.
+    - Termenul de 90 de zile pentru transcriere se confirma din Ordinul MAI 1501/2006 inainte de afisare ferma.
+    source_files:
+    - research/inbox/ro.life.bought_used_vehicle_ro/source_claims.yaml
+    - research/inbox/ro.life.bought_used_vehicle_ro/rules.yaml
+- id: fixture.case.sold_vehicle_ro.basic_09
+  event_id: ro.life.sold_vehicle_ro
+  request:
+    intent_type_id: ro.intent.vehicle.sell_vehicle_ro
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000009
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Inainte de vanzare ai nevoie de certificatul de atestare fiscala / viza pe contract (valabil 30 de zile).
+    - Pana cand vehiculul nu este scos din evidenta fiscala, impozitul ramane pe numele tau.
+    - Termenul de 30 de zile pentru scoaterea din evidenta de catre vanzator se confirma din Codul Fiscal.
+    source_files:
+    - research/inbox/ro.life.sold_vehicle_ro/source_claims.yaml
+    - research/inbox/ro.life.sold_vehicle_ro/rules.yaml
+- id: fixture.case.vehicle_transcription.basic_10
+  event_id: ro.life.vehicle_transcription
+  request:
+    intent_type_id: ro.intent.vehicle.register_used_purchase_ro
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000010
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Cererea se solutioneaza in pana la 20 de zile lucratoare (de confirmat).
+    - Termenul de 90 de zile se confirma din articolul exact al Ordinului 1501/2006 inainte de afisare ferma.
+    source_files:
+    - research/inbox/ro.life.vehicle_transcription/source_claims.yaml
+    - research/inbox/ro.life.vehicle_transcription/rules.yaml
+- id: fixture.case.vehicle_change_address.basic_11
+  event_id: ro.life.vehicle_change_address
+  request:
+    intent_type_id: ro.intent.vehicle.update_address
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000011
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Ai nevoie de RCA valabil pentru eliberarea noului certificat.
+    - Daca domiciliul din CI nu s-a schimbat, talonul nu trebuie actualizat pentru adresa.
+    - Termenul de 30 de zile pentru actualizarea talonului se confirma din Ordinul 1501/2006 / OUG 195/2002.
+    source_files:
+    - research/inbox/ro.life.vehicle_change_address/source_claims.yaml
+    - research/inbox/ro.life.vehicle_change_address/rules.yaml
+- id: fixture.case.vehicle_local_tax_declaration.basic_12
+  event_id: ro.life.vehicle_local_tax_declaration
+  request:
+    intent_type_id: ro.intent.tax.declare_vehicle_local
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000012
+    facts: {}
+  expected:
+    status: needs_facts
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings: []
+    source_files: []
+- id: fixture.case.local_tax_certificate.basic_13
+  event_id: ro.life.local_tax_certificate
+  request:
+    intent_type_id: ro.intent.tax.obtain_local_certificate
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000013
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Certificatul se elibereaza orientativ in cel mult 2 zile lucratoare (de confirmat).
+    - La Timisoara poti solicita online prin plata.dfmt.ro; unele certificate se emit automat.
+    - Termenul de eliberare se confirma pentru Timisoara / din Codul de procedura fiscala.
+    source_files:
+    - research/inbox/ro.life.local_tax_certificate/source_claims.yaml
+    - research/inbox/ro.life.local_tax_certificate/rules.yaml
+- id: fixture.case.declare_vehicle_local_tax.basic_14
+  event_id: ro.life.declare_vehicle_local_tax
+  request:
+    intent_type_id: ro.intent.tax.declare_vehicle_local
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000014
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Depune declarația fiscală pentru mijlocul de transport
+    contains_requirements:
+    - Declarația fiscală pentru mijlocul de transport
+    - Formularul distinct pentru peste 12 tone
+    - Certificatul fiscal al vânzătorului
+    - Dovada contractului cu operatorul de salubritate
+    contains_warnings:
+    - Pentru vehicule peste 12 tone se foloseste formularul de declaratie distinct.
+    - Impozitul se datoreaza pentru tot anul de cine detine vehiculul la 31 decembrie al anului anterior.
+    source_files:
+    - research/inbox/ro.life.declare_vehicle_local_tax/source_claims.yaml
+    - research/inbox/ro.life.declare_vehicle_local_tax/rules.yaml
+    - research/inbox/ro.life.declare_vehicle_local_tax/templates.yaml
+- id: fixture.case.remove_vehicle_local_tax.basic_15
+  event_id: ro.life.remove_vehicle_local_tax
+  request:
+    intent_type_id: ro.intent.tax.remove_vehicle_local
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000015
+    facts: {}
+  expected:
+    status: needs_facts
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings: []
+    source_files: []
+- id: fixture.case.documents_stolen_bundle.basic_16
+  event_id: ro.life.documents_stolen_bundle
+  request:
+    intent_type_id: ro.intent.identity.recover_stolen_documents_bundle
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000016
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - O singura sesizare la politie acopera tot pachetul furat; pastreaza dovada pentru toate inlocuirile.
+    - Inlocuirea permisului de conducere este un eveniment separat (R1B/ulterior).
+    source_files:
+    - research/inbox/ro.life.documents_stolen_bundle/source_claims.yaml
+    - research/inbox/ro.life.documents_stolen_bundle/rules.yaml
+- id: fixture.case.passport_first_or_renew.basic_17
+  event_id: ro.life.passport_first_or_renew
+  request:
+    intent_type_id: ro.intent.identity.obtain_or_renew_passport
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000017
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps:
+    - Depune cererea de pașaport
+    contains_requirements:
+    - Act de identitate valabil în original
+    - Dovada plății taxei de pașaport
+    - Pașaportul anterior
+    contains_warnings:
+    - 'Valabilitate pasaport electronic: 3 ani (sub 12 ani).'
+    - 'Valabilitate pasaport electronic: 5 ani (12-18 ani).'
+    source_files:
+    - research/inbox/ro.life.passport_first_or_renew/source_claims.yaml
+    - research/inbox/ro.life.passport_first_or_renew/rules.yaml
+    - research/inbox/ro.life.passport_first_or_renew/templates.yaml
+- id: fixture.case.minor_passport.basic_18
+  event_id: ro.life.minor_passport
+  request:
+    intent_type_id: ro.intent.identity.obtain_minor_passport
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000018
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps:
+    - Depune cererea de pașaport pentru minor
+    contains_requirements:
+    - Certificatul de naștere al minorului
+    - Actele de identitate ale părinților
+    - Dovada plății taxei de pașaport
+    - Document pentru depunerea fără ambii părinți
+    - Două fotografii ale minorului (3,5 × 4,5 cm)
+    - Cartea de identitate a minorului (peste 14 ani)
+    contains_warnings:
+    - Prezenta minorului si a parintilor este obligatorie la depunere.
+    - Daca minorul nu este prezent, sunt necesare 2 fotografii 3,5x4,5 cm.
+    source_files:
+    - research/inbox/ro.life.minor_passport/source_claims.yaml
+    - research/inbox/ro.life.minor_passport/rules.yaml
+    - research/inbox/ro.life.minor_passport/templates.yaml
+- id: fixture.case.criminal_record_certificate.basic_19
+  event_id: ro.life.criminal_record_certificate
+  request:
+    intent_type_id: ro.intent.identity.obtain_criminal_record
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000019
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Depune cererea de certificat de cazier judiciar
+    contains_requirements:
+    - Act de identitate valabil
+    - Cerere-tip pentru cazier judiciar
+    - Documente pentru reprezentantul legal
+    - Împuternicire pentru depunerea prin mandat
+    - Act de identitate al imputernicitului
+    contains_warnings:
+    - Sub 14 ani cererea se depune prin reprezentant legal (parinte/tutore).
+    - 'Pentru cetateni romani: eliberare pe loc sau in cel mult 3 zile lucratoare.'
+    - Valabilitatea de 6 luni se confirma din Legea 290/2004 (rep.).
+    source_files:
+    - research/inbox/ro.life.criminal_record_certificate/source_claims.yaml
+    - research/inbox/ro.life.criminal_record_certificate/rules.yaml
+    - research/inbox/ro.life.criminal_record_certificate/templates.yaml
+- id: fixture.case.change_electricity_holder.basic_20
+  event_id: ro.life.change_electricity_holder
+  request:
+    intent_type_id: ro.intent.utility.change_electricity_holder
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000020
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Solicită schimbarea titularului contractului de energie electrică
+    contains_requirements:
+    - Act de identitate valabil
+    - Act care atestă dreptul locativ
+    - Indexul contorului la zi
+    - Certificatul de deces al titularului
+    contains_warnings:
+    - La deces contractul inceteaza; se depune copie act identitate solicitant + copie certificat de deces al titularului.
+    - Schimbarea furnizorului este gratuita (ANRE); nu se percep taxe pentru proces.
+    - Termenul de 21 zile trebuie confirmat pentru schimbarea titularului.
+    source_files:
+    - research/inbox/ro.life.change_electricity_holder/source_claims.yaml
+    - research/inbox/ro.life.change_electricity_holder/rules.yaml
+    - research/inbox/ro.life.change_electricity_holder/templates.yaml
+- id: fixture.case.change_gas_holder.basic_21
+  event_id: ro.life.change_gas_holder
+  request:
+    intent_type_id: ro.intent.utility.change_gas_holder
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000021
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps:
+    - Solicită schimbarea titularului contractului de gaze
+    contains_requirements:
+    - Copie a actului de identitate
+    - Declarație privind calitatea folosirii imobilului
+    - Poză a contorului de gaz
+    - Codul locului de consum
+    - Certificatul de deces al titularului
+    contains_warnings:
+    - Ca proprietar, poti folosi actul de proprietate in locul declaratiei pe propria raspundere.
+    - La deces contractul de gaze inceteaza; se incheie contract nou cu copie certificat de deces al titularului.
+    - Operatorul de distributie gaz pentru Timis trebuie confirmat.
+    source_files:
+    - research/inbox/ro.life.change_gas_holder/source_claims.yaml
+    - research/inbox/ro.life.change_gas_holder/rules.yaml
+    - research/inbox/ro.life.change_gas_holder/templates.yaml
+- id: fixture.case.change_water_holder.basic_22
+  event_id: ro.life.change_water_holder
+  request:
+    intent_type_id: ro.intent.utility.change_water_holder
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000022
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Depune documentația pentru contractul Aquatim
+    contains_requirements:
+    - Act de identitate valabil
+    - Dovada folosirii spațiului
+    - Certificatul de deces al titularului
+    contains_warnings:
+    - La Timisoara operatorul unic este Aquatim; contractul se incheie cu formularul F-01.00.06-3.
+    - 'Exista deja bransament/racord: depui documentele si Aquatim te contacteaza pentru semnare.'
+    - Procedura de preluare dupa deces la Aquatim trebuie confirmata.
+    source_files:
+    - research/inbox/ro.life.change_water_holder/source_claims.yaml
+    - research/inbox/ro.life.change_water_holder/rules.yaml
+    - research/inbox/ro.life.change_water_holder/templates.yaml
+- id: fixture.case.child_birth.basic_23
+  event_id: ro.life.child_birth
+  request:
+    intent_type_id: ro.intent.family.complete_child_birth_formalities
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000023
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Declară nașterea în 30 de zile de la data nașterii.
+    - Pentru copilul născut mort, declararea are termen de 3 zile.
+    - Pentru nașterea produsă în străinătate, traseul depinde de înregistrarea consulară sau transcrierea certificatului străin.
+    source_files:
+    - research/inbox/ro.life.child_birth/source_claims.yaml
+    - research/inbox/ro.life.child_birth/rules.yaml
+- id: fixture.case.birth_registration.basic_24
+  event_id: ro.life.birth_registration
+  request:
+    intent_type_id: ro.intent.family.register_child_birth
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000024
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps:
+    - Înregistrează nașterea copilului
+    contains_requirements:
+    - Certificat medical constatator al nașterii
+    - Act de identitate al mamei
+    - Act de identitate al declarantului
+    - Certificat de căsătorie al părinților
+    - Declarație privind numele copilului
+    - Declarație de recunoaștere paternitate
+    - Consimțământ privind numele copilului
+    - Aviz de conformitate județean
+    contains_warnings:
+    - Declară nașterea în 30 de zile de la data nașterii.
+    - Declară nașterea copilului născut mort în 3 zile.
+    source_files:
+    - research/inbox/ro.life.birth_registration/source_claims.yaml
+    - research/inbox/ro.life.birth_registration/rules.yaml
+    - research/inbox/ro.life.birth_registration/templates.yaml
+- id: fixture.case.child_allowance.basic_25
+  event_id: ro.life.child_allowance
+  request:
+    intent_type_id: ro.intent.family.apply_child_allowance
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000025
+    facts: {}
+  expected:
+    status: needs_confirmation
+    contains_steps:
+    - Depune cerere de alocație pentru copil
+    contains_requirements:
+    - Cerere pentru alocația de stat
+    - Certificat de naștere al copilului
+    - Act de identitate al solicitantului
+    - Adeverință de înscriere la școală
+    - Certificat de handicap
+    - Certificat medical de motiv medical de repetare
+    - Documente de rezidență pentru copil străin/apatrid
+    - Acordul părinților sau hotărârea aplicabilă
+    - Consimțământ reprezentant legal (plată directă copil)
+    contains_warnings:
+    - Dreptul începe din luna următoare nașterii; plata urmează cererii, cu retroactivitate de cel mult 12 luni.
+    - Comunică modificarea în cel mult 15 zile.
+    - Cuantumul numeric 2026 trebuie preluat dintr-o sursă oficială care publică valorile curente; nu se deduce manual din textul consolidat.
+    source_files:
+    - research/inbox/ro.life.child_allowance/source_claims.yaml
+    - research/inbox/ro.life.child_allowance/rules.yaml
+    - research/inbox/ro.life.child_allowance/templates.yaml
+- id: fixture.case.nursery_enrollment.basic_26
+  event_id: ro.life.nursery_enrollment
+  request:
+    intent_type_id: ro.intent.education.enroll_nursery
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000026
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Fereastra standard de reînscriere a fost 18-22 mai 2026.
+    - Etapa a II-a folosește o nouă cerere cu trei opțiuni, pe locurile rămase.
+    - Confirmă pe sursa oficială a unității locurile, programul, criteriile și programarea curente; nu afișa o recomandare fermă.
+    source_files:
+    - research/inbox/ro.life.nursery_enrollment/source_claims.yaml
+    - research/inbox/ro.life.nursery_enrollment/rules.yaml
+- id: fixture.case.preschool_enrollment.basic_27
+  event_id: ro.life.preschool_enrollment
+  request:
+    intent_type_id: ro.intent.education.enroll_preschool
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000027
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - Fereastra standard de reînscriere a fost 18-22 mai 2026.
+    - Etapa a II-a folosește o nouă cerere cu trei opțiuni, pe locurile rămase.
+    - Confirmă pe sursa oficială a unității locurile, programul, criteriile și programarea curente; nu afișa o recomandare fermă.
+    source_files:
+    - research/inbox/ro.life.preschool_enrollment/source_claims.yaml
+    - research/inbox/ro.life.preschool_enrollment/rules.yaml
+- id: fixture.case.preparatory_class_enrollment.basic_28
+  event_id: ro.life.preparatory_class_enrollment
+  request:
+    intent_type_id: ro.intent.education.enroll_preparatory_class
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000028
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: []
+    contains_warnings:
+    - La școala de circumscripție, înscrierea este asigurată după validarea cererii.
+    - O altă școală poate admite numai în limita locurilor și după criteriile aplicabile.
+    - Etapele standard s-au încheiat; verifică procedura ISJ pentru situațiile rămase din septembrie.
+    source_files:
+    - research/inbox/ro.life.preparatory_class_enrollment/source_claims.yaml
+    - research/inbox/ro.life.preparatory_class_enrollment/rules.yaml
+- id: fixture.case.pay_fine.basic_29
+  event_id: ro.life.pay_fine
+  request:
+    intent_type_id: ro.intent.penalty.pay_fine
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000029
+    facts: {}
+  expected:
+    status: resolved
+    contains_steps:
+    - Plătește în 15 zile jumătate din minimul legal
+    contains_requirements:
+    - Minimul legal al amenzii și datele de plată
+    - Actul sancționator și minimul legal
+    - Cuantumul amenzii aplicate și datele de plată
+    contains_warnings:
+    - Baza este minimul din actul normativ, nu neapărat amenda aplicată în procesul-verbal.
+    - Fereastra generală de 15 zile pentru plata redusă a trecut.
+    - Nu aplica automat reducerea; verifică procesul-verbal și actul sancționator.
+    source_files:
+    - research/inbox/ro.life.pay_fine/source_claims.yaml
+    - research/inbox/ro.life.pay_fine/rules.yaml
+    - research/inbox/ro.life.pay_fine/templates.yaml
+- id: fixture.case.moved_home.variant_30
+  event_id: ro.life.moved_home
+  request:
+    intent_type_id: ro.intent.home.complete_move_formalities
+    reference_date: '2026-06-27'
+    timezone: Europe/Bucharest
+    jurisdiction_path:
+    - ro
+    - ro.tm.timisoara
+    installation_id: 00000000-0000-0000-0000-000000000030
+    facts: {}
+  expected:
+    status: blocked
+    contains_steps: []
+    contains_requirements: *id001
+    contains_warnings:
+    - Ai 15 zile de la mutare sa soliciti noul act de identitate. Nerespectarea se sanctioneaza contraventional (40-80 lei).
+    - La cartea electronica de identitate (CEI) schimbarea adresei se poate face fara un act nou. Confirma procedura curenta la DEP inainte de a renunta la actualizare.
+    source_files: *id002
+  gap: multi_intent_variant
