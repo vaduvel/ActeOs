@@ -1,0 +1,532 @@
+fixtures:
+- id: fixture.journey.identity_card_expired.basic_01
+  event_id: ro.life.identity_card_expired
+  intent_type_id: ro.intent.identity.renew_expired_id
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Solicită un nou act de identitate înainte de expirare
+    estimated_documents_ro:
+    - Trei fotografii 3/4 cm
+    warning_labels_ro:
+    - Poti solicita noul act cu cel mult 180 de zile inainte de expirare, dar nu mai putin de 15 zile inainte.
+    - Esti mai devreme de 180 de zile fata de expirare; cererea se poate depune incepand cu acel moment.
+    - Sanctiunea contraventionala difera intre sursele oficiale (40-80 lei vs 500-1000 lei). Confirma cuantumul curent inainte de afisare.
+    blocker_summary: rule.exp.overdue<-claim.exp.sanction_40_80(conflicting); rule.exp.overdue<-claim.exp.sanction_500_1000(conflicting); rule.exp.sanction_conflict<-claim.exp.sanction_40_80(conflicting)
+    source_files:
+    - research/inbox/ro.life.identity_card_expired/source_claims.yaml
+    - research/inbox/ro.life.identity_card_expired/rules.yaml
+    - research/inbox/ro.life.identity_card_expired/templates.yaml
+- id: fixture.journey.identity_card_lost.basic_02
+  event_id: ro.life.identity_card_lost
+  intent_type_id: ro.intent.identity.replace_lost_id
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Reclamă furtul la poliție
+    estimated_documents_ro:
+    - Cererea pentru eliberarea actului de identitate (Anexa 11)
+    - Certificatele de stare civilă
+    - Dovada adresei de domiciliu sau reședință
+    - Document oficial cu fotografie recentă
+    - Declarația de consimțământ a gazdei
+    warning_labels_ro:
+    - Pierderea/distrugerea se anunta direct la SPCLEP de la domiciliu/resedinta, fara reclamatie la politie.
+    - Daca imaginea ta nu e in R.N.E.P., adu un document oficial cu fotografie recenta (permis sau pasaport).
+    - Confirma cuantumul curent al sanctiunii din sursa normativa.
+    blocker_summary: rule.lost.sanction_conflict<-claim.lost.sanction_500_1000(conflicting)
+    source_files:
+    - research/inbox/ro.life.identity_card_lost/source_claims.yaml
+    - research/inbox/ro.life.identity_card_lost/rules.yaml
+    - research/inbox/ro.life.identity_card_lost/templates.yaml
+- id: fixture.journey.identity_card_stolen.basic_03
+  event_id: ro.life.identity_card_stolen
+  intent_type_id: ro.intent.identity.replace_stolen_id
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: conditional_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Pierderea/distrugerea se anunta direct la SPCLEP de la domiciliu/resedinta, fara reclamatie la politie.
+    - Daca imaginea ta nu e in R.N.E.P., adu un document oficial cu fotografie recenta (permis sau pasaport).
+    - Confirma cuantumul curent al sanctiunii din sursa normativa.
+    blocker_summary: rule.lost.sanction_conflict<-claim.lost.sanction_500_1000(conflicting)
+    source_files:
+    - research/inbox/ro.life.identity_card_stolen/source_claims.yaml
+    - research/inbox/ro.life.identity_card_stolen/rules.yaml
+- id: fixture.journey.identity_card_change_address.basic_04
+  event_id: ro.life.identity_card_change_address
+  intent_type_id: ro.intent.identity.change_address_on_id
+  expected_preview:
+    user_visible_status: ready_for_app_preview
+    certification_verdict: go
+    primary_step_title_ro: Actualizează actul de identitate la schimbarea domiciliului
+    estimated_documents_ro:
+    - Dovada adresei de domiciliu/reședință
+    - Declarația de consimțământ a gazdei
+    warning_labels_ro:
+    - Pentru cartea electronica de identitate, schimbarea adresei nu necesita un nou act fizic (de confirmat).
+    - Ai nevoie de declaratia de primire in spatiu a gazduitorului.
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.identity_card_change_address/source_claims.yaml
+    - research/inbox/ro.life.identity_card_change_address/rules.yaml
+    - research/inbox/ro.life.identity_card_change_address/templates.yaml
+- id: fixture.journey.lost_all_documents.basic_05
+  event_id: ro.life.lost_all_documents
+  intent_type_id: ro.intent.identity.recover_lost_documents_bundle
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: conditional_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Reface intai cartea de identitate; restul documentelor necesita un act de identitate valid.
+    - 'Pierdere (nu furt): de regula nu este necesara sesizarea la politie.'
+    - Confirma formularea oficiala SPCLEP privind pierderea vs furtul.
+    blocker_summary: rule.lad.loss_not_theft<-claim.lad.loss_no_police_required(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.lost_all_documents/source_claims.yaml
+    - research/inbox/ro.life.lost_all_documents/rules.yaml
+- id: fixture.journey.moved_home.basic_06
+  event_id: ro.life.moved_home
+  intent_type_id: ro.intent.identity.change_address_on_id
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: &id001 []
+    warning_labels_ro:
+    - Ai 15 zile de la mutare sa soliciti noul act de identitate. Nerespectarea se sanctioneaza contraventional (40-80 lei).
+    - La cartea electronica de identitate (CEI) schimbarea adresei se poate face fara un act nou. Confirma procedura curenta la DEP inainte de a renunta la actualizare.
+    blocker_summary: rule.moved.vehicle_address_update<-claim.veh.address_update_exists(needs_confirmation)
+    source_files: &id002
+    - research/inbox/ro.life.moved_home/source_claims.yaml
+    - research/inbox/ro.life.moved_home/rules.yaml
+- id: fixture.journey.moved_to_another_city.basic_07
+  event_id: ro.life.moved_to_another_city
+  intent_type_id: ro.intent.identity.change_address_on_id
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: conditional_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - La schimbarea localitatii, impozitul auto trece la noua UAT; declara vehiculul la noul organ fiscal local.
+    - Pentru copii, initiaza transferul/inscrierea la unitatea de invatamant de la noua adresa.
+    - Procedura exacta de transfer fiscal intre UAT se confirma din Codul fiscal.
+    blocker_summary: rule.mac.trigger_vehicle_tax_new_uat<-claim.mac.vehicle_tax_at_new_domicile(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.moved_to_another_city/source_claims.yaml
+    - research/inbox/ro.life.moved_to_another_city/rules.yaml
+- id: fixture.journey.bought_used_vehicle_ro.basic_08
+  event_id: ro.life.bought_used_vehicle_ro
+  intent_type_id: ro.intent.vehicle.register_used_purchase_ro
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Ai nevoie de RCA valabil pe numele tau inainte de transcriere.
+    - Daca nu pastrezi numerele vechi, platesti pentru placute noi.
+    - Termenul de 90 de zile pentru transcriere se confirma din Ordinul MAI 1501/2006 inainte de afisare ferma.
+    blocker_summary: rule.veh.transcription_90d<-claim.veh.transcription_90d(needs_confirmation); rule.veh.new_plates<-claim.veh.transcription_fee_37(needs_confirmation); rule.veh.tm_fiscal_channel<-claim.veh.tm_fiscal_channel(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.bought_used_vehicle_ro/source_claims.yaml
+    - research/inbox/ro.life.bought_used_vehicle_ro/rules.yaml
+- id: fixture.journey.sold_vehicle_ro.basic_09
+  event_id: ro.life.sold_vehicle_ro
+  intent_type_id: ro.intent.vehicle.sell_vehicle_ro
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Inainte de vanzare ai nevoie de certificatul de atestare fiscala / viza pe contract (valabil 30 de zile).
+    - Pana cand vehiculul nu este scos din evidenta fiscala, impozitul ramane pe numele tau.
+    - Termenul de 30 de zile pentru scoaterea din evidenta de catre vanzator se confirma din Codul Fiscal.
+    blocker_summary: rule.sold.removal_from_evidence<-claim.sold.removal_deadline_30d(needs_confirmation); rule.sold.visa_48h_advice<-claim.sold.contract_visa_48h(needs_confirmation); rule.sold.tm_fiscal_channel<-claim.sold.tm_fiscal_channel(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.sold_vehicle_ro/source_claims.yaml
+    - research/inbox/ro.life.sold_vehicle_ro/rules.yaml
+- id: fixture.journey.vehicle_transcription.basic_10
+  event_id: ro.life.vehicle_transcription
+  intent_type_id: ro.intent.vehicle.register_used_purchase_ro
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Cererea se solutioneaza in pana la 20 de zile lucratoare (de confirmat).
+    - Termenul de 90 de zile se confirma din articolul exact al Ordinului 1501/2006 inainte de afisare ferma.
+    blocker_summary: rule.trans.90d<-claim.trans.90d(needs_confirmation); rule.trans.solve_time_info<-claim.trans.solve_20_working_days(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.vehicle_transcription/source_claims.yaml
+    - research/inbox/ro.life.vehicle_transcription/rules.yaml
+- id: fixture.journey.vehicle_change_address.basic_11
+  event_id: ro.life.vehicle_change_address
+  intent_type_id: ro.intent.vehicle.update_address
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Ai nevoie de RCA valabil pentru eliberarea noului certificat.
+    - Daca domiciliul din CI nu s-a schimbat, talonul nu trebuie actualizat pentru adresa.
+    - Termenul de 30 de zile pentru actualizarea talonului se confirma din Ordinul 1501/2006 / OUG 195/2002.
+    blocker_summary: rule.vaddr.update_30d<-claim.vaddr.update_30d(needs_confirmation); rule.vaddr.update_30d<-claim.vaddr.docs(needs_confirmation); rule.vaddr.require_rca<-claim.vaddr.docs(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.vehicle_change_address/source_claims.yaml
+    - research/inbox/ro.life.vehicle_change_address/rules.yaml
+- id: fixture.journey.vehicle_local_tax_declaration.basic_12
+  event_id: ro.life.vehicle_local_tax_declaration
+  intent_type_id: ro.intent.tax.declare_vehicle_local
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: not_checked
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro: []
+    blocker_summary: none
+    source_files: []
+- id: fixture.journey.local_tax_certificate.basic_13
+  event_id: ro.life.local_tax_certificate
+  intent_type_id: ro.intent.tax.obtain_local_certificate
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Certificatul se elibereaza orientativ in cel mult 2 zile lucratoare (de confirmat).
+    - La Timisoara poti solicita online prin plata.dfmt.ro; unele certificate se emit automat.
+    - Termenul de eliberare se confirma pentru Timisoara / din Codul de procedura fiscala.
+    blocker_summary: rule.fc.issue_term<-claim.fc.issue_2_working_days(needs_confirmation); rule.fc.validity<-claim.fc.validity_30d_pf(needs_confirmation); rule.fc.fee_info<-claim.fc.fee(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.local_tax_certificate/source_claims.yaml
+    - research/inbox/ro.life.local_tax_certificate/rules.yaml
+- id: fixture.journey.declare_vehicle_local_tax.basic_14
+  event_id: ro.life.declare_vehicle_local_tax
+  intent_type_id: ro.intent.tax.declare_vehicle_local
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Depune declarația fiscală pentru mijlocul de transport
+    estimated_documents_ro:
+    - Declarația fiscală pentru mijlocul de transport
+    - Formularul distinct pentru peste 12 tone
+    - Certificatul fiscal al vânzătorului
+    - Dovada contractului cu operatorul de salubritate
+    warning_labels_ro:
+    - Pentru vehicule peste 12 tone se foloseste formularul de declaratie distinct.
+    - Impozitul se datoreaza pentru tot anul de cine detine vehiculul la 31 decembrie al anului anterior.
+    blocker_summary: rule.vtax.salubritate_not_tm<-claim.vtax.salubritate_local(needs_confirmation); rule.vtax.tm_channel<-claim.vtax.tm_channel(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.declare_vehicle_local_tax/source_claims.yaml
+    - research/inbox/ro.life.declare_vehicle_local_tax/rules.yaml
+    - research/inbox/ro.life.declare_vehicle_local_tax/templates.yaml
+- id: fixture.journey.remove_vehicle_local_tax.basic_15
+  event_id: ro.life.remove_vehicle_local_tax
+  intent_type_id: ro.intent.tax.remove_vehicle_local
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: not_checked
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro: []
+    blocker_summary: none
+    source_files: []
+- id: fixture.journey.documents_stolen_bundle.basic_16
+  event_id: ro.life.documents_stolen_bundle
+  intent_type_id: ro.intent.identity.recover_stolen_documents_bundle
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: conditional_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - O singura sesizare la politie acopera tot pachetul furat; pastreaza dovada pentru toate inlocuirile.
+    - Inlocuirea permisului de conducere este un eveniment separat (R1B/ulterior).
+    blocker_summary: rule.dsb.single_police_report<-claim.dsb.single_police_report(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.documents_stolen_bundle/source_claims.yaml
+    - research/inbox/ro.life.documents_stolen_bundle/rules.yaml
+- id: fixture.journey.passport_first_or_renew.basic_17
+  event_id: ro.life.passport_first_or_renew
+  intent_type_id: ro.intent.identity.obtain_or_renew_passport
+  expected_preview:
+    user_visible_status: ready_for_app_preview
+    certification_verdict: go
+    primary_step_title_ro: Depune cererea de pașaport
+    estimated_documents_ro:
+    - Act de identitate valabil în original
+    - Dovada plății taxei de pașaport
+    - Pașaportul anterior
+    warning_labels_ro:
+    - 'Valabilitate pasaport electronic: 3 ani (sub 12 ani).'
+    - 'Valabilitate pasaport electronic: 5 ani (12-18 ani).'
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.passport_first_or_renew/source_claims.yaml
+    - research/inbox/ro.life.passport_first_or_renew/rules.yaml
+    - research/inbox/ro.life.passport_first_or_renew/templates.yaml
+- id: fixture.journey.minor_passport.basic_18
+  event_id: ro.life.minor_passport
+  intent_type_id: ro.intent.identity.obtain_minor_passport
+  expected_preview:
+    user_visible_status: ready_for_app_preview
+    certification_verdict: go
+    primary_step_title_ro: Depune cererea de pașaport pentru minor
+    estimated_documents_ro:
+    - Certificatul de naștere al minorului
+    - Actele de identitate ale părinților
+    - Dovada plății taxei de pașaport
+    - Document pentru depunerea fără ambii părinți
+    - Două fotografii ale minorului (3,5 × 4,5 cm)
+    - Cartea de identitate a minorului (peste 14 ani)
+    warning_labels_ro:
+    - Prezenta minorului si a parintilor este obligatorie la depunere.
+    - Daca minorul nu este prezent, sunt necesare 2 fotografii 3,5x4,5 cm.
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.minor_passport/source_claims.yaml
+    - research/inbox/ro.life.minor_passport/rules.yaml
+    - research/inbox/ro.life.minor_passport/templates.yaml
+- id: fixture.journey.criminal_record_certificate.basic_19
+  event_id: ro.life.criminal_record_certificate
+  intent_type_id: ro.intent.identity.obtain_criminal_record
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Depune cererea de certificat de cazier judiciar
+    estimated_documents_ro:
+    - Act de identitate valabil
+    - Cerere-tip pentru cazier judiciar
+    - Documente pentru reprezentantul legal
+    - Împuternicire pentru depunerea prin mandat
+    - Act de identitate al imputernicitului
+    warning_labels_ro:
+    - Sub 14 ani cererea se depune prin reprezentant legal (parinte/tutore).
+    - 'Pentru cetateni romani: eliberare pe loc sau in cel mult 3 zile lucratoare.'
+    - Valabilitatea de 6 luni se confirma din Legea 290/2004 (rep.).
+    blocker_summary: rule.cj.validity_6m<-claim.cj.validity_6m(needs_confirmation); rule.cj.fee_conflict<-claim.cj.fee_conflict(conflicting); rule.cj.power_of_attorney<-claim.cj.power_of_attorney(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.criminal_record_certificate/source_claims.yaml
+    - research/inbox/ro.life.criminal_record_certificate/rules.yaml
+    - research/inbox/ro.life.criminal_record_certificate/templates.yaml
+- id: fixture.journey.change_electricity_holder.basic_20
+  event_id: ro.life.change_electricity_holder
+  intent_type_id: ro.intent.utility.change_electricity_holder
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Solicită schimbarea titularului contractului de energie electrică
+    estimated_documents_ro:
+    - Act de identitate valabil
+    - Act care atestă dreptul locativ
+    - Indexul contorului la zi
+    - Certificatul de deces al titularului
+    warning_labels_ro:
+    - La deces contractul inceteaza; se depune copie act identitate solicitant + copie certificat de deces al titularului.
+    - Schimbarea furnizorului este gratuita (ANRE); nu se percep taxe pentru proces.
+    - Termenul de 21 zile trebuie confirmat pentru schimbarea titularului.
+    blocker_summary: rule.elec.activation_term<-claim.elec.21d(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.change_electricity_holder/source_claims.yaml
+    - research/inbox/ro.life.change_electricity_holder/rules.yaml
+    - research/inbox/ro.life.change_electricity_holder/templates.yaml
+- id: fixture.journey.change_gas_holder.basic_21
+  event_id: ro.life.change_gas_holder
+  intent_type_id: ro.intent.utility.change_gas_holder
+  expected_preview:
+    user_visible_status: ready_for_app_preview
+    certification_verdict: go
+    primary_step_title_ro: Solicită schimbarea titularului contractului de gaze
+    estimated_documents_ro:
+    - Copie a actului de identitate
+    - Declarație privind calitatea folosirii imobilului
+    - Poză a contorului de gaz
+    - Codul locului de consum
+    - Certificatul de deces al titularului
+    warning_labels_ro:
+    - Ca proprietar, poti folosi actul de proprietate in locul declaratiei pe propria raspundere.
+    - La deces contractul de gaze inceteaza; se incheie contract nou cu copie certificat de deces al titularului.
+    - Operatorul de distributie gaz pentru Timis trebuie confirmat.
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.change_gas_holder/source_claims.yaml
+    - research/inbox/ro.life.change_gas_holder/rules.yaml
+    - research/inbox/ro.life.change_gas_holder/templates.yaml
+- id: fixture.journey.change_water_holder.basic_22
+  event_id: ro.life.change_water_holder
+  intent_type_id: ro.intent.utility.change_water_holder
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Depune documentația pentru contractul Aquatim
+    estimated_documents_ro:
+    - Act de identitate valabil
+    - Dovada folosirii spațiului
+    - Certificatul de deces al titularului
+    warning_labels_ro:
+    - La Timisoara operatorul unic este Aquatim; contractul se incheie cu formularul F-01.00.06-3.
+    - 'Exista deja bransament/racord: depui documentele si Aquatim te contacteaza pentru semnare.'
+    - Procedura de preluare dupa deces la Aquatim trebuie confirmata.
+    blocker_summary: rule.water.death_path<-claim.water.death_terminates(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.change_water_holder/source_claims.yaml
+    - research/inbox/ro.life.change_water_holder/rules.yaml
+    - research/inbox/ro.life.change_water_holder/templates.yaml
+- id: fixture.journey.child_birth.basic_23
+  event_id: ro.life.child_birth
+  intent_type_id: ro.intent.family.complete_child_birth_formalities
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Declară nașterea în 30 de zile de la data nașterii.
+    - Pentru copilul născut mort, declararea are termen de 3 zile.
+    - Pentru nașterea produsă în străinătate, traseul depinde de înregistrarea consulară sau transcrierea certificatului străin.
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.child_birth/source_claims.yaml
+    - research/inbox/ro.life.child_birth/rules.yaml
+- id: fixture.journey.birth_registration.basic_24
+  event_id: ro.life.birth_registration
+  intent_type_id: ro.intent.family.register_child_birth
+  expected_preview:
+    user_visible_status: ready_for_app_preview
+    certification_verdict: go
+    primary_step_title_ro: Înregistrează nașterea copilului
+    estimated_documents_ro:
+    - Certificat medical constatator al nașterii
+    - Act de identitate al mamei
+    - Act de identitate al declarantului
+    - Certificat de căsătorie al părinților
+    - Declarație privind numele copilului
+    - Declarație de recunoaștere paternitate
+    - Consimțământ privind numele copilului
+    - Aviz de conformitate județean
+    warning_labels_ro:
+    - Declară nașterea în 30 de zile de la data nașterii.
+    - Declară nașterea copilului născut mort în 3 zile.
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.birth_registration/source_claims.yaml
+    - research/inbox/ro.life.birth_registration/rules.yaml
+    - research/inbox/ro.life.birth_registration/templates.yaml
+- id: fixture.journey.child_allowance.basic_25
+  event_id: ro.life.child_allowance
+  intent_type_id: ro.intent.family.apply_child_allowance
+  expected_preview:
+    user_visible_status: needs_review_banner
+    certification_verdict: conditional_go
+    primary_step_title_ro: Depune cerere de alocație pentru copil
+    estimated_documents_ro:
+    - Cerere pentru alocația de stat
+    - Certificat de naștere al copilului
+    - Act de identitate al solicitantului
+    - Adeverință de înscriere la școală
+    - Certificat de handicap
+    - Certificat medical de motiv medical de repetare
+    - Documente de rezidență pentru copil străin/apatrid
+    - Acordul părinților sau hotărârea aplicabilă
+    - Consimțământ reprezentant legal (plată directă copil)
+    warning_labels_ro:
+    - Dreptul începe din luna următoare nașterii; plata urmează cererii, cu retroactivitate de cel mult 12 luni.
+    - Comunică modificarea în cel mult 15 zile.
+    - Cuantumul numeric 2026 trebuie preluat dintr-o sursă oficială care publică valorile curente; nu se deduce manual din textul consolidat.
+    blocker_summary: rule.allowance.amount_2026_confirmation<-claim.allowance.amount_2026_freeze(needs_confirmation)
+    source_files:
+    - research/inbox/ro.life.child_allowance/source_claims.yaml
+    - research/inbox/ro.life.child_allowance/rules.yaml
+    - research/inbox/ro.life.child_allowance/templates.yaml
+- id: fixture.journey.nursery_enrollment.basic_26
+  event_id: ro.life.nursery_enrollment
+  intent_type_id: ro.intent.education.enroll_nursery
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Fereastra standard de reînscriere a fost 18-22 mai 2026.
+    - Etapa a II-a folosește o nouă cerere cu trei opțiuni, pe locurile rămase.
+    - Confirmă pe sursa oficială a unității locurile, programul, criteriile și programarea curente; nu afișa o recomandare fermă.
+    blocker_summary: rule.nursery.local_gap<-claim.nursery.timis.local_dataset(expired)
+    source_files:
+    - research/inbox/ro.life.nursery_enrollment/source_claims.yaml
+    - research/inbox/ro.life.nursery_enrollment/rules.yaml
+- id: fixture.journey.preschool_enrollment.basic_27
+  event_id: ro.life.preschool_enrollment
+  intent_type_id: ro.intent.education.enroll_preschool
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - Fereastra standard de reînscriere a fost 18-22 mai 2026.
+    - Etapa a II-a folosește o nouă cerere cu trei opțiuni, pe locurile rămase.
+    - Confirmă pe sursa oficială a unității locurile, programul, criteriile și programarea curente; nu afișa o recomandare fermă.
+    blocker_summary: rule.preschool.local_gap<-claim.preschool.timis.local_dataset(expired)
+    source_files:
+    - research/inbox/ro.life.preschool_enrollment/source_claims.yaml
+    - research/inbox/ro.life.preschool_enrollment/rules.yaml
+- id: fixture.journey.preparatory_class_enrollment.basic_28
+  event_id: ro.life.preparatory_class_enrollment
+  intent_type_id: ro.intent.education.enroll_preparatory_class
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: []
+    warning_labels_ro:
+    - La școala de circumscripție, înscrierea este asigurată după validarea cererii.
+    - O altă școală poate admite numai în limita locurilor și după criteriile aplicabile.
+    - Etapele standard s-au încheiat; verifică procedura ISJ pentru situațiile rămase din septembrie.
+    blocker_summary: rule.prep.local_gap<-claim.prep.timis.catchments(verified_with_local_gap)
+    source_files:
+    - research/inbox/ro.life.preparatory_class_enrollment/source_claims.yaml
+    - research/inbox/ro.life.preparatory_class_enrollment/rules.yaml
+- id: fixture.journey.pay_fine.basic_29
+  event_id: ro.life.pay_fine
+  intent_type_id: ro.intent.penalty.pay_fine
+  expected_preview:
+    user_visible_status: ready_for_app_preview
+    certification_verdict: go
+    primary_step_title_ro: Plătește în 15 zile jumătate din minimul legal
+    estimated_documents_ro:
+    - Minimul legal al amenzii și datele de plată
+    - Actul sancționator și minimul legal
+    - Cuantumul amenzii aplicate și datele de plată
+    warning_labels_ro:
+    - Baza este minimul din actul normativ, nu neapărat amenda aplicată în procesul-verbal.
+    - Fereastra generală de 15 zile pentru plata redusă a trecut.
+    - Nu aplica automat reducerea; verifică procesul-verbal și actul sancționator.
+    blocker_summary: none
+    source_files:
+    - research/inbox/ro.life.pay_fine/source_claims.yaml
+    - research/inbox/ro.life.pay_fine/rules.yaml
+    - research/inbox/ro.life.pay_fine/templates.yaml
+- id: fixture.journey.moved_home.variant_30
+  event_id: ro.life.moved_home
+  intent_type_id: ro.intent.home.complete_move_formalities
+  expected_preview:
+    user_visible_status: missing_content
+    certification_verdict: no_go
+    primary_step_title_ro: undetermined_from_yaml
+    estimated_documents_ro: *id001
+    warning_labels_ro:
+    - Ai 15 zile de la mutare sa soliciti noul act de identitate. Nerespectarea se sanctioneaza contraventional (40-80 lei).
+    - La cartea electronica de identitate (CEI) schimbarea adresei se poate face fara un act nou. Confirma procedura curenta la DEP inainte de a renunta la actualizare.
+    blocker_summary: rule.moved.vehicle_address_update<-claim.veh.address_update_exists(needs_confirmation)
+    source_files: *id002
+  gap: multi_intent_variant
