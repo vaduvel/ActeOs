@@ -74,6 +74,12 @@ def _as_date(value: Any) -> Any:
     return value
 
 
+def _iso_date(value: Any) -> Any:
+    if isinstance(value, date):
+        return value.isoformat()
+    return value
+
+
 def validate_case_row(row: Mapping[str, Any]) -> list[str]:
     """Return ``app.cases:identity:column`` invariant violations."""
 
@@ -91,6 +97,54 @@ def validate_case_row(row: Mapping[str, Any]) -> list[str]:
     return violations
 
 
+def validate_resolution_snapshot(row: Mapping[str, Any]) -> list[str]:
+    """Return violations for the journey's lossless replay snapshot.
+
+    ``app.journeys.resolution_snapshot`` is the authoritative replay/serve
+    payload until the normalized projection is materialized. It must therefore
+    agree with the journey header columns that are used for lookups, provenance,
+    and deterministic replay.
+    """
+
+    ident = row.get("case_id", "?")
+    snapshot = row.get("resolution_snapshot")
+    violations: list[str] = []
+    if snapshot is None:
+        return violations
+    if not isinstance(snapshot, Mapping):
+        return [f"app.journeys:{ident}:resolution_snapshot_object"]
+
+    expected_pairs = (
+        ("id", "case_id"),
+        ("version", "revision"),
+        ("reference_date", "reference_date"),
+        ("facts_hash", "facts_hash"),
+        ("engine_version", "engine_version"),
+        ("ruleset_version", "ruleset_version"),
+    )
+    for snapshot_key, row_key in expected_pairs:
+        snapshot_value = _iso_date(snapshot.get(snapshot_key))
+        row_value = _iso_date(row.get(row_key))
+        if snapshot_value != row_value:
+            violations.append(
+                f"app.journeys:{ident}:snapshot_{snapshot_key}_mismatch"
+                f"({snapshot_value}!={row_value})"
+            )
+
+    trace = snapshot.get("resolution_trace")
+    if not isinstance(trace, Mapping):
+        violations.append(f"app.journeys:{ident}:snapshot_resolution_trace_object")
+    else:
+        for key in ("facts_hash", "engine_version", "ruleset_version"):
+            if trace.get(key) != snapshot.get(key):
+                violations.append(f"app.journeys:{ident}:trace_{key}_mismatch")
+
+    events = snapshot.get("events")
+    if not isinstance(events, list):
+        violations.append(f"app.journeys:{ident}:snapshot_events_array")
+    return violations
+
+
 def validate_journey_row(row: Mapping[str, Any]) -> list[str]:
     """Return ``app.journeys:case_id:column`` invariant violations."""
 
@@ -105,6 +159,7 @@ def validate_journey_row(row: Mapping[str, Any]) -> list[str]:
     facts_hash = row.get("facts_hash")
     if isinstance(facts_hash, str) and len(facts_hash) != 64:
         violations.append(f"app.journeys:{ident}:facts_hash_len({len(facts_hash)})")
+    violations.extend(validate_resolution_snapshot(row))
     return violations
 
 
@@ -150,7 +205,12 @@ def build_case_statements(
     *,
     validate: bool = True,
 ) -> list[Any]:
-    """Build the ordered, idempotent INSERTs for a case + its journey."""
+    """Build the ordered, append-only INSERTs for a case + its journey.
+
+    Duplicate case ids or duplicate ``(case_id, revision)`` journey rows are not
+    updated in place. The database unique constraints enforce the append-only
+    journey model; a later revision must be written with a higher revision.
+    """
 
     if validate:
         violations = validate_case_row(case_row) + validate_journey_row(journey_row)
@@ -166,6 +226,17 @@ def build_case_statements(
     ]
 
 
+def build_latest_journey_snapshot_query(case_id: str) -> Any:
+    """Build the replay query: latest journey snapshot for one case id."""
+
+    return (
+        select(journeys.c.resolution_snapshot)
+        .where(journeys.c.case_id == case_id)
+        .order_by(journeys.c.revision.desc())
+        .limit(1)
+    )
+
+
 def compiled_case_sql(case_row: Mapping[str, Any], journey_row: Mapping[str, Any]) -> list[str]:
     """Render the Postgres SQL for the case + journey INSERTs (dry-run / ops)."""
 
@@ -173,6 +244,12 @@ def compiled_case_sql(case_row: Mapping[str, Any], journey_row: Mapping[str, Any
         str(stmt.compile(dialect=postgresql.dialect()))
         for stmt in build_case_statements(case_row, journey_row)
     ]
+
+
+def compiled_latest_journey_sql(case_id: str) -> str:
+    """Render the Postgres replay SELECT for dry-run / regression tests."""
+
+    return str(build_latest_journey_snapshot_query(case_id).compile(dialect=postgresql.dialect()))
 
 
 class SqlAlchemyCaseRepository:
@@ -204,12 +281,7 @@ class SqlAlchemyCaseRepository:
 
     def get(self, case_id: str) -> dict | None:
         with self._engine.connect() as conn:
-            row = conn.execute(
-                select(journeys.c.resolution_snapshot)
-                .where(journeys.c.case_id == case_id)
-                .order_by(journeys.c.revision.desc())
-                .limit(1)
-            ).first()
+            row = conn.execute(build_latest_journey_snapshot_query(case_id)).first()
         if row is None or row[0] is None:
             return None
         return dict(row[0])
