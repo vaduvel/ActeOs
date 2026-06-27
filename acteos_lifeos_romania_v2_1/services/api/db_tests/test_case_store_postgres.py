@@ -24,7 +24,7 @@ from sqlalchemy.engine import Engine
 
 from acteos_api.case_store import CasePersistenceError, SqlAlchemyCaseRepository
 
-PACK_ROOT = Path(__file__).resolve().parents[2]
+PACK_ROOT = Path(__file__).resolve().parents[3]
 MIGRATIONS = [PACK_ROOT / "db" / "0001_init.sql", PACK_ROOT / "db" / "0002_case_resolution_snapshot.sql"]
 
 DATABASE_URL = os.environ.get("ACTEOS_DATABASE_URL")
