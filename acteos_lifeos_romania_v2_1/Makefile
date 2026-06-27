@@ -1,4 +1,4 @@
-.PHONY: validate dev-db api-test test-contract contracts-test
+.PHONY: validate dev-db api-test test-contract contracts-test db-test
 
 PYTHON ?= python3
 
@@ -15,3 +15,6 @@ test-contract:
 	cd services/api && $(PYTHON) -m pytest tests/test_contract_cases_api.py
 
 contracts-test: validate test-contract
+
+db-test:
+	cd services/api && $(PYTHON) -m pytest db_tests
