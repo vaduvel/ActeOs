@@ -14,9 +14,11 @@ from acteos_api.case_store import (
     CasePersistenceError,
     build_case_statements,
     compiled_case_sql,
+    compiled_latest_journey_sql,
     prepare_rows,
     validate_case_row,
     validate_journey_row,
+    validate_resolution_snapshot,
 )
 
 _RULE_SET_ID = "11111111-1111-1111-1111-111111111111"
@@ -39,7 +41,11 @@ def _case(**overrides) -> dict:
         "ruleset_version": "rs-1",
         "trust_state": "trusted",
         "events": [{"event_type_id": "life.identity_card_expired", "status": "resolved"}],
-        "resolution_trace": {"facts_hash": "a" * 64, "engine_version": "engine-1"},
+        "resolution_trace": {
+            "facts_hash": "a" * 64,
+            "engine_version": "engine-1",
+            "ruleset_version": "rs-1",
+        },
         "created_at": "2026-06-26T09:00:00+00:00",
     }
     base.update(overrides)
@@ -75,7 +81,10 @@ def test_missing_identity_is_a_violation():
 
 
 def test_user_id_satisfies_identity():
-    case_row, _ = prepare_rows(_case(installation_id=None, user_id="44444444-4444-4444-4444-444444444444"), _RULE_SET_ID)
+    case_row, _ = prepare_rows(
+        _case(installation_id=None, user_id="44444444-4444-4444-4444-444444444444"),
+        _RULE_SET_ID,
+    )
     assert validate_case_row(case_row) == []
 
 
@@ -87,6 +96,36 @@ def test_unknown_status_is_a_violation():
 def test_bad_facts_hash_length_is_a_violation():
     _, journey_row = prepare_rows(_case(facts_hash="short"), _RULE_SET_ID)
     assert any("facts_hash_len" in v for v in validate_journey_row(journey_row))
+
+
+def test_resolution_snapshot_header_must_match_journey_header():
+    _, journey_row = prepare_rows(_case(), _RULE_SET_ID)
+    journey_row["resolution_snapshot"] = {
+        **journey_row["resolution_snapshot"],
+        "facts_hash": "b" * 64,
+    }
+    violations = validate_resolution_snapshot(journey_row)
+    assert any("snapshot_facts_hash_mismatch" in v for v in violations)
+
+
+def test_resolution_snapshot_trace_must_match_snapshot_header():
+    _, journey_row = prepare_rows(_case(), _RULE_SET_ID)
+    journey_row["resolution_snapshot"] = {
+        **journey_row["resolution_snapshot"],
+        "resolution_trace": {
+            **journey_row["resolution_snapshot"]["resolution_trace"],
+            "engine_version": "different-engine",
+        },
+    }
+    violations = validate_journey_row(journey_row)
+    assert any("trace_engine_version_mismatch" in v for v in violations)
+
+
+def test_resolution_snapshot_must_keep_events_array_for_replay():
+    _, journey_row = prepare_rows(_case(), _RULE_SET_ID)
+    journey_row["resolution_snapshot"] = {**journey_row["resolution_snapshot"], "events": None}
+    violations = validate_journey_row(journey_row)
+    assert any("snapshot_events_array" in v for v in violations)
 
 
 def test_build_statements_rejects_invalid_rows():
@@ -101,3 +140,21 @@ def test_compiled_sql_targets_both_tables():
     assert "app.cases" in sql
     assert "app.journeys" in sql
     assert "on conflict" in sql
+
+
+def test_compiled_writes_are_append_only_not_update_in_place():
+    case_row, journey_row = prepare_rows(_case(), _RULE_SET_ID)
+    sql = " ".join(compiled_case_sql(case_row, journey_row)).lower()
+    assert "on conflict" in sql
+    assert "do nothing" in sql
+    assert "do update" not in sql
+    assert "update app.cases" not in sql
+    assert "update app.journeys" not in sql
+
+
+def test_compiled_replay_query_uses_latest_journey_snapshot():
+    sql = compiled_latest_journey_sql("22222222-2222-2222-2222-222222222222").lower()
+    assert "select app.journeys.resolution_snapshot" in sql
+    assert "where app.journeys.case_id" in sql
+    assert "order by app.journeys.revision desc" in sql
+    assert "limit" in sql
