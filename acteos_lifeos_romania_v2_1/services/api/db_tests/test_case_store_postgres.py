@@ -15,6 +15,7 @@ applying migrations. It only runs when both environment variables are set:
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -63,14 +64,121 @@ def _reset_and_migrate(engine: Engine) -> None:
 
 
 def _split_sql(sql: str) -> list[str]:
-    """Split the current plain-SQL migrations into executable statements.
+    """Split migration SQL into executable statements without breaking on comments.
 
-    The current migration files contain no dollar-quoted functions/procedures, so
-    semicolon splitting is sufficient and keeps the integration test independent
-    from a local ``psql`` binary.
+    We intentionally keep the integration test independent from a local ``psql``
+    binary, but the migrations still contain semicolons inside ``--`` comments.
+    A naive ``split(';')`` turns comment tails into bogus SQL statements, so we
+    scan the file and only split on statement terminators that are outside
+    strings, identifiers, dollar-quoted bodies and comments.
     """
 
-    return [statement.strip() for statement in sql.split(";") if statement.strip()]
+    statements: list[str] = []
+    current: list[str] = []
+    in_single_quote = False
+    in_double_quote = False
+    in_line_comment = False
+    in_block_comment = False
+    dollar_tag: str | None = None
+    idx = 0
+
+    while idx < len(sql):
+        ch = sql[idx]
+        nxt = sql[idx + 1] if idx + 1 < len(sql) else ""
+
+        if in_line_comment:
+            if ch == "\n":
+                in_line_comment = False
+                current.append(ch)
+            idx += 1
+            continue
+
+        if in_block_comment:
+            if ch == "*" and nxt == "/":
+                in_block_comment = False
+                idx += 2
+            else:
+                idx += 1
+            continue
+
+        if dollar_tag is not None:
+            if sql.startswith(dollar_tag, idx):
+                current.append(dollar_tag)
+                idx += len(dollar_tag)
+                dollar_tag = None
+            else:
+                current.append(ch)
+                idx += 1
+            continue
+
+        if in_single_quote:
+            current.append(ch)
+            if ch == "'" and nxt == "'":
+                current.append(nxt)
+                idx += 2
+                continue
+            if ch == "'":
+                in_single_quote = False
+            idx += 1
+            continue
+
+        if in_double_quote:
+            current.append(ch)
+            if ch == '"' and nxt == '"':
+                current.append(nxt)
+                idx += 2
+                continue
+            if ch == '"':
+                in_double_quote = False
+            idx += 1
+            continue
+
+        if ch == "-" and nxt == "-":
+            in_line_comment = True
+            idx += 2
+            continue
+
+        if ch == "/" and nxt == "*":
+            in_block_comment = True
+            idx += 2
+            continue
+
+        if ch == "'":
+            in_single_quote = True
+            current.append(ch)
+            idx += 1
+            continue
+
+        if ch == '"':
+            in_double_quote = True
+            current.append(ch)
+            idx += 1
+            continue
+
+        if ch == "$":
+            match = re.match(r"^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$", sql[idx:])
+            if match:
+                dollar_tag = match.group(0)
+                current.append(dollar_tag)
+                idx += len(dollar_tag)
+                continue
+
+        if ch == ";":
+            statement = "".join(current).strip()
+            if statement:
+                statements.append(statement)
+            current = []
+            idx += 1
+            continue
+
+        current.append(ch)
+        idx += 1
+
+    tail = "".join(current).strip()
+    if tail:
+        statements.append(tail)
+
+    return statements
 
 
 def _seed_minimal_content(engine: Engine) -> None:
