@@ -22,7 +22,7 @@ from typing import Any
 
 import pytest
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine, make_url
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 from acteos_api.case_store import CasePersistenceError, SqlAlchemyCaseRepository
@@ -43,7 +43,6 @@ CASE_ID = "22222222-2222-2222-2222-222222222222"
 EVENT_TYPE_ID = "life.identity_card_expired"
 RULESET_VERSION = "rs-it-1"
 RLS_ROLE = "acteos_rls_test_user"
-RLS_PASSWORD = "acteos_rls_test_password"
 USER_ID = "55555555-5555-5555-5555-555555555555"
 OTHER_USER_ID = "66666666-6666-6666-6666-666666666666"
 RLS_CASE_ID = "77777777-7777-7777-7777-777777777777"
@@ -288,23 +287,19 @@ def _seed_rls_role(engine: Engine) -> None:
             do $$
             begin
                 if not exists (select 1 from pg_roles where rolname = '{RLS_ROLE}') then
-                    create role {RLS_ROLE} login password '{RLS_PASSWORD}' nosuperuser nocreatedb nocreaterole;
+                    create role {RLS_ROLE} nosuperuser nocreatedb nocreaterole;
                 else
-                    alter role {RLS_ROLE} with login password '{RLS_PASSWORD}' nosuperuser nocreatedb nocreaterole;
+                    alter role {RLS_ROLE} with nosuperuser nocreatedb nocreaterole;
                 end if;
             end
             $$
             """
         )
+        conn.exec_driver_sql(f"grant {RLS_ROLE} to current_user")
         conn.exec_driver_sql(f"grant usage on schema app to {RLS_ROLE}")
         conn.exec_driver_sql(f"grant usage on schema auth to {RLS_ROLE}")
         conn.exec_driver_sql(f"grant execute on function auth.uid() to {RLS_ROLE}")
         conn.exec_driver_sql(f"grant select on app.cases, app.journeys to {RLS_ROLE}")
-
-
-def _rls_database_url() -> str:
-    assert DATABASE_URL is not None
-    return str(make_url(DATABASE_URL).set(username=RLS_ROLE, password=RLS_PASSWORD))
 
 
 def _set_jwt_subject(conn: Any, subject: str) -> None:
@@ -431,29 +426,27 @@ def test_rls_hides_cases_and_journeys_from_other_users(engine: Engine):
         )
     )
 
-    rls_engine = create_engine(_rls_database_url(), future=True, pool_pre_ping=True)
-    try:
-        with rls_engine.connect() as conn:
-            _set_jwt_subject(conn, USER_ID)
-            visible_cases = conn.execute(
-                text("select count(*) from app.cases where id = :case_id"), {"case_id": RLS_CASE_ID}
-            ).scalar_one()
-            visible_journeys = conn.execute(
-                text("select count(*) from app.journeys where case_id = :case_id"),
-                {"case_id": RLS_CASE_ID},
-            ).scalar_one()
+    with engine.begin() as conn:
+        conn.exec_driver_sql(f"set local role {RLS_ROLE}")
+        _set_jwt_subject(conn, USER_ID)
+        visible_cases = conn.execute(
+            text("select count(*) from app.cases where id = :case_id"), {"case_id": RLS_CASE_ID}
+        ).scalar_one()
+        visible_journeys = conn.execute(
+            text("select count(*) from app.journeys where case_id = :case_id"),
+            {"case_id": RLS_CASE_ID},
+        ).scalar_one()
 
-        with rls_engine.connect() as conn:
-            _set_jwt_subject(conn, OTHER_USER_ID)
-            hidden_cases = conn.execute(
-                text("select count(*) from app.cases where id = :case_id"), {"case_id": RLS_CASE_ID}
-            ).scalar_one()
-            hidden_journeys = conn.execute(
-                text("select count(*) from app.journeys where case_id = :case_id"),
-                {"case_id": RLS_CASE_ID},
-            ).scalar_one()
-    finally:
-        rls_engine.dispose()
+    with engine.begin() as conn:
+        conn.exec_driver_sql(f"set local role {RLS_ROLE}")
+        _set_jwt_subject(conn, OTHER_USER_ID)
+        hidden_cases = conn.execute(
+            text("select count(*) from app.cases where id = :case_id"), {"case_id": RLS_CASE_ID}
+        ).scalar_one()
+        hidden_journeys = conn.execute(
+            text("select count(*) from app.journeys where case_id = :case_id"),
+            {"case_id": RLS_CASE_ID},
+        ).scalar_one()
 
     assert visible_cases == 1
     assert visible_journeys == 1

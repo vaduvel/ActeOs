@@ -7,7 +7,7 @@ returns trigger
 language plpgsql
 as $$
 begin
-    raise exception 'audit.events is append-only; attempted % is not allowed', tg_op
+    raise exception 'audit.events is append-only; attempted %% is not allowed', tg_op
         using errcode = 'check_violation';
 end;
 $$;
