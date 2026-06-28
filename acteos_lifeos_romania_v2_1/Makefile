@@ -7,6 +7,10 @@ validate:
 
 dev-db:
 	docker compose -f infra/docker-compose.yml up -d postgres
+	@until docker compose -f infra/docker-compose.yml exec -T postgres pg_isready -U acteos -d acteos >/dev/null 2>&1; do \
+		echo "Waiting for Postgres..."; \
+		sleep 2; \
+	done
 
 api-test:
 	cd services/api && $(PYTHON) -m pytest
