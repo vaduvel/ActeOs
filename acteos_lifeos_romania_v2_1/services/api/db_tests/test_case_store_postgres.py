@@ -297,6 +297,8 @@ def _seed_rls_role(engine: Engine) -> None:
             """
         )
         conn.exec_driver_sql(f"grant usage on schema app to {RLS_ROLE}")
+        conn.exec_driver_sql(f"grant usage on schema auth to {RLS_ROLE}")
+        conn.exec_driver_sql(f"grant execute on function auth.uid() to {RLS_ROLE}")
         conn.exec_driver_sql(f"grant select on app.cases, app.journeys to {RLS_ROLE}")
 
 
