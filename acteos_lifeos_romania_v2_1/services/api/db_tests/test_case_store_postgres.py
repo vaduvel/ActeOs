@@ -1,9 +1,10 @@
 """Opt-in Postgres integration tests for DB-backed case replay.
 
 These tests exercise the real ``SqlAlchemyCaseRepository`` against PostgreSQL,
-including migrations, FK-backed seed rows, append-only journey revisions, and
-latest-snapshot replay. They are intentionally outside ``tests/`` so the fast
-``make api-test`` suite remains DB-free.
+including migrations, FK-backed seed rows, append-only journey revisions, latest
+snapshot replay, RLS negative checks, and append-only audit enforcement. They are
+intentionally outside ``tests/`` so the fast ``make api-test`` suite remains
+DB-free.
 
 Safety guard: the test resets ``app``, ``content`` and ``audit`` schemas before
 applying migrations. It only runs when both environment variables are set:
@@ -21,12 +22,13 @@ from typing import Any
 
 import pytest
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
+from sqlalchemy.exc import SQLAlchemyError
 
 from acteos_api.case_store import CasePersistenceError, SqlAlchemyCaseRepository
 
 PACK_ROOT = Path(__file__).resolve().parents[3]
-MIGRATIONS = [PACK_ROOT / "db" / "0001_init.sql", PACK_ROOT / "db" / "0002_case_resolution_snapshot.sql"]
+MIGRATIONS = sorted((PACK_ROOT / "db").glob("[0-9][0-9][0-9][0-9]_*.sql"))
 
 DATABASE_URL = os.environ.get("ACTEOS_DATABASE_URL")
 ALLOW_RESET = os.environ.get("ACTEOS_DB_TEST_RESET") == "1"
@@ -40,6 +42,11 @@ INSTALLATION_ID = "33333333-3333-3333-3333-333333333333"
 CASE_ID = "22222222-2222-2222-2222-222222222222"
 EVENT_TYPE_ID = "life.identity_card_expired"
 RULESET_VERSION = "rs-it-1"
+RLS_ROLE = "acteos_rls_test_user"
+RLS_PASSWORD = "acteos_rls_test_password"
+USER_ID = "55555555-5555-5555-5555-555555555555"
+OTHER_USER_ID = "66666666-6666-6666-6666-666666666666"
+RLS_CASE_ID = "77777777-7777-7777-7777-777777777777"
 
 
 @pytest.fixture(scope="module")
@@ -48,6 +55,7 @@ def engine() -> Engine:
     engine = create_engine(DATABASE_URL, future=True, pool_pre_ping=True)
     _reset_and_migrate(engine)
     _seed_minimal_content(engine)
+    _seed_rls_role(engine)
     yield engine
     engine.dispose()
 
@@ -57,20 +65,45 @@ def _reset_and_migrate(engine: Engine) -> None:
         conn.exec_driver_sql("drop schema if exists audit cascade")
         conn.exec_driver_sql("drop schema if exists app cascade")
         conn.exec_driver_sql("drop schema if exists content cascade")
+        _ensure_local_auth_uid(conn)
         for migration_path in MIGRATIONS:
             sql = migration_path.read_text(encoding="utf-8")
             for statement in _split_sql(sql):
                 conn.exec_driver_sql(statement)
 
 
+def _ensure_local_auth_uid(conn: Any) -> None:
+    """Provide the Supabase-compatible auth.uid() helper in local Postgres.
+
+    ``db/0003_rls.sql`` is intentionally written for Supabase and references
+    ``auth.uid()``. Local disposable Postgres does not ship that schema, so the
+    integration test creates a compatible function backed by the common
+    ``request.jwt.claim.sub`` setting before applying the RLS migration.
+    """
+
+    conn.exec_driver_sql("create schema if not exists auth")
+    conn.exec_driver_sql(
+        """
+        create or replace function auth.uid()
+        returns uuid
+        language sql
+        stable
+        as $$
+            select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+        $$
+        """
+    )
+
+
 def _split_sql(sql: str) -> list[str]:
     """Split migration SQL into executable statements without breaking on comments.
 
     We intentionally keep the integration test independent from a local ``psql``
-    binary, but the migrations still contain semicolons inside ``--`` comments.
-    A naive ``split(';')`` turns comment tails into bogus SQL statements, so we
-    scan the file and only split on statement terminators that are outside
-    strings, identifiers, dollar-quoted bodies and comments.
+    binary, but the migrations still contain semicolons inside comments and may
+    later contain dollar-quoted functions. A naive ``split(';')`` turns comment
+    tails into bogus SQL statements, so we scan the file and only split on
+    statement terminators that are outside strings, identifiers, dollar-quoted
+    bodies and comments.
     """
 
     statements: list[str] = []
@@ -209,6 +242,32 @@ def _seed_minimal_content(engine: Engine) -> None:
         conn.execute(
             text(
                 """
+                insert into content.intent_categories (
+                    id, title_ro, display_order, status, catalog_version
+                ) values (
+                    'identity_documents', 'Acte de identitate', 1, 'active', '2.1.0-it'
+                )
+                """
+            )
+        )
+        conn.execute(
+            text(
+                """
+                insert into content.intent_types (
+                    id, category_id, kind, title_ro, outcome_ro, jurisdiction_scope,
+                    release_wave, research_status, production_status, availability_policy,
+                    catalog_version
+                ) values (
+                    'ro.intent.identity.renew_expired_id', 'identity_documents', 'direct_goal',
+                    'Reînnoiește buletinul expirat', 'Act de identitate valabil', 'mixed',
+                    'R1A', 'required', 'not_available', 'source_required', '2.1.0-it'
+                )
+                """
+            )
+        )
+        conn.execute(
+            text(
+                """
                 insert into content.rule_sets (
                     version, scope, schema_version, engine_compatibility,
                     manifest_sha256, status, approved_by
@@ -220,6 +279,34 @@ def _seed_minimal_content(engine: Engine) -> None:
             ),
             {"version": RULESET_VERSION, "manifest_sha256": "c" * 64},
         )
+
+
+def _seed_rls_role(engine: Engine) -> None:
+    with engine.begin() as conn:
+        conn.exec_driver_sql(
+            f"""
+            do $$
+            begin
+                if not exists (select 1 from pg_roles where rolname = '{RLS_ROLE}') then
+                    create role {RLS_ROLE} login password '{RLS_PASSWORD}' nosuperuser nocreatedb nocreaterole;
+                else
+                    alter role {RLS_ROLE} with login password '{RLS_PASSWORD}' nosuperuser nocreatedb nocreaterole;
+                end if;
+            end
+            $$
+            """
+        )
+        conn.exec_driver_sql(f"grant usage on schema app to {RLS_ROLE}")
+        conn.exec_driver_sql(f"grant select on app.cases, app.journeys to {RLS_ROLE}")
+
+
+def _rls_database_url() -> str:
+    assert DATABASE_URL is not None
+    return str(make_url(DATABASE_URL).set(username=RLS_ROLE, password=RLS_PASSWORD))
+
+
+def _set_jwt_subject(conn: Any, subject: str) -> None:
+    conn.execute(text("select set_config('request.jwt.claim.sub', :subject, false)"), {"subject": subject})
 
 
 def _case(**overrides: Any) -> dict[str, Any]:
@@ -329,3 +416,76 @@ def test_sqlalchemy_case_repository_rejects_unpublished_ruleset(engine: Engine):
             {"case_id": missing_ruleset_case["id"]},
         ).scalar_one()
     assert persisted == 0
+
+
+def test_rls_hides_cases_and_journeys_from_other_users(engine: Engine):
+    repo = SqlAlchemyCaseRepository(engine)
+    repo.save(
+        _case(
+            id=RLS_CASE_ID,
+            user_id=USER_ID,
+            installation_id=None,
+            facts_hash="d" * 64,
+        )
+    )
+
+    rls_engine = create_engine(_rls_database_url(), future=True, pool_pre_ping=True)
+    try:
+        with rls_engine.connect() as conn:
+            _set_jwt_subject(conn, USER_ID)
+            visible_cases = conn.execute(
+                text("select count(*) from app.cases where id = :case_id"), {"case_id": RLS_CASE_ID}
+            ).scalar_one()
+            visible_journeys = conn.execute(
+                text("select count(*) from app.journeys where case_id = :case_id"),
+                {"case_id": RLS_CASE_ID},
+            ).scalar_one()
+
+        with rls_engine.connect() as conn:
+            _set_jwt_subject(conn, OTHER_USER_ID)
+            hidden_cases = conn.execute(
+                text("select count(*) from app.cases where id = :case_id"), {"case_id": RLS_CASE_ID}
+            ).scalar_one()
+            hidden_journeys = conn.execute(
+                text("select count(*) from app.journeys where case_id = :case_id"),
+                {"case_id": RLS_CASE_ID},
+            ).scalar_one()
+    finally:
+        rls_engine.dispose()
+
+    assert visible_cases == 1
+    assert visible_journeys == 1
+    assert hidden_cases == 0
+    assert hidden_journeys == 0
+
+
+def test_audit_events_are_append_only(engine: Engine):
+    with engine.begin() as conn:
+        audit_id = conn.execute(
+            text(
+                """
+                insert into audit.events (actor_type, actor_id, action, entity_type, entity_id, request_id)
+                values ('system', 'db-test', 'case.replayed', 'case', :case_id, 'req-db-test')
+                returning id
+                """
+            ),
+            {"case_id": CASE_ID},
+        ).scalar_one()
+
+    with pytest.raises(SQLAlchemyError):
+        with engine.begin() as conn:
+            conn.execute(
+                text("update audit.events set action = 'case.tampered' where id = :audit_id"),
+                {"audit_id": audit_id},
+            )
+
+    with pytest.raises(SQLAlchemyError):
+        with engine.begin() as conn:
+            conn.execute(text("delete from audit.events where id = :audit_id"), {"audit_id": audit_id})
+
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("select action from audit.events where id = :audit_id"), {"audit_id": audit_id}
+        ).one()
+
+    assert row[0] == "case.replayed"
