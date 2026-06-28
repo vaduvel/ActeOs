@@ -67,6 +67,8 @@ STEP_STATUSES = frozenset(
 REQUIREMENT_STATUSES = frozenset(
     {"missing", "provided", "needs_review", "ready", "expired", "rejected", "not_applicable"}
 )
+REQUIREMENT_OBLIGATIONS = frozenset({"mandatory", "conditional", "optional"})
+REQUIREMENT_TIMINGS = frozenset({"now", "later"})
 
 _EVENT_TO_STEP_STATUS = {
     "draft": "locked",
@@ -201,6 +203,18 @@ def _default_requirement_status(explicit: Any) -> str:
     return "missing"
 
 
+def _default_requirement_obligation(explicit: Any) -> str:
+    if isinstance(explicit, str) and explicit in REQUIREMENT_OBLIGATIONS:
+        return explicit
+    return "mandatory"
+
+
+def _default_requirement_timing(explicit: Any) -> str:
+    if isinstance(explicit, str) and explicit in REQUIREMENT_TIMINGS:
+        return explicit
+    return "now"
+
+
 def _synthetic_step_row(
     journey_id: str,
     event_key: str,
@@ -265,8 +279,8 @@ def _build_requirement_spec(
         "semantic_key": semantic_key,
         "title_ro": requirement.get("title_ro") or semantic_key,
         "description_ro": requirement.get("description_ro"),
-        "obligation": requirement.get("obligation") or "derived_from_snapshot",
-        "timing": requirement.get("timing") or "derived_from_snapshot",
+        "obligation": _default_requirement_obligation(requirement.get("obligation")),
+        "timing": _default_requirement_timing(requirement.get("timing")),
         "accepted_forms": _as_string_list(requirement.get("accepted_forms")),
         "validity": dict(requirement.get("validity")) if _as_mapping(requirement.get("validity")) else {},
         "readiness_checks": _as_string_list(requirement.get("readiness_checks")),

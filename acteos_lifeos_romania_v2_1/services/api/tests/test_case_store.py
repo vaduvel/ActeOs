@@ -90,8 +90,8 @@ def test_prepare_projection_rows_support_string_steps_and_requirements():
     assert [row["semantic_key"] for row in requirement_specs] == ["req.identity_photo"]
     assert requirement_specs[0]["journey_step_semantic_key"] == "apply_identity_card_expired"
     assert requirement_specs[0]["title_ro"] == "req.identity_photo"
-    assert requirement_specs[0]["obligation"] == "derived_from_snapshot"
-    assert requirement_specs[0]["timing"] == "derived_from_snapshot"
+    assert requirement_specs[0]["obligation"] == "mandatory"
+    assert requirement_specs[0]["timing"] == "now"
 
 
 def test_prepare_projection_rows_preserves_rich_step_and_requirement_objects():
@@ -118,7 +118,7 @@ def test_prepare_projection_rows_preserves_rich_step_and_requirement_objects():
                                 "title_ro": "Fotografie recentă",
                                 "description_ro": "Tip pașaport.",
                                 "obligation": "mandatory",
-                                "timing": "before_submission",
+                                "timing": "later",
                                 "accepted_forms": ["original"],
                                 "readiness_checks": ["is_recent"],
                                 "source_claim_ids": [_UUID_2],
@@ -152,15 +152,15 @@ def test_prepare_projection_rows_preserves_rich_step_and_requirement_objects():
             "journey_step_semantic_key": "apply_identity_card_expired",
             "template_id": "tmpl.req.identity_photo",
             "semantic_key": "req.identity_photo",
-            "title_ro": "Fotografie recentă",
-            "description_ro": "Tip pașaport.",
-            "obligation": "mandatory",
-            "timing": "before_submission",
-            "accepted_forms": ["original"],
-            "validity": {},
-            "readiness_checks": ["is_recent"],
-            "source_claim_ids": [_UUID_2],
-            "status": "ready",
+                "title_ro": "Fotografie recentă",
+                "description_ro": "Tip pașaport.",
+                "obligation": "mandatory",
+                "timing": "later",
+                "accepted_forms": ["original"],
+                "validity": {},
+                "readiness_checks": ["is_recent"],
+                "source_claim_ids": [_UUID_2],
+                "status": "ready",
             "version": 1,
         }
     ]
@@ -180,6 +180,28 @@ def test_prepare_projection_rows_adds_synthetic_step_when_event_has_only_require
     step_rows, requirement_specs = prepare_projection_rows(snapshot, "journey-3")
     assert [row["semantic_key"] for row in step_rows] == ["life.identity_card_expired::requirements"]
     assert requirement_specs[0]["journey_step_semantic_key"] == "life.identity_card_expired::requirements"
+
+
+def test_prepare_projection_rows_coerces_invalid_requirement_obligation_and_timing():
+    snapshot = _case(
+        events=[
+            {
+                "event_type_id": "life.identity_card_expired",
+                "status": "resolved",
+                "included_steps": ["apply_identity_card_expired"],
+                "requirements": [
+                    {
+                        "id": "req.identity_photo",
+                        "obligation": "derived_from_snapshot",
+                        "timing": "derived_from_snapshot",
+                    }
+                ],
+            }
+        ]
+    )
+    _, requirement_specs = prepare_projection_rows(snapshot, "journey-1")
+    assert requirement_specs[0]["obligation"] == "mandatory"
+    assert requirement_specs[0]["timing"] == "now"
 
 
 def test_prepare_projection_rows_does_not_mutate_authoritative_snapshot():
