@@ -17,10 +17,10 @@ Honesty guarantees (no fabricated data):
   because that table's ``source_id``/``snapshot_id`` are NOT-NULL FKs that the
   inbox cannot yet satisfy.
 - The provenance chain (:meth:`PublishedBundle.as_provenance_rows`) is gated on
-  real authored sources/snapshots: a claim row is emitted only when BOTH its
-  source and snapshot resolve to authored records, so with today's inbox (no
-  ``sources``/``snapshots`` authored, ``snapshot_id: pending``) it emits nothing
-  yet stays FK-safe and lights up automatically once provenance lands.
+  real authored sources/snapshots (authored in each batch's ``sources.yaml``): a
+  claim row is emitted only when BOTH its source and snapshot resolve to authored
+  records, so until provenance lands it emits nothing yet stays FK-safe and
+  lights up automatically once ``sources.yaml`` is authored.
 - Rules without ``effective_from`` are surfaced as deferred, because
   ``content.rule_revisions.effective_from`` is ``NOT NULL``;
   :meth:`PublishedBundle.as_content_rows` with ``strict=True`` refuses them.
@@ -113,8 +113,16 @@ def _rules(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
 
 
 def _sources(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    """Optional ``sources:`` list authored alongside the claims doc."""
+    """Authored ``sources:`` list backing content.sources.
 
+    Canonical location is each batch's sibling ``sources.yaml`` (loaded as
+    ``provenance`` by authoring.loader.load_batch). For in-memory test batches we
+    fall back to a ``sources:`` key inlined in the claims doc.
+    """
+
+    prov = batch.get("provenance")
+    if isinstance(prov, Mapping) and prov.get("sources") is not None:
+        return [s for s in (prov.get("sources") or []) if isinstance(s, Mapping)]
     doc = batch.get("claims")
     if isinstance(doc, Mapping):
         return [s for s in (doc.get("sources") or []) if isinstance(s, Mapping)]
@@ -122,8 +130,15 @@ def _sources(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
 
 
 def _snapshots(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    """Optional ``snapshots:`` list authored alongside the claims doc."""
+    """Authored ``snapshots:`` list backing content.source_snapshots.
 
+    Same resolution order as :func:`_sources`: the sibling ``sources.yaml``
+    (``provenance``) first, then an inline ``snapshots:`` key in the claims doc.
+    """
+
+    prov = batch.get("provenance")
+    if isinstance(prov, Mapping) and prov.get("snapshots") is not None:
+        return [s for s in (prov.get("snapshots") or []) if isinstance(s, Mapping)]
     doc = batch.get("claims")
     if isinstance(doc, Mapping):
         return [s for s in (doc.get("snapshots") or []) if isinstance(s, Mapping)]
@@ -379,7 +394,7 @@ class PublishedBundle:
         ``sources`` entry; a snapshot only when its ``source_id`` resolves to one
         of those sources; a claim only when BOTH its source and snapshot resolve.
 
-        With today's inbox (no ``sources``/``snapshots`` authored, every claim's
+        Until provenance is authored (no ``sources.yaml``; every claim's
         ``snapshot_id`` still ``pending``) all three lists are empty, so the
         chain is correct and FK-safe yet writes nothing until provenance lands.
         """
@@ -552,9 +567,11 @@ def compile_bundle(
             )
 
     # --- Pass 1b: sources + snapshots -> deterministic uuids (gated chain). --
-    # Optional ``sources:`` / ``snapshots:`` lists authored alongside the claims
-    # doc. Absent today, so these dicts stay empty and the provenance chain
-    # emits nothing -- but the wiring is production-ready for when they land.
+    # Authored ``sources:`` / ``snapshots:`` lists, canonically from each batch's
+    # sibling ``sources.yaml`` (loaded as ``provenance``), with a fallback to
+    # inline keys in the claims doc for in-memory test batches. When absent these
+    # dicts stay empty and the provenance chain emits nothing -- the wiring lights
+    # up automatically once real sources/snapshots land.
     source_records: dict[str, SourceRecord] = {}
     for batch in batches:
         for src in _sources(batch):

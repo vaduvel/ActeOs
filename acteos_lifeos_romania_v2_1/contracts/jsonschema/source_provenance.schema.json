@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://acteos.ro/contracts/source_provenance.schema.json",
+  "title": "ActeOS source provenance batch (sources.yaml)",
+  "description": "Certified legal sources and their immutable snapshots for one authoring batch. This file sits next to source_claims.yaml in a research/inbox batch directory and is loaded by authoring.loader.load_batch under the 'provenance' key. It backs content.sources and content.source_snapshots. The publish pipeline emits a content.source_claims row only when the claim's source_id resolves to a sources[].id here AND its snapshot_id resolves to a snapshots[].id here; otherwise the claim is deferred (FK-safe).",
+  "type": "object",
+  "required": ["sources", "snapshots"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_ref": {"type": "string"},
+    "batch_id": {"type": "string"},
+    "sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source"}
+    },
+    "snapshots": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/snapshot"}
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["id", "canonical_url", "publisher", "authority_level", "fetch_mode"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "Stable source key referenced by claims' source_id and by snapshots' source_id, e.g. src.oug_97_2005."},
+        "canonical_url": {"type": "string", "format": "uri"},
+        "publisher": {"type": "string"},
+        "authority_level": {"type": "string"},
+        "legal_rank": {"type": ["string", "null"]},
+        "territory_ids": {"type": "array", "items": {"type": "string"}, "default": []},
+        "competence_scope": {"type": "array", "items": {"type": "string"}, "default": []},
+        "fetch_mode": {"type": "string", "enum": ["manual", "scheduled", "api"]},
+        "allowed_to_fetch": {"type": "boolean", "default": false}
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "required": ["id", "source_id", "captured_at", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "Stable snapshot key referenced by claims' snapshot_id (this replaces the placeholder value 'pending')."},
+        "source_id": {"type": "string", "description": "Must match a sources[].id declared in this same file."},
+        "captured_at": {"type": "string", "format": "date-time"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Lowercase hex sha256 of the captured bytes; NOT NULL in content.source_snapshots."},
+        "http_status": {"type": ["integer", "null"]},
+        "content_type": {"type": ["string", "null"]},
+        "storage_object_key": {"type": ["string", "null"]},
+        "normalized_text_object_key": {"type": ["string", "null"]},
+        "etag": {"type": ["string", "null"]},
+        "last_modified": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
