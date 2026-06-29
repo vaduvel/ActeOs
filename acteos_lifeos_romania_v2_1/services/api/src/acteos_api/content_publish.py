@@ -2,17 +2,23 @@
 
 This is the production persistence adapter behind a port. It consumes
 ``PublishedBundle.as_content_rows()`` from the engine's publish compiler, the
-``EventTypeRecord`` rows from the event-catalog compiler, and the
+``EventTypeRecord`` rows from the event-catalog compiler, the
 ``StepTemplateRecord`` / ``RequirementTemplateRecord`` rows from the template
-compiler, and:
+compiler, and the gated provenance chain from
+``PublishedBundle.as_provenance_rows()``, and:
 
 1. enforces the database NOT NULL invariants *before* touching the DB
    (``validate_content_rows``), so a malformed bundle is refused with a clear
    message instead of a raw IntegrityError;
 2. builds ordered, idempotent ``INSERT ... ON CONFLICT DO NOTHING`` statements in
    FK-safe order (life_event_types -> step_templates -> requirement_templates ->
-   rule_sets -> rule_revisions -> rule_set_members);
+   sources -> source_snapshots -> source_claims -> rule_sets -> rule_revisions
+   -> rule_set_members);
 3. executes them inside a single transaction via a SQLAlchemy ``Engine``.
+
+The provenance chain is gated: it stays empty until real sources/snapshots are
+authored, so wiring it into ``publish_release`` today writes nothing extra and
+leaves existing statement ordering unchanged.
 
 Statement building and validation are pure and unit tested without a live
 database; only the ``publish*`` methods need a real engine.
@@ -39,6 +45,9 @@ from .content_tables import (
     rule_revisions,
     rule_set_members,
     rule_sets,
+    source_claims,
+    source_snapshots,
+    sources,
     step_templates,
 )
 
@@ -48,7 +57,8 @@ class ContentPublishError(RuntimeError):
 
 
 # NOT NULL columns we populate per table (db/0001_init.sql). Columns with DB
-# defaults (created_at, status defaults) or nullable columns are omitted.
+# defaults (created_at, status defaults) or nullable columns are omitted, except
+# source_snapshots.captured_at which we always send and therefore require.
 REQUIRED_NOT_NULL: dict[str, tuple[str, ...]] = {
     "content.life_event_types": (
         "id",
@@ -67,6 +77,33 @@ REQUIRED_NOT_NULL: dict[str, tuple[str, ...]] = {
         "title_ro",
         "obligation",
         "timing",
+        "status",
+    ),
+    "content.sources": (
+        "id",
+        "canonical_url",
+        "publisher",
+        "authority_level",
+        "fetch_mode",
+    ),
+    "content.source_snapshots": (
+        "id",
+        "source_id",
+        "sha256",
+        "captured_at",
+    ),
+    "content.source_claims": (
+        "id",
+        "stable_key",
+        "source_id",
+        "snapshot_id",
+        "statement",
+        "evidence_excerpt",
+        "locator",
+        "authority_level",
+        "accessed_at",
+        "confidence",
+        "freshness_class",
         "status",
     ),
     "content.rule_sets": (
@@ -112,6 +149,7 @@ def validate_content_rows(rows: Mapping[str, list[dict[str, Any]]]) -> list[str]
                 row.get("id")
                 or row.get("canonical_rule_id")
                 or row.get("version")
+                or row.get("stable_key")
                 or f"#{index}"
             )
             for column in required:
@@ -130,6 +168,9 @@ class PublishResult:
     event_type_count: int = 0
     step_template_count: int = 0
     requirement_template_count: int = 0
+    source_count: int = 0
+    source_snapshot_count: int = 0
+    source_claim_count: int = 0
 
 
 def build_event_type_statements(
@@ -200,6 +241,50 @@ def build_requirement_template_statements(
     ]
 
 
+def build_provenance_statements(
+    bundle: PublishedBundle,
+    *,
+    validate: bool = True,
+) -> list[Any]:
+    """Build ordered, idempotent INSERTs for the gated provenance chain.
+
+    Emits content.sources -> content.source_snapshots -> content.source_claims in
+    FK-safe order. Returns an empty list until real sources/snapshots are authored
+    (today's inbox), so it is safe to wire into publish_release now.
+    """
+
+    rows = bundle.as_provenance_rows()
+    if validate:
+        violations = validate_content_rows(rows)
+        if violations:
+            raise ContentPublishError(
+                "provenance rows violate NOT NULL invariants: "
+                + ", ".join(violations[:20])
+                + (" ..." if len(violations) > 20 else "")
+            )
+
+    statements: list[Any] = []
+    if rows["content.sources"]:
+        statements.append(
+            pg_insert(sources)
+            .values(rows["content.sources"])
+            .on_conflict_do_nothing(index_elements=["id"])
+        )
+    if rows["content.source_snapshots"]:
+        statements.append(
+            pg_insert(source_snapshots)
+            .values(rows["content.source_snapshots"])
+            .on_conflict_do_nothing(index_elements=["id"])
+        )
+    if rows["content.source_claims"]:
+        statements.append(
+            pg_insert(source_claims)
+            .values(rows["content.source_claims"])
+            .on_conflict_do_nothing(index_elements=["id"])
+        )
+    return statements
+
+
 def build_publish_statements(
     bundle: PublishedBundle,
     *,
@@ -246,6 +331,15 @@ def compiled_sql(bundle: PublishedBundle, *, strict: bool = True) -> list[str]:
     return [
         str(stmt.compile(dialect=postgresql.dialect()))
         for stmt in build_publish_statements(bundle, strict=strict)
+    ]
+
+
+def compiled_provenance_sql(bundle: PublishedBundle) -> list[str]:
+    """Render the Postgres SQL for the provenance INSERTs (dry-run / ops)."""
+
+    return [
+        str(stmt.compile(dialect=postgresql.dialect()))
+        for stmt in build_provenance_statements(bundle)
     ]
 
 
@@ -321,10 +415,13 @@ class SqlAlchemyContentRepository:
         *,
         strict: bool = True,
     ) -> PublishResult:
-        """Insert event types, templates, then the rule bundle (FK-safe).
+        """Insert event types, templates, provenance, then the rule bundle.
 
         One transaction, ordered life_event_types -> step_templates ->
-        requirement_templates -> rule_sets -> rule_revisions -> rule_set_members.
+        requirement_templates -> sources -> source_snapshots -> source_claims ->
+        rule_sets -> rule_revisions -> rule_set_members. The provenance chain is
+        gated (empty until real sources/snapshots are authored), so today this
+        adds no statements and preserves the prior FK ordering exactly.
         """
 
         missing = missing_event_types(bundle, event_type_records)
@@ -334,10 +431,12 @@ class SqlAlchemyContentRepository:
                 + ", ".join(missing)
             )
         rows = bundle.as_content_rows(strict=strict)
+        provenance_rows = bundle.as_provenance_rows()
         statements = (
             build_event_type_statements(event_type_records)
             + build_step_template_statements(step_template_records)
             + build_requirement_template_statements(requirement_template_records)
+            + build_provenance_statements(bundle)
             + build_publish_statements(bundle, strict=strict)
         )
         with self._engine.begin() as conn:
@@ -352,6 +451,9 @@ class SqlAlchemyContentRepository:
             event_type_count=len(event_type_records),
             step_template_count=len(step_template_records),
             requirement_template_count=len(requirement_template_records),
+            source_count=len(provenance_rows["content.sources"]),
+            source_snapshot_count=len(provenance_rows["content.source_snapshots"]),
+            source_claim_count=len(provenance_rows["content.source_claims"]),
         )
 
     def compiled_sql(self, bundle: PublishedBundle, *, strict: bool = True) -> list[str]:

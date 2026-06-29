@@ -7,12 +7,15 @@ drives the Postgres content adapter:
     compile_event_types(catalog)  ->  content.life_event_types rows
     compile_templates(batches)    ->  content.step_templates / requirement_templates
     compile_bundle(batches)       ->  content.rule_sets / rule_revisions / members
+                                      + gated content.sources / source_snapshots /
+                                        source_claims provenance chain
     SqlAlchemyContentRepository.publish_release(...)  ->  one FK-safe transaction
 
 Two modes:
     dry-run (default)  Compiles everything in memory, prints the FK-ordered SQL
                        (life_event_types -> step_templates ->
-                       requirement_templates -> rule_sets -> rule_revisions ->
+                       requirement_templates -> sources -> source_snapshots ->
+                       source_claims -> rule_sets -> rule_revisions ->
                        rule_set_members) and a summary. Touches no database.
     --apply            Opens an engine from --database-url / ACTEOS_DATABASE_URL
                        and writes the release in a single transaction.
@@ -52,6 +55,7 @@ from .content_publish import (
     ContentPublishError,
     SqlAlchemyContentRepository,
     compiled_event_type_sql,
+    compiled_provenance_sql,
     compiled_requirement_template_sql,
     compiled_sql,
     compiled_step_template_sql,
@@ -74,9 +78,13 @@ class DryRunPlan:
     event_type_count: int
     step_template_count: int
     requirement_template_count: int
+    source_count: int
+    source_snapshot_count: int
+    source_claim_count: int
     event_type_sql: list[str]
     step_template_sql: list[str]
     requirement_template_sql: list[str]
+    provenance_sql: list[str]
     publish_sql: list[str]
     missing_event_types: list[str]
     missing_steps: list[str]
@@ -87,11 +95,12 @@ class DryRunPlan:
 
     @property
     def statements_sql(self) -> list[str]:
-        """All INSERTs in FK-safe order (event types, templates, then bundle)."""
+        """All INSERTs in FK-safe order (event types, templates, provenance, bundle)."""
         return [
             *self.event_type_sql,
             *self.step_template_sql,
             *self.requirement_template_sql,
+            *self.provenance_sql,
             *self.publish_sql,
         ]
 
@@ -153,6 +162,7 @@ def build_dry_run(
         referenced_requirement_ids=bundle.referenced_requirement_ids,
         compiled=templates,
     )
+    provenance_rows = bundle.as_provenance_rows()
 
     summary = dict(bundle.summary())
     summary["event_type_count"] = len(event_records)
@@ -161,6 +171,9 @@ def build_dry_run(
     summary["missing_event_types"] = missing
     summary["missing_steps"] = coverage.missing_steps
     summary["missing_requirements"] = coverage.missing_requirements
+    summary["source_count"] = len(provenance_rows["content.sources"])
+    summary["source_snapshot_count"] = len(provenance_rows["content.source_snapshots"])
+    summary["source_claim_count"] = len(provenance_rows["content.source_claims"])
 
     return DryRunPlan(
         version=bundle.version,
@@ -168,11 +181,15 @@ def build_dry_run(
         event_type_count=len(event_records),
         step_template_count=len(templates.step_templates),
         requirement_template_count=len(templates.requirement_templates),
+        source_count=len(provenance_rows["content.sources"]),
+        source_snapshot_count=len(provenance_rows["content.source_snapshots"]),
+        source_claim_count=len(provenance_rows["content.source_claims"]),
         event_type_sql=compiled_event_type_sql(event_records),
         step_template_sql=compiled_step_template_sql(templates.step_templates),
         requirement_template_sql=compiled_requirement_template_sql(
             templates.requirement_templates
         ),
+        provenance_sql=compiled_provenance_sql(bundle),
         publish_sql=compiled_sql(bundle, strict=strict),
         missing_event_types=missing,
         missing_steps=coverage.missing_steps,
@@ -193,6 +210,9 @@ def _print_plan(plan: DryRunPlan) -> None:
     print(f"event types        : {plan.event_type_count}")
     print(f"step templates     : {plan.step_template_count}")
     print(f"requirement tmpls  : {plan.requirement_template_count}")
+    print(f"sources            : {plan.source_count}")
+    print(f"source snapshots   : {plan.source_snapshot_count}")
+    print(f"source claims      : {plan.source_claim_count}")
     print(
         f"rule revisions     : {s['rule_revision_count']} "
         f"(publishable {s['publishable_rule_count']}, deferred {s['deferred_rule_count']})"
@@ -201,11 +221,13 @@ def _print_plan(plan: DryRunPlan) -> None:
     print(f"missing events     : {len(plan.missing_event_types)}")
     print(f"missing steps      : {len(plan.missing_steps)}")
     print(f"missing reqs       : {len(plan.missing_requirements)}")
+    print(f"provenance pending : {s['provenance_pending_count']}")
     print(f"certification      : {s['certification_verdict']}")
     print()
     print(
         f"-- {len(plan.event_type_sql)} event-type, {len(plan.step_template_sql)} step, "
-        f"{len(plan.requirement_template_sql)} requirement, {len(plan.publish_sql)} bundle statement(s) --"
+        f"{len(plan.requirement_template_sql)} requirement, {len(plan.provenance_sql)} provenance, "
+        f"{len(plan.publish_sql)} bundle statement(s) --"
     )
     for sql in plan.statements_sql:
         print()
@@ -376,6 +398,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"event types        : {result.event_type_count}")
     print(f"step templates     : {result.step_template_count}")
     print(f"requirement tmpls  : {result.requirement_template_count}")
+    print(f"sources            : {result.source_count}")
+    print(f"source snapshots   : {result.source_snapshot_count}")
+    print(f"source claims      : {result.source_claim_count}")
     print(f"rule sets          : {result.rule_set_count}")
     print(f"rule revisions     : {result.rule_revision_count}")
     print(f"rule set members   : {result.rule_set_member_count}")
