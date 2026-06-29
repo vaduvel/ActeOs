@@ -86,7 +86,14 @@ cases = Table(
     Column("id", _UUID, primary_key=True, server_default=_GEN_UUID),
     Column("user_id", _UUID),
     Column("installation_id", _UUID),
-    Column("event_type_id", Text, nullable=False),
+    # ``event_type_id`` became nullable in db/0004_intent_discovery.sql. A case is
+    # valid when either ``intent_type_id`` (intent-first discovery) or
+    # ``event_type_id`` (legacy event-first) is present -- enforced in the DB by
+    # app.cases.case_intent_or_legacy_event_ck.
+    Column("event_type_id", Text),
+    Column("intent_type_id", Text),
+    Column("event_context_ids", ARRAY(Text), nullable=False),
+    Column("discovery_source", Text),
     Column("subject_ref", Text),
     Column("reference_date", Date, nullable=False),
     Column("timezone", Text, nullable=False),
