@@ -28,6 +28,15 @@ def load_batch(batch_dir: Any) -> dict:
     content authored from the event card); ``None`` when absent. It is loaded
     here so the publish pipeline can materialize content.step_templates /
     content.requirement_templates without a second filesystem pass.
+
+    ``provenance`` is the optional ``sources.yaml`` sitting next to the claims
+    doc. It carries the certified ``sources:`` and ``snapshots:`` lists that
+    back content.sources / content.source_snapshots (see the
+    ``contracts/jsonschema/source_provenance.schema.json`` contract). It is kept
+    as a separate file so the legal-source provenance lane (canonical URLs,
+    sha256 snapshots, fetch policy) evolves independently of the interpretive
+    ``source_claims.yaml``; ``None`` when absent, in which case the provenance
+    chain simply emits nothing.
     """
     d = Path(batch_dir)
     ruleset = _load_yaml(d / "rules.yaml")
@@ -36,12 +45,15 @@ def load_batch(batch_dir: Any) -> dict:
     claims = _load_yaml(claims_path) if claims_path.exists() else None
     templates_path = d / "templates.yaml"
     templates = _load_yaml(templates_path) if templates_path.exists() else None
+    provenance_path = d / "sources.yaml"
+    provenance = _load_yaml(provenance_path) if provenance_path.exists() else None
     return {
         "batch_dir": str(d),
         "ruleset": ruleset,
         "fixtures": fixtures,
         "claims": claims,
         "templates": templates,
+        "provenance": provenance,
     }
 
 
