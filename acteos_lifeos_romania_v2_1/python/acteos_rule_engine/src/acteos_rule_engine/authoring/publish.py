@@ -16,6 +16,11 @@ Honesty guarantees (no fabricated data):
   ``provenance_pending`` and are NOT emitted as ``content.source_claims`` rows,
   because that table's ``source_id``/``snapshot_id`` are NOT-NULL FKs that the
   inbox cannot yet satisfy.
+- The provenance chain (:meth:`PublishedBundle.as_provenance_rows`) is gated on
+  real authored sources/snapshots: a claim row is emitted only when BOTH its
+  source and snapshot resolve to authored records, so with today's inbox (no
+  ``sources``/``snapshots`` authored, ``snapshot_id: pending``) it emits nothing
+  yet stays FK-safe and lights up automatically once provenance lands.
 - Rules without ``effective_from`` are surfaced as deferred, because
   ``content.rule_revisions.effective_from`` is ``NOT NULL``;
   :meth:`PublishedBundle.as_content_rows` with ``strict=True`` refuses them.
@@ -107,6 +112,24 @@ def _rules(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
     return []
 
 
+def _sources(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """Optional ``sources:`` list authored alongside the claims doc."""
+
+    doc = batch.get("claims")
+    if isinstance(doc, Mapping):
+        return [s for s in (doc.get("sources") or []) if isinstance(s, Mapping)]
+    return []
+
+
+def _snapshots(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """Optional ``snapshots:`` list authored alongside the claims doc."""
+
+    doc = batch.get("claims")
+    if isinstance(doc, Mapping):
+        return [s for s in (doc.get("snapshots") or []) if isinstance(s, Mapping)]
+    return []
+
+
 @dataclass(frozen=True)
 class SourceClaimRecord:
     id: str
@@ -140,6 +163,74 @@ class SourceClaimRecord:
             "effective_from": self.effective_from,
             "effective_to": self.effective_to,
             "status": self.status,
+        }
+
+
+@dataclass(frozen=True)
+class SourceRecord:
+    """A content.sources row (the authority a snapshot/claim derives from)."""
+
+    id: str
+    source_key: str
+    canonical_url: str | None
+    publisher: str | None
+    authority_level: str | None
+    legal_rank: str | None
+    territory_ids: list[str]
+    competence_scope: list[str]
+    fetch_mode: str | None
+    allowed_to_fetch: bool
+
+    def as_content_row(self) -> dict[str, Any]:
+        # Uniform key set so multi-row INSERTs stay column-consistent. Nullable
+        # columns (legal_rank) carry explicit None; NOT-NULL columns are checked
+        # by validate_content_rows before any statement is built. Columns with a
+        # DB default (status, timestamps, created_by) are intentionally omitted.
+        return {
+            "id": self.id,
+            "canonical_url": self.canonical_url,
+            "publisher": self.publisher,
+            "authority_level": self.authority_level,
+            "legal_rank": self.legal_rank,
+            "territory_ids": list(self.territory_ids),
+            "competence_scope": list(self.competence_scope),
+            "fetch_mode": self.fetch_mode,
+            "allowed_to_fetch": self.allowed_to_fetch,
+        }
+
+
+@dataclass(frozen=True)
+class SourceSnapshotRecord:
+    """A content.source_snapshots row (an immutable fetch of a source)."""
+
+    id: str
+    snapshot_key: str
+    source_key: str | None
+    source_id: str | None
+    sha256: str | None
+    captured_at: str | None
+    http_status: int | None
+    content_type: str | None
+    storage_object_key: str | None
+    normalized_text_object_key: str | None
+    etag: str | None
+    last_modified: str | None
+
+    def as_content_row(self) -> dict[str, Any]:
+        # Uniform key set (see SourceRecord). content.source_snapshots.captured_at
+        # is NOT NULL with a DB default; we always send it and treat it as
+        # required at validation time rather than silently relying on now().
+        return {
+            "id": self.id,
+            "source_id": self.source_id,
+            "captured_at": self.captured_at,
+            "http_status": self.http_status,
+            "content_type": self.content_type,
+            "storage_object_key": self.storage_object_key,
+            "normalized_text_object_key": self.normalized_text_object_key,
+            "sha256": self.sha256,
+            "etag": self.etag,
+            "last_modified": self.last_modified,
         }
 
 
@@ -225,6 +316,8 @@ class PublishedBundle:
     provenance_pending: list[str]
     issues: list[str] = field(default_factory=list)
     certification: CertificationReport | None = None
+    sources: list[SourceRecord] = field(default_factory=list)
+    source_snapshots: list[SourceSnapshotRecord] = field(default_factory=list)
 
     @property
     def rule_set_id(self) -> str:
@@ -278,6 +371,59 @@ class PublishedBundle:
             "content.rule_set_members": rule_set_members,
         }
 
+    def as_provenance_rows(self) -> dict[str, list[dict[str, Any]]]:
+        """Emit the FK-safe provenance chain rows, gated on real provenance.
+
+        Ordering mirrors the FK graph: content.sources -> content.source_snapshots
+        -> content.source_claims. A source row is emitted for every authored
+        ``sources`` entry; a snapshot only when its ``source_id`` resolves to one
+        of those sources; a claim only when BOTH its source and snapshot resolve.
+
+        With today's inbox (no ``sources``/``snapshots`` authored, every claim's
+        ``snapshot_id`` still ``pending``) all three lists are empty, so the
+        chain is correct and FK-safe yet writes nothing until provenance lands.
+        """
+
+        source_by_key = {s.source_key: s for s in self.sources}
+        snapshot_by_key = {s.snapshot_key: s for s in self.source_snapshots}
+
+        source_rows = [s.as_content_row() for s in self.sources]
+        snapshot_rows = [
+            s.as_content_row()
+            for s in self.source_snapshots
+            if s.source_key in source_by_key
+        ]
+        claim_rows: list[dict[str, Any]] = []
+        for claim in self.source_claims:
+            source = source_by_key.get(claim.source_ref)
+            snapshot = snapshot_by_key.get(claim.snapshot_ref)
+            if source is None or snapshot is None:
+                continue
+            claim_rows.append(
+                {
+                    "id": claim.id,
+                    "stable_key": claim.stable_key,
+                    "source_id": source.id,
+                    "snapshot_id": snapshot.id,
+                    "statement": claim.statement,
+                    "evidence_excerpt": claim.evidence_excerpt,
+                    "locator": claim.locator,
+                    "authority_level": claim.authority_level,
+                    "published_at": claim.published_at,
+                    "accessed_at": claim.accessed_at,
+                    "effective_from": claim.effective_from,
+                    "effective_to": claim.effective_to,
+                    "confidence": claim.confidence,
+                    "freshness_class": claim.freshness_class,
+                    "status": claim.status,
+                }
+            )
+        return {
+            "content.sources": source_rows,
+            "content.source_snapshots": snapshot_rows,
+            "content.source_claims": claim_rows,
+        }
+
     def summary(self) -> dict[str, Any]:
         return {
             "version": self.version,
@@ -290,6 +436,8 @@ class PublishedBundle:
             "deferred_rule_count": len(self.deferred_revisions()),
             "source_claim_count": len(self.source_claims),
             "provenance_pending_count": len(self.provenance_pending),
+            "source_count": len(self.sources),
+            "source_snapshot_count": len(self.source_snapshots),
             "required_event_type_ids": list(self.required_event_type_ids),
             "referenced_step_ids": list(self.referenced_step_ids),
             "referenced_requirement_ids": list(self.referenced_requirement_ids),
@@ -401,6 +549,65 @@ def compile_bundle(
                 status=_review_status(claim.get("status")),
                 batch_id=bid,
                 provenance_ready=provenance_ready,
+            )
+
+    # --- Pass 1b: sources + snapshots -> deterministic uuids (gated chain). --
+    # Optional ``sources:`` / ``snapshots:`` lists authored alongside the claims
+    # doc. Absent today, so these dicts stay empty and the provenance chain
+    # emits nothing -- but the wiring is production-ready for when they land.
+    source_records: dict[str, SourceRecord] = {}
+    for batch in batches:
+        for src in _sources(batch):
+            key = src.get("id")
+            if not isinstance(key, str):
+                continue
+            if key in source_records:
+                issues.append(f"SOURCE_ID_COLLISION:{key}")
+                continue
+            source_records[key] = SourceRecord(
+                id=mint_uuid("source", key),
+                source_key=key,
+                canonical_url=src.get("canonical_url") or src.get("url"),
+                publisher=src.get("publisher"),
+                authority_level=src.get("authority_level"),
+                legal_rank=src.get("legal_rank"),
+                territory_ids=[
+                    t for t in (src.get("territory_ids") or []) if isinstance(t, str)
+                ],
+                competence_scope=[
+                    c for c in (src.get("competence_scope") or []) if isinstance(c, str)
+                ],
+                fetch_mode=src.get("fetch_mode") or "manual",
+                allowed_to_fetch=bool(src.get("allowed_to_fetch", False)),
+            )
+
+    snapshot_records: dict[str, SourceSnapshotRecord] = {}
+    for batch in batches:
+        for snap in _snapshots(batch):
+            key = snap.get("id")
+            if not isinstance(key, str):
+                continue
+            if key in snapshot_records:
+                issues.append(f"SNAPSHOT_ID_COLLISION:{key}")
+                continue
+            src_key = snap.get("source_id")
+            if isinstance(src_key, str) and src_key not in source_records:
+                issues.append(f"SNAPSHOT_SOURCE_UNRESOLVED:{key}")
+            snapshot_records[key] = SourceSnapshotRecord(
+                id=mint_uuid("snapshot", key),
+                snapshot_key=key,
+                source_key=src_key if isinstance(src_key, str) else None,
+                source_id=(
+                    mint_uuid("source", src_key) if isinstance(src_key, str) else None
+                ),
+                sha256=snap.get("sha256"),
+                captured_at=snap.get("captured_at"),
+                http_status=snap.get("http_status"),
+                content_type=snap.get("content_type"),
+                storage_object_key=snap.get("storage_object_key"),
+                normalized_text_object_key=snap.get("normalized_text_object_key"),
+                etag=snap.get("etag"),
+                last_modified=snap.get("last_modified"),
             )
 
     # --- Pass 2: rule ids -> deterministic uuids (for override resolution). --
@@ -530,4 +737,8 @@ def compile_bundle(
         provenance_pending=provenance_pending,
         issues=issues,
         certification=report,
+        sources=sorted(source_records.values(), key=lambda s: s.source_key),
+        source_snapshots=sorted(
+            snapshot_records.values(), key=lambda s: s.snapshot_key
+        ),
     )
