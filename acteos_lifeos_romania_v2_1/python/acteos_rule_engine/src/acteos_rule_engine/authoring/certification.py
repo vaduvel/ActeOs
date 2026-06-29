@@ -23,6 +23,7 @@ Design references (grounded in repo, not guessed):
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping, Optional
 
@@ -93,6 +94,10 @@ PUBLISH_TIME_OBLIGATIONS: tuple[str, ...] = (
     "migrations replayed on staging with restore/rollback demonstrated",
     "staged rollout cohort with explicit abort criteria",
 )
+
+# A snapshot digest is a lowercase, 64-char hex sha256 (matches
+# content.source_snapshots.sha256 char(64) and source_provenance.schema.json).
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -212,6 +217,183 @@ def _claims_index(batch: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
                 if isinstance(cid, str):
                     index[cid] = claim
     return index
+
+
+def _provenance_doc(batch: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
+    prov = batch.get("provenance")
+    return prov if isinstance(prov, Mapping) else None
+
+
+def _provenance_sources(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """Authored sources, preferring a dedicated provenance doc (sources.yaml)
+    and falling back to inline ``sources:`` on the claims doc -- parity with
+    ``publish._sources`` so the gate and the publisher agree on what exists."""
+    prov = _provenance_doc(batch)
+    if prov is not None and prov.get("sources") is not None:
+        raw = prov.get("sources")
+    else:
+        claims_doc = batch.get("claims")
+        raw = claims_doc.get("sources") if isinstance(claims_doc, Mapping) else None
+    return [s for s in (raw or []) if isinstance(s, Mapping)]
+
+
+def _provenance_snapshots(batch: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    prov = _provenance_doc(batch)
+    if prov is not None and prov.get("snapshots") is not None:
+        raw = prov.get("snapshots")
+    else:
+        claims_doc = batch.get("claims")
+        raw = claims_doc.get("snapshots") if isinstance(claims_doc, Mapping) else None
+    return [s for s in (raw or []) if isinstance(s, Mapping)]
+
+
+def _certify_batch_provenance(
+    batch: Mapping[str, Any],
+    batch_id: Optional[str],
+) -> list[Finding]:
+    """Within-batch provenance integrity.
+
+    Only runs when the batch authored provenance (a provenance doc or inline
+    sources/snapshots); batches still in the pre-provenance authoring stage are
+    untouched so incremental authoring keeps working. NOTE: we deliberately do
+    NOT block on a claim/snapshot whose source or snapshot is not yet authored
+    -- the publish pipeline DEFERS those rows by design, so blocking here would
+    contradict that contract. We only flag violations that would actually break
+    a real DB insert (duplicate ids, malformed sha256).
+    """
+    sources = _provenance_sources(batch)
+    snapshots = _provenance_snapshots(batch)
+    if not sources and not snapshots:
+        return []
+
+    findings: list[Finding] = []
+    source_ids: set[str] = set()
+    for src in sources:
+        sid = src.get("id")
+        if not isinstance(sid, str) or not sid:
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_SOURCE_WITHOUT_ID",
+                    "A provenance source has no id.",
+                    batch_id,
+                )
+            )
+            continue
+        if sid in source_ids:
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_DUPLICATE_SOURCE_ID",
+                    f"Duplicate provenance source id '{sid}' within batch.",
+                    batch_id,
+                )
+            )
+        source_ids.add(sid)
+
+    snapshot_ids: set[str] = set()
+    for snap in snapshots:
+        nid = snap.get("id")
+        if not isinstance(nid, str) or not nid:
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_SNAPSHOT_WITHOUT_ID",
+                    "A provenance snapshot has no id.",
+                    batch_id,
+                )
+            )
+            continue
+        if nid in snapshot_ids:
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_DUPLICATE_SNAPSHOT_ID",
+                    f"Duplicate provenance snapshot id '{nid}' within batch.",
+                    batch_id,
+                )
+            )
+        snapshot_ids.add(nid)
+        sha = snap.get("sha256")
+        if not (isinstance(sha, str) and _SHA256_RE.match(sha)):
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_SNAPSHOT_SHA256_INVALID",
+                    f"Snapshot '{nid}' has an invalid sha256 (expected 64 lowercase hex).",
+                    batch_id,
+                )
+            )
+
+    return findings
+
+
+def _certify_global_provenance(
+    batches: list[Mapping[str, Any]],
+) -> list[Finding]:
+    """Cross-batch provenance integrity that maps onto real DB uniqueness.
+
+    Mirrors ``content.sources.canonical_url`` UNIQUE and
+    ``content.source_snapshots(source_id, sha256)`` UNIQUE so a collision is
+    caught at the certification gate instead of failing at INSERT time. Sources
+    and snapshots are de-duplicated by id first (the publisher keeps the first
+    declaration), so re-declaring the SAME id across batches is not a collision
+    -- only DISTINCT ids that map to the same unique key are.
+    """
+    findings: list[Finding] = []
+
+    source_url_by_id: dict[str, str] = {}
+    ids_by_url: dict[str, set[str]] = {}
+    for batch in batches:
+        for src in _provenance_sources(batch):
+            sid = src.get("id")
+            url = src.get("canonical_url")
+            if not isinstance(sid, str) or not isinstance(url, str):
+                continue
+            if sid in source_url_by_id:
+                continue
+            source_url_by_id[sid] = url
+            ids_by_url.setdefault(url, set()).add(sid)
+    for url, ids in sorted(ids_by_url.items()):
+        if len(ids) > 1:
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_CANONICAL_URL_COLLISION",
+                    (
+                        f"canonical_url '{url}' is declared by multiple distinct sources "
+                        f"{sorted(ids)}; content.sources.canonical_url is UNIQUE."
+                    ),
+                )
+            )
+
+    digest_by_snapshot_id: dict[str, tuple[str, str]] = {}
+    for batch in batches:
+        for snap in _provenance_snapshots(batch):
+            nid = snap.get("id")
+            src_ref = snap.get("source_id")
+            sha = snap.get("sha256")
+            if not isinstance(nid, str) or nid in digest_by_snapshot_id:
+                continue
+            if isinstance(src_ref, str) and isinstance(sha, str):
+                digest_by_snapshot_id[nid] = (src_ref, sha)
+    seen_keys: dict[tuple[str, str], str] = {}
+    for nid, key in sorted(digest_by_snapshot_id.items()):
+        if key in seen_keys:
+            findings.append(
+                Finding(
+                    BLOCKER,
+                    "PROVENANCE_SNAPSHOT_DIGEST_COLLISION",
+                    (
+                        f"snapshots '{seen_keys[key]}' and '{nid}' share (source_id, sha256) "
+                        f"{key}; content.source_snapshots(source_id, sha256) is UNIQUE."
+                    ),
+                )
+            )
+        else:
+            seen_keys[key] = nid
+
+    return findings
 
 
 def _certify_rule(
@@ -459,6 +641,9 @@ def certify_batch(
             continue
         findings.extend(_certify_rule(rule, claims, batch_id))
 
+    # Provenance integrity (within-batch). Gated on authored provenance.
+    findings.extend(_certify_batch_provenance(batch, batch_id))
+
     return findings
 
 
@@ -470,7 +655,8 @@ def certify_batches(
     """Certify many loaded batches and aggregate them into one report."""
 
     report = CertificationReport()
-    for batch in batches:
+    batch_list = list(batches)
+    for batch in batch_list:
         ruleset = batch.get("ruleset")
         if isinstance(ruleset, Mapping):
             batch_id_raw = ruleset.get("batch_id") or batch.get("batch_dir")
@@ -481,4 +667,7 @@ def certify_batches(
         if batch_id_raw is not None:
             report.batch_ids.append(str(batch_id_raw))
         report.findings.extend(certify_batch(batch, schemas=schemas))
+
+    # Provenance integrity that spans batches (DB uniqueness constraints).
+    report.findings.extend(_certify_global_provenance(batch_list))
     return report
