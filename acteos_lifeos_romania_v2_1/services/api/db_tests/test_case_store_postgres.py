@@ -392,9 +392,47 @@ def test_sqlalchemy_case_repository_persists_and_replays_latest_snapshot(engine:
             text("select revision from app.journeys where case_id = :case_id order by revision"),
             {"case_id": CASE_ID},
         ).scalars().all()
+        latest_journey_id = conn.execute(
+            text("select id from app.journeys where case_id = :case_id and revision = 2"),
+            {"case_id": CASE_ID},
+        ).scalar_one()
+        projected_steps = conn.execute(
+            text(
+                """
+                select semantic_key, title_ro, sequence, status
+                from app.journey_steps
+                where journey_id = :journey_id
+                order by sequence, semantic_key
+                """
+            ),
+            {"journey_id": latest_journey_id},
+        ).mappings().all()
+        projected_requirements = conn.execute(
+            text(
+                """
+                select jr.semantic_key, jr.title_ro, jr.status, js.semantic_key as step_semantic_key
+                from app.journey_requirements jr
+                join app.journey_steps js on js.id = jr.journey_step_id
+                where js.journey_id = :journey_id
+                order by jr.semantic_key
+                """
+            ),
+            {"journey_id": latest_journey_id},
+        ).mappings().all()
 
     assert case_count == 1
     assert journey_revisions == [1, 2]
+    assert [row["semantic_key"] for row in projected_steps] == ["apply_identity_card_expired"]
+    assert projected_steps[0]["title_ro"] == "apply_identity_card_expired"
+    assert projected_steps[0]["status"] == "needs_confirmation"
+    assert [row["semantic_key"] for row in projected_requirements] == [
+        "req.address_proof",
+        "req.identity_photo",
+    ]
+    assert {row["step_semantic_key"] for row in projected_requirements} == {
+        "apply_identity_card_expired"
+    }
+    assert {row["status"] for row in projected_requirements} == {"missing"}
 
 
 def test_sqlalchemy_case_repository_rejects_unpublished_ruleset(engine: Engine):
