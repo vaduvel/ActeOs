@@ -1,0 +1,147 @@
+step_templates:
+  - id: secure_identity_and_contact_issuer
+    semantic_key: documents_lost_abroad_secure_identity
+    title_ro: "Protejeaza identitatea si contacteaza emitentul"
+    instruction_ro: >-
+      Identifica documentul pierdut, limiteaza riscul de folosire abuziva si
+      contacteaza emitentul sau canalul consular relevant.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Documentul pierdut este clarificat si emitentul relevant este contactat."
+    recovery_actions_ro:
+      - "Daca ai mai multe documente afectate, trateaza separat fiecare emitent."
+    status: draft
+  - id: declare_passport_loss_to_romanian_mission
+    semantic_key: documents_lost_abroad_declare_passport_loss
+    title_ro: "Declara pierderea pasaportului la misiunea romana"
+    instruction_ro: >-
+      Pentru pașaport pierdut sau distrus in strainatate, continua cu declararea
+      la misiunea sau oficiul consular roman competent.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Pierderea sau distrugerea pașaportului este declarata consular."
+    recovery_actions_ro:
+      - "Daca incidentul este furt, adauga si raportarea la politia locala."
+    status: draft
+  - id: report_theft_to_local_police
+    semantic_key: documents_lost_abroad_report_theft_local_police
+    title_ro: "Declara furtul la politia locala"
+    instruction_ro: >-
+      Pentru furt, obtine mai intai dovada de la autoritatea locala competenta
+      din statul in care te afli.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Furtul este raportat la politia locala."
+    recovery_actions_ro:
+      - "Pastreaza dovada locala pentru pasii consulari urmatori."
+    status: draft
+  - id: declare_theft_to_romanian_mission
+    semantic_key: documents_lost_abroad_declare_theft_consular
+    title_ro: "Declara furtul la misiunea romana"
+    instruction_ro: >-
+      Dupa raportarea locala, continua cu declararea consulara a furtului
+      documentului romanesc afectat.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Furtul este declarat si in canalul consular relevant."
+    recovery_actions_ro:
+      - "Verifica competenta teritoriala a misiunii inainte de prezentare."
+    status: draft
+  - id: surrender_found_invalid_document
+    semantic_key: documents_lost_abroad_surrender_found_document
+    title_ro: "Preda documentul gasit dupa raportare"
+    instruction_ro: >-
+      Daca documentul raportat este gasit ulterior, preda-l autoritatii
+      competente deoarece poate fi deja nul.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Documentul gasit ulterior este predat sau ruta de predare este clarificata."
+    recovery_actions_ro:
+      - "Nu reutiliza documentul dupa raportarea lui."
+    status: draft
+  - id: request_emergency_travel_assessment
+    semantic_key: documents_lost_abroad_request_emergency_assessment
+    title_ro: "Cere evaluarea urgentei de calatorie"
+    instruction_ro: >-
+      Daca trebuie sa continui urgent calatoria, prezinta motivele si actele
+      care sustin urgenta pentru evaluarea documentului de calatorie potrivit.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Urgenta de calatorie este evaluata de canalul competent."
+    recovery_actions_ro:
+      - "Nu presupune automat emiterea unui document de urgenta."
+    status: draft
+  - id: obtain_consular_return_document_assessment
+    semantic_key: documents_lost_abroad_return_document_assessment
+    title_ro: "Solicita evaluarea documentului pentru intoarcere"
+    instruction_ro: >-
+      Daca obiectivul este intoarcerea in Romania, cere evaluarea documentului
+      consular de intoarcere sau a rutei aplicabile.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Ruta pentru intoarcere este clarificata de misiunea competenta."
+    recovery_actions_ro:
+      - "Pastreaza distinct intre intoarcerea in Romania si continuarea calatoriei in alte state."
+    status: draft
+  - id: request_eu_consular_protection
+    semantic_key: documents_lost_abroad_request_eu_protection
+    title_ro: "Solicita protectie consulara UE"
+    instruction_ro: >-
+      Daca Romania nu este reprezentata si conditiile sunt indeplinite,
+      contacteaza o misiune a altui stat membru UE pentru asistenta consulara.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Ruta de protectie consulara UE este activata sau clarificata."
+    recovery_actions_ro:
+      - "Confirma mai intai lipsa reprezentarii romane competente in zona."
+    status: draft
+  - id: confirm_document_specific_replacement_route
+    semantic_key: documents_lost_abroad_confirm_specific_replacement_route
+    title_ro: "Confirma ruta de inlocuire specifica documentului"
+    instruction_ro: >-
+      Pentru acte care nu sunt pașaport, activeaza ruta specifica emitentului si
+      nu copia procedura de pașaport.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Emitentul si procedura specifica documentului sunt clarificate."
+    recovery_actions_ro:
+      - "Permisul, actul de identitate si permisul de ședere au emitenti si pasi distincti."
+    status: draft
+  - id: verify_exit_transit_entry_acceptance
+    semantic_key: documents_lost_abroad_verify_acceptance
+    title_ro: "Verifica acceptarea la iesire, tranzit si intrare"
+    instruction_ro: >-
+      Inainte de deplasare, confirma separat daca documentul obtinut este
+      acceptat pentru iesire, tranzit si intrare in statele relevante.
+    sequence_hint: 100
+    completion_evidence_ro:
+      - "Conditiile de acceptare pentru traseul concret sunt verificate."
+    recovery_actions_ro:
+      - "Nu presupune automat imbarcarea sau tranzitul doar pentru ca exista un document de urgenta."
+    status: draft
+
+requirement_templates:
+  - id: req.local_police_theft_certificate
+    title_ro: "Dovada furtului de la politia locala"
+    description_ro: >-
+      Dovada emisa de autoritatea locala dupa declararea furtului documentului
+      in strainatate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverinta, proces-verbal sau alta dovada oficiala locala a furtului."
+    readiness_checks:
+      - "Incidentul este furt."
+    status: draft
+  - id: req.urgent_reason_evidence
+    title_ro: "Dovezi ale urgentei"
+    description_ro: >-
+      Documentele care sustin nevoia de continuare urgenta a calatoriei sau
+      evaluarea unui document de urgenta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acte medicale, juridice, de studii sau alte dovezi oficiale ale urgentei."
+    readiness_checks:
+      - "Calatoria nu este una fara urgenta imediata."
+    status: draft

@@ -1,0 +1,77 @@
+# Step & requirement templates for ro.life.register_drone (life.register_drone).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: classify_operator_and_uas_registration
+    semantic_key: classify_operator_and_uas_registration
+    title_ro: "Clasifica obligatia de inregistrare"
+    instruction_ro: >-
+      Stabileste daca trebuie inregistrat operatorul, daca se aplica exceptia sub 250 g si daca exista alta ruta pentru aeronava certificata.
+    sequence_hint: 10
+    completion_evidence_ro: ["Obligatia de inregistrare a fost clarificata"]
+    recovery_actions_ro: ["Daca datele despre masa, camera sau statutul de jucarie lipsesc, nu trage concluzia finala"]
+    status: draft
+
+  - id: register_drone_operator
+    semantic_key: register_drone_operator
+    title_ro: "Inregistreaza operatorul de drona"
+    instruction_ro: >-
+      Daca obligatia este activa, pregateste inregistrarea operatorului pe ruta competenta, fara a dubla o inregistrare deja existenta.
+    sequence_hint: 20
+    completion_evidence_ro: ["Ruta de inregistrare a operatorului a fost pregatita"]
+    recovery_actions_ro: ["Daca operatorul este deja inregistrat intr-un stat EASA, nu crea o inregistrare paralela"]
+    status: draft
+
+  - id: verify_existing_operator_number
+    semantic_key: verify_existing_operator_number
+    title_ro: "Verifica numarul de operator existent"
+    instruction_ro: >-
+      Daca exista deja un numar de operator, verifica folosirea lui corecta inainte de orice alta actiune.
+    sequence_hint: 30
+    completion_evidence_ro: ["Statutul numarului de operator existent a fost clarificat"]
+    recovery_actions_ro: ["Daca numarul nu este confirmat, nu il folosi pe drone sau in documente"]
+    status: draft
+
+  - id: register_with_residence_country_naa
+    semantic_key: register_with_residence_country_naa
+    title_ro: "Inregistreaza-te in statul UE de resedinta"
+    instruction_ro: >-
+      Pentru rezident UE, foloseste autoritatea aeronautica a statului de resedinta.
+    sequence_hint: 40
+    completion_evidence_ro: ["Autoritatea din statul de resedinta a fost identificata"]
+    recovery_actions_ro: ["Daca resedinta UE nu este confirmata, revino la clasificarea corecta"]
+    status: draft
+
+  - id: register_in_first_eu_operation_country
+    semantic_key: register_in_first_eu_operation_country
+    title_ro: "Inregistreaza-te in prima tara UE de operare"
+    instruction_ro: >-
+      Pentru nerezident UE, foloseste prima tara UE de operare pe ruta competenta.
+    sequence_hint: 50
+    completion_evidence_ro: ["Prima tara UE de operare a fost identificata pentru inregistrare"]
+    recovery_actions_ro: ["Daca prima tara UE de operare nu este confirmata, nu continua depunerea"]
+    status: draft
+
+  - id: display_operator_number_on_all_drones
+    semantic_key: display_operator_number_on_all_drones
+    title_ro: "Afiseaza numarul de operator pe toate dronele"
+    instruction_ro: >-
+      Dupa primirea numarului, aplica-l pe toate dronele relevante ale operatorului.
+    sequence_hint: 60
+    completion_evidence_ro: ["Cerinta de afisare a numarului pe drone a fost clarificata"]
+    recovery_actions_ro: ["Daca numarul nu a fost emis, nu marca dronele cu un identificator presupus"]
+    status: draft
+
+  - id: upload_operator_number_to_remote_id
+    semantic_key: upload_operator_number_to_remote_id
+    title_ro: "Incarca numarul de operator in remote ID"
+    instruction_ro: >-
+      Daca drona si configuratia o cer, pregateste si asocierea numarului in sistemul remote ID.
+    sequence_hint: 70
+    completion_evidence_ro: ["Cerinta privind remote ID a fost clarificata"]
+    recovery_actions_ro: ["Daca drona sau ruta nu cer remote ID, nu activa aceasta ramura"]
+    status: draft
+
+requirement_templates: []

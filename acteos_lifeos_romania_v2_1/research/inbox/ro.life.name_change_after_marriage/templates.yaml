@@ -1,0 +1,87 @@
+step_templates:
+  - id: replace_identity_document
+    semantic_key: name_change_after_marriage_replace_identity_document
+    title_ro: "Inlocuieste actul de identitate"
+    instruction_ro: >-
+      Dupa schimbarea efectiva a numelui prin casatorie, pregateste ruta pentru
+      inlocuirea actului de identitate cu certificatul de casatorie si actele
+      civile cerute.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta pentru inlocuirea actului de identitate este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Porneste intotdeauna de la documentul de identitate, apoi verifica restul documentelor."
+    status: draft
+  - id: review_passport_name_data
+    semantic_key: name_change_after_marriage_review_passport
+    title_ro: "Verifica datele din pasaport"
+    instruction_ro: >-
+      Daca titularul are pasaport, confirma ruta oficiala aplicabila pentru
+      actualizarea numelui dupa ce actul de identitate este rezolvat.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Necesitatea unei actiuni asupra pasaportului este clarificata."
+    recovery_actions_ro:
+      - "Nu presupune automat termenul sau documentele pasaportului fara ruta sa dedicata."
+    status: draft
+  - id: review_driving_licence_name_data
+    semantic_key: name_change_after_marriage_review_driving_licence
+    title_ro: "Verifica datele din permis"
+    instruction_ro: >-
+      Daca titularul are permis, confirma traseul oficial pentru actualizarea
+      numelui dupa rezolvarea actului de identitate.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Necesitatea unei actiuni asupra permisului este clarificata."
+    recovery_actions_ro:
+      - "Nu muta automat cazul pe o emitere noua fara confirmarea rutei DGPCI/SPCRPCIV."
+    status: draft
+  - id: review_vehicle_holder_name_data
+    semantic_key: name_change_after_marriage_review_vehicle_data
+    title_ro: "Verifica datele titularului vehiculului"
+    instruction_ro: >-
+      Daca titularul are vehicul, verifica separat daca documentele vehiculului
+      trebuie actualizate dupa schimbarea numelui.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Necesitatea unei actiuni asupra documentelor vehiculului este clarificata."
+    recovery_actions_ro:
+      - "Nu presupune automat aceeasi procedura pentru toate documentele vehiculului."
+    status: draft
+
+requirement_templates:
+  - id: req.current_identity_document
+    title_ro: "Actul de identitate actual"
+    description_ro: >-
+      Actul de identitate folosit ca punct de plecare pentru inlocuirea dupa
+      schimbarea numelui.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Actul de identitate aflat in prezent in posesia titularului."
+    readiness_checks:
+      - "Actul actual poate fi prezentat pentru inlocuire."
+    status: draft
+  - id: req.marriage_certificate
+    title_ro: "Certificat de casatorie"
+    description_ro: >-
+      Certificatul de casatorie care sustine schimbarea efectiva a numelui.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de casatorie in forma ceruta de procedura."
+    readiness_checks:
+      - "Certificatul reflecta schimbarea de nume folosita in dosar."
+    status: draft
+  - id: req.civil_status_documents_original
+    title_ro: "Documente originale de stare civila"
+    description_ro: >-
+      Documentele originale de stare civila cerute pentru ruta de schimbare a
+      numelui dupa casatorie.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificate si acte de stare civila in original, daca procedura le cere."
+    readiness_checks:
+      - "Ruta concreta solicita prezentarea documentelor originale."
+    status: draft

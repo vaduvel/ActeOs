@@ -1,0 +1,123 @@
+step_templates:
+  - id: file_simple_caen_rev3_update
+    semantic_key: change_business_activity_file_simple_caen_update
+    title_ro: "Depune actualizarea simpla CAEN Rev.3"
+    instruction_ro: >-
+      Daca operatiunea este doar o actualizare tehnica la Rev.3, foloseste
+      traseul simplificat corespunzator formei juridice.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta simplificata CAEN Rev.3 este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca exista adaugare, eliminare sau schimbare reala de activitate, muta cazul pe fluxul de modificare."
+    status: draft
+  - id: approve_activity_modification
+    semantic_key: change_business_activity_approve_modification
+    title_ro: "Aproba modificarea activitatii"
+    instruction_ro: >-
+      Pentru adaugare, eliminare, schimbarea activitatii principale ori
+      split/agregare, pregateste decizia interna sau a titularului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Schimbarea activitatii este aprobata in forma ceruta."
+    recovery_actions_ro:
+      - "Daca pentru PFA ai depasi limita de clase CAEN, reduce sau reorganizeaza schimbarea."
+    status: draft
+  - id: file_activity_modification
+    semantic_key: change_business_activity_file_modification
+    title_ro: "Depune modificarea activitatii la ONRC"
+    instruction_ro: >-
+      Depune mentiunea pentru schimbarea activitatii si include documentele
+      actualizate cerute de ruta aleasa.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Mentiunea de modificare a activitatii este depusa."
+    recovery_actions_ro:
+      - "Daca noua activitate cere autorizare ori aviz special, completeaza acel traseu inainte de operare."
+    status: draft
+  - id: modify_timisoara_commercial_agreement
+    semantic_key: change_business_activity_modify_timisoara_agreement
+    title_ro: "Modifica acordul comercial Timisoara"
+    instruction_ro: >-
+      Daca schimbarea activitatii afecteaza acordul comercial local, continua
+      separat cu procedura de modificare aplicabila.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de modificare a acordului local este pregatita sau finalizata."
+    recovery_actions_ro:
+      - "Nu presupune ca actualizarea ONRC produce automat si actualizarea acordului local."
+    status: draft
+
+requirement_templates:
+  - id: req.onrc_annex_2a
+    title_ro: "Anexa ONRC 2A"
+    description_ro: >-
+      Formularul ONRC folosit pe ruta simplificata sau de modificare pentru
+      persoana juridica, dupa caz.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Anexa 2A completata si semnata pentru cazul corect."
+    readiness_checks:
+      - "Ruta aleasa este una care foloseste anexa 2A."
+    status: draft
+  - id: req.onrc_annex_2b
+    title_ro: "Anexa ONRC 2B"
+    description_ro: >-
+      Formularul ONRC folosit pe ruta simplificata sau de modificare pentru PFA,
+      dupa caz.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Anexa 2B completata si semnata pentru cazul corect."
+    readiness_checks:
+      - "Ruta aleasa este una care foloseste anexa 2B."
+    status: draft
+  - id: req.amending_act
+    title_ro: "Act modificator"
+    description_ro: >-
+      Actul intern care formalizeaza schimbarea activitatii atunci cand aceasta
+      modifica actul constitutiv sau structura de functionare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare, act aditional sau alt act modificator acceptat de ONRC."
+    readiness_checks:
+      - "Modificarea chiar necesita schimbarea actului constitutiv."
+    status: draft
+  - id: req.updated_constitutive_act
+    title_ro: "Act constitutiv actualizat"
+    description_ro: >-
+      Textul consolidat al actului constitutiv dupa schimbarea obiectului de
+      activitate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Forma actualizata complet a actului constitutiv."
+    readiness_checks:
+      - "Modificarile activitatilor au fost integrate in forma consolidata."
+    status: draft
+  - id: req.onrc_operating_declaration
+    title_ro: "Declaratie ONRC privind functionarea"
+    description_ro: >-
+      Declaratia privind functionarea activitatii sau a noii activitati, atunci
+      cand traseul ales o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratia ONRC completata pentru activitatea relevanta."
+    readiness_checks:
+      - "Noua activitate trebuie autorizata in cadrul mentiunii."
+    status: draft
+  - id: req.special_sector_permit
+    title_ro: "Aviz sau permis sectorial"
+    description_ro: >-
+      Avizul ori licenta speciala ceruta pentru noua activitate ori pentru
+      schimbarea modelata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Avizul, licenta sau autorizatia emisa de autoritatea competenta."
+    readiness_checks:
+      - "Noua activitate este una reglementata de un act special."
+    status: draft

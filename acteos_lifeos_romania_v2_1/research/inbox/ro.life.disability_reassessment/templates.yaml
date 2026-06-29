@@ -1,0 +1,205 @@
+# Step & requirement templates for ro.life.disability_reassessment (life.disability_reassessment).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_adult_reassessment_file
+    semantic_key: prepare_adult_reassessment_file
+    title_ro: "Pregateste dosarul de reevaluare pentru adult"
+    instruction_ro: >-
+      Daca adultul intra pe reevaluare, pregateste dosarul actualizat cu actele medicale si sociale
+      relevante.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul de reevaluare pentru adult este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente actualizate, completeaza-le inainte de depunere"
+    status: draft
+
+  - id: submit_adult_reassessment_before_expiry
+    semantic_key: submit_adult_reassessment_before_expiry
+    title_ro: "Depune reevaluarea adultului inainte de expirare"
+    instruction_ro: >-
+      Daca certificatul adultului are valabilitate determinata, pregateste depunerea reevaluarii
+      inainte de expirare.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de depunere a reevaluarii adultului a fost evaluata"
+    recovery_actions_ro:
+      - "Daca certificatul este permanent si nu exista alt motiv, nu activa reevaluarea periodica"
+    status: draft
+
+  - id: prepare_child_reassessment_file
+    semantic_key: prepare_child_reassessment_file
+    title_ro: "Pregateste dosarul de reevaluare pentru copil"
+    instruction_ro: >-
+      Pentru copil, pregateste dosarul actualizat de reevaluare impreuna cu certificatul aflat in vigoare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul de reevaluare pentru copil este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente actualizate sau certificatul in vigoare, completeaza dosarul"
+    status: draft
+
+  - id: request_child_reassessment_before_expiry
+    semantic_key: request_child_reassessment_before_expiry
+    title_ro: "Solicita reevaluarea copilului inainte de expirare"
+    instruction_ro: >-
+      Daca certificatul copilului este determinat, pregateste solicitarea de reevaluare inainte de expirare.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de solicitare a reevaluarii copilului a fost evaluata"
+    recovery_actions_ro:
+      - "Daca certificatul nu este in fereastra de reevaluare, revino la motivul concret al cererii"
+    status: draft
+
+  - id: submit_periodic_reassessment
+    semantic_key: submit_periodic_reassessment
+    title_ro: "Depune reevaluarea periodica"
+    instruction_ro: >-
+      Pentru certificatele cu valabilitate determinata, pregateste depunerea reevaluarii periodice
+      pe traseul relevant.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Reevaluarea periodica a fost pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca certificatul este permanent si nu exista alt motiv, nu folosi aceasta ramura"
+    status: draft
+
+  - id: request_reassessment_due_to_aggravation
+    semantic_key: request_reassessment_due_to_aggravation
+    title_ro: "Solicita reevaluarea din cauza agravarii"
+    instruction_ro: >-
+      Daca starea s-a agravat, pregateste reevaluarea cu dovezile medicale si psihosociale actualizate.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ruta de reevaluare pentru agravare a fost evaluata"
+    recovery_actions_ro:
+      - "Daca agravarea nu este sustinuta cu documente actualizate, completeaza dosarul"
+    status: draft
+
+  - id: attend_reassessment_on_authority_summons
+    semantic_key: attend_reassessment_on_authority_summons
+    title_ro: "Prezinta-te la reevaluare la convocarea autoritatii"
+    instruction_ro: >-
+      Daca autoritatea a emis o convocare, pregateste prezenta si dosarul pe baza documentului oficial.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Ruta de prezentare la convocare a fost evaluata"
+    recovery_actions_ro:
+      - "Daca lipseste convocarea oficiala, nu activa aceasta ramura"
+    status: draft
+
+  - id: request_periodic_evaluation_at_home
+    semantic_key: request_periodic_evaluation_at_home
+    title_ro: "Solicita evaluarea periodica la domiciliu"
+    instruction_ro: >-
+      Daca adultul se incadreaza pe ruta verificata pentru evaluare la domiciliu, pregateste cererea.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Ruta evaluarii periodice la domiciliu a fost evaluata"
+    recovery_actions_ro:
+      - "Daca situatia nu sustine evaluarea la domiciliu, nu continua pe aceasta ramura"
+    status: draft
+
+  - id: submit_certificate_reassessment
+    semantic_key: submit_certificate_reassessment
+    title_ro: "Depune reevaluarea certificatului"
+    instruction_ro: >-
+      Dupa pregatirea documentelor, depune reevaluarea certificatului pe ruta potrivita pentru copil sau adult.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Reevaluarea certificatului este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca dosarul nu este complet, nu continua depunerea"
+    status: draft
+
+  - id: request_piris_revision_independently
+    semantic_key: request_piris_revision_independently
+    title_ro: "Solicita separat revizuirea PIRIS"
+    instruction_ro: >-
+      Daca trebuie revizuit doar PIRIS, trateaza aceasta cerere separat de reevaluarea certificatului.
+    sequence_hint: 100
+    completion_evidence_ro:
+      - "Ruta separata pentru revizuirea PIRIS a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu este vorba despre PIRIS, nu activa aceasta ramura separata"
+    status: draft
+
+requirement_templates:
+  - id: req.current_child_disability_certificate_copy
+    title_ro: "Copie a certificatului actual al copilului"
+    description_ro: >-
+      Copia certificatului actual al copilului, folosita pentru reevaluare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a certificatului actual"
+    readiness_checks:
+      - "Copia certificatului actual este disponibila"
+    status: draft
+
+  - id: req.child_disability_application
+    title_ro: "Cerere pentru reevaluarea copilului"
+    description_ro: >-
+      Cererea folosita pentru reevaluarea copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere de reevaluare pentru copil"
+    readiness_checks:
+      - "Cererea de reevaluare a copilului este completata"
+    status: draft
+
+  - id: req.updated_social_medical_psychological_educational_file
+    title_ro: "Dosar social, medical, psihologic si educational actualizat"
+    description_ro: >-
+      Documentele actualizate folosite la reevaluarea copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente sociale actualizate"
+      - "Documente medicale actualizate"
+      - "Documente psihologice actualizate"
+      - "Documente educationale actualizate"
+    readiness_checks:
+      - "Dosarul actualizat este pregatit pentru reevaluare"
+    status: draft
+
+  - id: req.updated_medical_and_psychosocial_evidence
+    title_ro: "Dovezi medicale si psihosociale actualizate"
+    description_ro: >-
+      Dovezile medicale si psihosociale actualizate pentru reevaluare din cauza agravarii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovezi medicale actualizate"
+      - "Dovezi psihosociale actualizate"
+    readiness_checks:
+      - "Dovezile actualizate sustin agravarea invocata"
+    status: draft
+
+  - id: req.official_reassessment_summons
+    title_ro: "Convocarea oficiala pentru reevaluare"
+    description_ro: >-
+      Convocarea oficiala emisa de autoritate pentru reevaluare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Convocare oficiala pentru reevaluare"
+    readiness_checks:
+      - "Convocarea oficiala este disponibila si lizibila"
+    status: draft
+
+  - id: req.home_evaluation_request
+    title_ro: "Cerere de evaluare la domiciliu"
+    description_ro: >-
+      Cererea folosita pentru reevaluarea la domiciliu, acolo unde este aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere de evaluare la domiciliu"
+    readiness_checks:
+      - "Cererea pentru evaluare la domiciliu este pregatita daca ramura se aplica"
+    status: draft

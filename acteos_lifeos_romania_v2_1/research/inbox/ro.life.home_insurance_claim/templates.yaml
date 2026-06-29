@@ -1,0 +1,76 @@
+# Step & requirement templates for ro.life.home_insurance_claim (ro.life.home_insurance_claim).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.notify_authorities
+    semantic_key: step.notify_authorities
+    title_ro: "Anunta autoritatile si cere documentul evenimentului"
+    instruction_ro: >-
+      Pentru riscurile si politele unde este cerut, anunta autoritatile competente
+      si solicita procesul-verbal sau documentul oficial relevant.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta de notificare a autoritatilor a fost pregatita"
+    recovery_actions_ro:
+      - "Daca evenimentul cere dovada autoritatii si aceasta lipseste, nu prezenta dosarul ca complet"
+    status: draft
+
+  - id: step.notify_insurer
+    semantic_key: step.notify_insurer
+    title_ro: "Avizeaza dauna la asigurator"
+    instruction_ro: >-
+      Foloseste canalul oficial al politei confirmate pentru a aviza dauna si a porni dosarul.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de avizare la asigurator a fost pregatita"
+    recovery_actions_ro:
+      - "Daca asiguratorul sau termenul contractual nu sunt confirmate, cere clarificare inainte de inchidere"
+    status: draft
+
+requirement_templates:
+  - id: req.policy
+    title_ro: "Polita de asigurare"
+    description_ro: "Polita folosita pentru deschiderea dosarului de dauna."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Polita de asigurare"]
+    readiness_checks: ["Polita este disponibila si lizibila"]
+    status: draft
+
+  - id: req.identity
+    title_ro: "Actul de identitate"
+    description_ro: "Actul de identitate al persoanei care avizeaza dauna."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Act de identitate"]
+    readiness_checks: ["Actul de identitate este disponibil si valabil"]
+    status: draft
+
+  - id: req.property_title
+    title_ro: "Actele privind dreptul asupra locuintei"
+    description_ro: "Documentele care sustin dreptul asupra locuintei afectate."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Acte privind dreptul asupra locuintei"]
+    readiness_checks: ["Dreptul asupra locuintei este sustinut prin documente"]
+    status: draft
+
+  - id: req.authority_report
+    title_ro: "Proces-verbal sau document al autoritatii"
+    description_ro: "Documentul autoritatii, acolo unde ruta verificata il cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Proces-verbal al autoritatii", "Document oficial al autoritatii"]
+    readiness_checks: ["Documentul autoritatii este pregatit daca se aplica"]
+    status: draft
+
+  - id: req.damage_evidence
+    title_ro: "Dovezi ale pagubelor"
+    description_ro: "Fotografii, documente sau alte dovezi ale pagubelor."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Dovezi electronice ale pagubelor", "Copii ale dovezilor"]
+    readiness_checks: ["Pagubele sunt documentate prin dovezi suficiente"]
+    status: draft

@@ -1,0 +1,131 @@
+# Step & requirement templates for ro.life.inherited_home (life.inherited_home).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: confirm_successoral_option_status
+    semantic_key: confirm_successoral_option_status
+    title_ro: "Confirma stadiul optiunii succesorale"
+    instruction_ro: >-
+      Clarifica daca situatia intra pe regimul succesoral relevant si separa termenul
+      de optiune de finalizarea intregii proceduri.
+    sequence_hint: 10
+    completion_evidence_ro: ["Stadiul optiunii succesorale a fost clarificat"]
+    recovery_actions_ro: ["Daca regimul temporal nu este clar, confirma-l inainte de alte concluzii"]
+    status: draft
+
+  - id: open_notarial_succession
+    semantic_key: open_notarial_succession
+    title_ro: "Deschide succesiunea la notar"
+    instruction_ro: >-
+      Pentru ultimul domiciliu in Romania, pregateste dosarul si contactul cu notarul competent.
+    sequence_hint: 20
+    completion_evidence_ro: ["Dosarul succesoral pentru notar a fost pregatit"]
+    recovery_actions_ro: ["Daca lipsesc actele de baza sau competenta nu este confirmata, completeaza dosarul inainte de continuare"]
+    status: draft
+
+  - id: confirm_cross_border_succession_competence
+    semantic_key: confirm_cross_border_succession_competence
+    title_ro: "Confirma competenta succesiunii transfrontaliere"
+    instruction_ro: >-
+      Daca ultimul domiciliu sau documentele sunt in strainatate, confirma competenta si ruta transfrontaliera.
+    sequence_hint: 30
+    completion_evidence_ro: ["Competenta pentru succesiunea transfrontaliera a fost clarificata"]
+    recovery_actions_ro: ["Daca competenta nu este confirmata, nu continua pe o ruta notariala presupusa"]
+    status: draft
+
+  - id: pay_succession_transfer_tax_at_notary
+    semantic_key: pay_succession_transfer_tax_at_notary
+    title_ro: "Clarifica taxa de transfer succesoral la notar"
+    instruction_ro: >-
+      Daca sunt intrunite conditiile pentru transferul imobiliar dupa succesiune,
+      pregateste clarificarea taxei pe ruta notariala.
+    sequence_hint: 40
+    completion_evidence_ro: ["Ruta pentru taxa de transfer succesoral a fost evaluata"]
+    recovery_actions_ro: ["Daca pragul temporal sau fiscal nu este confirmat, nu afisa calculul ca cert"]
+    status: draft
+
+  - id: declare_inherited_home_for_local_tax
+    semantic_key: declare_inherited_home_for_local_tax
+    title_ro: "Declara locuinta mostenita la fisc local"
+    instruction_ro: >-
+      Dupa finalizarea succesiunii, pregateste declararea imobilului mostenit la autoritatea fiscala locala.
+    sequence_hint: 50
+    completion_evidence_ro: ["Ruta de declarare fiscala locala a locuintei mostenite a fost pregatita"]
+    recovery_actions_ro: ["Daca succesiunea nu este finalizata, nu activa aceasta ramura post-procedura"]
+    status: draft
+
+  - id: notify_association_after_inheritance
+    semantic_key: notify_association_after_inheritance
+    title_ro: "Notifica asociatia dupa mostenire"
+    instruction_ro: >-
+      Daca imobilul este in condominiu, pregateste notificarea catre asociatia de proprietari.
+    sequence_hint: 60
+    completion_evidence_ro: ["Ruta de notificare a asociatiei a fost pregatita"]
+    recovery_actions_ro: ["Daca ancora exacta a termenului nu este confirmata, mentine notificarea in zona de clarificare"]
+    status: draft
+
+requirement_templates:
+  - id: req.death_certificate
+    title_ro: "Certificatul de deces"
+    description_ro: "Documentul de pornire pentru dosarul succesoral."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Certificat de deces"]
+    readiness_checks: ["Certificatul de deces este disponibil si lizibil"]
+    status: draft
+
+  - id: req.heirs_civil_status_documents
+    title_ro: "Actele de stare civila ale mostenitorilor"
+    description_ro: "Documentele de stare civila folosite pentru dosarul succesoral."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Acte de stare civila ale mostenitorilor"]
+    readiness_checks: ["Actele de stare civila ale mostenitorilor sunt pregatite"]
+    status: draft
+
+  - id: req.property_title_documents
+    title_ro: "Actele de proprietate ale imobilului"
+    description_ro: "Documentele care sustin bunurile imobile din masa succesorala."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Acte de proprietate ale imobilului"]
+    readiness_checks: ["Bunurile imobile sunt sustinute prin documente"]
+    status: draft
+
+  - id: req.local_and_state_tax_certificates
+    title_ro: "Certificate fiscale locale si de stat"
+    description_ro: "Certificatele fiscale cerute pe ruta succesorala relevanta."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificate fiscale locale", "Certificate fiscale de stat"]
+    readiness_checks: ["Certificatele fiscale sunt pregatite daca ruta le cere"]
+    status: draft
+
+  - id: req.two_witnesses
+    title_ro: "Doi martori"
+    description_ro: "Martorii ceruti pe anumite ramuri ale dosarului succesoral."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Prezenta a doi martori"]
+    readiness_checks: ["Martorii sunt disponibili daca ruta ii cere"]
+    status: draft
+
+  - id: req.authentic_succession_power_of_attorney
+    title_ro: "Procura autentica pentru succesiune"
+    description_ro: "Procura folosita daca succesibilul nu participa personal."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Procura autentica pentru succesiune"]
+    readiness_checks: ["Procura este pregatita daca se foloseste reprezentare"]
+    status: draft
+
+  - id: req.will
+    title_ro: "Testamentul"
+    description_ro: "Testamentul, daca exista si este relevant pentru dosar."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Testament"]
+    readiness_checks: ["Testamentul este disponibil daca exista"]
+    status: draft

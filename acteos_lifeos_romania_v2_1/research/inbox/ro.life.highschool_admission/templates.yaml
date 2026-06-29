@@ -1,0 +1,141 @@
+# Step & requirement templates for ro.life.highschool_admission (life.highschool_admission).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.hs.select_route
+    semantic_key: step.hs.select_route
+    title_ro: "Alege ruta de admitere"
+    instruction_ro: >-
+      Stabileste ruta relevanta de admitere la liceu si verifica daca exista conditii speciale
+      pentru profilul sau unitatea aleasa.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta de admitere a fost aleasa"
+    recovery_actions_ro:
+      - "Daca optiunea nu mai este valabila, selecteaza o ruta compatibila"
+    status: draft
+
+  - id: step.hs.complete_options
+    semantic_key: step.hs.complete_options
+    title_ro: "Completeaza optiunile"
+    instruction_ro: >-
+      Completeaza lista de optiuni conform traseului ales si verifica ordinea preferintelor
+      inainte de transmitere.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Lista de optiuni a fost completata"
+    recovery_actions_ro:
+      - "Daca observi o eroare, corecteaza optiunile inainte de inchiderea etapei"
+    status: draft
+
+  - id: step.hs.second_stage
+    semantic_key: step.hs.second_stage
+    title_ro: "Urmareste etapa a doua"
+    instruction_ro: >-
+      Daca prima repartizare nu rezolva cazul, urmareste a doua etapa si conditiile anuntate
+      pentru ea.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Necesitatea etapei a doua a fost verificata"
+    recovery_actions_ro:
+      - "Daca ai ratat prima ruta, pregateste imediat dosarul pentru etapa urmatoare"
+    status: draft
+
+  - id: step.hs.check_allocation
+    semantic_key: step.hs.check_allocation
+    title_ro: "Verifica repartizarea"
+    instruction_ro: >-
+      Verifica rezultatul repartizarii si confirma unitatea la care ai fost alocat.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Rezultatul repartizarii a fost verificat"
+    recovery_actions_ro:
+      - "Daca rezultatul nu este cel asteptat, urmareste caile anuntate pentru etapa urmatoare"
+    status: draft
+
+  - id: step.hs.prepare_dossier
+    semantic_key: step.hs.prepare_dossier
+    title_ro: "Pregateste dosarul"
+    instruction_ro: >-
+      Strange cererea si documentele scolare sau medicale cerute pentru dosarul de inscriere.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Dosarul de inscriere este pregatit"
+    recovery_actions_ro:
+      - "Daca lipseste un document, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: step.hs.submit_dossier
+    semantic_key: step.hs.submit_dossier
+    title_ro: "Depune dosarul"
+    instruction_ro: >-
+      Depune dosarul la unitatea sau prin canalul indicat pentru ruta ta de admitere.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul a fost depus"
+    recovery_actions_ro:
+      - "Daca depunerea nu este acceptata, verifica piesele lipsa sau ruta corecta"
+    status: draft
+
+  - id: step.hs.verify_local_offer
+    semantic_key: step.hs.verify_local_offer
+    title_ro: "Verifica oferta locala"
+    instruction_ro: >-
+      Verifica oferta locala de clase sau specializari inainte de alegerea finala.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Oferta locala relevanta a fost verificata"
+    recovery_actions_ro:
+      - "Daca oferta se schimba, actualizeaza optiunile"
+    status: draft
+
+requirement_templates:
+  - id: req.hs.application
+    title_ro: "Cerere de inscriere"
+    description_ro: >-
+      Cererea folosita pentru traseul de admitere la liceu.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de inscriere completata"
+    readiness_checks:
+      - "Cererea este completata pentru ruta aleasa"
+    status: draft
+
+  - id: req.hs.birth_certificate
+    title_ro: "Certificat de nastere"
+    description_ro: >-
+      Certificatul de nastere folosit pentru identificarea elevului in dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere"
+    readiness_checks:
+      - "Certificatul corespunde elevului din dosar"
+    status: draft
+
+  - id: req.hs.medical_sheet
+    title_ro: "Fisa medicala"
+    description_ro: >-
+      Fisa sau documentul medical cerut de unitatea de invatamant pentru inscriere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Fisa medicala"
+    readiness_checks:
+      - "Documentul medical este pregatit in forma ceruta"
+    status: draft
+
+  - id: req.hs.special_evidence
+    title_ro: "Dovezi speciale"
+    description_ro: >-
+      Documentele suplimentare pentru situatii speciale, daca traseul de admitere le cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente pentru situatii speciale"
+    readiness_checks:
+      - "Dovezile speciale corespund exact situatiei invocate"
+    status: draft

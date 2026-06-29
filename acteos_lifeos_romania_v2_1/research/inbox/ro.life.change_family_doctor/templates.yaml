@@ -1,0 +1,86 @@
+step_templates:
+  - id: document_early_change_exception
+    semantic_key: change_family_doctor_exception
+    title_ro: "Documenteaza exceptia de schimbare anticipata"
+    instruction_ro: >-
+      Daca schimbarea se face inainte de 6 luni, pregateste dovada exceptiei
+      legale care justifica ruta anticipata.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Exceptia legala este identificata si documentata."
+    recovery_actions_ro:
+      - "Daca nu exista o exceptie legala, nu continua pe ruta anticipata."
+    status: draft
+  - id: present_national_health_card
+    semantic_key: change_family_doctor_present_card
+    title_ro: "Prezinta cardul national de sanatate"
+    instruction_ro: >-
+      Daca esti asigurat si nu te afli intr-o exceptie, prezinta cardul national
+      impreuna cu cererea de transfer.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cardul este disponibil pentru depunerea cererii."
+    recovery_actions_ro:
+      - "Daca esti in exceptie sau neasigurat, foloseste ruta numai pe baza cererii."
+    status: draft
+  - id: search_official_provider_list
+    semantic_key: change_family_doctor_search_provider
+    title_ro: "Cauta medicul nou in lista oficiala"
+    instruction_ro: >-
+      Verifica in lista oficiala daca medicul ales este in contract cu casa de
+      asigurari competenta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Medicul nou este verificat in lista oficiala."
+    recovery_actions_ro:
+      - "Daca medicul nu apare in lista contractata, alege un alt furnizor eligibil."
+    status: draft
+  - id: submit_transfer_request_to_new_doctor
+    semantic_key: change_family_doctor_submit_transfer
+    title_ro: "Depune cererea de transfer la medicul nou"
+    instruction_ro: >-
+      Adreseaza cererea de inscriere prin transfer medicului de familie ales si
+      include documentele aplicabile.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cererea de transfer este depusa la medicul nou."
+    recovery_actions_ro:
+      - "Daca medicul nu confirma acceptarea, verifica disponibilitatea la alt cabinet."
+    status: draft
+  - id: monitor_medical_record_transfer
+    semantic_key: change_family_doctor_monitor_transfer
+    title_ro: "Urmareste transferul fisei medicale"
+    instruction_ro: >-
+      Dupa depunerea transferului, urmareste notificarea medicului anterior si
+      transmiterea copiei certificate a fisei medicale.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Exista confirmarea ca transferul a fost initiat sau finalizat."
+    recovery_actions_ro:
+      - "Daca termenul operational este depasit, cere clarificari medicului nou sau CJAS."
+    status: draft
+
+requirement_templates:
+  - id: family_doctor_transfer_request
+    title_ro: "Cerere de inscriere prin transfer"
+    description_ro: >-
+      Cererea depusa la medicul de familie nou pentru schimbarea medicului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de inscriere prin transfer, in forma folosita de cabinetul primitor."
+    readiness_checks:
+      - "Cererea este completata pentru medicul nou ales."
+    status: draft
+  - id: national_health_card
+    title_ro: "Cardul national de sanatate"
+    description_ro: >-
+      Cardul prezentat de persoana asigurata la transfer, daca nu exista o
+      exceptie aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cardul national de sanatate valabil."
+    readiness_checks:
+      - "Persoana este asigurata si nu se afla intr-o exceptie privind cardul."
+    status: draft

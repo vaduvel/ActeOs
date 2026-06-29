@@ -1,0 +1,81 @@
+# Step & requirement templates for ro.life.declare_rental_income (life.declare_rental_income).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: assess_rental_contract_and_tax_obligations
+    semantic_key: assess_rental_contract_and_tax_obligations
+    title_ro: "Verifica contractul si obligatiile fiscale"
+    instruction_ro: >-
+      Stabileste daca exista un contract semnat, daca trebuie inregistrat prin C168 si daca venitul
+      din chirie cere evaluarea separata pentru declaratia fiscala individuala.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta C168 si obligatia fiscala a venitului au fost evaluate"
+    recovery_actions_ro:
+      - "Daca ai doar un draft sau contractul nu este clar, nu porni inregistrarea"
+    status: draft
+
+  - id: prepare_c168_rental_contract_request
+    semantic_key: prepare_c168_rental_contract_request
+    title_ro: "Pregateste cererea C168 pentru contractul de inchiriere"
+    instruction_ro: >-
+      Pregateste cererea initiala C168 folosind contractul semnat si atasamentul tehnic cerut.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea initiala C168 este pregatita"
+    recovery_actions_ro:
+      - "Daca lipseste contractul semnat sau atasamentul ZIP, completeaza-le inainte de depunere"
+    status: draft
+
+  - id: prepare_rectifying_or_update_c168_request
+    semantic_key: prepare_rectifying_or_update_c168_request
+    title_ro: "Pregateste rectificarea sau actualizarea C168"
+    instruction_ro: >-
+      Daca situatia contractului s-a modificat sau a incetat, pregateste cererea de actualizare ori
+      rectificare corespunzatoare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea de actualizare sau rectificare C168 este pregatita"
+    recovery_actions_ro:
+      - "Daca nu este clar daca trebuie initiala sau rectificativa, revino la starea contractului"
+    status: draft
+
+  - id: assess_rental_income_in_individual_tax_return
+    semantic_key: assess_rental_income_in_individual_tax_return
+    title_ro: "Evalueaza daca venitul merge si in D212"
+    instruction_ro: >-
+      Verifica separat daca venitul din chirie trebuie declarat in declaratia fiscala individuala,
+      fara sa confunzi aceasta etapa cu inregistrarea contractului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Necesitatea D212 pentru venitul din chirie a fost evaluata"
+    recovery_actions_ro:
+      - "Daca tratamentul fiscal nu este clar, separa ruta D212 de C168"
+    status: draft
+
+requirement_templates:
+  - id: req.signed_rental_contract
+    title_ro: "Contract de inchiriere semnat"
+    description_ro: >-
+      Contractul de inchiriere semnat folosit pentru cererea C168.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contract de inchiriere semnat"
+    readiness_checks:
+      - "Contractul este semnat si corespunde situatiei declarate"
+    status: draft
+
+  - id: req.c168_contract_scan_zip
+    title_ro: "Atasament ZIP pentru C168"
+    description_ro: >-
+      Atasamentul tehnic ZIP cerut pentru trimiterea contractului prin C168.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Fisier ZIP cu documentele contractului"
+    readiness_checks:
+      - "Atasamentul ZIP este pregatit pentru incarcare"
+    status: draft

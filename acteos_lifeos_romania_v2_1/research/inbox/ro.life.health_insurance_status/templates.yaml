@@ -1,0 +1,87 @@
+step_templates:
+  - id: check_insurance_status_in_siui
+    semantic_key: health_insurance_status_check_siui
+    title_ro: "Verifica statusul in SIUI"
+    instruction_ro: >-
+      Foloseste portalul SIUI indicat de CNAS pentru a verifica online calitatea
+      de asigurat si noteaza data verificarii.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Rezultatul verificarii online este salvat sau notat cu data."
+    recovery_actions_ro:
+      - "Daca portalul nu raspunde, incearca mai tarziu sau treci la contactarea CAS."
+    status: draft
+  - id: identify_insurance_category_or_correction_route
+    semantic_key: health_insurance_status_identify_route
+    title_ro: "Identifica ruta de dobandire sau corectare"
+    instruction_ro: >-
+      Daca rezultatul este negativ, stabileste categoria legala relevanta sau
+      ruta de corectare a datelor la CAS.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Categoria sau cauza care necesita corectie este identificata."
+    recovery_actions_ro:
+      - "Nu interpreta automat un rezultat negativ fara documentele si categoria aplicabila."
+    status: draft
+  - id: retry_or_contact_territorial_cas
+    semantic_key: health_insurance_status_retry_or_contact_cas
+    title_ro: "Reincearca sau contacteaza CAS teritoriala"
+    instruction_ro: >-
+      Daca portalul este indisponibil, reincearca verificarea sau contacteaza
+      casa teritoriala competenta pentru indrumare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ai reluat verificarea sau ai obtinut indrumare de la CAS."
+    recovery_actions_ro:
+      - "Pastreaza dovada indisponibilitatii daca ai nevoie de suport suplimentar."
+    status: draft
+  - id: review_and_submit_current_d212_if_eligible
+    semantic_key: health_insurance_status_review_d212
+    title_ro: "Verifica si depune D212 daca esti eligibil"
+    instruction_ro: >-
+      Pentru categoria fara venituri descrisa de CNAS, verifica eligibilitatea si
+      confirma formularul si cuantumul curent cu ANAF inainte de depunere.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta D212 este confirmata sau respinsa pentru situatia concreta."
+    recovery_actions_ro:
+      - "Nu folosi cuantumuri vechi din exemple depasite."
+    status: draft
+  - id: submit_student_insurance_documents_to_cas
+    semantic_key: health_insurance_status_student_documents
+    title_ro: "Depune documentele de elev sau student la CAS"
+    instruction_ro: >-
+      Pentru ruta student 18-26 la zi, pregateste copia actului de identitate si
+      documentul valid de elev sau student avizat de institutia de invatamant.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Documentele studentului sunt pregatite sau depuse la CAS."
+    recovery_actions_ro:
+      - "Confirma conditiile actuale privind veniturile si forma de invatamant."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_identity_document_copy
+    title_ro: "Copie act de identitate valabil"
+    description_ro: >-
+      Copia actului de identitate folosita pentru mentinerea sau corectarea
+      calitatii de asigurat in ruta studentului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copie lizibila a actului de identitate valabil."
+    readiness_checks:
+      - "Documentul este valabil si lizibil."
+    status: draft
+  - id: req.valid_student_or_pupil_document_endorsed_by_school
+    title_ro: "Document valabil de elev sau student"
+    description_ro: >-
+      Documentul care arata statutul de elev sau student la zi, avizat de
+      institutia de invatamant.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverinta, legitimatie sau alt document valid de elev sau student, avizat de scoala."
+    readiness_checks:
+      - "Documentul este valabil pentru anul sau semestrul relevant."
+    status: draft

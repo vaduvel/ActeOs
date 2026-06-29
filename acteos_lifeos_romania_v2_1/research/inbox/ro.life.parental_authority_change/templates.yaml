@@ -1,0 +1,89 @@
+# Step & requirement templates for ro.life.parental_authority_change (ro.life.parental_authority_change).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: request_child_cei_under14
+    semantic_key: request_child_cei_under14
+    title_ro: "Pregateste cererea CEI pentru copil sub 14 ani"
+    instruction_ro: >-
+      Daca schimbarea autoritatii parintesti are efect imediat asupra solicitarii CEI sub 14 ani, pregateste documentele doveditoare corecte.
+    sequence_hint: 10
+    completion_evidence_ro: ["Ruta CEI sub 14 ani a fost pregatita pe baza documentului de autoritate corect"]
+    recovery_actions_ro: ["Daca documentul judiciar nu este definitiv sau categoria lui nu este clara, nu continua depunerea"]
+    status: draft
+
+  - id: request_identity_document_age14plus
+    semantic_key: request_identity_document_age14plus
+    title_ro: "Pregateste ruta de document de identitate pentru 14+"
+    instruction_ro: >-
+      Daca minorul are 14 ani sau mai mult, pregateste ruta relevanta pe baza documentului valabil de autoritate parinteasca.
+    sequence_hint: 20
+    completion_evidence_ro: ["Ruta de document de identitate pentru 14+ a fost pregatita"]
+    recovery_actions_ro: ["Daca virsta sau documentul de autoritate nu sunt confirmate, clarifica-le inainte de continuare"]
+    status: draft
+
+requirement_templates:
+  - id: req.child_birth_certificate
+    title_ro: "Certificatul de nastere al copilului"
+    description_ro: "Certificatul de nastere folosit pentru cererea copilului."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat de nastere al copilului"]
+    readiness_checks: ["Certificatul de nastere al copilului este disponibil"]
+    status: draft
+
+  - id: req.requesting_adult_identity_document
+    title_ro: "Actul de identitate al adultului solicitant"
+    description_ro: "Actul de identitate al adultului care depune cererea."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act de identitate al adultului solicitant"]
+    readiness_checks: ["Adultul solicitant se poate identifica prin document valabil"]
+    status: draft
+
+  - id: req.both_parents_request_or_consent
+    title_ro: "Cererea sau consimtamantul ambilor parinti"
+    description_ro: "Cererea comuna sau consimtamantul ambilor parinti, unde ruta il cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Cerere comuna", "Consimtamantul ambilor parinti"]
+    readiness_checks: ["Participarea sau consimtamantul ambilor parinti este acoperit daca ruta o cere"]
+    status: draft
+
+  - id: req.other_parent_death_certificate
+    title_ro: "Certificatul de deces al celuilalt parinte"
+    description_ro: "Documentul relevant cand autoritatea rezulta din decesul celuilalt parinte."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat de deces al celuilalt parinte"]
+    readiness_checks: ["Certificatul de deces este disponibil daca aceasta ramura se aplica"]
+    status: draft
+
+  - id: req.final_parental_authority_judgment
+    title_ro: "Hotararea definitiva privind autoritatea parinteasca"
+    description_ro: "Hotararea definitiva folosita pentru a dovedi autoritatea parinteasca."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Hotarare definitiva privind autoritatea parinteasca"]
+    readiness_checks: ["Hotararea definitiva este disponibila daca aceasta este baza solicitarii"]
+    status: draft
+
+  - id: req.presidential_order_express_cei_authorization
+    title_ro: "Ordonanta presedintiala cu autorizare expresa pentru CEI"
+    description_ro: "Actul expres cerut pentru aceasta baza speciala."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Ordonanta presedintiala cu autorizare expresa pentru CEI"]
+    readiness_checks: ["Actul expres este disponibil daca aceasta ramura se aplica"]
+    status: draft
+
+  - id: req.final_court_judgment_resolving_parental_disagreement
+    title_ro: "Hotararea definitiva care rezolva dezacordul dintre parinti"
+    description_ro: "Hotararea definitiva relevanta pentru cazurile de dezacord privind solicitarea actului."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Hotarare definitiva care rezolva dezacordul dintre parinti"]
+    readiness_checks: ["Hotararea definitiva este disponibila daca exista dezacord parental"]
+    status: draft

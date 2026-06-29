@@ -1,0 +1,86 @@
+# Step & requirement templates for ro.life.vaccination_record (life.vaccination_record).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: request_access_or_copy_from_medical_provider
+    semantic_key: request_access_or_copy_from_medical_provider
+    title_ro: "Cere accesul sau copia de la furnizorul medical"
+    instruction_ro: >-
+      Cere acces la datele de vaccinare sau o copie a evidentei de la furnizorul medical care
+      pastreaza dosarul.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea catre furnizorul medical a fost pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca nu stii cine tine evidenta, cauta mai intai furnizorul relevant"
+    status: draft
+
+  - id: request_family_doctor_epidemiological_opinion_or_vaccination_proof
+    semantic_key: request_family_doctor_epidemiological_opinion_or_vaccination_proof
+    title_ro: "Cere avizul sau dovada de la medicul de familie"
+    instruction_ro: >-
+      Pentru intrarea in colectivitate sau alta nevoie similara, cere medicului de familie avizul
+      epidemiologic ori dovada de vaccinare in formatul cerut.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Medicul de familie a fost solicitat pentru documentul necesar"
+    recovery_actions_ro:
+      - "Daca scopul este altul decat cel scolar, confirma formatul exact cerut"
+    status: draft
+
+  - id: contact_current_family_doctor_for_record_trace
+    semantic_key: contact_current_family_doctor_for_record_trace
+    title_ro: "Contacteaza medicul de familie actual pentru localizarea evidentei"
+    instruction_ro: >-
+      Daca nu stii exact cine detine evidenta vaccinarii, porneste cu medicul de familie actual
+      pentru clarificare sau trasabilitate.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta de localizare a evidentei a fost initiata"
+    recovery_actions_ro:
+      - "Daca evidenta nu este gasita imediat, continua clarificarea cu furnizorul relevant"
+    status: draft
+
+  - id: request_provider_correction_or_clarification
+    semantic_key: request_provider_correction_or_clarification
+    title_ro: "Cere corectarea sau clarificarea evidentei"
+    instruction_ro: >-
+      Daca exista discrepante in evidenta, cere furnizorului medical clarificarea sau corectarea
+      datelor.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cererea de corectare sau clarificare a fost pregatita"
+    recovery_actions_ro:
+      - "Daca discrepanta nu este explicata, nu folosi documentul ca definitiv"
+    status: draft
+
+requirement_templates:
+  - id: req.identity_or_representation_proof
+    title_ro: "Act de identitate sau dovada reprezentarii"
+    description_ro: >-
+      Actul de identitate al titularului ori dovada reprezentarii pentru accesul la evidenta de
+      vaccinare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+      - "Dovada reprezentarii"
+    readiness_checks:
+      - "Persoana care cere accesul poate fi identificata sau isi dovedeste reprezentarea"
+    status: draft
+
+  - id: req.parent_or_legal_representative_identity_and_authority
+    title_ro: "Actele parintelui sau reprezentantului legal"
+    description_ro: >-
+      Actele de identitate si dovada autoritatii parintelui sau reprezentantului legal, daca
+      subiectul este minor.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acte de identitate ale parintelui sau reprezentantului"
+      - "Dovada autoritatii legale"
+    readiness_checks:
+      - "Reprezentantul minorului isi poate dovedi autoritatea"
+    status: draft

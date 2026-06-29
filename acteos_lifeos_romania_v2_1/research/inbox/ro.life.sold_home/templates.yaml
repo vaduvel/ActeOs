@@ -1,0 +1,148 @@
+step_templates:
+  - id: complete_authentic_notarial_transfer
+    semantic_key: sold_home_complete_authentic_transfer
+    title_ro: "Finalizeaza vanzarea autentica la notar"
+    instruction_ro: >-
+      Pentru instrainarea imobilului, urmeaza actul autentic notarial si
+      verifica documentele care trebuie predate cumparatorului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Vanzarea autentica a imobilului este finalizata."
+    recovery_actions_ro:
+      - "Nu trata simpla promisiune de vanzare ca transfer final al proprietatii."
+    status: draft
+  - id: request_association_sale_certificate
+    semantic_key: sold_home_request_association_certificate
+    title_ro: "Solicita adeverinta asociatiei"
+    instruction_ro: >-
+      Daca imobilul este in condominiu si asociatia functioneaza, cere
+      adeverinta necesara vanzarii si verifica valabilitatea ei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Adeverinta asociatiei este solicitata sau obtinuta."
+    recovery_actions_ro:
+      - "Urmarste separat termenul de emitere si termenul de valabilitate."
+    status: draft
+  - id: prepare_no_association_declaration_and_bill
+    semantic_key: sold_home_prepare_no_association_alternative
+    title_ro: "Pregateste alternativa fara asociatie functionala"
+    instruction_ro: >-
+      Daca nu exista asociatie functionala ori nu exista conducere, pregateste
+      declaratia vanzatorului si factura recenta cerute de ruta alternativa.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Alternativa fara asociatie functionala este pregatita."
+    recovery_actions_ro:
+      - "Nu folosi aceasta ruta daca asociatia functioneaza si poate emite adeverinta."
+    status: draft
+  - id: provide_energy_certificate_copy_before_sale
+    semantic_key: sold_home_provide_energy_copy_before_sale
+    title_ro: "Da copia certificatului energetic inainte de vanzare"
+    instruction_ro: >-
+      Pune la dispozitia cumparatorului copia certificatului energetic inainte
+      de semnarea contractului, cand imobilul intra in aceasta obligatie.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Copia certificatului energetic este pusa la dispozitie inainte de vanzare."
+    recovery_actions_ro:
+      - "Daca certificatul lipseste sau este expirat, rezolva emiterea lui inainte de vanzare."
+    status: draft
+  - id: hand_over_energy_certificate_original
+    semantic_key: sold_home_hand_over_energy_original
+    title_ro: "Preda originalul certificatului energetic"
+    instruction_ro: >-
+      La vanzare, preda cumparatorului originalul certificatului energetic in
+      dosarul final al imobilului.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Originalul certificatului energetic este predat cumparatorului."
+    recovery_actions_ro:
+      - "Pastreaza o copie daca iti este utila pentru evidenta proprie."
+    status: draft
+  - id: deposit_energy_certificate_copy_at_tax_body
+    semantic_key: sold_home_deposit_energy_copy_tax
+    title_ro: "Depune copia certificatului energetic la fiscal, daca este ceruta"
+    instruction_ro: >-
+      Daca ruta fiscala o cere, pregateste si copia certificatului energetic
+      pentru organul fiscal competent.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Necesitatea depunerii copiei la fiscal este clarificata sau indeplinita."
+    recovery_actions_ro:
+      - "Nu extinde automat aceasta cerinta in afara cazului modelat."
+    status: draft
+  - id: obtain_local_fiscal_certificate_if_requested
+    semantic_key: sold_home_obtain_local_fiscal_certificate
+    title_ro: "Obtine certificatul fiscal local, daca este cerut"
+    instruction_ro: >-
+      Daca tranzactia sau notarul cer certificat fiscal local, urmeaza separat
+      ruta de obtinere a lui inainte de finalizarea vanzarii.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Certificatul fiscal local este obtinut sau necesitatea lui este clarificata."
+    recovery_actions_ro:
+      - "Verifica cerinta concreta a notarului sau a UAT-ului competent."
+    status: draft
+  - id: remove_home_from_local_tax_record
+    semantic_key: sold_home_remove_local_tax_record
+    title_ro: "Scoate locuinta din evidenta fiscala locala"
+    instruction_ro: >-
+      Dupa vanzare, urmeaza ruta de scoatere din evidenta fiscala locala a
+      imobilului in UAT-ul competent.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Ruta de scoatere din evidenta fiscala este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca termenul local nu este confirmat oficial, nu presupune o limita numerica."
+    status: draft
+
+requirement_templates:
+  - id: req.seller_self_declaration
+    title_ro: "Declaratia vanzatorului"
+    description_ro: >-
+      Declaratia pe propria raspundere folosita in alternativa fara asociatie
+      functionala.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie semnata in forma ceruta de procedura."
+    readiness_checks:
+      - "Nu exista asociatie functionala sau nu exista conducere care sa emita adeverinta."
+    status: draft
+  - id: req.latest_utility_bill_and_payment_proof
+    title_ro: "Ultima factura de utilitati si dovada platii"
+    description_ro: >-
+      Factura recenta si dovada platii folosite in ruta alternativa fara
+      asociatie functionala.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Factura recenta si dovada de plata aferenta."
+    readiness_checks:
+      - "Ruta alternativa fara asociatie este aplicabila."
+    status: draft
+  - id: req.proof_dues_and_utilities_current
+    title_ro: "Dovada situatiei la zi pentru datorii si utilitati"
+    description_ro: >-
+      Documentele care arata situatia la zi a obligatiilor relevante pentru
+      vanzarea in condominiu.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverinte, facturi sau alte dovezi privind situatia obligatiilor."
+    readiness_checks:
+      - "Exista datorii sau clarificari cerute de vanzare."
+    status: draft
+  - id: req.express_debt_assumption_in_deed
+    title_ro: "Preluarea expresa a datoriilor in act"
+    description_ro: >-
+      Formularea expresa din actul autentic prin care cumparatorul accepta
+      eventualele datorii, daca partile aleg aceasta ruta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Clauza expresa in actul autentic."
+    readiness_checks:
+      - "Exista datorii si partile vor sa le reglementeze explicit in act."
+    status: draft
+

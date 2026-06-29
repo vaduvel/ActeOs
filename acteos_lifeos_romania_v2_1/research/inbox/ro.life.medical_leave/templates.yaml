@@ -1,0 +1,68 @@
+# Step & requirement templates for ro.life.medical_leave (life.medical_leave).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: obtain_medical_certificate
+    semantic_key: obtain_medical_certificate
+    title_ro: "Obtine certificatul de concediu medical"
+    instruction_ro: >-
+      Obtine certificatul de concediu medical de la medicul curant pe ruta corespunzatoare
+      categoriei de concediu.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Certificatul de concediu medical a fost obtinut"
+    recovery_actions_ro:
+      - "Daca certificatul lipseste, nu continua pe ruta de plata"
+    status: draft
+
+  - id: deliver_certificate_to_employer
+    semantic_key: deliver_certificate_to_employer
+    title_ro: "Preda certificatul angajatorului"
+    instruction_ro: >-
+      Preda certificatul de concediu medical angajatorului in termenul operational aplicabil.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Certificatul a fost predat angajatorului"
+    recovery_actions_ro:
+      - "Daca termenul este depasit, anunta imediat angajatorul si transmite documentul"
+    status: draft
+
+  - id: employer_registers_medical_leave_in_reges
+    semantic_key: employer_registers_medical_leave_in_reges
+    title_ro: "Confirma inregistrarea concediului de catre angajator"
+    instruction_ro: >-
+      Urmareste ca angajatorul sa inregistreze si sa transmita suspendarea pe traseul operational
+      relevant.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Inregistrarea operationala a concediului a fost confirmata"
+    recovery_actions_ro:
+      - "Daca inregistrarea intarzie, solicita confirmarea procesarii"
+    status: draft
+
+requirement_templates:
+  - id: medical_leave_certificate_from_treating_physician
+    title_ro: "Certificat de concediu medical de la medicul curant"
+    description_ro: >-
+      Certificatul de concediu medical emis de medicul curant pentru episodul declarat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de concediu medical"
+    readiness_checks:
+      - "Certificatul este emis pentru episodul si categoria relevante"
+    status: draft
+
+  - id: medical_expert_approval_for_extension_after_day90
+    title_ro: "Aviz pentru prelungirea dupa ziua 90"
+    description_ro: >-
+      Avizul cerut pentru prelungirea concediului medical dupa pragul relevant, daca este cazul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Aviz medical pentru prelungire"
+    readiness_checks:
+      - "Avizul acopera prelungirea dupa pragul relevant"
+    status: draft

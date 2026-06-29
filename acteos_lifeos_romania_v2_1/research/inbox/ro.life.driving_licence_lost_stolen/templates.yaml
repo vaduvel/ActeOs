@@ -1,0 +1,87 @@
+step_templates:
+  - id: request_driving_licence_duplicate
+    semantic_key: driving_licence_lost_stolen_request_duplicate
+    title_ro: "Solicita duplicatul permisului"
+    instruction_ro: >-
+      Verifica faptul ca ruta este una de duplicat, nu de reinnoire, apoi
+      pregateste taxa si documentele pentru pierdere, furt sau deteriorare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru duplicatul permisului este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca permisul este expirat sau vrei valabilitate noua, muta cazul pe ruta de reinnoire."
+    status: draft
+  - id: send_duplicate_documents_to_selected_spcrpciv
+    semantic_key: driving_licence_lost_stolen_send_email_dossier
+    title_ro: "Trimite dosarul la SPCRPCIV selectat"
+    instruction_ro: >-
+      Daca folosesti ruta prin e-mail, confirma adresa oficiala a serviciului si
+      transmite dosarul complet conform instructiunilor publicate.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul este transmis prin canalul e-mail verificat."
+    recovery_actions_ro:
+      - "Nu trimite documentele pana nu verifici adresa oficiala actuala a serviciului."
+    status: draft
+  - id: collect_duplicate_in_person
+    semantic_key: driving_licence_lost_stolen_collect_in_person
+    title_ro: "Ridica duplicatul in persoana"
+    instruction_ro: >-
+      Daca ruta aleasa sau serviciul cere ridicare la ghișeu, finalizeaza
+      colectarea duplicatului in persoana.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Duplicatul permisului este ridicat ori ruta de ridicare este clarificata."
+    recovery_actions_ro:
+      - "Nu presupune livrarea la distanta daca serviciul publicat cere ridicarea la ghișeu."
+    status: draft
+  - id: obtain_address_certificate
+    semantic_key: driving_licence_lost_stolen_obtain_address_certificate
+    title_ro: "Obtine certificatul de adresa, daca este cerut"
+    instruction_ro: >-
+      Daca dosarul concret cere o dovada suplimentara a adresei, urmeaza ruta
+      pentru obtinerea certificatului necesar.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Necesitatea certificatului de adresa este clarificata sau documentul este obtinut."
+    recovery_actions_ro:
+      - "Daca ai CEI si ruta locala exclude acest document, nu il adauga inutil."
+    status: draft
+
+requirement_templates:
+  - id: req.counter_identity_and_application
+    title_ro: "Act de identitate si cerere la ghișeu"
+    description_ro: >-
+      Documentele minime folosite pentru depunerea duplicatului direct la
+      ghișeu.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil si cererea completata conform fluxului de ghișeu."
+    readiness_checks:
+      - "Ruta aleasa este depunerea la ghișeu."
+    status: draft
+  - id: req.selected_spcrpciv_email
+    title_ro: "E-mailul oficial al SPCRPCIV selectat"
+    description_ro: >-
+      Adresa oficiala verificata a serviciului la care este transmis dosarul de
+      duplicat prin e-mail.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adresa oficiala publicata de SPCRPCIV competent."
+    readiness_checks:
+      - "Ruta aleasa este transmiterea prin e-mail."
+    status: draft
+  - id: req.payment_89_ron
+    title_ro: "Plata de 89 lei"
+    description_ro: >-
+      Dovada platii tarifului publicat pentru duplicatul permisului la data de
+      referinta a cercetarii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii de 89 lei prin canalul oficial."
+    readiness_checks:
+      - "Ruta aleasa foloseste cuantumul publicat modelat."
+    status: draft

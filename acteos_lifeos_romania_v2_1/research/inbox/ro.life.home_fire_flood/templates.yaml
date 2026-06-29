@@ -1,0 +1,147 @@
+step_templates:
+  - id: step.home.ensure_safety
+    semantic_key: home_fire_flood_ensure_safety
+    title_ro: "Pune oamenii in siguranta"
+    instruction_ro: >-
+      Inainte de orice formalitate, scoate persoanele din pericol si urmeaza
+      instructiunile autoritatilor de urgenta.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Persoanele sunt in siguranta si pericolul imediat este gestionat."
+    recovery_actions_ro:
+      - "Daca pericolul este inca activ, prioritizeaza 112 si autoritatile locale."
+    status: draft
+  - id: step.home.notify_authorities
+    semantic_key: home_fire_flood_notify_authorities
+    title_ro: "Anunta autoritatile competente"
+    instruction_ro: >-
+      Pentru incendiu, inundatie, cutremur sau alunecare, anunta autoritatile
+      competente atunci cand cazul si polita o cer.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Autoritatile competente sunt notificate."
+    recovery_actions_ro:
+      - "Nu sari peste acest pas cand dosarul de dauna cere proces-verbal de autoritate."
+    status: draft
+  - id: step.home.obtain_report
+    semantic_key: home_fire_flood_obtain_report
+    title_ro: "Obtine documentul autoritatii"
+    instruction_ro: >-
+      Solicita procesul-verbal sau documentul autoritatii care atesta
+      evenimentul si paguba, atunci cand este cerut de dosar.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Documentul autoritatii este obtinut sau clarificat."
+    recovery_actions_ro:
+      - "Pastreaza documentul in dosarul de dauna si verifica daca acopera exact evenimentul."
+    status: draft
+  - id: step.home.notify_pad
+    semantic_key: home_fire_flood_notify_pad
+    title_ro: "Avizeaza dauna PAD"
+    instruction_ro: >-
+      Daca exista PAD valabila si riscul intra in sfera ei, avizeaza dauna in
+      termenul modelat si cu datele cerute.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de avizare PAD este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Verifica separat daca riscul este unul acoperit de PAD."
+    status: draft
+  - id: step.home.notify_facultative
+    semantic_key: home_fire_flood_notify_facultative
+    title_ro: "Notifica asiguratorul facultativ"
+    instruction_ro: >-
+      Pentru riscurile din polita facultativa, deschide dosarul pe canalul
+      oficial al asiguratorului relevant.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta de notificare a politei facultative este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Termenele si documentele politei facultative se confirma pe contract si la asigurator."
+    status: draft
+  - id: step.home.prepare_documents
+    semantic_key: home_fire_flood_prepare_documents
+    title_ro: "Pregateste documentele dosarului"
+    instruction_ro: >-
+      Strange actul de identitate, actele de proprietate si documentele
+      autoritatii pentru dosarul de dauna.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Documentele principale pentru dosar sunt pregatite."
+    recovery_actions_ro:
+      - "Daca lipseste o piesa esentiala, clarifica mai intai daca exista un substitut acceptat."
+    status: draft
+  - id: step.home.wait_inspection
+    semantic_key: home_fire_flood_wait_inspection
+    title_ro: "Asteapta constatarea inainte de reparatii"
+    instruction_ro: >-
+      In cazurile in care polita sau procedura o cer, asteapta constatarea
+      asiguratorului inainte de reparatiile definitive.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Constatarea este facuta sau necesitatea ei este clarificata."
+    recovery_actions_ro:
+      - "Documenteaza pagubele inainte de orice interventie care le poate schimba."
+    status: draft
+
+requirement_templates:
+  - id: req.home.valid_pad
+    title_ro: "PAD valabila la data evenimentului"
+    description_ro: >-
+      Confirmarea ca polita PAD era valabila la data producerii evenimentului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Polita PAD valabila sau verificare oficiala relevanta."
+    readiness_checks:
+      - "Se urmareste avizarea pe ruta PAD."
+    status: draft
+  - id: req.home.identity
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate necesar pentru deschiderea sau completarea dosarului de
+      dauna.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Persoana care avizeaza dauna poate fi identificata."
+    status: draft
+  - id: req.home.ownership
+    title_ro: "Act de proprietate sau document alternativ acceptabil"
+    description_ro: >-
+      Documentul care sustine dreptul asupra locuintei afectate in dosarul de
+      dauna.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate sau document alternativ acceptat de asigurator."
+    readiness_checks:
+      - "Locuinta si titularul politei pot fi corelate."
+    status: draft
+  - id: req.home.authority_report
+    title_ro: "Document al autoritatii privind evenimentul"
+    description_ro: >-
+      Procesul-verbal ori documentul autoritatii competente care atesta
+      evenimentul, atunci cand dosarul il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Proces-verbal, raport sau alt document oficial al autoritatii."
+    readiness_checks:
+      - "Evenimentul sau polita cer document de autoritate."
+    status: draft
+  - id: req.home.facultative_contract
+    title_ro: "Contractul politei facultative"
+    description_ro: >-
+      Contractul si conditiile politei facultative folosite pentru verificarea
+      termenelor si acoperirii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Polita facultativa si conditiile contractuale relevante."
+    readiness_checks:
+      - "Se urmareste deschiderea dosarului pe polita facultativa."
+    status: draft
+

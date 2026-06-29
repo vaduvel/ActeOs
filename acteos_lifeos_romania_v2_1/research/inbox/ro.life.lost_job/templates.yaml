@@ -1,0 +1,172 @@
+# Step & requirement templates for ro.life.lost_job (life.lost_job).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: collect_termination_document
+    semantic_key: collect_termination_document
+    title_ro: "Colecteaza documentul de incetare"
+    instruction_ro: >-
+      Obtine documentul scris care atesta incetarea raportului de munca si verifica datele de baza.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Documentul de incetare a fost colectat"
+    recovery_actions_ro:
+      - "Daca nu ai documentul, solicita-l fostului angajator"
+    status: draft
+
+  - id: obtain_employment_history_proof
+    semantic_key: obtain_employment_history_proof
+    title_ro: "Obtine dovada activitatii si a vechimii"
+    instruction_ro: >-
+      Strange adeverinta sau extrasul care dovedeste raporturile de munca si stagiul relevant.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dovada activitatii si a vechimii a fost obtinuta"
+    recovery_actions_ro:
+      - "Daca lipseste dovada, cere extrasul sau adeverinta relevanta"
+    status: draft
+
+  - id: verify_termination_in_reges
+    semantic_key: verify_termination_in_reges
+    title_ro: "Verifica incetarea in REGES"
+    instruction_ro: >-
+      Verifica daca incetarea raportului de munca este reflectata corect in REGES.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Inregistrarea incetarii in REGES a fost verificata"
+    recovery_actions_ro:
+      - "Daca inregistrarea nu este corecta, cere clarificare si rectificare"
+    status: draft
+
+  - id: assess_unemployment_route
+    semantic_key: assess_unemployment_route
+    title_ro: "Evalueaza ruta pentru somaj"
+    instruction_ro: >-
+      Verifica separat daca incetarea si momentul depunerii permit urmarea rutei pentru indemnizatia
+      de somaj.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta pentru somaj a fost evaluata"
+    recovery_actions_ro:
+      - "Daca motivul incetarii nu este clar, nu depune pana nu il clarifici"
+    status: draft
+
+  - id: request_history_document_or_reges_extract
+    semantic_key: request_history_document_or_reges_extract
+    title_ro: "Solicita adeverinta de vechime sau extrasul REGES"
+    instruction_ro: >-
+      Daca dovada vechimii lipseste, solicita documentul de la fostul angajator sau extrasul
+      disponibil pe ruta relevanta.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Solicitarea pentru dovada vechimii a fost facuta"
+    recovery_actions_ro:
+      - "Daca nu primesti documentul, urmareste extrasul disponibil"
+    status: draft
+
+  - id: prepare_unemployment_benefit_application
+    semantic_key: prepare_unemployment_benefit_application
+    title_ro: "Pregateste dosarul pentru indemnizatia de somaj"
+    instruction_ro: >-
+      Daca esti pe ruta eligibila, strange actele pentru dosarul de somaj si pastreaza data
+      incetarii pentru verificarea termenului de depunere.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul pentru indemnizatia de somaj este pregatit"
+    recovery_actions_ro:
+      - "Daca lipseste un act, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: verify_contest_deadline_and_competent_court
+    semantic_key: verify_contest_deadline_and_competent_court
+    title_ro: "Verifica termenul si instanta pentru contestatie"
+    instruction_ro: >-
+      Daca vrei sa contesti incetarea, verifica imediat termenul si instanta competenta mentionate
+      in documentele primite.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Termenul si instanta pentru contestatie au fost verificate"
+    recovery_actions_ro:
+      - "Daca informatiile lipsesc din document, cere clarificare fara intarziere"
+    status: draft
+
+  - id: download_reges_extract_and_verify_termination
+    semantic_key: download_reges_extract_and_verify_termination
+    title_ro: "Descarca extrasul REGES si verifica incetarea"
+    instruction_ro: >-
+      Daca nu ai verificat inca situatia din registru, obtine extrasul si compara datele cu
+      documentul de incetare.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Extrasul REGES a fost verificat"
+    recovery_actions_ro:
+      - "Daca exista diferente, cere corectarea lor"
+    status: draft
+
+requirement_templates:
+  - id: written_termination_document
+    title_ro: "Document scris de incetare"
+    description_ro: >-
+      Documentul scris care atesta incetarea raportului de munca.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Decizie sau alt document scris de incetare"
+    readiness_checks:
+      - "Documentul de incetare este disponibil si identificabil"
+    status: draft
+
+  - id: dismissal_decision_with_reasons
+    title_ro: "Decizie de concediere cu motivele incluse"
+    description_ro: >-
+      Decizia de concediere care arata motivele pentru care a fost dispusa masura, daca este
+      vorba de concediere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Decizie de concediere cu motivare"
+    readiness_checks:
+      - "Motivele concedierii sunt mentionate in document"
+    status: draft
+
+  - id: dismissal_decision_with_contest_deadline_and_court
+    title_ro: "Decizie de concediere cu termen si instanta pentru contestatie"
+    description_ro: >-
+      Decizia de concediere care include informatiile despre contestatie, daca este vorba de
+      concediere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Decizie de concediere cu informatiile despre contestatie"
+    readiness_checks:
+      - "Documentul mentioneaza termenul si instanta competenta"
+    status: draft
+
+  - id: employment_activity_and_seniority_document
+    title_ro: "Dovada activitatii si a vechimii"
+    description_ro: >-
+      Adeverinta sau extrasul care sustine raporturile de munca si vechimea acumulata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverinta de activitate si vechime"
+      - "Extras privind istoricul de munca"
+    readiness_checks:
+      - "Documentul acopera perioada relevanta"
+    status: draft
+
+  - id: cash_compensation_for_unused_annual_leave_at_termination
+    title_ro: "Compensare baneasca pentru concediul neefectuat"
+    description_ro: >-
+      Dovada compensarii in bani a concediului de odihna neefectuat la data incetarii, daca exista
+      zile ramase.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Stat de plata"
+      - "Document de compensare a concediului neefectuat"
+    readiness_checks:
+      - "Compensarea acopera zilele de concediu neefectuat"
+    status: draft

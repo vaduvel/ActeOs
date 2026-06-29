@@ -1,0 +1,75 @@
+step_templates:
+  - id: search_official_provider_list
+    semantic_key: choose_family_doctor_search_provider
+    title_ro: "Cauta un medic contractat"
+    instruction_ro: >-
+      Foloseste lista oficiala a furnizorilor contractati pentru a identifica un
+      medic de familie eligibil.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Medicul ales este gasit in lista oficiala."
+    recovery_actions_ro:
+      - "Daca medicul nu apare in lista, alege alt furnizor contractat."
+    status: draft
+  - id: select_contracted_family_doctor
+    semantic_key: choose_family_doctor_select
+    title_ro: "Selecteaza medicul de familie"
+    instruction_ro: >-
+      Alege medicul contractat potrivit si confirma direct la cabinet daca
+      accepta inscrieri noi.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Medicul ales este contractat si poate fi contactat."
+    recovery_actions_ro:
+      - "Daca medicul nu accepta inscrieri, revino la lista oficiala si alege alt cabinet."
+    status: draft
+  - id: present_national_health_card
+    semantic_key: choose_family_doctor_present_card
+    title_ro: "Prezinta cardul national de sanatate"
+    instruction_ro: >-
+      Daca esti asigurat si nu te afli intr-o exceptie, prezinta cardul national
+      la inscrierea la medicul ales.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cardul este disponibil pentru inscriere."
+    recovery_actions_ro:
+      - "Daca esti in exceptie sau neasigurat, continua pe baza cererii aplicabile."
+    status: draft
+  - id: submit_registration_request_to_chosen_doctor
+    semantic_key: choose_family_doctor_submit_registration
+    title_ro: "Depune cererea la medicul ales"
+    instruction_ro: >-
+      Adreseaza cererea de inscriere direct medicului de familie ales si
+      ataseaza documentele aplicabile.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cererea de inscriere este depusa."
+    recovery_actions_ro:
+      - "Daca cabinetul cere clarificari sau documente suplimentare, completeaza dosarul in canalul indicat."
+    status: draft
+
+requirement_templates:
+  - id: family_doctor_registration_request
+    title_ro: "Cerere de inscriere la medicul de familie"
+    description_ro: >-
+      Cererea adresata direct medicului de familie ales pentru prima inscriere
+      sau reinscriere dupa o perioada fara medic.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de inscriere completata pentru medicul ales."
+    readiness_checks:
+      - "Medicul ales este confirmat in lista furnizorilor contractati."
+    status: draft
+  - id: national_health_card
+    title_ro: "Cardul national de sanatate"
+    description_ro: >-
+      Cardul prezentat de persoana asigurata la inscriere, daca nu se aplica o
+      exceptie.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cardul national de sanatate valabil."
+    readiness_checks:
+      - "Persoana este asigurata si nu intra intr-o exceptie privind cardul."
+    status: draft

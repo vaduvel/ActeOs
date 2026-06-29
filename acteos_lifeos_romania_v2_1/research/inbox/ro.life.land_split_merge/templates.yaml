@@ -1,0 +1,114 @@
+# Step & requirement templates for ro.life.land_split_merge (life.land_split_merge).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: submit_cadastral_reception
+    semantic_key: submit_cadastral_reception
+    title_ro: "Depune documentatia pentru receptia cadastrala"
+    instruction_ro: >-
+      Porneste fluxul prin depunerea documentatiei pentru receptia cadastrala a dezlipirii sau alipirii.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Documentatia pentru receptia cadastrala este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca documentatia cadastrala lipseste, nu continua fluxul"
+    status: draft
+
+  - id: obtain_reception_report_notation
+    semantic_key: obtain_reception_report_notation
+    title_ro: "Obtine raportul de receptie si notarea"
+    instruction_ro: >-
+      Dupa etapa cadastrala, obtine raportul de receptie si notarea relevante pentru operatiune.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Raportul de receptie si notarea sunt pregatite"
+    recovery_actions_ro:
+      - "Daca receptia cadastrala nu este finalizata, nu trece la pasul notarial"
+    status: draft
+
+  - id: execute_authentic_notarial_act
+    semantic_key: execute_authentic_notarial_act
+    title_ro: "Incheie actul autentic notarial"
+    instruction_ro: >-
+      Dupa receptia cadastrala, pregateste actul autentic notarial pentru dezlipire sau alipire.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Actul autentic notarial este pregatit sau incheiat"
+    recovery_actions_ro:
+      - "Daca lipseste baza cadastrala, nu continua la notar"
+    status: draft
+
+  - id: request_land_book_registration
+    semantic_key: request_land_book_registration
+    title_ro: "Cere inscrierea in cartea funciara"
+    instruction_ro: >-
+      Dupa actul autentic, pregateste inscrierea finala in cartea funciara pe ruta OCPI competenta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cererea de inscriere in cartea funciara este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca actul autentic lipseste, nu continua inscrierea finala"
+    status: draft
+
+  - id: identify_competent_ocpi
+    semantic_key: identify_competent_ocpi
+    title_ro: "Identifica OCPI competent"
+    instruction_ro: >-
+      Pentru alte judete, identifica OCPI competent si confirma canalul local de lucru.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "OCPI competent a fost identificat"
+    recovery_actions_ro:
+      - "Daca OCPI-ul nu este clar, nu presupune aceeasi ruta ca in Timis"
+    status: draft
+
+requirement_templates:
+  - id: standard_ocpi_application
+    title_ro: "Cerere standard OCPI"
+    description_ro: >-
+      Cererea standard folosita pentru fluxul cadastral de dezlipire sau alipire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere standard OCPI"
+    readiness_checks:
+      - "Cererea standard OCPI este completata"
+    status: draft
+
+  - id: cadastral_split_or_merge_documentation
+    title_ro: "Documentatie cadastrala pentru dezlipire sau alipire"
+    description_ro: >-
+      Documentatia cadastrala necesara operatiei de dezlipire sau alipire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documentatie cadastrala pentru split sau merge"
+    readiness_checks:
+      - "Documentatia cadastrala este pregatita pentru operatiunea aleasa"
+    status: draft
+
+  - id: authentic_notarial_act_after_reception
+    title_ro: "Act autentic notarial dupa receptia cadastrala"
+    description_ro: >-
+      Actul autentic notarial folosit dupa receptia cadastrala in ordinea fluxului verificat.
+    obligation: mandatory
+    timing: later
+    accepted_forms:
+      - "Act autentic notarial"
+    readiness_checks:
+      - "Actul notarial este pregatit dupa receptia cadastrala"
+    status: draft
+
+  - id: full_cadastral_tariff_payment_proof
+    title_ro: "Dovada platii tarifului cadastral"
+    description_ro: >-
+      Dovada platii tarifului cadastral pentru fluxul de dezlipire sau alipire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii tarifului cadastral"
+    readiness_checks:
+      - "Dovada platii este disponibila pentru dosar"
+    status: draft

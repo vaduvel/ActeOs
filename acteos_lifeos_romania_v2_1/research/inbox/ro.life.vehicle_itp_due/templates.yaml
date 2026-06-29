@@ -1,0 +1,98 @@
+step_templates:
+  - id: step.itp.check_date
+    semantic_key: vehicle_itp_check_date
+    title_ro: "Verifica data exacta a ITP"
+    instruction_ro: >-
+      Verifica data exacta a expirarii ITP din actele vehiculului sau din
+      verificarea oficiala RAR.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Data exacta a ITP este confirmata."
+    recovery_actions_ro:
+      - "Nu estima data dupa memorie daca poate fi verificata oficial."
+    status: draft
+  - id: step.itp.identify_period
+    semantic_key: vehicle_itp_identify_period
+    title_ro: "Identifica periodicitatea ITP"
+    instruction_ro: >-
+      Stabileste periodicitatea ITP in functie de categoria, utilizarea si
+      vechimea vehiculului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Periodicitatea aplicabila este clarificata."
+    recovery_actions_ro:
+      - "Daca utilizarea reala a vehiculului este speciala, nu aplica regula de autoturism obisnuit."
+    status: draft
+  - id: step.itp.book_station
+    semantic_key: vehicle_itp_book_station
+    title_ro: "Alege o statie ITP autorizata"
+    instruction_ro: >-
+      Selecteaza o statie ITP autorizata pentru categoria vehiculului si
+      programeaza sau pregateste prezentarea.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Statia ITP autorizata este aleasa."
+    recovery_actions_ro:
+      - "Nu merge la o statie care nu este autorizata pentru categoria ta de vehicul."
+    status: draft
+  - id: step.itp.complete
+    semantic_key: vehicle_itp_complete
+    title_ro: "Efectueaza ITP"
+    instruction_ro: >-
+      Efectueaza inspectia tehnica inainte de expirare sau imediat ce ai
+      clarificat obligatia.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "ITP este efectuata si valabilitatea este actualizata."
+    recovery_actions_ro:
+      - "Pastreaza rezultatul inspectiei si noua data de valabilitate."
+    status: draft
+  - id: step.itp.stop_road_use
+    semantic_key: vehicle_itp_stop_road_use
+    title_ro: "Opreste circulatia pe drum public"
+    instruction_ro: >-
+      Daca ITP este expirata sau invalida, nu folosi vehiculul pe drum public
+      pana la restabilirea valabilitatii.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Vehiculul nu mai este folosit pe drum public pana la remediere."
+    recovery_actions_ro:
+      - "Organizeaza transport alternativ pana la obtinerea unei ITP valabile."
+    status: draft
+
+requirement_templates:
+  - id: req.itp.vehicle_category
+    title_ro: "Categoria si utilizarea corecta a vehiculului"
+    description_ro: >-
+      Datele corecte despre tipul si utilizarea vehiculului, necesare pentru
+      stabilirea periodicitatii ITP.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Informatii corecte despre categoria si utilizarea vehiculului."
+    readiness_checks:
+      - "Categoria declarata reflecta utilizarea reala."
+    status: draft
+  - id: req.itp.authorized_station
+    title_ro: "Statie ITP autorizata"
+    description_ro: >-
+      O statie autorizata pentru categoria vehiculului care va efectua inspectia.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Statie autorizata confirmata oficial."
+    readiness_checks:
+      - "Statia aleasa poate inspecta exact categoria vehiculului."
+    status: draft
+  - id: req.itp.valid_status
+    title_ro: "ITP valabil pentru circulatie"
+    description_ro: >-
+      Valabilitatea ITP necesara pentru folosirea vehiculului pe drum public.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "ITP valabil confirmat in acte sau verificare oficiala."
+    readiness_checks:
+      - "Vehiculul urmeaza sa circule pe drum public."
+    status: draft
+

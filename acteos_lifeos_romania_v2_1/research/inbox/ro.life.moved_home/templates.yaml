@@ -1,0 +1,120 @@
+step_templates:
+  - id: update_identity_card
+    semantic_key: update_identity_card
+    title_ro: "Actualizează actul de identitate pentru noua adresă"
+    instruction_ro: >-
+      Pregătește dosarul pentru actualizarea actului de identitate la noua adresă
+      și depune cererea la serviciul de evidență competent, folosind dovada noii
+      adrese și documentele personale aplicabile situației tale.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru actualizarea adresei a fost depusă."
+      - "Dosarul include dovada adresei și documentele personale aplicabile."
+    recovery_actions_ro:
+      - "Dacă dovada adresei nu este acceptată, cere forma exactă solicitată de ghișeu și refă dosarul."
+      - "Dacă situația personală cere documente suplimentare, adaugă-le înainte de redepunere."
+    status: draft
+  - id: update_vehicle_registration
+    semantic_key: update_vehicle_registration
+    title_ro: "Actualizează adresa din evidența vehiculului"
+    instruction_ro: >-
+      Dacă deții un vehicul, pregătește actualizarea certificatului de
+      înmatriculare sau a evidenței asociate după schimbarea domiciliului, pe
+      baza actului de identitate actualizat și a documentelor vehiculului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta pentru actualizarea documentelor vehiculului a fost pornită."
+      - "Documentele vehiculului și noul act de identitate sunt pregătite."
+    recovery_actions_ro:
+      - "Dacă nu ai vehicul pe numele tău, marchează acest pas ca neaplicabil."
+      - "Dacă actul de identitate nou nu este încă emis, finalizează mai întâi pasul anterior."
+    status: draft
+  - id: register_residence_visa
+    semantic_key: register_residence_visa
+    title_ro: "Înregistrează viza de reședință, dacă ai nevoie de ea"
+    instruction_ro: >-
+      Dacă traseul tău este pentru reședință temporară, pregătește cererea de
+      viză de reședință și dovada spațiului, inclusiv acordul gazdei atunci când
+      procedura îl cere.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea pentru viză de reședință este pregătită sau depusă."
+      - "Dovada spațiului și acordul gazdei sunt atașate când sunt necesare."
+    recovery_actions_ro:
+      - "Dacă ruta este pentru schimbare de domiciliu, nu folosi acest pas în locul actualizării actului de identitate."
+      - "Dacă locuiești în spațiul altei persoane, confirmă forma acceptată pentru acordul gazdei."
+    status: draft
+
+requirement_templates:
+  - id: req.id_card_old
+    title_ro: "Actul de identitate actual"
+    description_ro: >-
+      Actul de identitate pe care îl înlocuiești sau îl actualizezi pentru noua
+      adresă.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Actul de identitate actual, în forma cerută la depunere."
+    readiness_checks:
+      - "Actul de identitate actual este disponibil pentru dosar."
+    status: draft
+  - id: req.birth_certificate
+    title_ro: "Certificat de naștere"
+    description_ro: >-
+      Certificatul de naștere folosit în dosarul de actualizare a domiciliului
+      sau reședinței, dacă procedura îl cere pentru situația ta.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de naștere, în forma cerută de serviciul competent."
+    readiness_checks:
+      - "Certificatul de naștere este disponibil pentru dosar."
+    status: draft
+  - id: req.address_proof
+    title_ro: "Dovada noii adrese"
+    description_ro: >-
+      Documentul care dovedește dreptul de a locui la noua adresă declarată.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate, contract sau alt document acceptat ca dovadă a adresei."
+    readiness_checks:
+      - "Noua adresă este susținută de un document acceptat."
+    status: draft
+  - id: req.marriage_certificate
+    title_ro: "Certificat de căsătorie"
+    description_ro: >-
+      Document condițional folosit când situația civilă trebuie dovedită în
+      dosarul pentru actualizarea adresei.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de căsătorie, dacă procedura îl cere."
+    readiness_checks:
+      - "Situația ta civilă face documentul relevant pentru dosar."
+    status: draft
+  - id: req.children_birth_certificates
+    title_ro: "Certificatele de naștere ale copiilor"
+    description_ro: >-
+      Documente condiționale pentru minorii care trebuie trecuți sau justificați
+      în dosarul de domiciliu/reședință.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificatele de naștere ale copiilor aplicabili."
+    readiness_checks:
+      - "Există minori relevanți pentru adresa declarată."
+    status: draft
+  - id: req.host_consent
+    title_ro: "Acordul gazdei"
+    description_ro: >-
+      Acordul persoanei care te primește în spațiu, atunci când procedura de
+      reședință sau de stabilire a adresei îl cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acordul gazdei în forma cerută de autoritatea competentă."
+    readiness_checks:
+      - "Locuiești în spațiul unei alte persoane."
+      - "Procedura aplicabilă cere acordul gazdei."
+    status: draft

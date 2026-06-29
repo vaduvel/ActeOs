@@ -1,0 +1,232 @@
+# Step & requirement templates for ro.life.association_registration (ro.life.association_registration).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.reserve_or_verify_association_name
+    semantic_key: step.reserve_or_verify_association_name
+    title_ro: "Rezerva sau verifica denumirea asociatiei"
+    instruction_ro: >-
+      Verifica disponibilitatea denumirii si obtine dovada ceruta inainte de
+      depunerea dosarului la instanta competenta.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dovada privind denumirea asociatiei este pregatita"
+    recovery_actions_ro:
+      - "Daca denumirea este refuzata sau necesita acord special, actualizeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: step.prepare_association_statute
+    semantic_key: step.prepare_association_statute
+    title_ro: "Pregateste statutul asociatiei"
+    instruction_ro: >-
+      Pregateste statutul in forma adecvata cazului, tinand cont de aporturi,
+      fondatori si eventualele cerinte speciale.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Statutul asociatiei este pregatit pentru dosar"
+    recovery_actions_ro:
+      - "Daca exista aport imobiliar sau activitate speciala, completeaza forma si avizele aplicabile"
+    status: draft
+
+  - id: step.prepare_association_registration_file
+    semantic_key: step.prepare_association_registration_file
+    title_ro: "Pregateste dosarul de inscriere"
+    instruction_ro: >-
+      Strange documentele de baza si documentele conditionale astfel incat
+      dosarul sa poata fi depus la judecatoria sediului.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul de inscriere al asociatiei este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente despre fondatori, beneficiar real sau traduceri, completeaza dosarul"
+    status: draft
+
+  - id: step.file_at_district_court_of_seat
+    semantic_key: step.file_at_district_court_of_seat
+    title_ro: "Depune dosarul la judecatoria sediului"
+    instruction_ro: >-
+      Depune dosarul complet la judecatoria competenta pentru sediul asociatiei
+      si urmareste solutionarea pe circuitul oficial.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul a fost pregatit pentru depunere la judecatoria sediului"
+    recovery_actions_ro:
+      - "Daca sediul sau competenta nu sunt clare, confirma instanta inainte de depunere"
+    status: draft
+
+  - id: step.obtain_sgg_prior_name_approval
+    semantic_key: step.obtain_sgg_prior_name_approval
+    title_ro: "Obtine aprobarea speciala pentru denumire"
+    instruction_ro: >-
+      Daca denumirea intra in categoria care necesita aprobare prealabila,
+      obtine aprobarea relevanta inainte de depunerea dosarului.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Aprobarea speciala pentru denumire a fost pregatita sau solicitata"
+    recovery_actions_ro:
+      - "Daca aprobarea lipseste, nu prezenta denumirea speciala ca definitiva"
+    status: draft
+
+  - id: step.obtain_sector_authorizations_before_activity
+    semantic_key: step.obtain_sector_authorizations_before_activity
+    title_ro: "Obtine autorizatiile sectoriale inainte de activitate"
+    instruction_ro: >-
+      Daca asociatia va desfasura activitati reglementate, obtine sau confirma
+      autorizatiile sectoriale necesare inainte de inceperea efectiva a activitatii.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ruta de autorizare sectoriala a fost evaluata"
+    recovery_actions_ro:
+      - "Daca activitatea este reglementata si autorizatia lipseste, nu o prezenta ca operationala"
+    status: draft
+
+requirement_templates:
+  - id: req.association_statute
+    title_ro: "Statutul asociatiei"
+    description_ro: >-
+      Statutul asociatiei pregatit in forma aplicabila cazului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Statutul asociatiei"
+    readiness_checks:
+      - "Statutul este complet si semnat in forma necesara"
+    status: draft
+
+  - id: req.founders_identity_documents
+    title_ro: "Actele de identitate ale fondatorilor"
+    description_ro: >-
+      Documentele de identitate folosite pentru identificarea fondatorilor.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copii ale actelor de identitate ale fondatorilor"
+    readiness_checks:
+      - "Documentele de identitate ale fondatorilor sunt disponibile"
+    status: draft
+
+  - id: req.name_availability_or_refusal_proof
+    title_ro: "Dovada privind denumirea"
+    description_ro: >-
+      Dovada disponibilitatii denumirii sau alt document oficial relevant pentru
+      denumirea aleasa.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada disponibilitatii denumirii"
+      - "Dovada oficiala privind denumirea"
+    readiness_checks:
+      - "Denumirea este acoperita de dovada oficiala ceruta"
+    status: draft
+
+  - id: req.court_stamp_fee_100_ron
+    title_ro: "Dovada taxei judiciare de timbru"
+    description_ro: >-
+      Dovada platii taxei judiciare de timbru publicate pentru aceasta cerere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii taxei judiciare de timbru"
+    readiness_checks:
+      - "Dovada platii este disponibila pentru dosar"
+    status: draft
+
+  - id: req.authentic_form_statute
+    title_ro: "Statut in forma autentica"
+    description_ro: >-
+      Forma autentica a statutului, acolo unde aportul imobiliar o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Statut in forma autentica"
+    readiness_checks:
+      - "Forma autentica este pregatita daca exista aport imobiliar"
+    status: draft
+
+  - id: req.proof_of_initial_assets_immovable
+    title_ro: "Dovada aportului imobiliar initial"
+    description_ro: >-
+      Documentul care sustine aportul initial constand in bun imobil.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada aportului imobiliar"
+    readiness_checks:
+      - "Aportul imobiliar este sustinut prin document oficial"
+    status: draft
+
+  - id: req.beneficial_owner_declaration
+    title_ro: "Declaratia de beneficiar real"
+    description_ro: >-
+      Declaratia necesara cand exceptia legala nu este aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie de beneficiar real"
+    readiness_checks:
+      - "Declaratia este pregatita daca structura nu intra in exceptia legala"
+    status: draft
+
+  - id: req.certified_copies_and_legalized_romanian_translations
+    title_ro: "Copii certificate si traduceri legalizate in romana"
+    description_ro: >-
+      Documentele din strainatate pregatite in forma ceruta pentru dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copii certificate"
+      - "Traduceri legalizate in limba romana"
+    readiness_checks:
+      - "Documentele straine sunt pregatite in forma acceptata"
+    status: draft
+
+  - id: req.legal_person_founder_registry_extract
+    title_ro: "Extras pentru fondator persoana juridica"
+    description_ro: >-
+      Extras sau document oficial privind fondatorul persoana juridica.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Extras registru pentru fondator persoana juridica"
+    readiness_checks:
+      - "Fondatorul persoana juridica este sustinut prin document oficial"
+    status: draft
+
+  - id: req.legal_person_founder_resolution
+    title_ro: "Hotararea fondatorului persoana juridica"
+    description_ro: >-
+      Hotararea interna folosita cand un fondator este persoana juridica.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare a persoanei juridice fondatoare"
+    readiness_checks:
+      - "Hotararea persoanei juridice fondatoare este disponibila"
+    status: draft
+
+  - id: req.cult_ministry_advisory_opinion_if_applicable
+    title_ro: "Avizul consultativ al cultelor, daca este cazul"
+    description_ro: >-
+      Avizul relevant pentru asociatiile cu activitati religioase, daca regula
+      aplicabila il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Aviz consultativ relevant"
+    readiness_checks:
+      - "Avizul este pregatit daca activitatea intra in aceasta categorie"
+    status: draft
+
+  - id: req.sgg_prior_approval
+    title_ro: "Aprobarea prealabila pentru denumire"
+    description_ro: >-
+      Aprobarea speciala ceruta pentru anumite categorii de denumiri.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Aprobare prealabila pentru denumire"
+    readiness_checks:
+      - "Aprobarea speciala este disponibila daca denumirea o cere"
+    status: draft

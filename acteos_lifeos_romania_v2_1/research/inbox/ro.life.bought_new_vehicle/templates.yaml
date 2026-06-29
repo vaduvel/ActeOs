@@ -1,0 +1,202 @@
+# Step & requirement templates for ro.life.bought_new_vehicle (life.bought_new_vehicle).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: declare_vehicle_at_local_tax_authority
+    semantic_key: declare_vehicle_at_local_tax_authority
+    title_ro: "Declara vehiculul la autoritatea fiscala locala"
+    instruction_ro: >-
+      Inregistreaza vehiculul nou la autoritatea fiscala locala competenta
+      inainte de a trata dosarul de inmatriculare ca pregatit.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta de declarare fiscala a vehiculului a fost pregatita"
+    recovery_actions_ro:
+      - "Daca inregistrarea fiscala nu este confirmata, nu continua dosarul de inmatriculare"
+    status: draft
+
+  - id: prepare_new_vehicle_registration_file
+    semantic_key: prepare_new_vehicle_registration_file
+    title_ro: "Pregateste dosarul de inmatriculare pentru vehicul nou"
+    instruction_ro: >-
+      Strange documentele de baza si documentele conditionale pentru prima
+      inmatriculare a vehiculului nou in Romania.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul de inmatriculare pentru vehiculul nou este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente de proprietate, CIV sau RCA, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: submit_registration_application
+    semantic_key: submit_registration_application
+    title_ro: "Depune cererea de inmatriculare"
+    instruction_ro: >-
+      Dupa pregatirea documentelor si a platilor aplicabile, depune cererea de
+      inmatriculare pe canalul competent.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea de inmatriculare este pregatita pentru depunere"
+    recovery_actions_ro:
+      - "Daca platile sau reprezentarea nu sunt acoperite, completeaza dosarul inainte de depunere"
+    status: draft
+
+requirement_templates:
+  - id: req.ownership_document_registered_local_tax
+    title_ro: "Act de proprietate inregistrat fiscal"
+    description_ro: >-
+      Dovada ca actul de proprietate figureaza in evidenta fiscala locala.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate inregistrat fiscal"
+    readiness_checks:
+      - "Inregistrarea fiscala a actului de proprietate este confirmata"
+    status: draft
+
+  - id: req.valid_rca_copy_owner_name
+    title_ro: "Copie RCA valabila pe numele proprietarului"
+    description_ro: >-
+      Copia asigurarii RCA valabile pe numele proprietarului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copie RCA valabila"
+    readiness_checks:
+      - "RCA este valabila si emisa pe numele proprietarului"
+    status: draft
+
+  - id: req.valid_vehicle_identity_card_civ
+    title_ro: "Cartea de identitate a vehiculului valabila"
+    description_ro: >-
+      Cartea de identitate a vehiculului folosita la inmatriculare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cartea de identitate a vehiculului"
+    readiness_checks:
+      - "CIV este disponibila si valabila"
+    status: draft
+
+  - id: req.lease_contract_extract_with_required_data
+    title_ro: "Extras din contractul de leasing"
+    description_ro: >-
+      Extrasul sau documentul din leasing cu datele necesare pentru dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Extras din contractul de leasing"
+    readiness_checks:
+      - "Datele necesare din leasing sunt acoperite de documentul pregatit"
+    status: draft
+
+  - id: req.local_tax_declaration_for_mandated_holder
+    title_ro: "Declaratia fiscala locala pentru detinatorul mandatat"
+    description_ro: >-
+      Declaratia fiscala locala folosita in scenariul relevant de leasing sau
+      detinere mandatata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie fiscala locala pentru detinatorul mandatat"
+    readiness_checks:
+      - "Declaratia fiscala este pregatita daca scenariul o cere"
+    status: draft
+
+  - id: req.preferential_combination_payment
+    title_ro: "Dovada platii pentru combinatia preferentiala"
+    description_ro: >-
+      Dovada platii cerute pentru numarul preferential, daca aceasta optiune este aleasa.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada platii pentru combinatia preferentiala"
+    readiness_checks:
+      - "Plata pentru combinatia preferentiala este pregatita daca optiunea a fost aleasa"
+    status: draft
+
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Documentul de identitate valabil al solicitantului sau al persoanei reprezentate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: req.legal_entity_documents
+    title_ro: "Documentele persoanei juridice"
+    description_ro: >-
+      Documentele folosite cand solicitantul este persoana juridica.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente ale persoanei juridice"
+    readiness_checks:
+      - "Documentele persoanei juridice sunt pregatite daca se aplica"
+    status: draft
+
+  - id: req.legal_representative_identity
+    title_ro: "Actul de identitate al reprezentantului legal"
+    description_ro: >-
+      Documentul de identitate al reprezentantului legal al persoanei juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Actul de identitate al reprezentantului legal"
+    readiness_checks:
+      - "Identitatea reprezentantului legal este acoperita de documentul pregatit"
+    status: draft
+
+  - id: req.lawyer_mandate
+    title_ro: "Mandatul avocatului"
+    description_ro: >-
+      Mandatul folosit cand dosarul este depus prin avocat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire avocatiala"
+    readiness_checks:
+      - "Mandatul avocatului este pregatit daca reprezentarea se face prin avocat"
+    status: draft
+
+  - id: req.notarial_power_of_attorney
+    title_ro: "Procura notariala"
+    description_ro: >-
+      Procura notariala folosita cand reprezentarea se face prin imputernicit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procura notariala"
+    readiness_checks:
+      - "Procura notariala este pregatita daca reprezentarea o cere"
+    status: draft
+
+  - id: req.company_written_mandate
+    title_ro: "Mandatul scris al companiei"
+    description_ro: >-
+      Mandatul intern sau documentul de delegare folosit pentru reprezentarea companiei.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mandat scris al companiei"
+    readiness_checks:
+      - "Mandatul companiei este pregatit daca dosarul este depus prin delegat"
+    status: draft
+
+  - id: req.registration_and_plate_payment_proof
+    title_ro: "Dovada platii pentru certificat si placute"
+    description_ro: >-
+      Dovada platii pentru certificatul de inmatriculare si placutele selectate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada platii pentru certificat si placute"
+    readiness_checks:
+      - "Platile publicate pentru certificat si placute sunt acoperite"
+    status: draft

@@ -1,0 +1,123 @@
+step_templates:
+  - id: register_pfa_working_point
+    semantic_key: open_working_point_register_pfa_point
+    title_ro: "Pregateste punctul de lucru pentru PFA"
+    instruction_ro: >-
+      Verifica dreptul de folosinta asupra spatiului si faptul ca activitatea
+      este deja inregistrata ori autorizata pentru PFA.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta PFA pentru punctul de lucru este pregatita."
+    recovery_actions_ro:
+      - "Daca activitatea nu este inca autorizata, activeaza mai intai pasul de extindere a activitatii."
+    status: draft
+  - id: approve_srl_secondary_office
+    semantic_key: open_working_point_approve_srl_secondary_office
+    title_ro: "Aproba intern sediul secundar al SRL"
+    instruction_ro: >-
+      Obtine hotararea sau decizia interna necesara pentru deschiderea
+      sediului secundar si verifica daca actul constitutiv trebuie actualizat.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Decizia interna pentru sediul secundar este pregatita."
+    recovery_actions_ro:
+      - "Daca nu este clar cine are competenta, verifica intai actul constitutiv."
+    status: draft
+  - id: file_working_point_mention
+    semantic_key: open_working_point_file_mention
+    title_ro: "Depune mentiunea la ONRC"
+    instruction_ro: >-
+      Depune mentiunea privind punctul de lucru prin canalul oficial si
+      pastreaza dovada depunerii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Mentiunea ONRC privind punctul de lucru este depusa."
+    recovery_actions_ro:
+      - "Daca lipsesc documente despre spatiu ori hotarare, completeaza dosarul inainte de depunere."
+    status: draft
+  - id: register_or_authorize_new_activity
+    semantic_key: open_working_point_register_or_authorize_activity
+    title_ro: "Inregistreaza sau autorizeaza activitatea noua"
+    instruction_ro: >-
+      Daca activitatea care va functiona la punctul de lucru nu este deja
+      inregistrata ori autorizata, trateaza extinderea ei inainte de operare.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Activitatea este clarificata ca fiind deja autorizata sau este extinsa separat."
+    recovery_actions_ro:
+      - "Nu porni activitatea la punctul de lucru fara aceasta clarificare."
+    status: draft
+  - id: obtain_timisoara_commercial_agreement_for_point
+    semantic_key: open_working_point_obtain_timisoara_agreement
+    title_ro: "Obtine acordul comercial pentru punctul de lucru"
+    instruction_ro: >-
+      Daca locatia si tipul activitatii intra in procedura locala, continua cu
+      acordul comercial aplicabil in Timisoara.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta locala pentru acordul comercial al punctului de lucru este pregatita."
+    recovery_actions_ro:
+      - "Pentru alimentatie publica ori alte cazuri speciale, confirma intrebarile locale suplimentare."
+    status: draft
+
+requirement_templates:
+  - id: req.working_point_use_right_document
+    title_ro: "Document de folosinta pentru punctul de lucru"
+    description_ro: >-
+      Documentul care sustine dreptul de folosinta asupra spatiului folosit ca
+      punct de lucru.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contract sau alt inscris acceptat pentru dovedirea folosintei spatiului."
+    readiness_checks:
+      - "Documentul corespunde adresei punctului de lucru."
+    status: draft
+  - id: req.onrc_operating_declaration
+    title_ro: "Declaratie ONRC privind functionarea"
+    description_ro: >-
+      Declaratia folosita pentru autorizarea ori confirmarea functionarii
+      activitatii la adresa respectiva.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declaratia ONRC completata in forma ceruta pentru activitatea la punctul de lucru."
+    readiness_checks:
+      - "Declaratia este pregatita pentru adresa si activitatea corecta."
+    status: draft
+  - id: req.company_body_decision_for_secondary_office
+    title_ro: "Hotararea organului societar pentru sediul secundar"
+    description_ro: >-
+      Documentul intern prin care SRL aproba deschiderea sediului secundar sau
+      punctului de lucru.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Hotarare AGA, decizie asociat unic ori alt act intern competent."
+    readiness_checks:
+      - "Documentul este semnat si corespunde regulilor din actul constitutiv."
+    status: draft
+  - id: req.amending_act
+    title_ro: "Act modificator"
+    description_ro: >-
+      Actul prin care se opereaza modificarile cerute de deschiderea punctului
+      de lucru atunci cand actul constitutiv se schimba.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare, act aditional sau alt act modificator acceptat de ONRC."
+    readiness_checks:
+      - "Ruta concreta chiar modifica actul constitutiv."
+    status: draft
+  - id: req.updated_constitutive_act
+    title_ro: "Act constitutiv actualizat"
+    description_ro: >-
+      Textul complet actualizat al actului constitutiv dupa modificarea
+      relevanta pentru sediul secundar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Text complet actualizat al actului constitutiv."
+    readiness_checks:
+      - "Modificarile au fost integrate in forma consolidata a actului."
+    status: draft

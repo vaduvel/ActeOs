@@ -1,0 +1,108 @@
+# Step & requirement templates for ro.life.unemployment_benefit (life.unemployment_benefit).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: register_as_jobseeker
+    semantic_key: register_as_jobseeker
+    title_ro: "Inregistreaza-te ca persoana in cautarea unui loc de munca"
+    instruction_ro: >-
+      Inregistreaza-te la agentia competenta dupa domiciliu sau resedinta inainte de sau odata cu
+      depunerea dosarului pentru indemnizatie, daca ruta o cere.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Inregistrarea ca persoana in cautarea unui loc de munca a fost facuta"
+    recovery_actions_ro:
+      - "Daca nu esti inregistrat, completeaza mai intai acest pas"
+    status: draft
+
+  - id: prepare_unemployment_benefit_file
+    semantic_key: prepare_unemployment_benefit_file
+    title_ro: "Pregateste dosarul pentru indemnizatia de somaj"
+    instruction_ro: >-
+      Strange actul de identitate, actele de studii si documentele privind raporturile de munca si
+      stagiul pentru dosarul de somaj.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul pentru indemnizatia de somaj este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: submit_application_to_competent_agency
+    semantic_key: submit_application_to_competent_agency
+    title_ro: "Depune cererea la agentia competenta"
+    instruction_ro: >-
+      Depune cererea si dosarul complet la agentia competenta pentru domiciliul sau resedinta ta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea pentru indemnizatia de somaj a fost depusa"
+    recovery_actions_ro:
+      - "Daca agentia cere completari, adauga documentele lipsa fara intarziere"
+    status: draft
+
+  - id: complete_ajofm_registration
+    semantic_key: complete_ajofm_registration
+    title_ro: "Finalizeaza inregistrarea AJOFM"
+    instruction_ro: >-
+      Daca nu esti inca inregistrat, finalizeaza procedura AJOFM folosind canalul competent pentru
+      domiciliu sau resedinta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Inregistrarea AJOFM este finalizata"
+    recovery_actions_ro:
+      - "Daca lipseste un act pentru inregistrare, completeaza-l inainte de prezentare"
+    status: draft
+
+requirement_templates:
+  - id: jobseeker_registration_at_agency_by_domicile_or_residence
+    title_ro: "Inregistrare la agentia competenta dupa domiciliu sau resedinta"
+    description_ro: >-
+      Dovada inregistrarii la agentia competenta pentru domiciliu sau resedinta, daca aceasta nu
+      este deja facuta.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada inregistrarii la agentie"
+    readiness_checks:
+      - "Inregistrarea este facuta la agentia competenta"
+    status: draft
+
+  - id: identity_document
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate folosit pentru dosarul de indemnizatie de somaj.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: study_and_qualification_documents
+    title_ro: "Acte de studii si calificare"
+    description_ro: >-
+      Documentele de studii sau calificare cerute in dosarul de somaj.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte de studii"
+      - "Acte de calificare"
+    readiness_checks:
+      - "Documentele de studii si calificare sunt disponibile"
+    status: draft
+
+  - id: employment_and_contribution_records
+    title_ro: "Documente privind raporturile de munca si stagiul"
+    description_ro: >-
+      Documentele care sustin raporturile de munca si contributiile folosite pentru eligibilitate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverinte privind raporturile de munca"
+      - "Documente privind contributiile"
+    readiness_checks:
+      - "Documentele sustin stagiul si istoricul de munca"
+    status: draft

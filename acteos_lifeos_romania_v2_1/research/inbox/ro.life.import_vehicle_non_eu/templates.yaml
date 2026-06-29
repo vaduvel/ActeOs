@@ -1,0 +1,198 @@
+# Step & requirement templates for ro.life.import_vehicle_non_eu (life.import_vehicle_non_eu).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: complete_customs_clearance
+    semantic_key: complete_customs_clearance
+    title_ro: "Clarifica vama si TVA la import"
+    instruction_ro: >-
+      Inainte de RAR si inmatriculare, pregateste dovada situatiei vamale si a importului pentru vehiculul din afara UE.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta vamala si de import a fost pregatita"
+    recovery_actions_ro:
+      - "Daca situatia vamala nu este finalizata sau clarificata, nu continua dosarul de inmatriculare"
+    status: draft
+
+  - id: obtain_rar_civ_and_required_checks
+    semantic_key: obtain_rar_civ_and_required_checks
+    title_ro: "Obtine CIV RAR si verificarile necesare"
+    instruction_ro: >-
+      Pregateste ruta RAR pentru CIV si verificarile aplicabile dupa clarificarea importului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta RAR pentru CIV si verificari este pregatita"
+    recovery_actions_ro:
+      - "Daca documentele straine sau cerintele RAR lipsesc, completeaza dosarul inainte de programare"
+    status: draft
+
+  - id: declare_vehicle_at_local_tax_authority
+    semantic_key: declare_vehicle_at_local_tax_authority
+    title_ro: "Declara vehiculul la autoritatea fiscala locala"
+    instruction_ro: >-
+      Dupa clarificarea documentului de proprietate si a importului, pregateste declararea fiscala locala.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta de declarare fiscala locala a fost pregatita"
+    recovery_actions_ro:
+      - "Daca actul de proprietate nu este inregistrat fiscal, nu continua dosarul de inmatriculare"
+    status: draft
+
+  - id: submit_imported_vehicle_registration
+    semantic_key: submit_imported_vehicle_registration
+    title_ro: "Depune inmatricularea vehiculului importat"
+    instruction_ro: >-
+      Dupa vama, RAR, fiscalitate si platile aplicabile, pregateste depunerea dosarului de inmatriculare.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul de inmatriculare pentru vehiculul importat din afara UE este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente de reprezentare, identitate sau plata, completeaza dosarul inainte de depunere"
+    status: draft
+
+requirement_templates:
+  - id: req.customs_clearance_and_import_tax_evidence
+    title_ro: "Dovada formalitatilor vamale si a taxelor de import"
+    description_ro: "Documentele care sustin situatia vamala si fiscala la import."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Dovada formalitatilor vamale", "Dovada taxelor de import"]
+    readiness_checks: ["Situatia vamala si fiscala la import este sustinuta prin documente"]
+    status: draft
+
+  - id: req.ownership_document_registered_local_tax
+    title_ro: "Act de proprietate inregistrat fiscal"
+    description_ro: "Dovada ca actul de proprietate este declarat fiscal local."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Act de proprietate inregistrat fiscal"]
+    readiness_checks: ["Inregistrarea fiscala a proprietatii este confirmata"]
+    status: draft
+
+  - id: req.valid_rca_copy_owner_name
+    title_ro: "Copie RCA valabila pe numele proprietarului"
+    description_ro: "Copie RCA valabila pe numele proprietarului."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Copie RCA valabila"]
+    readiness_checks: ["RCA este valabila si pe numele proprietarului"]
+    status: draft
+
+  - id: req.valid_vehicle_identity_card_civ
+    title_ro: "Cartea de identitate a vehiculului"
+    description_ro: "CIV folosita la dosarul de inmatriculare."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Cartea de identitate a vehiculului"]
+    readiness_checks: ["CIV este disponibila si valabila"]
+    status: draft
+
+  - id: req.new_imported_vehicle_ownership_document
+    title_ro: "Actul de proprietate pentru vehiculul importat"
+    description_ro: "Documentul de proprietate al vehiculului importat din afara UE."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act de proprietate pentru vehiculul importat"]
+    readiness_checks: ["Dreptul de proprietate este sustinut prin document"]
+    status: draft
+
+  - id: req.foreign_registration_documents_original
+    title_ro: "Documentele straine de inmatriculare in original"
+    description_ro: "Documentele straine de inmatriculare, unde ruta le cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documente straine de inmatriculare in original"]
+    readiness_checks: ["Documentele straine sunt disponibile daca vehiculul este utilizat"]
+    status: draft
+
+  - id: req.foreign_registration_plates
+    title_ro: "Placutele straine"
+    description_ro: "Placutele straine, daca vehiculul utilizat intra pe aceasta cerinta."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Placute straine"]
+    readiness_checks: ["Placutele straine sunt disponibile daca ruta le cere"]
+    status: draft
+
+  - id: req.valid_itp
+    title_ro: "ITP valabil"
+    description_ro: "Dovada ITP valabil, unde ruta aplicabila o cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["ITP valabil"]
+    readiness_checks: ["ITP este valabil daca scenariul il cere"]
+    status: draft
+
+  - id: req.valid_authenticity_certificate
+    title_ro: "Certificat de autenticitate valabil"
+    description_ro: "Certificatul de autenticitate, daca vehiculul si ruta il cer."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat de autenticitate valabil"]
+    readiness_checks: ["Certificatul de autenticitate este pregatit daca se aplica"]
+    status: draft
+
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: "Actul de identitate al solicitantului sau al persoanei reprezentate."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act de identitate valabil"]
+    readiness_checks: ["Actul de identitate este disponibil si valabil"]
+    status: draft
+
+  - id: req.legal_entity_documents
+    title_ro: "Documentele persoanei juridice"
+    description_ro: "Documentele folosite cand solicitantul este persoana juridica."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documente ale persoanei juridice"]
+    readiness_checks: ["Documentele persoanei juridice sunt pregatite daca se aplica"]
+    status: draft
+
+  - id: req.legal_representative_identity
+    title_ro: "Actul de identitate al reprezentantului legal"
+    description_ro: "Documentul de identitate al reprezentantului legal."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Actul de identitate al reprezentantului legal"]
+    readiness_checks: ["Identitatea reprezentantului legal este acoperita"]
+    status: draft
+
+  - id: req.lawyer_mandate
+    title_ro: "Mandatul avocatului"
+    description_ro: "Mandatul folosit daca dosarul este depus prin avocat."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Imputernicire avocatiala"]
+    readiness_checks: ["Mandatul avocatului este pregatit daca se aplica"]
+    status: draft
+
+  - id: req.notarial_power_of_attorney
+    title_ro: "Procura notariala"
+    description_ro: "Procura folosita daca dosarul este depus prin imputernicit."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Procura notariala"]
+    readiness_checks: ["Procura notariala este pregatita daca se aplica"]
+    status: draft
+
+  - id: req.company_written_mandate
+    title_ro: "Mandatul scris al companiei"
+    description_ro: "Mandatul intern pentru delegatul companiei."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Mandat scris al companiei"]
+    readiness_checks: ["Mandatul companiei este pregatit daca se aplica"]
+    status: draft
+
+  - id: req.registration_and_plate_payment_proof
+    title_ro: "Dovada platii pentru certificat si placute"
+    description_ro: "Dovada platii necesare pentru certificatul de inmatriculare si placute."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada platii pentru certificat si placute"]
+    readiness_checks: ["Platile relevante sunt efectuate si pot fi dovedite"]
+    status: draft

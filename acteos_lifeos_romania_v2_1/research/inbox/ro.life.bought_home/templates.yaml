@@ -1,0 +1,111 @@
+step_templates:
+  - id: complete_authentic_notarial_transfer
+    semantic_key: bought_home_complete_authentic_transfer
+    title_ro: "Finalizeaza transferul autentic la notar"
+    instruction_ro: >-
+      Pentru dobandirea imobilului, urmeaza transferul in forma autentica si
+      verifica actele predate la semnare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Transferul autentic al imobilului este finalizat."
+    recovery_actions_ro:
+      - "Nu trata un antecontract sau o promisiune ca transfer final al proprietatii."
+    status: draft
+  - id: obtain_energy_certificate_original
+    semantic_key: bought_home_obtain_energy_certificate_original
+    title_ro: "Obtine originalul certificatului energetic"
+    instruction_ro: >-
+      Daca originalul certificatului energetic nu a fost predat la vanzare,
+      solicita-l vanzatorului pentru dosarul complet al imobilului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Originalul certificatului energetic este primit sau lipsa lui este clarificata."
+    recovery_actions_ro:
+      - "Pastreaza certificatul in dosarul proprietatii pentru pasii fiscali sau de administrare."
+    status: draft
+  - id: notify_association_as_new_owner
+    semantic_key: bought_home_notify_association
+    title_ro: "Anunta asociatia ca nou proprietar"
+    instruction_ro: >-
+      Daca locuinta este in condominiu, comunica asociatiei noile date ale
+      proprietarului in termenul modelat.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Asociatia este informata despre noul proprietar."
+    recovery_actions_ro:
+      - "Nu confunda simpla informare a asociatiei cu preluarea automata a unor datorii."
+    status: draft
+  - id: declare_home_for_local_tax
+    semantic_key: bought_home_declare_local_tax
+    title_ro: "Declara locuinta la fiscalul local"
+    instruction_ro: >-
+      Pentru pilotul local sau UAT-ul competent, pregateste declararea
+      imobilului in evidenta fiscala locala prin canalul oficial disponibil.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de declarare fiscala locala este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca termenul local nu este confirmat oficial, nu inventa o data-limita."
+    status: draft
+  - id: update_identity_for_new_domicile
+    semantic_key: bought_home_update_identity_domicile
+    title_ro: "Actualizeaza actul de identitate pentru noul domiciliu"
+    instruction_ro: >-
+      Daca te muti efectiv si schimbi domiciliul in noua locuinta, urmeaza
+      separat ruta de actualizare a actului de identitate.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Necesitatea actualizarii actului de identitate este clarificata."
+    recovery_actions_ro:
+      - "Daca locuinta nu devine domiciliu principal, nu activa acest pas."
+    status: draft
+
+requirement_templates:
+  - id: req.property_information
+    title_ro: "Informatiile despre imobil"
+    description_ro: >-
+      Datele esentiale despre locuinta necesare pentru notificarea asociatiei
+      sau alte formalitati ulterioare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adresa, identificarea imobilului si datele relevante din actul de proprietate."
+    readiness_checks:
+      - "Imobilul este identificat clar in documente."
+    status: draft
+  - id: req.owner_contact_details
+    title_ro: "Datele de contact ale proprietarului"
+    description_ro: >-
+      Datele de contact ale noului proprietar folosite pentru asociatie sau
+      administrarea locuintei.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Nume, telefon, e-mail sau alte date de contact utile."
+    readiness_checks:
+      - "Asociatia sau administratorul poate contacta noul proprietar."
+    status: draft
+  - id: req.identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate folosit cand noua locuinta devine domiciliu si este
+      necesara actualizarea documentelor personale.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Se urmareste efectiv schimbarea domiciliului."
+    status: draft
+  - id: req.address_proof
+    title_ro: "Dovada noii adrese"
+    description_ro: >-
+      Documentul care sustine noul domiciliu in locuinta cumparata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de proprietate sau alt document acceptat ca dovada a adresei."
+    readiness_checks:
+      - "Locuinta cumparata devine domiciliu."
+    status: draft
+

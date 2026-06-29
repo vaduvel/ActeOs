@@ -1,0 +1,152 @@
+# Step & requirement templates for ro.life.survivor_pension (life.survivor_pension).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_survivor_application
+    semantic_key: prepare_survivor_application
+    title_ro: "Pregateste cererea de pensie de urmas"
+    instruction_ro: >-
+      Dupa clasificarea cazului copil sau sot, pregateste cererea si documentele specifice pentru
+      pensia de urmas.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de pensie de urmas este pregatita"
+    recovery_actions_ro:
+      - "Daca lipsesc documente privind decesul sau eligibilitatea, completeaza dosarul"
+    status: draft
+
+  - id: calculate_marriage_reduction
+    semantic_key: calculate_marriage_reduction
+    title_ro: "Evalueaza efectul duratei casatoriei"
+    instruction_ro: >-
+      Pentru sotul supravietuitor, evalueaza separat efectul duratei casatoriei in ruta dreptului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Efectul duratei casatoriei a fost evaluat"
+    recovery_actions_ro:
+      - "Daca durata exacta a casatoriei nu este clara, nu continua cu o concluzie finala"
+    status: draft
+
+  - id: determine_survivor_percentage
+    semantic_key: determine_survivor_percentage
+    title_ro: "Determina procentul pensiei de urmas"
+    instruction_ro: >-
+      Determina procentul in functie de numarul urmasilor eligibili, fara a calcula cuantumul monetar complet.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Procentul pensiei de urmas a fost evaluat"
+    recovery_actions_ro:
+      - "Daca numarul urmasilor eligibili nu este clar, nu fixa procentul final"
+    status: draft
+
+  - id: calculate_rights_for_each_parent
+    semantic_key: calculate_rights_for_each_parent
+    title_ro: "Evalueaza drepturile fata de fiecare parinte"
+    instruction_ro: >-
+      Daca exista situatie relevanta pentru ambii parinti, trateaza separat drepturile fata de fiecare sustinator.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta privind fiecare parinte a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu exista o astfel de situatie, nu activa aceasta ramura"
+    status: draft
+
+  - id: compare_own_and_survivor_pension
+    semantic_key: compare_own_and_survivor_pension
+    title_ro: "Compara pensia proprie cu pensia de urmas"
+    instruction_ro: >-
+      Daca persoana poate avea si pensie proprie, evalueaza separat aceasta comparatie pe ruta relevanta.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Comparatia dintre pensia proprie si pensia de urmas a fost evaluata"
+    recovery_actions_ro:
+      - "Daca persoana nu are o pensie proprie relevanta, nu activa aceasta ramura"
+    status: draft
+
+  - id: derive_survivor_start_date
+    semantic_key: derive_survivor_start_date
+    title_ro: "Stabileste data de inceput a pensiei de urmas"
+    instruction_ro: >-
+      Stabileste ramura de inceput a dreptului in functie de termen, statutul sustinatorului si tipul beneficiarului.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Data de inceput a dreptului a fost evaluata"
+    recovery_actions_ro:
+      - "Daca lipsesc ancorele de timp relevante, nu trata data de inceput ca sigura"
+    status: draft
+
+requirement_templates:
+  - id: study_certificate
+    title_ro: "Adeverinta de studii"
+    description_ro: >-
+      Adeverinta de studii folosita pentru copilul aflat in intervalul relevant de varsta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverinta de studii"
+    readiness_checks:
+      - "Adeverinta de studii este disponibila daca ramura o cere"
+    status: draft
+
+  - id: medical_capacity_decision
+    title_ro: "Decizie medicala privind capacitatea de munca"
+    description_ro: >-
+      Decizia medicala folosita pentru ramurile unde incapacitatea de munca este relevanta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Decizie medicala privind capacitatea de munca"
+    readiness_checks:
+      - "Decizia medicala este disponibila daca ramura o cere"
+    status: draft
+
+  - id: professional_death_evidence
+    title_ro: "Dovada decesului profesional"
+    description_ro: >-
+      Dovada privind decesul ca urmare a accidentului de munca sau bolii profesionale, daca este cazul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada accidentului de munca"
+      - "Dovada bolii profesionale"
+    readiness_checks:
+      - "Cauza profesionala a decesului este dovedita daca ramura o cere"
+    status: draft
+
+  - id: annex_7_application
+    title_ro: "Cererea Anexa nr. 7 pentru pensia de urmas"
+    description_ro: >-
+      Cererea folosita pentru pensia de urmas, conform formularului indicat de event card.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea Anexa nr. 7"
+    readiness_checks:
+      - "Cererea de pensie de urmas este completata"
+    status: draft
+
+  - id: death_certificate
+    title_ro: "Certificat de deces"
+    description_ro: >-
+      Certificatul de deces al sustinatorului, folosit in dosarul pentru pensia de urmas.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de deces"
+    readiness_checks:
+      - "Certificatul de deces este disponibil"
+    status: draft
+
+  - id: civil_status_documents
+    title_ro: "Acte de stare civila"
+    description_ro: >-
+      Actele de stare civila relevante pentru stabilirea dreptului la pensie de urmas.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte de stare civila relevante"
+    readiness_checks:
+      - "Actele de stare civila relevante sunt disponibile"
+    status: draft

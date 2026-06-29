@@ -1,0 +1,86 @@
+step_templates:
+  - id: request_dfmt_personal_data_correction
+    semantic_key: request_dfmt_personal_data_correction
+    title_ro: "Solicita corectarea datelor la DFMT"
+    instruction_ro: >-
+      Pentru Timișoara si DFMT, foloseste canalul oficial Atlas si confirma daca
+      serviciul accepta explicit actualizarea adresei de corespondenta.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea este pregatita sau depusa in canalul DFMT indicat."
+    recovery_actions_ro:
+      - "Confirma documentele si campul exact acceptat inainte de trimitere."
+    status: draft
+  - id: contact_target_institution_for_correspondence_update
+    semantic_key: contact_target_institution_for_correspondence_update
+    title_ro: "Contacteaza institutia tinta"
+    instruction_ro: >-
+      Pentru alte institutii, verifica direct canalul oficial si procedura lor
+      pentru adresa de corespondenta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Canalul si cerintele institutiei tinta sunt confirmate."
+    recovery_actions_ro:
+      - "Nu presupune existenta unui formular universal intre institutii."
+    status: draft
+  - id: update_identity_card
+    semantic_key: update_identity_card
+    title_ro: "Actualizeaza actul de identitate"
+    instruction_ro: >-
+      Daca schimbarea vizeaza domiciliul, urmeaza ruta de actualizare a actului
+      de identitate in termenul legal.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul pentru actualizarea domiciliului este pregatit sau depus."
+    recovery_actions_ro:
+      - "Nu folosi aceasta ruta daca schimbi doar adresa de corespondenta."
+    status: draft
+  - id: register_residence
+    semantic_key: register_residence
+    title_ro: "Inscrie resedinta"
+    instruction_ro: >-
+      Daca locuiesti la adresa secundara mai mult de 15 zile pe luna, pregateste
+      dosarul pentru inscrierea resedintei.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul pentru resedinta este pregatit sau depus."
+    recovery_actions_ro:
+      - "Daca pragul de timp nu este depasit, nu activa automat ruta de resedinta."
+    status: draft
+
+requirement_templates:
+  - id: req.address_proof
+    title_ro: "Dovada adresei"
+    description_ro: >-
+      Documentul care dovedeste dreptul de folosinta sau legatura cu adresa
+      declarata pentru domiciliu ori resedinta.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Titlu locativ sau alta dovada a adresei acceptata de procedura aplicabila."
+    readiness_checks:
+      - "Exista un document acceptat pentru adresa declarata."
+    status: draft
+  - id: req.identity_document
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate folosit in procedura de inscriere a resedintei.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Actul de identitate este disponibil pentru dosar."
+    status: draft
+  - id: req.residence_declaration
+    title_ro: "Declaratia privind locuirea la resedinta"
+    description_ro: >-
+      Declaratia necesara pentru a confirma ca persoana locuieste la adresa
+      secundara mai mult de 15 zile pe luna.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declaratia ceruta de procedura de resedinta."
+    readiness_checks:
+      - "Ruta activa este cea pentru resedinta."
+    status: draft

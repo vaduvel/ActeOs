@@ -1,0 +1,129 @@
+# Step & requirement templates for ro.life.changed_job (life.changed_job).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: close_previous_employment_record
+    semantic_key: close_previous_employment_record
+    title_ro: "Inchide corect vechiul raport de munca"
+    instruction_ro: >-
+      Verifica modul de incetare al vechiului raport de munca si pastreaza documentele de inchidere.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Vechiul raport de munca a fost inchis si documentat"
+    recovery_actions_ro:
+      - "Daca lipseste documentul de incetare, cere-l fostului angajator"
+    status: draft
+
+  - id: collect_termination_and_history_documents
+    semantic_key: collect_termination_and_history_documents
+    title_ro: "Colecteaza documentele de incetare si vechime"
+    instruction_ro: >-
+      Strange documentul de incetare si dovada activitatii sau a vechimii de la fostul angajator.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Documentele de incetare si vechime sunt colectate"
+    recovery_actions_ro:
+      - "Daca lipseste dovada vechimii, solicita extrasul sau adeverinta relevanta"
+    status: draft
+
+  - id: prepare_new_employment_start
+    semantic_key: prepare_new_employment_start
+    title_ro: "Pregateste inceperea noului job"
+    instruction_ro: >-
+      Daca ai o oferta noua, pregateste documentele si verificarile necesare pentru urmatoarea
+      angajare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Tranzitia catre noul job este pregatita"
+    recovery_actions_ro:
+      - "Daca nu exista inca oferta noua, separa pasii de cautare de pasii de angajare"
+    status: draft
+
+  - id: request_history_document_or_reges_extract
+    semantic_key: request_history_document_or_reges_extract
+    title_ro: "Solicita adeverinta de vechime sau extrasul REGES"
+    instruction_ro: >-
+      Daca nu ai dovada activitatii si vechimii, solicita documentul de la fostul angajator sau
+      extrasul disponibil pe ruta relevanta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cererea pentru dovada vechimii a fost facuta"
+    recovery_actions_ro:
+      - "Daca nu primesti documentul, urmareste extrasul alternativ disponibil"
+    status: draft
+
+  - id: verify_new_contract_before_start
+    semantic_key: verify_new_contract_before_start
+    title_ro: "Verifica noul contract inainte de start"
+    instruction_ro: >-
+      Verifica noul contract si conditiile de incepere inainte de prima zi la noul angajator.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Noul contract a fost verificat"
+    recovery_actions_ro:
+      - "Daca lipseste contractul scris, nu incepe noua activitate"
+    status: draft
+
+  - id: register_for_employment_services
+    semantic_key: register_for_employment_services
+    title_ro: "Inregistreaza-te pentru servicii de ocupare"
+    instruction_ro: >-
+      Daca vrei suport pentru schimbarea jobului, foloseste ruta AJOFM pentru servicii de ocupare.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ruta de servicii de ocupare a fost initiata"
+    recovery_actions_ro:
+      - "Daca lipsesc acte pentru inregistrare, completeaza dosarul inainte de prezentare"
+    status: draft
+
+  - id: complete_new_occupational_health_exam
+    semantic_key: complete_new_occupational_health_exam
+    title_ro: "Fa noul examen de medicina muncii"
+    instruction_ro: >-
+      Daca profesia sau locul de munca se schimba relevant, parcurge noul examen de medicina muncii.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Examenul nou de medicina muncii a fost parcurs"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele medicale anterioare, pregateste copii sau acte noi"
+    status: draft
+
+requirement_templates:
+  - id: termination_document_from_previous_employer
+    title_ro: "Document de incetare de la fostul angajator"
+    description_ro: >-
+      Documentul care atesta incetarea raportului de munca anterior.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Decizie sau alt document de incetare"
+    readiness_checks:
+      - "Documentul de incetare este disponibil si identifica raportul inchis"
+    status: draft
+
+  - id: employment_activity_and_seniority_document
+    title_ro: "Dovada activitatii si a vechimii"
+    description_ro: >-
+      Adeverinta sau extrasul care arata activitatea desfasurata si vechimea acumulata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverinta de vechime"
+      - "Extras privind activitatea sau vechimea"
+    readiness_checks:
+      - "Documentul acopera perioada relevanta a raportului anterior"
+    status: draft
+
+  - id: copy_of_previous_occupational_medical_file
+    title_ro: "Copie a dosarului medical ocupational anterior"
+    description_ro: >-
+      Copia dosarului medical ocupational de la locul de munca anterior, daca noul examen o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a dosarului medical ocupational anterior"
+    readiness_checks:
+      - "Copia este disponibila pentru noua evaluare de medicina muncii"
+    status: draft

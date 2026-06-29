@@ -1,0 +1,153 @@
+# Step & requirement templates for ro.life.company_admin_personal_change (ro.life.company_admin_personal_change).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_onrc_mention_application
+    semantic_key: prepare_onrc_mention_application
+    title_ro: "Pregateste cererea de mentiune la ONRC"
+    instruction_ro: >-
+      Pregateste cererea de mentiune si documentele de baza pentru schimbarea
+      datelor administratorului sau pentru inlocuirea acestuia.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de mentiune ONRC este pregatita"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele de baza, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: register_administrator_identification_change
+    semantic_key: register_administrator_identification_change
+    title_ro: "Inregistreaza schimbarea datelor de identificare"
+    instruction_ro: >-
+      Daca este vorba despre aceeasi persoana cu date noi de identificare,
+      pregateste mentiunea ONRC pentru actualizarea informatiilor.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta ONRC pentru actualizarea datelor de identificare a fost pregatita"
+    recovery_actions_ro:
+      - "Daca schimbarea priveste alta persoana, foloseste ramura de inlocuire a administratorului"
+    status: draft
+
+  - id: register_administrator_replacement
+    semantic_key: register_administrator_replacement
+    title_ro: "Inregistreaza inlocuirea administratorului"
+    instruction_ro: >-
+      Daca administratorul este schimbat cu o alta persoana, pregateste mentiunea
+      ONRC si documentele noului administrator.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta ONRC pentru inlocuirea administratorului a fost pregatita"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele noului administrator sau hotararea competenta, completeaza dosarul"
+    status: draft
+
+requirement_templates:
+  - id: req.onrc_registration_application
+    title_ro: "Cererea de inregistrare ONRC"
+    description_ro: >-
+      Cererea folosita pentru mentiunea ONRC privind administratorul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de inregistrare ONRC"
+    readiness_checks:
+      - "Cererea ONRC este completata pentru cazul relevant"
+    status: draft
+
+  - id: req.competent_body_resolution
+    title_ro: "Hotararea organului competent"
+    description_ro: >-
+      Hotararea interna folosita ca baza pentru modificarea privind administratorul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Hotarare a organului competent"
+    readiness_checks:
+      - "Hotararea care sta la baza mentiunii este disponibila"
+    status: draft
+
+  - id: req.proof_new_identification_data
+    title_ro: "Dovada noilor date de identificare"
+    description_ro: >-
+      Documentul care sustine noile date de identificare ale aceleiasi persoane.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada noilor date de identificare"
+    readiness_checks:
+      - "Noile date de identificare sunt sustinute prin document oficial"
+    status: draft
+
+  - id: req.updated_articles_of_association
+    title_ro: "Act constitutiv actualizat"
+    description_ro: >-
+      Versiunea actualizata a actului constitutiv, daca situatia o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act constitutiv actualizat"
+    readiness_checks:
+      - "Actul constitutiv actualizat este pregatit daca se aplica"
+    status: draft
+
+  - id: req.new_administrator_identity_documents
+    title_ro: "Actele noului administrator"
+    description_ro: >-
+      Documentele de identificare ale persoanei propuse ca nou administrator.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acte de identitate ale noului administrator"
+    readiness_checks:
+      - "Identitatea noului administrator este acoperita de documentele pregatite"
+    status: draft
+
+  - id: req.case_specific_administrator_documents
+    title_ro: "Documentele specifice cazului pentru administrator"
+    description_ro: >-
+      Documentele suplimentare cerute de situatia concreta a noului administrator.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente specifice cazului"
+    readiness_checks:
+      - "Documentele specifice cazului sunt pregatite daca se aplica"
+    status: draft
+
+  - id: req.certified_copy_requester_identity_for_post
+    title_ro: "Copie certificata a identitatii pentru depunere prin posta"
+    description_ro: >-
+      Documentul de identitate pregatit in forma ceruta pentru ruta prin posta sau curier.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie certificata a actului de identitate"
+    readiness_checks:
+      - "Copia certificata este pregatita daca se foloseste ruta prin posta"
+    status: draft
+
+  - id: req.power_for_onrc_formalities
+    title_ro: "Imputernicirea pentru formalitatile ONRC"
+    description_ro: >-
+      Documentul de reprezentare folosit cand formalitatile sunt facute prin mandatar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire pentru formalitati ONRC"
+    readiness_checks:
+      - "Imputernicirea este pregatita daca se foloseste un reprezentant"
+    status: draft
+
+  - id: req.beneficial_owner_declaration_if_applicable
+    title_ro: "Declaratia de beneficiar real, daca este cazul"
+    description_ro: >-
+      Declaratia folosita daca schimbarea administratorului afecteaza si beneficiarul real.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie de beneficiar real"
+    readiness_checks:
+      - "Declaratia este pregatita daca situatia o cere"
+    status: draft

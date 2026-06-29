@@ -1,0 +1,99 @@
+step_templates:
+  - id: step.vote.identify_election
+    semantic_key: vote_address_change_identify_election
+    title_ro: "Identifica scrutinul si regula aplicabila"
+    instruction_ro: >-
+      Stabileste tipul scrutinului si data alegerilor, pentru ca regula privind
+      domiciliul sau reședința depinde de ele.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Tipul de scrutin si regula aplicabila sunt clarificate."
+    recovery_actions_ro:
+      - "Daca tipul de scrutin este necunoscut, nu continua cu concluzii despre sectie sau lista suplimentara."
+    status: draft
+  - id: step.vote.register_residence
+    semantic_key: vote_address_change_register_residence
+    title_ro: "Stabileste reședința"
+    instruction_ro: >-
+      Daca traseul se bazeaza pe reședință, verifica mai intai ca aceasta este
+      inscrisa valabil in evidențe.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Starea reședinței este clarificata."
+    recovery_actions_ro:
+      - "Fara reședință valabil inregistrata nu activa ruta de inscriere la reședință in Registrul Electoral."
+    status: draft
+  - id: step.vote.request_register
+    semantic_key: vote_address_change_request_register
+    title_ro: "Depune cererea in Registrul Electoral"
+    instruction_ro: >-
+      Daca scrutinul si adresa o cer, depune cererea in termenul relevant pentru
+      votul la reședință.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea de inscriere in Registrul Electoral este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca termenul de 45 de zile este depasit, verifica alternativa ramasa pentru scrutinul concret."
+    status: draft
+  - id: step.vote.check_section
+    semantic_key: vote_address_change_check_section
+    title_ro: "Verifica sectia de votare"
+    instruction_ro: >-
+      Salveaza din timp sectia si adresa de votare din Registrul Electoral sau
+      din ruta oficiala aplicabila scrutinului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Sectia de votare este identificata."
+    recovery_actions_ro:
+      - "Nu astepta ziua votului pentru prima verificare a sectiei."
+    status: draft
+  - id: step.vote.use_supplementary
+    semantic_key: vote_address_change_use_supplementary
+    title_ro: "Foloseste lista suplimentara cand regula o permite"
+    instruction_ro: >-
+      Daca scrutinul permite si cazul se incadreaza, foloseste ruta de lista
+      suplimentara conform regulii oficiale aplicabile.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Eligibilitatea pentru lista suplimentara este clarificata."
+    recovery_actions_ro:
+      - "Nu extrapola aceasta optiune intre tipuri diferite de alegeri."
+    status: draft
+
+requirement_templates:
+  - id: req.vote.identity
+    title_ro: "Act de identitate valabil la vot"
+    description_ro: >-
+      Documentul de identitate valabil pe care alegatorul il prezinta in ziua
+      votului.
+    obligation: mandatory
+    timing: later
+    accepted_forms:
+      - "Act de identitate valabil pentru scrutinul si situatia alegatorului."
+    readiness_checks:
+      - "Documentul va fi valabil in ziua alegerilor."
+    status: draft
+  - id: req.vote.valid_residence
+    title_ro: "Reședință valabil inregistrata"
+    description_ro: >-
+      Dovada faptului ca reședința este inscrisa valabil atunci cand aceasta
+      baza este folosita pentru vot.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mențiune de reședință valabila in evidentele relevante."
+    readiness_checks:
+      - "Ruta foloseste reședința, nu doar domiciliul."
+    status: draft
+  - id: req.vote.register_request
+    title_ro: "Cerere de inscriere la reședință in Registrul Electoral"
+    description_ro: >-
+      Cererea depusa pentru inscrierea in Registrul Electoral pe baza
+      reședinței, cand scrutinul si termenul o cer.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere depusa prin canalul oficial in termenul aplicabil."
+    readiness_checks:
+      - "Scrutinul si situatia alegatorului cer aceasta inscriere."
+    status: draft

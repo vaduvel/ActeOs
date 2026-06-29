@@ -1,0 +1,324 @@
+# Step & requirement templates for ro.life.change_heat_holder (ro.life.change_heat_holder).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: classify_heating_service_and_contract
+    semantic_key: classify_heating_service_and_contract
+    title_ro: "Clasifica serviciul de incalzire si tipul de contract"
+    instruction_ro: >-
+      Stabileste daca este termoficare centralizata, alt operator local ori alt
+      tip de serviciu si identifica forma contractului inainte de a genera dosarul.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Serviciul de incalzire si tipul de contract au fost clasificate"
+    recovery_actions_ro:
+      - "Daca serviciul sau operatorul nu sunt clare, nu continua checklistul specific"
+    status: draft
+
+  - id: route_to_energy_supplier_contract_change
+    semantic_key: route_to_energy_supplier_contract_change
+    title_ro: "Redirectioneaza catre furnizorul real de energie"
+    instruction_ro: >-
+      Daca nu este vorba de termoficare centralizata, opreste ruta COLTERM si
+      foloseste procedura furnizorului efectiv.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta alternativa pentru furnizorul real a fost identificata"
+    recovery_actions_ro:
+      - "Daca serviciul nu este termoficare, nu aplica lista COLTERM"
+    status: draft
+
+  - id: identify_heating_service
+    semantic_key: identify_heating_service
+    title_ro: "Identifica serviciul de incalzire"
+    instruction_ro: >-
+      Daca tipul serviciului nu este cunoscut, confirma daca este termoficare,
+      gaze ori electricitate inainte de orice pas ulterior.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Tipul serviciului de incalzire a fost clarificat"
+    recovery_actions_ro:
+      - "Daca tipul serviciului ramane necunoscut, cere confirmare din contract sau factura"
+    status: draft
+
+  - id: confirm_live_colterm_contract_route
+    semantic_key: confirm_live_colterm_contract_route
+    title_ro: "Confirma ruta contractuala curenta COLTERM"
+    instruction_ro: >-
+      Pentru termoficare COLTERM in Timisoara, confirma checklistul, canalul si
+      conditiile actuale direct cu operatorul inainte de depunere.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta contractuala COLTERM a fost reconfirmata"
+    recovery_actions_ro:
+      - "Daca lista curenta nu este confirmata, nu prezenta checklistul istoric ca definitiv"
+    status: draft
+
+  - id: obtain_local_heat_operator_checklist
+    semantic_key: obtain_local_heat_operator_checklist
+    title_ro: "Obtine checklistul operatorului local de termoficare"
+    instruction_ro: >-
+      Pentru alt operator local de termoficare, confirma direct documentele,
+      canalul, taxa si termenul aplicabile.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Checklistul operatorului local a fost solicitat sau confirmat"
+    recovery_actions_ro:
+      - "Daca operatorul local nu este confirmat, nu genera un dosar presetat"
+    status: draft
+
+  - id: identify_district_heat_operator
+    semantic_key: identify_district_heat_operator
+    title_ro: "Identifica operatorul de termoficare"
+    instruction_ro: >-
+      Daca serviciul este termoficare dar operatorul nu este cunoscut,
+      identifica operatorul competent inainte de a pregati documentele.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Operatorul de termoficare a fost identificat"
+    recovery_actions_ro:
+      - "Daca operatorul ramane necunoscut, cere confirmare locala inainte de continuare"
+    status: draft
+
+  - id: notify_colterm_of_association_admin_change
+    semantic_key: notify_colterm_of_association_admin_change
+    title_ro: "Notifica COLTERM despre schimbarea administratorului asociatiei"
+    instruction_ro: >-
+      Daca se schimba administratorul unei asociatii de proprietari pe ruta
+      verificata, pregateste notificarea si documentele de reprezentare.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Notificarea catre COLTERM pentru schimbarea administratorului este pregatita"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele asociatiei sau reprezentarii, completeaza dosarul"
+    status: draft
+
+  - id: confirm_if_association_contract_is_affected
+    semantic_key: confirm_if_association_contract_is_affected
+    title_ro: "Confirma daca vanzarea afecteaza contractul asociatiei"
+    instruction_ro: >-
+      Daca situatia porneste de la transferul unui apartament intr-o asociatie,
+      confirma daca acel fapt produce sau nu schimbarea titularului contractului colectiv.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Efectul asupra contractului asociatiei a fost clarificat"
+    recovery_actions_ro:
+      - "Daca efectul contractual nu este confirmat, nu trata cazul ca schimbare automata de titular"
+    status: draft
+
+  - id: prepare_colterm_individual_contract_request
+    semantic_key: prepare_colterm_individual_contract_request
+    title_ro: "Pregateste cererea individuala catre COLTERM"
+    instruction_ro: >-
+      Daca noul titular este proprietarul pe contract direct individual,
+      pregateste cererea si documentele de baza pentru schimbarea titularului.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Cererea individuala catre COLTERM este pregatita"
+    recovery_actions_ro:
+      - "Daca lipseste dovada proprietatii sau identitatea, completeaza dosarul"
+    status: draft
+
+  - id: submit_colterm_holder_change_request
+    semantic_key: submit_colterm_holder_change_request
+    title_ro: "Depune solicitarea de schimbare a titularului la COLTERM"
+    instruction_ro: >-
+      Dupa pregatirea cererii individuale si a documentelor, depune solicitarea
+      pe canalul confirmat de operator.
+    sequence_hint: 100
+    completion_evidence_ro:
+      - "Solicitarea catre COLTERM este pregatita pentru depunere"
+    recovery_actions_ro:
+      - "Daca checklistul live nu este confirmat, verifica operatorul inainte de depunere"
+    status: draft
+
+  - id: request_current_colterm_tenant_route
+    semantic_key: request_current_colterm_tenant_route
+    title_ro: "Cere ruta curenta pentru chirias"
+    instruction_ro: >-
+      Daca noul titular ar fi chiriasul sau utilizatorul, cere operatorului
+      ruta actuala exacta pentru acest scenariu inainte de a promite un dosar standard.
+    sequence_hint: 110
+    completion_evidence_ro:
+      - "Ruta pentru chirias a fost solicitata sau clarificata"
+    recovery_actions_ro:
+      - "Daca operatorul nu confirma cazul, nu presupune aplicabilitatea rutei de proprietar"
+    status: draft
+
+  - id: prepare_colterm_company_contract_file
+    semantic_key: prepare_colterm_company_contract_file
+    title_ro: "Pregateste dosarul companiei pentru COLTERM"
+    instruction_ro: >-
+      Daca noul titular este o companie, pregateste documentele companiei si
+      dovezile punctului de lucru ori ale folosintei spatiului.
+    sequence_hint: 120
+    completion_evidence_ro:
+      - "Dosarul companiei pentru COLTERM este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc documente ale companiei sau dovezile spatiului, completeaza dosarul"
+    status: draft
+
+  - id: submit_colterm_company_request
+    semantic_key: submit_colterm_company_request
+    title_ro: "Depune solicitarea companiei catre COLTERM"
+    instruction_ro: >-
+      Dupa pregatirea dosarului companiei, depune solicitarea pe ruta confirmata
+      de operator pentru persoana juridica.
+    sequence_hint: 130
+    completion_evidence_ro:
+      - "Solicitarea companiei catre COLTERM este pregatita pentru depunere"
+    recovery_actions_ro:
+      - "Daca lipseste checklistul curent al operatorului, reconfirma ruta inainte de depunere"
+    status: draft
+
+  - id: request_colterm_successor_assessment
+    semantic_key: request_colterm_successor_assessment
+    title_ro: "Solicita evaluarea rutei pentru succesor"
+    instruction_ro: >-
+      Daca schimbarea vine din succesiune sau continuarea folosintei de catre
+      alt titular legitim, cere evaluarea operatorului pentru acest scenariu.
+    sequence_hint: 140
+    completion_evidence_ro:
+      - "Ruta pentru succesor a fost solicitata sau clarificata"
+    recovery_actions_ro:
+      - "Daca documentele de identitate sau reprezentare lipsesc, completeaza dosarul inainte de cerere"
+    status: draft
+
+  - id: separate_holder_change_from_new_connection
+    semantic_key: separate_holder_change_from_new_connection
+    title_ro: "Separata schimbarea titularului de bransamentul nou"
+    instruction_ro: >-
+      Daca este necesar un bransament nou, trateaza acest traseu separat de
+      simpla schimbare a titularului contractual.
+    sequence_hint: 150
+    completion_evidence_ro:
+      - "Schimbarea titularului a fost separata de ruta de bransament nou"
+    recovery_actions_ro:
+      - "Daca este vorba despre o conectare noua, deschide evenimentul tehnic separat"
+    status: draft
+
+requirement_templates:
+  - id: req.association_constitution_act
+    title_ro: "Actul de constituire al asociatiei"
+    description_ro: >-
+      Documentul de baza al asociatiei folosit pentru notificarea schimbarii administratorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de constituire al asociatiei"
+    readiness_checks:
+      - "Actul de constituire este disponibil daca se aplica ruta asociatiei"
+    status: draft
+
+  - id: req.association_representative_identity
+    title_ro: "Actul de identitate al reprezentantului asociatiei"
+    description_ro: >-
+      Documentul de identitate al persoanei care reprezinta asociatia.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al reprezentantului asociatiei"
+    readiness_checks:
+      - "Reprezentantul asociatiei este identificat prin document valabil"
+    status: draft
+
+  - id: req.colterm_admin_change_notice
+    title_ro: "Notificarea pentru schimbarea administratorului"
+    description_ro: >-
+      Notificarea sau cererea prin care este anuntata schimbarea administratorului catre operator.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Notificare de schimbare a administratorului"
+    readiness_checks:
+      - "Notificarea este pregatita pentru operator"
+    status: draft
+
+  - id: req.identity_document
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate al noului titular sau al solicitantului relevant.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: req.property_title
+    title_ro: "Dovada proprietatii"
+    description_ro: >-
+      Documentul care sustine dreptul de proprietate folosit pentru schimbarea titularului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Titlu de proprietate"
+      - "Act de proprietate"
+    readiness_checks:
+      - "Dreptul de proprietate este sustinut prin document oficial"
+    status: draft
+
+  - id: req.company_registration_certificate
+    title_ro: "Certificatul de inregistrare al companiei"
+    description_ro: >-
+      Documentul de identificare al companiei care cere schimbarea contractului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de inregistrare al companiei"
+    readiness_checks:
+      - "Documentul companiei este disponibil"
+    status: draft
+
+  - id: req.company_tax_registration
+    title_ro: "Documentul fiscal al companiei"
+    description_ro: >-
+      Documentul de inregistrare fiscala sau echivalentul cerut pentru companie.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document fiscal al companiei"
+    readiness_checks:
+      - "Identificarea fiscala a companiei este acoperita"
+    status: draft
+
+  - id: req.point_of_work_evidence
+    title_ro: "Dovada punctului de lucru"
+    description_ro: >-
+      Dovada relevantei punctului de lucru pentru contractul companiei, daca este ceruta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada punctului de lucru"
+    readiness_checks:
+      - "Dovada punctului de lucru este disponibila daca se aplica"
+    status: draft
+
+  - id: req.property_or_lease_evidence
+    title_ro: "Dovada proprietatii sau a folosintei"
+    description_ro: >-
+      Documentul care arata dreptul de folosinta al companiei asupra spatiului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada proprietatii"
+      - "Contract de inchiriere sau alt document de folosinta"
+    readiness_checks:
+      - "Dreptul de folosinta asupra spatiului este acoperit prin document"
+    status: draft
+
+  - id: req.identity_or_representation
+    title_ro: "Dovada identitatii sau a reprezentarii"
+    description_ro: >-
+      Documentul folosit pentru a sustine identitatea solicitantului ori dreptul sau de reprezentare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+      - "Dovada reprezentarii"
+    readiness_checks:
+      - "Identitatea sau reprezentarea este acoperita de document oficial"
+    status: draft

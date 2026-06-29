@@ -1,0 +1,42 @@
+step_templates:
+  - id: obtain_fiscal_certificate
+    semantic_key: obtain_fiscal_certificate
+    title_ro: "Obține certificatul fiscal pentru vânzare"
+    instruction_ro: >-
+      Solicită certificatul fiscal de la organul fiscal local pentru vehiculul pe
+      care îl vinzi și verifică să fie folosit în fereastra de valabilitate
+      aplicabilă.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Certificatul fiscal a fost solicitat sau emis."
+      - "Certificatul este disponibil pentru dosarul de vânzare."
+    recovery_actions_ro:
+      - "Dacă există datorii locale, clarifică mai întâi situația fiscală."
+    status: draft
+  - id: remove_vehicle_from_fiscal_evidence
+    semantic_key: remove_vehicle_from_fiscal_evidence
+    title_ro: "Scoate vehiculul din evidența fiscală"
+    instruction_ro: >-
+      După vânzare, depune documentele cerute pentru radierea vehiculului din
+      evidența fiscală locală și păstrează dovada înregistrării cererii.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea de scoatere din evidență a fost depusă."
+      - "Există dovadă de înregistrare sau confirmare."
+    recovery_actions_ro:
+      - "Dacă lipsesc documente semnate de ambele părți, refă setul înainte de depunere."
+    status: draft
+
+requirement_templates:
+  - id: req.contract_5_copies
+    title_ro: "Contract de înstrăinare-dobândire în exemplarele cerute"
+    description_ro: >-
+      Contractul folosit pentru vânzarea vehiculului, pregătit în numărul de
+      exemplare solicitat de traseul administrativ aplicabil.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contractul de vânzare-cumpărare / înstrăinare-dobândire semnat."
+    readiness_checks:
+      - "Contractul este semnat și există suficiente exemplare pentru traseul administrativ."
+    status: draft

@@ -1,0 +1,113 @@
+step_templates:
+  - id: step.rca.verify
+    semantic_key: vehicle_rca_verify_policy
+    title_ro: "Verifica polita RCA"
+    instruction_ro: >-
+      Verifica starea politei si data expirarii din documente sau prin baza
+      oficiala de verificare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Starea si data expirarii RCA sunt confirmate."
+    recovery_actions_ro:
+      - "Nu presupune continuitatea politei fara verificare."
+    status: draft
+  - id: step.rca.compare_offers
+    semantic_key: vehicle_rca_compare_and_renew
+    title_ro: "Incheie sau reinnoieste RCA fara pauza"
+    instruction_ro: >-
+      Daca polita expira sau este aproape de expirare, incheie o noua RCA astfel
+      incat sa nu existe intrerupere de acoperire.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Noua polita RCA este aleasa sau emisa cu continuitate corecta."
+    recovery_actions_ro:
+      - "Verifica data de inceput a noii polite inainte de confirmarea finala."
+    status: draft
+  - id: step.rca.suspend_request
+    semantic_key: vehicle_rca_request_suspension
+    title_ro: "Solicita suspendarea efectelor RCA"
+    instruction_ro: >-
+      Daca vehiculul indeplineste conditiile legale de suspendare, pregateste
+      cererea si dovezile privind suspendarea inmatricularii si imobilizarea
+      privata.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Eligibilitatea pentru suspendarea RCA este clarificata."
+    recovery_actions_ro:
+      - "Nu solicita suspendarea daca vehiculul poate ajunge pe drum public."
+    status: draft
+  - id: step.rca.notify_transfer
+    semantic_key: vehicle_rca_notify_transfer
+    title_ro: "Notifica asiguratorul despre transferul proprietatii"
+    instruction_ro: >-
+      Dupa transferul proprietatii, trimite asiguratorului notificarea si
+      documentele justificative cerute.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Transferul este notificat asiguratorului."
+    recovery_actions_ro:
+      - "Pastreaza dovada trimiterii si documentele de transfer."
+    status: draft
+  - id: step.rca.stop_road_use
+    semantic_key: vehicle_rca_stop_road_use
+    title_ro: "Nu utiliza vehiculul pe drum public"
+    instruction_ro: >-
+      Daca RCA este expirata, necunoscuta sau suspendata fara indeplinirea
+      conditiilor de circulatie, opreste folosirea vehiculului pe drum public.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Vehiculul nu mai este folosit pe drum public fara RCA valabila."
+    recovery_actions_ro:
+      - "Reia circulatia numai dupa restabilirea unei polite valabile."
+    status: draft
+
+requirement_templates:
+  - id: req.rca.valid_policy
+    title_ro: "RCA valabila"
+    description_ro: >-
+      O polita RCA valabila pentru perioada in care vehiculul este folosit pe
+      drum public.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Polita RCA valabila confirmata in documente sau verificare oficiala."
+    readiness_checks:
+      - "Vehiculul urmeaza sa circule pe drum public."
+    status: draft
+  - id: req.rca.suspended_registration
+    title_ro: "Inmatriculare suspendata"
+    description_ro: >-
+      Dovada suspendarii inmatricularii, ceruta pentru suspendarea legala a
+      efectelor RCA.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document care confirma suspendarea inmatricularii."
+    readiness_checks:
+      - "Se urmareste suspendarea RCA."
+    status: draft
+  - id: req.rca.private_immobilization
+    title_ro: "Imobilizare in spatiu privat"
+    description_ro: >-
+      Confirmarea ca vehiculul este imobilizat intr-un spatiu privat, in afara
+      domeniului public, pe perioada suspendarii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie sau dovada admisa privind imobilizarea privata."
+    readiness_checks:
+      - "Se urmareste suspendarea RCA."
+    status: draft
+  - id: req.rca.transfer_documents
+    title_ro: "Documentele justificative ale transferului"
+    description_ro: >-
+      Actele care dovedesc transferul proprietatii si care trebuie trimise
+      asiguratorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Contract, act de instrainare sau alte documente de transfer."
+    readiness_checks:
+      - "Proprietatea vehiculului a fost transferata."
+    status: draft
+

@@ -1,0 +1,558 @@
+# Step & requirement templates for ro.life.utility_new_connection (life.utility_new_connection).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: classify_utility_location_and_existing_connection
+    semantic_key: classify_utility_location_and_existing_connection
+    title_ro: "Clasifica utilitatea, zona si conexiunea existenta"
+    instruction_ro: >-
+      Stabileste tipul utilitatii, zona pilot si daca exista deja un punct de consum sau un contract
+      activ ori inactiv.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Tipul utilitatii si starea conexiunii existente au fost clarificate"
+    recovery_actions_ro:
+      - "Daca starea punctului de consum nu este clara, nu porni pe ruta de racord nou"
+    status: draft
+
+  - id: identify_requested_utility
+    semantic_key: identify_requested_utility
+    title_ro: "Identifica utilitatea ceruta"
+    instruction_ro: >-
+      Confirma utilitatea pentru care vrei racordarea si separa fluxul potrivit operatorului corect.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Utilitatea ceruta a fost confirmata"
+    recovery_actions_ro:
+      - "Daca utilitatea nu este clara, nu continua cu dosarul operatorului"
+    status: draft
+
+  - id: verify_existing_point_and_contract
+    semantic_key: verify_existing_point_and_contract
+    title_ro: "Verifica punctul existent si contractul"
+    instruction_ro: >-
+      Verifica daca exista un punct deja activ sau inactiv si daca trebuie reactivare ori evaluare
+      pentru racord nou.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Situatia punctului si a contractului existent a fost verificata"
+    recovery_actions_ro:
+      - "Daca exista deja racord functional, revino la ruta potrivita"
+    status: draft
+
+  - id: request_operator_reactivation_or_new_connection_assessment
+    semantic_key: request_operator_reactivation_or_new_connection_assessment
+    title_ro: "Cere reactivarea sau evaluarea pentru racord nou"
+    instruction_ro: >-
+      Daca exista un punct inactiv sau situatia nu este una de racord nou clar, cere operatorului
+      evaluarea corecta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Operatorul a fost pregatit pentru evaluarea corecta"
+    recovery_actions_ro:
+      - "Daca nu este clar daca e reactivare sau racord nou, nu continua pe o presupunere"
+    status: draft
+
+  - id: correct_utility_operator_pair
+    semantic_key: correct_utility_operator_pair
+    title_ro: "Corecteaza perechea utilitate-operator"
+    instruction_ro: >-
+      Verifica daca operatorul ales corespunde utilitatii si adresei pentru care ceri racordul.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Perechea utilitate-operator a fost verificata"
+    recovery_actions_ro:
+      - "Daca operatorul este gresit, opreste dosarul si corecteaza ruta"
+    status: draft
+
+  - id: identify_electricity_distribution_operator
+    semantic_key: identify_electricity_distribution_operator
+    title_ro: "Identifica operatorul de distributie pentru electricitate"
+    instruction_ro: >-
+      Pentru electricitate, identifica distribuitorul relevant pentru adresa inainte de cererea de
+      racordare.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Distribuitorul de electricitate a fost identificat"
+    recovery_actions_ro:
+      - "Daca distribuitorul nu este confirmat, nu continua cu documentele ATR"
+    status: draft
+
+  - id: obtain_electric_operator_live_connection_route
+    semantic_key: obtain_electric_operator_live_connection_route
+    title_ro: "Obtine ruta live a operatorului de electricitate"
+    instruction_ro: >-
+      Identifica formularul sau canalul live al operatorului de electricitate pentru cererea de
+      racordare si ATR.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Ruta live a operatorului de electricitate a fost identificata"
+    recovery_actions_ro:
+      - "Daca ruta live nu este confirmata, nu folosi un checklist vechi"
+    status: draft
+
+  - id: submit_electricity_connection_request_and_documents
+    semantic_key: submit_electricity_connection_request_and_documents
+    title_ro: "Depune cererea si documentele pentru racord electric"
+    instruction_ro: >-
+      Pregateste setul de documente cerut de operator si depune cererea pentru racord si ATR.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Cererea pentru racord electric este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca lipseste setul oficial de documente, completeaza-l inainte de depunere"
+    status: draft
+
+  - id: track_electricity_document_review_and_atr
+    semantic_key: track_electricity_document_review_and_atr
+    title_ro: "Urmareste analiza documentelor si emiterea ATR"
+    instruction_ro: >-
+      Urmareste verificarile operatorului si emiterea documentului tehnic pentru racordarea
+      electrica.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Analiza documentelor electrice este urmarita"
+    recovery_actions_ro:
+      - "Daca operatorul cere completari, adauga-le inainte de continuarea rutei"
+    status: draft
+
+  - id: request_and_sign_electricity_connection_contract
+    semantic_key: request_and_sign_electricity_connection_contract
+    title_ro: "Solicita si semneaza contractul de racordare la electricitate"
+    instruction_ro: >-
+      Dupa aprobarea tehnica, solicita si semneaza contractul de racordare specific operatorului.
+    sequence_hint: 100
+    completion_evidence_ro:
+      - "Contractul de racordare la electricitate este pregatit sau semnat"
+    recovery_actions_ro:
+      - "Daca lipseste aprobarea tehnica, nu continua spre contract"
+    status: draft
+
+  - id: handoff_to_electricity_connection_construction
+    semantic_key: handoff_to_electricity_connection_construction
+    title_ro: "Preda cazul spre executia racordului electric"
+    instruction_ro: >-
+      Dupa aprobarea tehnica si contract, muta cazul pe etapa de proiectare, executie si receptie.
+    sequence_hint: 110
+    completion_evidence_ro:
+      - "Cazul a fost predat spre executia racordului electric"
+    recovery_actions_ro:
+      - "Daca lipseste contractul sau aprobarea, nu muta cazul in etapa de executie"
+    status: draft
+
+  - id: identify_water_sewer_operator
+    semantic_key: identify_water_sewer_operator
+    title_ro: "Identifica operatorul de apa-canal"
+    instruction_ro: >-
+      Pentru apa si canal, identifica operatorul local relevant pentru adresa ta.
+    sequence_hint: 120
+    completion_evidence_ro:
+      - "Operatorul de apa-canal a fost identificat"
+    recovery_actions_ro:
+      - "Daca operatorul nu este clar, nu continua cu dosarul local"
+    status: draft
+
+  - id: obtain_local_water_operator_route
+    semantic_key: obtain_local_water_operator_route
+    title_ro: "Obtine ruta locala a operatorului de apa-canal"
+    instruction_ro: >-
+      Identifica formularul sau canalul curent al operatorului local pentru avizul sau aprobarea
+      tehnica de apa-canal.
+    sequence_hint: 130
+    completion_evidence_ro:
+      - "Ruta operatorului local de apa-canal a fost identificata"
+    recovery_actions_ro:
+      - "Daca ruta curenta nu este confirmata, nu folosi un checklist vechi"
+    status: draft
+
+  - id: submit_aquatim_technical_approval_file
+    semantic_key: submit_aquatim_technical_approval_file
+    title_ro: "Depune dosarul Aquatim pentru aviz tehnic"
+    instruction_ro: >-
+      Pentru ruta Aquatim, pregateste cererea, anexele si consimtamantul cerute pentru avizul tehnic.
+    sequence_hint: 140
+    completion_evidence_ro:
+      - "Dosarul Aquatim pentru aviz tehnic este pregatit sau depus"
+    recovery_actions_ro:
+      - "Daca lipseste una dintre anexele specifice, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: track_aquatim_technical_approval_and_invoice
+    semantic_key: track_aquatim_technical_approval_and_invoice
+    title_ro: "Urmareste avizul Aquatim si factura"
+    instruction_ro: >-
+      Urmareste evaluarea tehnica si factura aferenta, daca operatorul local o emite pe aceasta ruta.
+    sequence_hint: 150
+    completion_evidence_ro:
+      - "Etapa de evaluare Aquatim este urmarita"
+    recovery_actions_ro:
+      - "Daca apar completari sau factura lipseste, urmareste dosarul la operator"
+    status: draft
+
+  - id: submit_or_complete_aquatim_service_contract
+    semantic_key: submit_or_complete_aquatim_service_contract
+    title_ro: "Pregateste sau completeaza contractul Aquatim"
+    instruction_ro: >-
+      Dupa avizul tehnic, pregateste sau completeaza contractul de servicii cerut de Aquatim.
+    sequence_hint: 160
+    completion_evidence_ro:
+      - "Contractul Aquatim este pregatit sau completat"
+    recovery_actions_ro:
+      - "Daca nu exista avizul tehnic sau datele contractuale, opreste acest pas"
+    status: draft
+
+  - id: prepare_aquatim_network_extension_approval
+    semantic_key: prepare_aquatim_network_extension_approval
+    title_ro: "Pregateste ruta Aquatim pentru extindere de retea"
+    instruction_ro: >-
+      Daca este necesara extinderea retelei, pregateste documentele suplimentare cerute pentru
+      aprobarea acestei etape.
+    sequence_hint: 170
+    completion_evidence_ro:
+      - "Ruta Aquatim pentru extindere a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu este clar ca e nevoie de extindere, nu activa aceasta ramura"
+    status: draft
+
+  - id: handoff_to_water_connection_construction
+    semantic_key: handoff_to_water_connection_construction
+    title_ro: "Preda cazul spre executia racordului de apa-canal"
+    instruction_ro: >-
+      Dupa aprobarea tehnica si contractul relevant, muta cazul in etapa de executie si receptie.
+    sequence_hint: 180
+    completion_evidence_ro:
+      - "Cazul a fost predat spre executia racordului de apa-canal"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele tehnice sau contractuale, nu muta cazul in executie"
+    status: draft
+
+  - id: lookup_gas_distribution_operator_in_anre_registry
+    semantic_key: lookup_gas_distribution_operator_in_anre_registry
+    title_ro: "Cauta operatorul de gaze in registrul ANRE"
+    instruction_ro: >-
+      Pentru gaze naturale, identifica operatorul relevant pentru adresa in registrul ANRE.
+    sequence_hint: 190
+    completion_evidence_ro:
+      - "Operatorul de gaze a fost identificat in registru"
+    recovery_actions_ro:
+      - "Daca operatorul nu este confirmat, nu continua cu ATR-ul de gaze"
+    status: draft
+
+  - id: verify_gas_operator_licence_and_area
+    semantic_key: verify_gas_operator_licence_and_area
+    title_ro: "Verifica licenta si aria operatorului de gaze"
+    instruction_ro: >-
+      Verifica daca operatorul identificat acopera aria si ruta relevanta pentru cererea ta.
+    sequence_hint: 200
+    completion_evidence_ro:
+      - "Licenta si aria operatorului de gaze au fost verificate"
+    recovery_actions_ro:
+      - "Daca operatorul sau aria nu corespund, corecteaza ruta inainte de depunere"
+    status: draft
+
+  - id: submit_gas_atr_request_and_operator_document_set
+    semantic_key: submit_gas_atr_request_and_operator_document_set
+    title_ro: "Depune cererea ATR si documentele pentru gaze"
+    instruction_ro: >-
+      Pregateste cererea ATR si setul de documente cerut de operatorul de gaze confirmat.
+    sequence_hint: 210
+    completion_evidence_ro:
+      - "Cererea si documentele pentru ATR gaze sunt pregatite sau depuse"
+    recovery_actions_ro:
+      - "Daca lipseste setul de documente cerut, completeaza-l inainte de depunere"
+    status: draft
+
+  - id: track_gas_atr_invoice_payment_and_issuance
+    semantic_key: track_gas_atr_invoice_payment_and_issuance
+    title_ro: "Urmareste ATR-ul de gaze, factura si emiterea"
+    instruction_ro: >-
+      Urmareste evaluarea operatorului de gaze, eventualele plati si emiterea documentului tehnic.
+    sequence_hint: 220
+    completion_evidence_ro:
+      - "Etapa ATR pentru gaze este urmarita"
+    recovery_actions_ro:
+      - "Daca operatorul cere completari sau plati, rezolva-le inainte de continuare"
+    status: draft
+
+  - id: sign_gas_connection_contract
+    semantic_key: sign_gas_connection_contract
+    title_ro: "Semneaza contractul de racordare la gaze"
+    instruction_ro: >-
+      Dupa aprobarea tehnica, pregateste si semneaza contractul de racordare pentru gaze.
+    sequence_hint: 230
+    completion_evidence_ro:
+      - "Contractul de racordare la gaze este pregatit sau semnat"
+    recovery_actions_ro:
+      - "Daca ATR-ul nu este emis, nu continua spre contract"
+    status: draft
+
+  - id: handoff_to_gas_connection_construction
+    semantic_key: handoff_to_gas_connection_construction
+    title_ro: "Preda cazul spre executia racordului la gaze"
+    instruction_ro: >-
+      Dupa aprobarea tehnica si contract, muta cazul in etapa de proiectare, executie si receptie.
+    sequence_hint: 240
+    completion_evidence_ro:
+      - "Cazul a fost predat spre executia racordului la gaze"
+    recovery_actions_ro:
+      - "Daca lipsesc preconditiile tehnice sau contractuale, nu muta cazul in executie"
+    status: draft
+
+  - id: submit_colterm_standard_connection_request_for_technical_review
+    semantic_key: submit_colterm_standard_connection_request_for_technical_review
+    title_ro: "Depune cererea standard la operatorul de termoficare"
+    instruction_ro: >-
+      Pentru termoficare, pregateste cererea standard si traseul de analiza tehnica al operatorului.
+    sequence_hint: 250
+    completion_evidence_ro:
+      - "Cererea pentru termoficare este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca ruta operatorului local nu este confirmata, reconfirma conditiile curente"
+    status: draft
+
+  - id: identify_and_contact_local_heat_operator
+    semantic_key: identify_and_contact_local_heat_operator
+    title_ro: "Identifica si contacteaza operatorul local de termoficare"
+    instruction_ro: >-
+      Verifica operatorul local de termoficare relevant si cere conditiile tehnice actuale.
+    sequence_hint: 260
+    completion_evidence_ro:
+      - "Operatorul local de termoficare a fost identificat si contactat"
+    recovery_actions_ro:
+      - "Daca operatorul sau conditiile nu sunt clare, nu continua cu un checklist generic"
+    status: draft
+
+  - id: handoff_to_heat_connection_construction
+    semantic_key: handoff_to_heat_connection_construction
+    title_ro: "Preda cazul spre executia racordului de termoficare"
+    instruction_ro: >-
+      Dupa clarificarea conditiilor tehnice si a documentelor, muta cazul spre etapa de executie.
+    sequence_hint: 270
+    completion_evidence_ro:
+      - "Cazul a fost predat spre executia racordului de termoficare"
+    recovery_actions_ro:
+      - "Daca lipsesc conditiile tehnice confirmate, nu muta cazul in executie"
+    status: draft
+
+  - id: check_digi_availability_and_sign_service_contract
+    semantic_key: check_digi_availability_and_sign_service_contract
+    title_ro: "Verifica disponibilitatea si semneaza contractul pentru internet"
+    instruction_ro: >-
+      Pentru internet fix, verifica disponibilitatea la adresa si semneaza contractul de servicii
+      cu furnizorul confirmat.
+    sequence_hint: 280
+    completion_evidence_ro:
+      - "Disponibilitatea si contractul pentru internet au fost evaluate"
+    recovery_actions_ro:
+      - "Daca nu exista acoperire sau oferta confirmata, nu continua spre instalare"
+    status: draft
+
+  - id: handoff_to_digi_installation
+    semantic_key: handoff_to_digi_installation
+    title_ro: "Preda cazul spre instalarea serviciului de internet"
+    instruction_ro: >-
+      Dupa semnarea contractului, muta cazul spre etapa de instalare programata.
+    sequence_hint: 290
+    completion_evidence_ro:
+      - "Cazul a fost predat spre instalare"
+    recovery_actions_ro:
+      - "Daca nu exista contract pregatit, nu continua spre instalare"
+    status: draft
+
+  - id: obtain_provider_coverage_offer_and_installation_terms
+    semantic_key: obtain_provider_coverage_offer_and_installation_terms
+    title_ro: "Obtine oferta de acoperire si conditiile de instalare"
+    instruction_ro: >-
+      Pentru alti furnizori, verifica acoperirea si termenii de instalare inainte de semnarea
+      contractului.
+    sequence_hint: 300
+    completion_evidence_ro:
+      - "Oferta de acoperire si conditiile de instalare au fost verificate"
+    recovery_actions_ro:
+      - "Daca oferta nu este clara, cere confirmare furnizorului"
+    status: draft
+
+  - id: review_operator_rejection_and_correction_route
+    semantic_key: review_operator_rejection_and_correction_route
+    title_ro: "Revizuieste respingerea operatorului si ruta de corectie"
+    instruction_ro: >-
+      Daca operatorul respinge cererea, verifica motivul si corecteaza traseul ori documentele.
+    sequence_hint: 310
+    completion_evidence_ro:
+      - "Motivele respingerii operatorului au fost evaluate"
+    recovery_actions_ro:
+      - "Daca respingerea nu este clara, cere detalii inainte de redepunere"
+    status: draft
+
+  - id: review_contract_rejection_or_alternative
+    semantic_key: review_contract_rejection_or_alternative
+    title_ro: "Revizuieste respingerea contractului sau alternativa"
+    instruction_ro: >-
+      Daca ruta contractuala este respinsa, analizeaza alternativa indicata de operator sau
+      furnizor.
+    sequence_hint: 320
+    completion_evidence_ro:
+      - "Respingerea contractului sau alternativa a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu exista o alternativa confirmata, nu inchide cazul ca rezolvat"
+    status: draft
+
+requirement_templates:
+  - id: req.title_or_use_document
+    title_ro: "Dovada titlului sau a folosintei imobilului"
+    description_ro: >-
+      Documentul care arata titlul sau dreptul de folosinta asupra imobilului pentru racordul nou.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate"
+      - "Document de folosinta"
+    readiness_checks:
+      - "Exista un document valabil privind titlul sau folosinta"
+    status: draft
+
+  - id: req.owner_written_consent
+    title_ro: "Acordul scris al proprietarului"
+    description_ro: >-
+      Acordul scris al proprietarului pentru cazurile in care solicitantul este utilizator sau chirias.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acord scris al proprietarului"
+    readiness_checks:
+      - "Acordul proprietarului este disponibil daca situatia il cere"
+    status: draft
+
+  - id: req.official_electricity_atr_document_set
+    title_ro: "Setul oficial de documente pentru ATR electricitate"
+    description_ro: >-
+      Setul de documente cerut de operatorul de electricitate pentru ATR si racordare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Setul oficial de documente pentru ATR electricitate"
+    readiness_checks:
+      - "Setul oficial de documente este complet"
+    status: draft
+
+  - id: req.aquatim_technical_approval_request
+    title_ro: "Cererea Aquatim pentru aviz tehnic"
+    description_ro: >-
+      Cererea folosita pe ruta Aquatim pentru avizul tehnic de apa-canal.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere Aquatim pentru aviz tehnic"
+    readiness_checks:
+      - "Cererea Aquatim este completata"
+    status: draft
+
+  - id: req.aquatim_specific_annexes
+    title_ro: "Anexele specifice Aquatim"
+    description_ro: >-
+      Anexele specifice cerute de Aquatim pentru dosarul de aviz tehnic.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Anexe specifice Aquatim"
+    readiness_checks:
+      - "Anexele cerute de Aquatim sunt incluse"
+    status: draft
+
+  - id: req.aquatim_gdpr_consent
+    title_ro: "Consimtamant GDPR Aquatim"
+    description_ro: >-
+      Consimtamantul sau documentul relevant pentru prelucrarea datelor pe ruta Aquatim.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Consimtamant GDPR Aquatim"
+    readiness_checks:
+      - "Documentul GDPR cerut de Aquatim este inclus"
+    status: draft
+
+  - id: req.urbanism_certificate
+    title_ro: "Certificat de urbanism"
+    description_ro: >-
+      Certificatul de urbanism cerut pentru anumite extensii sau plasamente de retea.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de urbanism"
+    readiness_checks:
+      - "Certificatul de urbanism este disponibil daca ramura il cere"
+    status: draft
+
+  - id: req.land_registry_extract_for_extension_land
+    title_ro: "Extras de carte funciara pentru terenul de extindere"
+    description_ro: >-
+      Extrasul de carte funciara cerut pentru terenul implicat in extinderea retelei.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Extras de carte funciara"
+    readiness_checks:
+      - "Extrasul este disponibil pentru terenul implicat"
+    status: draft
+
+  - id: req.technical_execution_design
+    title_ro: "Proiect tehnic de executie"
+    description_ro: >-
+      Proiectul tehnic de executie cerut pentru extinderea sau racordarea relevanta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Proiect tehnic de executie"
+    readiness_checks:
+      - "Proiectul tehnic este pregatit daca ramura il cere"
+    status: draft
+
+  - id: req.utility_network_placement_approval
+    title_ro: "Aprobarea de amplasare a retelei de utilitate"
+    description_ro: >-
+      Aprobarea privind amplasarea retelei, daca este ceruta pentru extindere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Aprobarea de amplasare a retelei"
+    readiness_checks:
+      - "Aprobarea de amplasare este disponibila daca este necesara"
+    status: draft
+
+  - id: req.documents_imposed_by_urbanism_certificate
+    title_ro: "Documentele impuse prin certificatul de urbanism"
+    description_ro: >-
+      Documentele suplimentare impuse de certificatul de urbanism pentru ramura de extindere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente impuse prin certificatul de urbanism"
+    readiness_checks:
+      - "Documentele impuse de certificatul de urbanism sunt incluse"
+    status: draft
+
+  - id: req.gas_operator_atr_request
+    title_ro: "Cerere ATR pentru gaze"
+    description_ro: >-
+      Cererea ATR folosita la operatorul de gaze confirmat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere ATR pentru gaze"
+    readiness_checks:
+      - "Cererea ATR pentru gaze este completata"
+    status: draft
+
+  - id: req.gas_operator_document_set
+    title_ro: "Setul de documente cerut de operatorul de gaze"
+    description_ro: >-
+      Setul de documente cerut de operatorul de gaze pentru ATR si racordare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Setul de documente pentru operatorul de gaze"
+    readiness_checks:
+      - "Setul de documente pentru gaze este complet"
+    status: draft

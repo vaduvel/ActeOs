@@ -1,0 +1,131 @@
+# Step & requirement templates for ro.life.invalidity_pension (life.invalidity_pension).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_invalidity_pension_application
+    semantic_key: prepare_invalidity_pension_application
+    title_ro: "Pregateste cererea pentru pensia de invaliditate"
+    instruction_ro: >-
+      Dupa decizia medicala si verificarea stagiului relevant, pregateste cererea si documentele
+      pentru pensia de invaliditate.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru pensia de invaliditate este pregatita"
+    recovery_actions_ro:
+      - "Daca lipseste decizia medicala sau documentele de stagiu, completeaza dosarul"
+    status: draft
+
+  - id: request_medical_capacity_evaluation
+    semantic_key: request_medical_capacity_evaluation
+    title_ro: "Solicita evaluarea capacitatii de munca"
+    instruction_ro: >-
+      Pregateste cererea si documentele medicale pentru expertiza capacitatii de munca.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta pentru evaluarea capacitatii de munca este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele medicale, nu continua expertiza"
+    status: draft
+
+  - id: derive_invalidity_start_date
+    semantic_key: derive_invalidity_start_date
+    title_ro: "Stabileste data de inceput a dreptului"
+    instruction_ro: >-
+      Dupa decizia medicala si dupa depunerea cererii, clarifica ramura de start a dreptului fara a
+      simplifica regulile la o singura formula.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Data de inceput a dreptului a fost evaluata"
+    recovery_actions_ro:
+      - "Daca lipsesc ancorele de timp relevante, nu trata data de inceput ca sigura"
+    status: draft
+
+  - id: submit_medical_decision_appeal_to_issuing_office
+    semantic_key: submit_medical_decision_appeal_to_issuing_office
+    title_ro: "Depune contestatia deciziei medicale"
+    instruction_ro: >-
+      Daca se doreste contestarea deciziei medicale, pregateste contestatia pe circuitul special al
+      expertizei capacitatii de munca.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Contestatia deciziei medicale este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca nu exista decizia medicala contestata, nu activa aceasta ramura"
+    status: draft
+
+  - id: prepare_periodic_medical_review
+    semantic_key: prepare_periodic_medical_review
+    title_ro: "Pregateste revizuirea medicala periodica"
+    instruction_ro: >-
+      Daca persoana este deja beneficiar si nu este exceptata, pregateste revizuirea la termenul din
+      decizie.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta pentru revizuirea medicala periodica a fost evaluata"
+    recovery_actions_ro:
+      - "Daca exista exceptie confirmata, nu activa revizuirea periodica"
+    status: draft
+
+requirement_templates:
+  - id: annex_9_expertise_application
+    title_ro: "Cererea Anexa nr. 9 pentru expertiza"
+    description_ro: >-
+      Cererea folosita pentru expertiza capacitatii de munca.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea Anexa nr. 9"
+    readiness_checks:
+      - "Cererea pentru expertiza este completata"
+    status: draft
+
+  - id: medical_documents
+    title_ro: "Documente medicale"
+    description_ro: >-
+      Documentele medicale folosite pentru expertiza capacitatii de munca.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente medicale"
+    readiness_checks:
+      - "Documentele medicale sunt disponibile si relevante"
+    status: draft
+
+  - id: annex_6_application
+    title_ro: "Cererea Anexa nr. 6 pentru pensia de invaliditate"
+    description_ro: >-
+      Cererea folosita pentru deschiderea pensiei de invaliditate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea Anexa nr. 6"
+    readiness_checks:
+      - "Cererea pentru pensia de invaliditate este completata"
+    status: draft
+
+  - id: medical_capacity_decision
+    title_ro: "Decizia medicala asupra capacitatii de munca"
+    description_ro: >-
+      Decizia medicala emisa dupa expertiza capacitatii de munca.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Decizie medicala asupra capacitatii de munca"
+    readiness_checks:
+      - "Decizia medicala este disponibila"
+    status: draft
+
+  - id: identity_and_stage_documents
+    title_ro: "Documente de identitate si de stagiu"
+    description_ro: >-
+      Documentele de identitate si de stagiu relevante pentru cererea de pensie de invaliditate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente de identitate"
+      - "Documente de stagiu"
+    readiness_checks:
+      - "Identitatea si stagiul relevant sunt dovedite"
+    status: draft

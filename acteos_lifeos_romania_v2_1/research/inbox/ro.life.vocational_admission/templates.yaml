@@ -1,0 +1,101 @@
+# Step & requirement templates for ro.life.vocational_admission (life.vocational_admission).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.voc.select_path
+    semantic_key: step.voc.select_path
+    title_ro: "Selecteaza ruta de admitere"
+    instruction_ro: >-
+      Clarifica daca se aplica ruta clasa a IX-a sau ruta nivel 3 catre nivel 4.
+    sequence_hint: 10
+    completion_evidence_ro: ["Ruta de admitere relevanta a fost clarificata"]
+    recovery_actions_ro: ["Daca traseul educational nu este clar, nu combina cele doua rute"]
+    status: draft
+
+  - id: step.voc.verify_offer
+    semantic_key: step.voc.verify_offer
+    title_ro: "Verifica oferta si procedura unitatii"
+    instruction_ro: >-
+      Confirma programul ales, oferta curenta, operatorul economic si eventualele probe.
+    sequence_hint: 20
+    completion_evidence_ro: ["Oferta si procedura unitatii au fost verificate"]
+    recovery_actions_ro: ["Daca procedura unitatii nu este verificata, cere confirmare inainte de depunere"]
+    status: draft
+
+  - id: step.voc.obtain_sheet
+    semantic_key: step.voc.obtain_sheet
+    title_ro: "Obtine fișa de inscriere"
+    instruction_ro: >-
+      Pregateste obtinerea si depunerea fisei de inscriere pe ruta relevanta.
+    sequence_hint: 30
+    completion_evidence_ro: ["Fișa de inscriere este pregatita"]
+    recovery_actions_ro: ["Daca ruta foloseste alta formalitate decit fișa standard, clarific-o inainte de continuare"]
+    status: draft
+
+  - id: step.voc.take_tests
+    semantic_key: step.voc.take_tests
+    title_ro: "Sustine probele unitatii"
+    instruction_ro: >-
+      Daca unitatea organizeaza probe, pregateste sustinerea si urmarirea rezultatului lor.
+    sequence_hint: 40
+    completion_evidence_ro: ["Ruta pentru probele unitatii a fost pregatita"]
+    recovery_actions_ro: ["Daca unitatea nu organizeaza probe, nu activa aceasta ramura"]
+    status: draft
+
+  - id: step.voc.submit_dossier
+    semantic_key: step.voc.submit_dossier
+    title_ro: "Depune dosarul la unitatea admisa"
+    instruction_ro: >-
+      Dupa admitere, pregateste depunerea dosarului de inmatriculare la unitatea relevanta.
+    sequence_hint: 50
+    completion_evidence_ro: ["Dosarul final de inscriere este pregatit pentru depunere"]
+    recovery_actions_ro: ["Daca nu exista admitere confirmata, nu inchide cazul ca inmatriculare"]
+    status: draft
+
+requirement_templates:
+  - id: req.voc.registration_sheet
+    title_ro: "Fișa de inscriere"
+    description_ro: "Fișa de inscriere folosita pe ruta relevanta."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Fișa de inscriere"]
+    readiness_checks: ["Fișa de inscriere este pregatita"]
+    status: draft
+
+  - id: req.voc.level3_certificate
+    title_ro: "Certificatul de calificare profesionala nivel 3"
+    description_ro: "Documentul relevant pentru ruta nivel 3 catre nivel 4."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat de calificare profesionala nivel 3"]
+    readiness_checks: ["Certificatul nivel 3 este disponibil daca se aplica"]
+    status: draft
+
+  - id: req.voc.identity_birth
+    title_ro: "Act de identitate si certificat de nastere"
+    description_ro: "Documentele personale pentru dosarul final."
+    obligation: mandatory
+    timing: later
+    accepted_forms: ["Act de identitate", "Certificat de nastere"]
+    readiness_checks: ["Documentele personale sint pregatite pentru dosarul final"]
+    status: draft
+
+  - id: req.voc.unit_documents
+    title_ro: "Documentele cerute de unitate"
+    description_ro: "Documentele stabilite prin procedura unitatii alese."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documentele cerute de unitate"]
+    readiness_checks: ["Documentele cerute de unitate sint pregatite daca se aplica"]
+    status: draft
+
+  - id: req.voc.test_result
+    title_ro: "Rezultatul probelor de admitere"
+    description_ro: "Rezultatul probelor organizate de unitate, daca acestea exista."
+    obligation: conditional
+    timing: later
+    accepted_forms: ["Rezultatul probelor de admitere"]
+    readiness_checks: ["Rezultatul probelor este disponibil daca unitatea organizeaza probe"]
+    status: draft

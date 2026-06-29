@@ -1,0 +1,100 @@
+step_templates:
+  - id: request_fiscal_certificate
+    semantic_key: request_fiscal_certificate
+    title_ro: "Solicită certificatul de atestare fiscală"
+    instruction_ro: >-
+      Completează cererea pentru certificatul de atestare fiscală și depune
+      dosarul la organul fiscal local competent, folosind formularul și
+      documentele de identitate aplicabile situației tale.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru certificatul fiscal a fost depusă."
+      - "Dosarul include formularul și actele aplicabile."
+    recovery_actions_ro:
+      - "Dacă depui pentru succesiune sau prin împuternicit, adaugă documentele suplimentare înainte de redepunere."
+      - "Dacă traseul local are canal online, păstrează confirmarea generată de platformă."
+    status: draft
+  - id: use_fiscal_certificate
+    semantic_key: use_fiscal_certificate
+    title_ro: "Folosește certificatul în perioada aplicabilă"
+    instruction_ro: >-
+      După emitere, folosește certificatul fiscal în intervalul de valabilitate
+      confirmat pentru scopul tău administrativ sau notarial.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Data emiterii este cunoscută."
+      - "Certificatul este folosit pentru scopul declarat."
+    recovery_actions_ro:
+      - "Dacă valabilitatea exactă nu este clară pentru cazul tău, confirm-o înainte de utilizare."
+    status: draft
+
+requirement_templates:
+  - id: req.form_itl010
+    title_ro: "Formularul ITL010/2016"
+    description_ro: >-
+      Cererea-tip pentru eliberarea certificatului de atestare fiscală, conform
+      traseului pentru persoane fizice.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Formularul ITL010/2016 completat."
+    readiness_checks:
+      - "Formularul este completat pentru scopul corect."
+    status: draft
+  - id: req.id_card
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate al persoanei care solicită certificatul fiscal.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate în forma cerută la depunere."
+    readiness_checks:
+      - "Actul de identitate este disponibil pentru dosar."
+    status: draft
+  - id: req.death_certificate
+    title_ro: "Certificat de deces"
+    description_ro: >-
+      Document condițional pentru cererile legate de succesiune.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificatul de deces al persoanei pentru care se solicită certificatul."
+    readiness_checks:
+      - "Scopul cererii este succesiunea."
+    status: draft
+  - id: req.notary_request
+    title_ro: "Adresa sau solicitarea notarului"
+    description_ro: >-
+      Document condițional folosit în cererile pentru succesiune, când notarul
+      solicită certificatul fiscal.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adresa notarului sau solicitarea notarială relevantă."
+    readiness_checks:
+      - "Cererea este pentru dezbatere succesorală."
+    status: draft
+  - id: req.power_of_attorney
+    title_ro: "Împuternicire"
+    description_ro: >-
+      Documentul prin care o altă persoană este autorizată să solicite
+      certificatul fiscal în numele titularului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Împuternicire în original sau în forma acceptată de autoritate."
+    readiness_checks:
+      - "Certificatul este solicitat prin altă persoană."
+    status: draft
+  - id: req.proxy_id_card
+    title_ro: "Actul de identitate al împuternicitului"
+    description_ro: >-
+      Actul de identitate al persoanei care depune cererea în numele titularului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Actul de identitate al împuternicitului."
+    readiness_checks:
+      - "Există o împuternicire valabilă pentru depunere."
+    status: draft

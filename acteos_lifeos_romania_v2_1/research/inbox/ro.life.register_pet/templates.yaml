@@ -1,0 +1,75 @@
+# Step & requirement templates for ro.life.register_pet (life.register_pet).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: identify_pet_registration_regime
+    semantic_key: identify_pet_registration_regime
+    title_ro: "Identifica regimul de inregistrare al animalului"
+    instruction_ro: >-
+      Stabileste daca animalul intra pe ruta nationala verificata pentru ciini sau pe o alta specie care necesita confirmare.
+    sequence_hint: 10
+    completion_evidence_ro: ["Regimul de inregistrare al animalului a fost clarificat"]
+    recovery_actions_ro: ["Nu extinde automat regula nationala verificata pentru ciini la alte specii"]
+    status: draft
+
+  - id: choose_licensed_recs_veterinarian
+    semantic_key: choose_licensed_recs_veterinarian
+    title_ro: "Alege un medic veterinar licentiat RECS"
+    instruction_ro: >-
+      Pentru caine, identifica un medic veterinar licentiat RECS care poate opera microciparea si inregistrarea.
+    sequence_hint: 20
+    completion_evidence_ro: ["Medicul veterinar licentiat RECS a fost identificat"]
+    recovery_actions_ro: ["Daca operatorul RECS nu este confirmat, nu trata inregistrarea ca posibila direct de proprietar"]
+    status: draft
+
+  - id: microchip_dog
+    semantic_key: microchip_dog
+    title_ro: "Microcipeaza ciinele"
+    instruction_ro: >-
+      Daca ciinele nu are microcip, pregateste identificarea prin medicul veterinar relevant.
+    sequence_hint: 30
+    completion_evidence_ro: ["Cerinta de microcipare a ciinelui a fost clarificata"]
+    recovery_actions_ro: ["Daca exista deja microcip, nu repeta pasul de identificare"]
+    status: draft
+
+  - id: register_dog_in_recs
+    semantic_key: register_dog_in_recs
+    title_ro: "Inregistreaza ciinele in RECS"
+    instruction_ro: >-
+      Dupa microcipare sau daca microcipul exista deja, pregateste inregistrarea in RECS prin medicul veterinar.
+    sequence_hint: 40
+    completion_evidence_ro: ["Ruta de inregistrare in RECS a fost pregatita"]
+    recovery_actions_ro: ["Daca nu exista medic veterinar licentiat RECS, nu considera inregistrarea finalizata"]
+    status: draft
+
+  - id: verify_dog_by_microchip_code
+    semantic_key: verify_dog_by_microchip_code
+    title_ro: "Verifica ciinele dupa codul microcipului"
+    instruction_ro: >-
+      Daca exista codul microcipului, foloseste ruta de verificare publica a inregistrarii.
+    sequence_hint: 50
+    completion_evidence_ro: ["Verificarea dupa codul microcipului a fost clarificata"]
+    recovery_actions_ro: ["Daca lipseste codul microcipului, nu poti confirma registrul public pe aceasta ramura"]
+    status: draft
+
+  - id: notify_veterinarian_about_dog_event
+    semantic_key: notify_veterinarian_about_dog_event
+    title_ro: "Notifica medicul veterinar despre evenimentul cainelui"
+    instruction_ro: >-
+      Pentru vinzare, pierdere, disparitie, furt, donatie sau deces, pregateste notificarea in termenul relevant.
+    sequence_hint: 60
+    completion_evidence_ro: ["Ruta de notificare a medicului veterinar a fost pregatita"]
+    recovery_actions_ro: ["Daca evenimentul nu este unul din lista verificata, clarifica procedura inainte de notificare"]
+    status: draft
+
+requirement_templates:
+  - id: dog_health_book_on_person
+    title_ro: "Carnetul de sanatate asupra detinatorului"
+    description_ro: "Carnetul de sanatate care trebuie avut asupra detinatorului in spatiul public, pe ruta relevanta."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Carnet de sanatate al ciinelui"]
+    readiness_checks: ["Carnetul de sanatate este disponibil daca se aplica"]
+    status: draft

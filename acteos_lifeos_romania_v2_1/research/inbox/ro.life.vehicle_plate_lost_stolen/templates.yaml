@@ -1,0 +1,202 @@
+step_templates:
+  - id: prepare_replacement_plate_file
+    semantic_key: vehicle_plate_prepare_replacement
+    title_ro: "Pregateste dosarul pentru placute noi"
+    instruction_ro: >-
+      Stabileste daca este pierdere, furt, deteriorare sau retinere in
+      strainatate si pregateste dovada incidentului, actele de identitate si
+      plata aplicabila.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul pentru placutele de inlocuire este pregatit."
+    recovery_actions_ro:
+      - "Daca tipul placutelor sau numarul celor afectate nu sunt clare, lamureste-le inainte de plata."
+    status: draft
+  - id: submit_replacement_plate_application
+    semantic_key: vehicle_plate_submit_replacement
+    title_ro: "Depune cererea pentru placute de inlocuire"
+    instruction_ro: >-
+      Depune cererea pentru noile placute impreuna cu dovada incidentului si
+      plata corespunzatoare configuratiei alese.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea pentru placutele de inlocuire este depusa."
+    recovery_actions_ro:
+      - "Pastreaza dovada platii si a incidentului pentru ridicare."
+    status: draft
+  - id: request_replacement_plates_within_30_days
+    semantic_key: vehicle_plate_request_within_30_days
+    title_ro: "Urmareste termenul de 30 de zile"
+    instruction_ro: >-
+      Urmareste ca cererea pentru placutele de inlocuire sa fie facuta in
+      termenul procedural de 30 de zile de la incident.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Termenul de 30 de zile este urmarit si documentat."
+    recovery_actions_ro:
+      - "Daca data incidentului nu este certa, clarific-o inainte de a calcula termenul."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_identity_or_entity_documents
+    title_ro: "Acte valabile de identitate sau ale entitatii"
+    description_ro: >-
+      Documentele de identificare ale persoanei fizice ori juridice care cere
+      placutele de inlocuire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte valabile de identitate sau documente oficiale ale entitatii."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.registration_plate_loss_declaration
+    title_ro: "Declaratie de pierdere a placutelor"
+    description_ro: >-
+      Declaratia folosita atunci cand placutele au fost pierdute.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie completata in forma acceptata de autoritate."
+    readiness_checks:
+      - "Incidentul este pierdere, nu furt sau deteriorare."
+    status: draft
+  - id: req.competent_authority_plate_theft_proof
+    title_ro: "Dovada furtului placutelor"
+    description_ro: >-
+      Dovada emisa de autoritatea competenta atunci cand placutele au fost furate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverinta sau alt document oficial privind furtul."
+    readiness_checks:
+      - "Incidentul este furt."
+    status: draft
+  - id: req.previous_damaged_plate_or_plates
+    title_ro: "Placuta sau placutele deteriorate"
+    description_ro: >-
+      Placutele deteriorate prezentate pentru inlocuire, daca sunt disponibile.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Placuta ori placutele deteriorate."
+    readiness_checks:
+      - "Incidentul este deteriorare."
+    status: draft
+  - id: req.foreign_retention_proof
+    title_ro: "Dovada retinerii in strainatate"
+    description_ro: >-
+      Documentul care atesta retinerea placutelor de catre o autoritate din
+      strainatate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document oficial de retinere emis in strainatate."
+    readiness_checks:
+      - "Incidentul este retinere in strainatate."
+    status: draft
+  - id: req.proof_retention_reasons_ceased
+    title_ro: "Dovada incetarii motivului retinerii"
+    description_ro: >-
+      Dovada ca motivul pentru care placutele au fost retinute in strainatate a
+      incetat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada emisa ori acceptata privind incetarea motivului retinerii."
+    readiness_checks:
+      - "Ruta de retinere in strainatate cere aceasta clarificare."
+    status: draft
+  - id: req.authorised_romanian_translation
+    title_ro: "Traducere autorizata in romana"
+    description_ro: >-
+      Traducerea autorizata a documentelor straine folosite in dosar, daca este
+      necesara.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Traducere autorizata in limba romana."
+    readiness_checks:
+      - "Documentele relevante sunt emise intr-o alta limba."
+    status: draft
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate valabil al persoanei care ridica sau depune cererea.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.legal_entity_documents
+    title_ro: "Documentele persoanei juridice"
+    description_ro: >-
+      Documentele necesare cand placutele de inlocuire sunt cerute pentru un
+      vehicul apartinand unei persoane juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente oficiale ale persoanei juridice."
+    readiness_checks:
+      - "Solicitantul este persoana juridica."
+    status: draft
+  - id: req.legal_representative_identity
+    title_ro: "Actul reprezentantului legal"
+    description_ro: >-
+      Actul de identitate al reprezentantului legal al persoanei juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil al reprezentantului legal."
+    readiness_checks:
+      - "Depunerea este facuta prin reprezentant legal."
+    status: draft
+  - id: req.lawyer_mandate
+    title_ro: "Mandat avocatial"
+    description_ro: >-
+      Imputernicirea folosita cand cererea este depusa prin avocat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire avocatiala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin avocat."
+    status: draft
+  - id: req.notarial_power_of_attorney
+    title_ro: "Procura notariala"
+    description_ro: >-
+      Procura folosita cand cererea este depusa prin imputernicit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procura notariala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin imputernicit."
+    status: draft
+  - id: req.company_written_mandate
+    title_ro: "Mandat scris al companiei"
+    description_ro: >-
+      Mandatul intern scris al companiei, daca depunerea este facuta de un
+      delegat al acesteia.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mandat scris semnat de companie."
+    readiness_checks:
+      - "Depunerea este facuta de delegatul companiei."
+    status: draft
+  - id: req.replacement_plate_payment_proof
+    title_ro: "Dovada platii pentru placutele de inlocuire"
+    description_ro: >-
+      Dovada platii tarifului corespunzator tipului si numarului de placute
+      solicitate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Chitanta sau dovada oficiala a platii."
+    readiness_checks:
+      - "Plata corespunde configuratiei de placute cerute."
+    status: draft
+

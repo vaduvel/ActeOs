@@ -1,0 +1,125 @@
+step_templates:
+  - id: step.identify_platform
+    semantic_key: gov_account_recovery_identify_platform
+    title_ro: "Identifica platforma si tipul de cont"
+    instruction_ro: >-
+      Stabileste pentru ce serviciu guvernamental incerci recuperarea accesului
+      si ce metoda oficiala de recuperare este publicata pentru acel cont.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Platforma si ruta oficiala de recuperare sunt clar identificate."
+    recovery_actions_ro:
+      - "Daca nu este clar ce furnizor administreaza contul, porneste din pagina oficiala a serviciului."
+    status: draft
+  - id: step.prepare_recovery_data
+    semantic_key: gov_account_recovery_prepare_data
+    title_ro: "Pregateste datele de recuperare"
+    instruction_ro: >-
+      Aduna datele de identificare si elementele cerute de fluxul oficial
+      inainte de a incepe recuperarea.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Datele cerute de platforma sunt pregatite."
+    recovery_actions_ro:
+      - "Daca lipseste un element cerut, opreste fluxul si confirma exact ce accepta platforma."
+    status: draft
+  - id: step.run_official_recovery
+    semantic_key: gov_account_recovery_run_official_flow
+    title_ro: "Parcurge recuperarea oficiala"
+    instruction_ro: >-
+      Foloseste exclusiv mecanismul oficial de recuperare publicat de
+      platforma si urmareste pasii pana la confirmarea identitatii sau a
+      dreptului de acces.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Fluxul oficial de recuperare a fost parcurs pana la confirmarea ceruta."
+    recovery_actions_ro:
+      - "Daca apare o eroare, reia doar din portalul oficial si evita linkurile primite prin mesaje nesolicitate."
+    status: draft
+  - id: step.set_new_credentials
+    semantic_key: gov_account_recovery_set_new_credentials
+    title_ro: "Seteaza credenziale noi"
+    instruction_ro: >-
+      Dupa validarea recuperarii, seteaza parola sau metodele noi de acces
+      cerute de platforma.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Noile credenziale sunt salvate cu succes."
+    recovery_actions_ro:
+      - "Daca platforma cere reinrolare sau confirmare suplimentara, finalizeaza intai acel pas."
+    status: draft
+  - id: step.secure_recovered_account
+    semantic_key: gov_account_recovery_secure_account
+    title_ro: "Securizeaza contul recuperat"
+    instruction_ro: >-
+      Verifica metodele de contact, activeaza masurile suplimentare de
+      securitate disponibile si noteaza canalul oficial de suport pentru
+      situatii viitoare.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Contul recuperat are datele de contact si setarile de securitate revizuite."
+    recovery_actions_ro:
+      - "Daca observi informatii vechi sau incorecte, actualizeaza-le imediat prin canalul oficial."
+    status: draft
+
+requirement_templates:
+  - id: req.registered_email
+    title_ro: "Adresa de e-mail inregistrata"
+    description_ro: >-
+      Adresa de e-mail asociata contului si folosita de platforma in fluxul de
+      recuperare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adresa de e-mail deja asociata contului."
+    readiness_checks:
+      - "Poti accesa inboxul pentru a primi coduri sau linkuri oficiale."
+    status: draft
+  - id: req.cnp
+    title_ro: "CNP"
+    description_ro: >-
+      Identificatorul personal cerut de unele servicii guvernamentale pentru
+      validarea recuperarii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "CNP introdus in fluxul oficial, daca platforma il cere."
+    readiness_checks:
+      - "Datele introduse corespund titularului contului."
+    status: draft
+  - id: req.anaf_current_credentials
+    title_ro: "Credenziale ANAF active"
+    description_ro: >-
+      Datele de acces valabile pentru contul ANAF atunci cand fluxul de
+      recuperare sau de confirmare le foloseste ca punct de sprijin.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Credenziale functionale pentru contul ANAF relevant."
+    readiness_checks:
+      - "Metoda aleasa chiar foloseste autentificarea ANAF curenta."
+    status: draft
+  - id: req.hub_validated_contact
+    title_ro: "Contact validat in hub-ul guvernamental"
+    description_ro: >-
+      Datele de contact deja validate in serviciul guvernamental care
+      intermediaza recuperarea sau reinrolarea.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Numar de telefon sau e-mail validat in serviciul oficial."
+    readiness_checks:
+      - "Contactul poate primi codurile sau confirmarile cerute."
+    status: draft
+  - id: req.roeid_reenrolment_kit
+    title_ro: "Date pentru reinrolare ROeID"
+    description_ro: >-
+      Elementele cerute daca recuperarea accesului necesita reinrolarea
+      identitatii digitale ROeID.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Datele si dispozitivele cerute de fluxul oficial de reinrolare ROeID."
+    readiness_checks:
+      - "Ruta selectata este una de reinrolare, nu doar de resetare simpla a parolei."
+    status: draft

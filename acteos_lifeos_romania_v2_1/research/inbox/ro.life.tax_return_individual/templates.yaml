@@ -1,0 +1,119 @@
+# Step & requirement templates for ro.life.tax_return_individual (life.tax_return_individual).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_d212_individual_tax_return
+    semantic_key: prepare_d212_individual_tax_return
+    title_ro: "Pregateste declaratia D212"
+    instruction_ro: >-
+      Pregateste declaratia unica pentru anul fiscal verificat, pe baza datelor de identitate si a
+      veniturilor relevante.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Declaratia D212 este pregatita"
+    recovery_actions_ro:
+      - "Daca anul fiscal sau categoria veniturilor nu sunt clare, revino la clasificare"
+    status: draft
+
+  - id: archive_d212_submission_receipt
+    semantic_key: archive_d212_submission_receipt
+    title_ro: "Arhiveaza recipisa si versiunea depusa"
+    instruction_ro: >-
+      Pastreaza recipisa si versiunea depusa dupa transmiterea declaratiei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Recipisa si versiunea depusa sunt arhivate"
+    recovery_actions_ro:
+      - "Daca recipisa lipseste, recupereaza dovada depunerii"
+    status: draft
+
+  - id: submit_rectifying_d212
+    semantic_key: submit_rectifying_d212
+    title_ro: "Depune D212 rectificativa"
+    instruction_ro: >-
+      Daca declaratia depusa trebuie corectata, pregateste si transmite varianta rectificativa.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Declaratia rectificativa este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca nu este clar ce trebuie corectat, compara datele cu depunerea anterioara"
+    status: draft
+
+  - id: add_foreign_income_to_d212
+    semantic_key: add_foreign_income_to_d212
+    title_ro: "Adauga veniturile din strainatate"
+    instruction_ro: >-
+      Daca exista venituri din strainatate, completeaza sectiunile relevante folosind datele si
+      dovezile fiscale disponibile.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Veniturile din strainatate au fost evaluate pentru D212"
+    recovery_actions_ro:
+      - "Daca lipsesc detaliile fiscale externe, completeaza-le inainte de depunere"
+    status: draft
+
+  - id: add_withholding_income_relevant_to_cas_cass
+    semantic_key: add_withholding_income_relevant_to_cas_cass
+    title_ro: "Adauga veniturile relevante pentru CAS sau CASS"
+    instruction_ro: >-
+      Daca exista venituri cu retinere la sursa care influenteaza CAS sau CASS, completeaza datele
+      cerute pentru aceasta ramura.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Veniturile relevante pentru CAS/CASS au fost evaluate"
+    recovery_actions_ro:
+      - "Daca regimul venitului nu este clar, separa-l de restul declaratiei pana la clarificare"
+    status: draft
+
+requirement_templates:
+  - id: req.d212_identity_and_income_data
+    title_ro: "Date de identitate si de venit pentru D212"
+    description_ro: >-
+      Datele de identitate si informatiile de venit necesare completarii declaratiei unice.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Date de identitate"
+      - "Date privind veniturile declarate"
+    readiness_checks:
+      - "Datele de baza sunt disponibile pentru anul fiscal vizat"
+    status: draft
+
+  - id: req.foreign_income_details_and_tax_evidence
+    title_ro: "Detalii si dovezi fiscale pentru veniturile din strainatate"
+    description_ro: >-
+      Documentele si detaliile fiscale necesare pentru includerea veniturilor din strainatate in D212.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Detalii privind veniturile din strainatate"
+      - "Dovezi fiscale externe"
+    readiness_checks:
+      - "Documentele acopera veniturile externe declarate"
+    status: draft
+
+  - id: req.withholding_income_and_cas_cass_data
+    title_ro: "Date pentru venituri cu retinere relevante la CAS/CASS"
+    description_ro: >-
+      Datele necesare pentru veniturile cu retinere la sursa care influenteaza CAS sau CASS.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Date privind veniturile cu retinere"
+    readiness_checks:
+      - "Datele sunt suficiente pentru ramura CAS/CASS relevanta"
+    status: draft
+
+  - id: req.verify_and_complete_prefilled_d212_data
+    title_ro: "Verifica si completeaza datele precompletate"
+    description_ro: >-
+      Verificarea si completarea datelor precompletate din SPV, daca aceasta ruta este folosita.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Date precompletate din SPV"
+    readiness_checks:
+      - "Datele precompletate au fost verificate si completate unde este necesar"
+    status: draft

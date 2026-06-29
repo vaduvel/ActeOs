@@ -1,0 +1,71 @@
+# Step & requirement templates for ro.life.life_insurance_claim (ro.life.life_insurance_claim).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.notify_event
+    semantic_key: step.notify_event
+    title_ro: "Notifica evenimentul la asigurator"
+    instruction_ro: >-
+      Identifica asiguratorul si foloseste canalul oficial pentru notificarea
+      evenimentului si pentru deschiderea dosarului.
+    sequence_hint: 10
+    completion_evidence_ro: ["Notificarea catre asigurator a fost pregatita sau transmisa"]
+    recovery_actions_ro: ["Daca asiguratorul sau formularul nu sunt clare, cere confirmare inainte de inchiderea cazului"]
+    status: draft
+
+requirement_templates:
+  - id: req.policy_reference
+    title_ro: "Polita sau datele contractului"
+    description_ro: "Referinta politei sau datele suficiente pentru identificarea contractului."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Polita", "Datele contractului", "Declaratie cu datele de identificare"]
+    readiness_checks: ["Contractul poate fi identificat din documentele sau datele pregatite"]
+    status: draft
+
+  - id: req.claimant_identity
+    title_ro: "Actul de identitate al solicitantului"
+    description_ro: "Actul de identitate al persoanei care notifica sau cere plata."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Act de identitate al solicitantului"]
+    readiness_checks: ["Solicitantul se poate identifica prin document valabil"]
+    status: draft
+
+  - id: req.event_form
+    title_ro: "Formularul asiguratorului"
+    description_ro: "Formularul folosit de asigurator pentru evenimentul concret."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Formularul asiguratorului"]
+    readiness_checks: ["Formularul relevant este pregatit si completat"]
+    status: draft
+
+  - id: req.death_certificate
+    title_ro: "Certificatul de deces"
+    description_ro: "Certificatul de deces, daca evenimentul notificat este decesul."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat de deces"]
+    readiness_checks: ["Certificatul de deces este disponibil daca ruta il cere"]
+    status: draft
+
+  - id: req.medical_documents
+    title_ro: "Documentele medicale ale evenimentului"
+    description_ro: "Documentele medicale cerute de contract pentru evaluarea evenimentului."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documente medicale ale evenimentului"]
+    readiness_checks: ["Documentele medicale sunt pregatite daca evenimentul le cere"]
+    status: draft
+
+  - id: req.iban
+    title_ro: "IBAN pentru plata"
+    description_ro: "IBAN-ul pregatit pentru plata indemnizatiei, daca asiguratorul il cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["IBAN", "Dovada contului bancar"]
+    readiness_checks: ["IBAN-ul este pregatit daca ruta il cere"]
+    status: draft

@@ -1,0 +1,122 @@
+# Step & requirement templates for ro.life.work_abroad (ro.life.work_abroad).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: identify_employment_model_and_destination
+    semantic_key: identify_employment_model_and_destination
+    title_ro: "Identifica modelul de munca si destinatia"
+    instruction_ro: >-
+      Clarifica daca este angajare directa sau detasare si daca destinatia este in UE sau in afara UE.
+    sequence_hint: 10
+    completion_evidence_ro: ["Modelul de munca si destinatia au fost clarificate"]
+    recovery_actions_ro: ["Daca modelul de munca nu este clar, nu combina regulile pentru angajare directa si detasare"]
+    status: draft
+
+  - id: verify_work_right_and_profession_rules
+    semantic_key: verify_work_right_and_profession_rules
+    title_ro: "Verifica dreptul de munca si regulile profesiei"
+    instruction_ro: >-
+      Clarifica dreptul de munca in statul gazda si daca profesia este reglementata.
+    sequence_hint: 20
+    completion_evidence_ro: ["Dreptul de munca si regulile profesiei au fost clarificate"]
+    recovery_actions_ro: ["Daca profesia este reglementata si recunoasterea nu este pregatita, nu continua dosarul ca eligibil"]
+    status: draft
+
+  - id: confirm_social_security_coverage
+    semantic_key: confirm_social_security_coverage
+    title_ro: "Confirma acoperirea de securitate sociala"
+    instruction_ro: >-
+      Clarifica statul de asigurare si documentele portabile sau confirmarile relevante.
+    sequence_hint: 30
+    completion_evidence_ro: ["Acoperirea de securitate sociala a fost clarificata"]
+    recovery_actions_ro: ["Daca acoperirea nu este confirmata, nu trata dosarul social ca inchis"]
+    status: draft
+
+  - id: review_tax_residence_departure
+    semantic_key: review_tax_residence_departure
+    title_ro: "Revizuieste rezidenta fiscala la plecare"
+    instruction_ro: >-
+      Clarifica daca este necesara analiza rezidentei fiscale la plecare si ce formalitati se aplica.
+    sequence_hint: 40
+    completion_evidence_ro: ["Analiza rezidentei fiscale la plecare a fost deschisa"]
+    recovery_actions_ro: ["Daca analiza fiscala nu este facuta, nu presupune lipsa formalitatilor"]
+    status: draft
+
+  - id: review_z017_tax_residence_departure_applicability
+    semantic_key: review_z017_tax_residence_departure_applicability
+    title_ro: "Verifica aplicabilitatea formularului Z017"
+    instruction_ro: >-
+      Daca analiza fiscala nu este finalizata, verifica aplicabilitatea formularului Z017 pe ruta relevanta.
+    sequence_hint: 50
+    completion_evidence_ro: ["Aplicabilitatea formularului Z017 a fost clarificata"]
+    recovery_actions_ro: ["Daca formularul nu se aplica sau nu este confirmat, nu il cere automat"]
+    status: draft
+
+  - id: verify_continued_relation_with_ro_employer
+    semantic_key: verify_continued_relation_with_ro_employer
+    title_ro: "Verifica relatia continua cu angajatorul din Romania"
+    instruction_ro: >-
+      Pentru detasare, confirma mentinerea relatiei cu angajatorul din Romania.
+    sequence_hint: 60
+    completion_evidence_ro: ["Relatia continua cu angajatorul din Romania a fost clarificata"]
+    recovery_actions_ro: ["Daca nu exista relatie continua cu angajatorul din Romania, reanalizeaza modelul de munca"]
+    status: draft
+
+  - id: verify_posting_contract_information
+    semantic_key: verify_posting_contract_information
+    title_ro: "Verifica informatiile contractuale pentru detasare"
+    instruction_ro: >-
+      Pentru detasare, confirma ca actul contractual include informatiile cerute pentru munca in strainatate.
+    sequence_hint: 70
+    completion_evidence_ro: ["Informatiile contractuale pentru detasare au fost clarificate"]
+    recovery_actions_ro: ["Daca lipsesc informatii despre durata, moneda sau beneficii, completeaza actul"]
+    status: draft
+
+  - id: record_transnational_posting_in_reges
+    semantic_key: record_transnational_posting_in_reges
+    title_ro: "Inregistreaza detasarea transnationala in REGES"
+    instruction_ro: >-
+      Daca este detasare transnationala, pregateste datele necesare pentru REGES.
+    sequence_hint: 80
+    completion_evidence_ro: ["Ruta REGES pentru detasarea transnationala a fost pregatita"]
+    recovery_actions_ro: ["Daca datele REGES nu sint complete, nu trata detasarea ca pregatita"]
+    status: draft
+
+requirement_templates:
+  - id: professional_qualification_recognition_in_destination
+    title_ro: "Recunoasterea calificarii in statul de destinatie"
+    description_ro: "Dovada sau confirmarea recunoasterii calificarii pentru profesie reglementata."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada recunoasterii calificarii"]
+    readiness_checks: ["Recunoasterea calificarii este pregatita daca profesia este reglementata"]
+    status: draft
+
+  - id: confirmed_social_security_coverage_and_required_portable_document
+    title_ro: "Acoperirea sociala confirmata si documentul portabil relevant"
+    description_ro: "Confirmarea statului de asigurare si a documentului portabil relevant."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Confirmare acoperire sociala", "Document portabil relevant"]
+    readiness_checks: ["Acoperirea sociala este confirmata si documentul relevant este pregatit"]
+    status: draft
+
+  - id: posting_duration_currency_payment_and_benefits_terms
+    title_ro: "Durata, moneda, plata si beneficiile detasarii"
+    description_ro: "Informatiile contractuale cerute pentru detasarea transnationala."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act contractual cu durata, moneda, plata si beneficii"]
+    readiness_checks: ["Actul de detasare include informatiile cerute"]
+    status: draft
+
+  - id: posting_start_end_state_beneficiary_and_activity_for_reges
+    title_ro: "Datele pentru REGES privind detasarea"
+    description_ro: "Datele de inceput, sfirsit, stat, beneficiar si activitate cerute pentru REGES."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Date complete pentru REGES"]
+    readiness_checks: ["Datele cerute de REGES sint pregatite"]
+    status: draft

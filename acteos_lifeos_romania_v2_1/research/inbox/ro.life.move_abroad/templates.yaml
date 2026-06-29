@@ -1,0 +1,69 @@
+# Step & requirement templates for ro.life.move_abroad (life.move_abroad).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: submit_z017
+    semantic_key: submit_z017
+    title_ro: "Pregateste si depune formularul Z017"
+    instruction_ro: >-
+      Daca plecarea indeplineste pragul si conditiile pentru chestionarul fiscal la plecare,
+      pregateste si depune formularul Z017 inainte de data plecarii.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta pentru Z017 a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca nu este clar daca pragul sau exceptia se aplica, confirma faptele inainte de depunere"
+    status: draft
+
+  - id: replace_passport_for_crds_status
+    semantic_key: replace_passport_for_crds_status
+    title_ro: "Schimba pasaportul pentru statutul CRDS"
+    instruction_ro: >-
+      Daca schimbi statutul domiciliului in strainatate, urmeaza ruta de anulare si emitere a
+      pasaportului corespunzator noului statut.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta privind pasaportul pentru CRDS a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu schimbi statutul domiciliului, nu activa aceasta ramura"
+    status: draft
+
+  - id: verify_destination_entry_and_residence_rules
+    semantic_key: verify_destination_entry_and_residence_rules
+    title_ro: "Verifica regulile statului de destinatie"
+    instruction_ro: >-
+      Verifica regulile de intrare, sedere si rezidenta ale statului de destinatie pe sursele
+      oficiale relevante.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Regulile statului de destinatie au fost verificate"
+    recovery_actions_ro:
+      - "Daca tara de destinatie nu este clar selectata, nu trata conditiile ei ca verificate"
+    status: draft
+
+requirement_templates:
+  - id: req.residency_supporting_documents
+    title_ro: "Documente suport pentru rezidenta fiscala sau plecare"
+    description_ro: >-
+      Documentele suport folosite pentru formularul fiscal de plecare, atunci cand ruta il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente suport privind rezidenta sau plecarea"
+    readiness_checks:
+      - "Documentele suport sunt pregatite pentru ruta fiscala selectata"
+    status: draft
+
+  - id: req.foreign_tax_residence_certificate_if_available
+    title_ro: "Certificat de rezidenta fiscala straina, daca este disponibil"
+    description_ro: >-
+      Certificatul de rezidenta fiscala din strainatate, daca este deja disponibil pentru dosar.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "Certificat de rezidenta fiscala straina"
+    readiness_checks:
+      - "Certificatul este atasat doar daca este deja disponibil"
+    status: draft

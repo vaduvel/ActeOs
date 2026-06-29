@@ -1,0 +1,131 @@
+# Step & requirement templates for ro.life.return_to_romania (life.return_to_romania).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: replace_passport_for_domicile_ro_status
+    semantic_key: replace_passport_for_domicile_ro_status
+    title_ro: "Schimba pasaportul pentru domiciliul in Romania"
+    instruction_ro: >-
+      Daca persoana romana revine din statut de domiciliu in strainatate si restabileste domiciliul
+      in Romania, urmeaza ruta de schimbare a pasaportului corespunzator noului statut.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta privind pasaportul pentru domiciliu in Romania a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu exista statut anterior de domiciliu in strainatate, nu activa aceasta ramura"
+    status: draft
+
+  - id: establish_domicile_and_update_identity
+    semantic_key: establish_domicile_and_update_identity
+    title_ro: "Stabileste domiciliul si actualizeaza actul de identitate"
+    instruction_ro: >-
+      Daca persoana isi restabileste domiciliul principal in Romania, pregateste actualizarea
+      actului de identitate si a adresei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta pentru stabilirea domiciliului a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu se restabileste domiciliul, foloseste ramura de resedinta daca este cazul"
+    status: draft
+
+  - id: register_residence
+    semantic_key: register_residence
+    title_ro: "Inregistreaza resedinta"
+    instruction_ro: >-
+      Daca persoana nu isi schimba domiciliul, dar locuieste la o adresa secundara peste pragul
+      relevant, pregateste inregistrarea resedintei.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta de inregistrare a resedintei a fost evaluata"
+    recovery_actions_ro:
+      - "Daca pragul de locuire la adresa secundara nu este depasit, nu activa aceasta ramura"
+    status: draft
+
+  - id: submit_z015
+    semantic_key: submit_z015
+    title_ro: "Pregateste si depune formularul Z015"
+    instruction_ro: >-
+      Daca revenirea depaseste pragul relevant si nu exista exceptie, pregateste si depune
+      formularul Z015 pe ruta fiscala de la sosire.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta pentru Z015 a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca pragul ori exceptia nu sunt clar confirmate, nu trata ruta fiscala ca finalizata"
+    status: draft
+
+requirement_templates:
+  - id: req.identity_document
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate folosit pentru domiciliu sau resedinta la revenirea in Romania.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: req.address_proof
+    title_ro: "Dovada adresei"
+    description_ro: >-
+      Dovada adresei din Romania folosita pentru domiciliu sau resedinta la revenire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada adresei din Romania"
+    readiness_checks:
+      - "Adresa din Romania este dovedita documentar"
+    status: draft
+
+  - id: req.residence_declaration
+    title_ro: "Declaratie pentru resedinta"
+    description_ro: >-
+      Declaratia folosita pentru inregistrarea resedintei, daca aceasta ramura este aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie pentru resedinta"
+    readiness_checks:
+      - "Declaratia este pregatita daca se cere resedinta"
+    status: draft
+
+  - id: req.valid_passport_or_eu_id
+    title_ro: "Pasaport valabil sau act UE valabil"
+    description_ro: >-
+      Documentul folosit pentru ruta fiscala de la sosire, daca aceasta il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Pasaport valabil"
+      - "Act UE valabil"
+    readiness_checks:
+      - "Documentul folosit pentru ruta fiscala este valabil"
+    status: draft
+
+  - id: req.romania_housing_proof
+    title_ro: "Dovada locuirii in Romania"
+    description_ro: >-
+      Dovada locuirii in Romania folosita pentru ruta fiscala de la sosire.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada locuirii in Romania"
+    readiness_checks:
+      - "Locuirea in Romania este dovedita daca ramura fiscala o cere"
+    status: draft
+
+  - id: req.foreign_tax_residence_certificate_if_applicable
+    title_ro: "Certificat de rezidenta fiscala straina, daca este aplicabil"
+    description_ro: >-
+      Certificatul de rezidenta fiscala straina folosit la ruta fiscala de sosire, daca este aplicabil.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "Certificat de rezidenta fiscala straina"
+    readiness_checks:
+      - "Certificatul este atasat doar daca exista si este cerut"
+    status: draft

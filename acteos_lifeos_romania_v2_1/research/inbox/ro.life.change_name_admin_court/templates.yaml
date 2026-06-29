@@ -1,0 +1,181 @@
+# Step & requirement templates for ro.life.change_name_admin_court (life.change_name_admin_court).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.name.check_route
+    semantic_key: step.name.check_route
+    title_ro: "Confirma ruta administrativa sau implicarea instantei"
+    instruction_ro: >-
+      Verifica daca schimbarea numelui ramane pe ruta administrativa sau daca situatia minorului ori
+      reprezentarii cere aprobarea instantei.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta corecta a fost identificata"
+    recovery_actions_ro:
+      - "Daca reprezentarea sau varsta nu sunt clare, nu continua pana nu confirmi ruta"
+    status: draft
+
+  - id: step.name.prepare_initial
+    semantic_key: step.name.prepare_initial
+    title_ro: "Pregateste cererea si actele initiale"
+    instruction_ro: >-
+      Strange actul de identitate, actele de stare civila si dovezile motivului temeinic pentru
+      dosarul de schimbare a numelui.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea si actele initiale sunt pregatite"
+    recovery_actions_ro:
+      - "Daca lipseste o piesa de stare civila sau dovada motivului, completeaza dosarul"
+    status: draft
+
+  - id: step.name.publish_mo
+    semantic_key: step.name.publish_mo
+    title_ro: "Publica extrasul in Monitorul Oficial"
+    instruction_ro: >-
+      Publica extrasul cererii in Monitorul Oficial si pastreaza dovada pentru dosarul final.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Extrasul Monitorului Oficial este disponibil"
+    recovery_actions_ro:
+      - "Daca publicarea nu este finalizata, nu trece la dosarul final"
+    status: draft
+
+  - id: step.name.wait_opposition
+    semantic_key: step.name.wait_opposition
+    title_ro: "Asteapta termenul pentru opozitii"
+    instruction_ro: >-
+      Asteapta implinirea termenului de opozitie dupa publicarea extrasului in Monitorul Oficial.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Termenul pentru opozitii a fost parcurs"
+    recovery_actions_ro:
+      - "Daca termenul nu a expirat sau apare opozitie, opreste depunerea finala"
+    status: draft
+
+  - id: step.name.book_timis
+    semantic_key: step.name.book_timis
+    title_ro: "Fa programarea locala in Timisoara"
+    instruction_ro: >-
+      Daca dosarul merge prin ruta locala din Timisoara, rezerva programarea ceruta inainte de
+      depunerea finala.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Programarea locala a fost confirmata"
+    recovery_actions_ro:
+      - "Daca nu exista programare, cauta un nou interval inainte de depunere"
+    status: draft
+
+  - id: step.name.submit_final
+    semantic_key: step.name.submit_final
+    title_ro: "Depune dosarul final"
+    instruction_ro: >-
+      Depune dosarul complet la serviciul competent dupa publicare si dupa expirarea termenului
+      pentru opozitii.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul final a fost depus"
+    recovery_actions_ro:
+      - "Daca dosarul este incomplet, adauga documentele cerute si redepune"
+    status: draft
+
+  - id: step.name.receive_disposition
+    semantic_key: step.name.receive_disposition
+    title_ro: "Primeste si confirma dispozitia"
+    instruction_ro: >-
+      Urmareste comunicarea dispozitiei si, daca cererea este admisa, confirma sau ridica actele in
+      fereastra aplicabila.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Dispozitia a fost primita si verificata"
+    recovery_actions_ro:
+      - "Daca lipseste comunicarea sau confirmarea, urmareste dosarul la autoritatea competenta"
+    status: draft
+
+  - id: step.name.challenge
+    semantic_key: step.name.challenge
+    title_ro: "Contesta respingerea, daca este cazul"
+    instruction_ro: >-
+      Daca cererea este respinsa, pregateste contestatia pe calea legala pornind de la actul
+      comunicat.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Ruta de contestatie a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca nu ai actul de respingere sau motivarea lui, cere-l inainte de contestatie"
+    status: draft
+
+requirement_templates:
+  - id: req.name.identity_civil
+    title_ro: "Act de identitate si acte de stare civila originale"
+    description_ro: >-
+      Actul de identitate si actele de stare civila folosite in dosarul de schimbare a numelui.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate in original"
+      - "Certificate de stare civila in original"
+    readiness_checks:
+      - "Actele de identitate si stare civila sunt disponibile si lizibile"
+    status: draft
+
+  - id: req.name.mo_extract
+    title_ro: "Extras din Monitorul Oficial"
+    description_ro: >-
+      Extrasul publicat in Monitorul Oficial folosit la dosarul final.
+    obligation: mandatory
+    timing: later
+    accepted_forms:
+      - "Extras Monitorul Oficial"
+    readiness_checks:
+      - "Extrasul este disponibil pentru dosarul final"
+    status: draft
+
+  - id: req.name.criminal_record
+    title_ro: "Cazier judiciar pentru solicitantul de cel putin 14 ani"
+    description_ro: >-
+      Cazierul judiciar cerut pentru solicitantii de cel putin 14 ani.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "Certificat de cazier judiciar"
+    readiness_checks:
+      - "Cazierul este pregatit pentru persoana relevanta"
+    status: draft
+
+  - id: req.name.court_approval
+    title_ro: "Incuviintarea instantei de tutela"
+    description_ro: >-
+      Hotararea sau incuviintarea instantei de tutela, daca situatia minorului sau a reprezentarii o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare sau incuviintare a instantei"
+    readiness_checks:
+      - "Actul instantei acopera exact situatia din dosar"
+    status: draft
+
+  - id: req.name.other_parent_consent
+    title_ro: "Acordul celuilalt parinte"
+    description_ro: >-
+      Acordul celuilalt parinte in forma ceruta, pentru situatiile in care acesta este necesar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acordul celuilalt parinte"
+    readiness_checks:
+      - "Acordul este disponibil in forma ceruta"
+    status: draft
+
+  - id: req.name.minor_signature
+    title_ro: "Semnatura minorului de cel putin 14 ani"
+    description_ro: >-
+      Semnatura minorului de cel putin 14 ani pe cererea relevanta, daca situatia o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere semnata de minorul relevant"
+    readiness_checks:
+      - "Semnatura minorului este aplicata pe documentul corect"
+    status: draft

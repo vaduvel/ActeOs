@@ -1,0 +1,86 @@
+step_templates:
+  - id: step.identify_reason
+    semantic_key: bank_card_change_identify_reason
+    title_ro: "Stabileste motivul schimbarii"
+    instruction_ro: >-
+      Alege daca ai nevoie de un card nou pentru expirare, deteriorare,
+      schimbare de nume sau alt motiv non-urgent.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Motivul schimbarii este clar ales."
+    recovery_actions_ro:
+      - "Daca este pierdere sau furt, muta ruta in fluxul urgent de blocare."
+    status: draft
+  - id: step.update_profile
+    semantic_key: bank_card_change_update_profile
+    title_ro: "Actualizeaza datele si adresa"
+    instruction_ro: >-
+      Verifica numele si adresa de livrare inainte sa ceri emiterea cardului nou.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Datele din profilul bancar sunt corecte."
+    recovery_actions_ro:
+      - "Daca numele sau adresa nu sunt actualizate, foloseste canalul oficial de schimbare a datelor."
+    status: draft
+  - id: step.request_card
+    semantic_key: bank_card_change_request_card
+    title_ro: "Solicita reemiterea sau reinnoirea"
+    instruction_ro: >-
+      Initiaza comanda din aplicatia bancii sau prin canalul oficial indicat de
+      emitent si verifica metoda de livrare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Exista confirmarea comenzii cardului nou."
+    recovery_actions_ro:
+      - "Daca optiunea nu apare, contacteaza emitentul si nu presupune reinnoirea automata."
+    status: draft
+  - id: step.receive_activate
+    semantic_key: bank_card_change_receive_activate
+    title_ro: "Primeste si activeaza cardul nou"
+    instruction_ro: >-
+      Verifica livrarea, activeaza cardul nou si scoate din uz cardul vechi
+      conform instructiunilor emitentului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cardul nou este primit si activ."
+    recovery_actions_ro:
+      - "Daca livrarea intarzie, verifica adresa si contacteaza emitentul."
+    status: draft
+
+requirement_templates:
+  - id: req.current_card_data
+    title_ro: "Datele cardului curent in aplicatia oficiala"
+    description_ro: >-
+      Identificarea cardului corect in aplicatia sau contul oficial al bancii,
+      fara a transmite PIN sau CVV unor terti.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cardul curent identificat in aplicatia oficiala a emitentului."
+    readiness_checks:
+      - "Cardul care trebuie reinnoit sau reemis este clar identificat."
+    status: draft
+  - id: req.new_identity_document
+    title_ro: "Noul act de identitate"
+    description_ro: >-
+      Documentul de identitate actualizat, necesar cand cardul nou trebuie emis
+      cu nume modificat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Noul act de identitate valabil."
+    readiness_checks:
+      - "Motivul schimbarii este schimbarea numelui."
+    status: draft
+  - id: req.delivery_address_confirmation
+    title_ro: "Confirmarea adresei de livrare"
+    description_ro: >-
+      Confirmarea ca adresa folosita pentru expedierea cardului este corecta si
+      actuala.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Confirmare in aplicatie sau declaratie in canalul oficial al bancii."
+    readiness_checks:
+      - "Cardul va fi livrat prin curier sau la adresa din profil."
+    status: draft

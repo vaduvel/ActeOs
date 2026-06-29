@@ -1,0 +1,133 @@
+# Step & requirement templates for ro.life.company_vehicle_change (ro.life.company_vehicle_change).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: identify_company_vehicle_change_route
+    semantic_key: identify_company_vehicle_change_route
+    title_ro: "Identifica ruta pentru schimbarea vehiculului firmei"
+    instruction_ro: >-
+      Stabileste daca este vorba de achizitie, vanzare, schimbare de date,
+      leasing sau import inainte de a pregati dosarul.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta pentru schimbarea vehiculului companiei a fost identificata"
+    recovery_actions_ro:
+      - "Daca tipul schimbarii nu este clar, nu genera documente specifice cazului gresit"
+    status: draft
+
+  - id: declare_company_vehicle_to_local_tax_authority
+    semantic_key: declare_company_vehicle_to_local_tax_authority
+    title_ro: "Declara vehiculul firmei la autoritatea fiscala locala"
+    instruction_ro: >-
+      Pentru achizitie ori alta situatie relevanta, actualizeaza mai intai
+      evidenta fiscala locala a vehiculului companiei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de declarare fiscala locala a fost pregatita"
+    recovery_actions_ro:
+      - "Daca evidenta fiscala locala nu este actualizata, nu continua pasii dependenti"
+    status: draft
+
+  - id: request_vehicle_ownership_transcription
+    semantic_key: request_vehicle_ownership_transcription
+    title_ro: "Solicita transcrierea dreptului de proprietate"
+    instruction_ro: >-
+      Pentru achizitia unui vehicul deja inmatriculat in Romania, pregateste
+      cererea de transcriere pe numele companiei.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea de transcriere a proprietatii a fost pregatita"
+    recovery_actions_ro:
+      - "Daca termenul sau documentele nu sunt clare, confirma cazul inainte de depunere"
+    status: draft
+
+  - id: remedy_overdue_vehicle_transcription
+    semantic_key: remedy_overdue_vehicle_transcription
+    title_ro: "Remediaza depasirea termenului de transcriere"
+    instruction_ro: >-
+      Daca termenul de 90 de zile este depasit, trateaza separat masurile de
+      remediere si clarificarile privind suspendarea.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de remediere pentru transcriere intarziata a fost evaluata"
+    recovery_actions_ro:
+      - "Daca termenul nu este depasit, foloseste ruta normala de transcriere"
+    status: draft
+
+  - id: declare_company_vehicle_sale_to_local_tax_authority
+    semantic_key: declare_company_vehicle_sale_to_local_tax_authority
+    title_ro: "Declara vanzarea vehiculului la autoritatea fiscala locala"
+    instruction_ro: >-
+      Daca vehiculul este instrainat, pregateste declararea vanzarii la
+      autoritatea fiscala locala competenta.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta de declarare a vanzarii la fisc a fost pregatita"
+    recovery_actions_ro:
+      - "Daca vanzarea nu este confirmata prin documente, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: obtain_vehicle_sale_fiscal_certificate_if_required
+    semantic_key: obtain_vehicle_sale_fiscal_certificate_if_required
+    title_ro: "Obtine certificatul fiscal pentru vanzare, daca este cerut"
+    instruction_ro: >-
+      Pregateste certificatul fiscal atunci cand canalul sau cazul verificat il cere.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Certificatul fiscal relevant a fost pregatit sau evaluat"
+    recovery_actions_ro:
+      - "Daca ruta aleasa nu cere certificatul, pastreaza distinctia intre online si ghiseu"
+    status: draft
+
+  - id: request_vehicle_certificate_data_change
+    semantic_key: request_vehicle_certificate_data_change
+    title_ro: "Solicita schimbarea datelor din certificat"
+    instruction_ro: >-
+      Pentru schimbarea numelui sau adresei companiei, pregateste ruta de
+      actualizare a certificatului vehiculului.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Ruta de schimbare a datelor din certificat a fost pregatita"
+    recovery_actions_ro:
+      - "Daca schimbarea nu priveste certificatul vehiculului, revino la cazul corect"
+    status: draft
+
+  - id: select_company_vehicle_special_case
+    semantic_key: select_company_vehicle_special_case
+    title_ro: "Selecteaza cazul special al vehiculului"
+    instruction_ro: >-
+      Pentru leasing, import UE sau import non-UE, selecteaza cazul exact inainte
+      de a afisa lista de documente.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Cazul special al vehiculului a fost identificat"
+    recovery_actions_ro:
+      - "Daca nu este selectat cazul exact, nu genera lista oficiala de documente"
+    status: draft
+
+requirement_templates:
+  - id: req.local_fiscal_clearance_certificate
+    title_ro: "Certificat fiscal local"
+    description_ro: >-
+      Certificatul fiscal local cerut pe anumite canale sau scenarii de lucru.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat fiscal local"
+    readiness_checks:
+      - "Certificatul fiscal este pregatit daca ruta aleasa il cere"
+    status: draft
+
+  - id: req.company_vehicle_power_of_attorney
+    title_ro: "Imputernicirea pentru formalitatile vehiculului companiei"
+    description_ro: >-
+      Documentul de reprezentare folosit cand formalitatile sunt facute prin mandatar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire pentru formalitatile vehiculului"
+    readiness_checks:
+      - "Imputernicirea este pregatita daca dosarul nu este depus de reprezentantul direct"
+    status: draft

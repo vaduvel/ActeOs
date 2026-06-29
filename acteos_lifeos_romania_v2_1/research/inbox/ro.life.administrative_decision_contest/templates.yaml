@@ -1,0 +1,147 @@
+step_templates:
+  - id: verify_special_judicial_procedure
+    semantic_key: administrative_decision_contest_verify_special_procedure
+    title_ro: "Verifica existenta unei proceduri judiciare speciale"
+    instruction_ro: >-
+      Inainte de traseul general, verifica daca materia are o procedura
+      judiciara speciala care exclude contenciosul administrativ comun.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "A fost verificat daca exista o procedura speciala."
+    recovery_actions_ro:
+      - "Daca identifici o procedura speciala, opreste traseul general si urmeaza ruta dedicata."
+    status: draft
+  - id: route_to_special_judicial_procedure
+    semantic_key: administrative_decision_contest_route_to_special_procedure
+    title_ro: "Redirectioneaza spre procedura speciala"
+    instruction_ro: >-
+      Cand o lege speciala prevede alta cale judiciara, foloseste acea
+      procedura si nu continua pe traseul general al Legii nr. 554/2004.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cazul este redirectionat spre procedura speciala relevanta."
+    recovery_actions_ro:
+      - "Documenteaza ce act special guverneaza litigiul inainte de a continua."
+    status: draft
+  - id: prepare_prior_complaint
+    semantic_key: administrative_decision_contest_prepare_prior_complaint
+    title_ro: "Pregateste plangerea prealabila"
+    instruction_ro: >-
+      Daca plangerea prealabila este obligatorie in cazul tau, redacteaz-o catre
+      autoritatea emitenta sau cea ierarhic superioara in termenul aplicabil.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Plangerea prealabila este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca esti in afara termenului obisnuit, documenteaza separat motivele temeinice."
+    status: draft
+  - id: identify_administrative_fiscal_tribunal
+    semantic_key: administrative_decision_contest_identify_tribunal
+    title_ro: "Identifica tribunalul administrativ-fiscal competent"
+    instruction_ro: >-
+      Stabileste daca litigiul intra in competenta tribunalului administrativ-fiscal
+      potrivit nivelului autoritatii si valorii relevante.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta catre tribunalul competent este clarificata."
+    recovery_actions_ro:
+      - "Daca exista indoiala de competenta, verifica separat nivelul autoritatii si pragurile aplicabile."
+    status: draft
+  - id: identify_administrative_fiscal_court_of_appeal
+    semantic_key: administrative_decision_contest_identify_court_of_appeal
+    title_ro: "Identifica curtea de apel competenta"
+    instruction_ro: >-
+      Stabileste daca litigiul intra direct in competenta curtii de apel in
+      materie administrativ-fiscala.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta catre curtea de apel competenta este clarificata."
+    recovery_actions_ro:
+      - "Daca materia sau valoarea schimba instanta, verifica din nou competenta inainte de depunere."
+    status: draft
+  - id: select_court_at_claimant_domicile_or_seat
+    semantic_key: administrative_decision_contest_select_claimant_territorial_court
+    title_ro: "Alege instanta de la domiciliul sau sediul reclamantului"
+    instruction_ro: >-
+      Pentru reclamantul privat, selecteaza instanta competenta teritorial la
+      domiciliul sau sediul sau, conform regulii aplicabile.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Competenta teritoriala este selectata."
+    recovery_actions_ro:
+      - "Daca reclamantul nu este subiect privat, nu folosi automat aceasta regula."
+    status: draft
+  - id: prepare_court_action
+    semantic_key: administrative_decision_contest_prepare_court_action
+    title_ro: "Pregateste actiunea in instanta"
+    instruction_ro: >-
+      Strange actul atacat, dovezile procedurii prealabile si taxa aferenta, apoi
+      redacteaza actiunea pentru instanta competenta.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Dosarul de instanta este pregatit sau depus."
+    recovery_actions_ro:
+      - "Daca lipseste una dintre piesele esentiale, completeaza dosarul inainte de depunere."
+    status: draft
+  - id: prepare_suspension_request
+    semantic_key: administrative_decision_contest_prepare_suspension
+    title_ro: "Pregateste cererea de suspendare"
+    instruction_ro: >-
+      Daca urmaresti suspendarea actului, documenteaza separat cazul bine
+      justificat, paguba iminenta si fereastra procedurala relevanta.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Cererea de suspendare este evaluata sau pregatita."
+    recovery_actions_ro:
+      - "Daca lipseste una dintre conditiile speciale ale suspendarii, nu presupune automat ca ruta este disponibila."
+    status: draft
+
+requirement_templates:
+  - id: copy_of_contested_act_or_refusal_or_registered_request
+    title_ro: "Copia actului atacat, a refuzului sau a cererii inregistrate"
+    description_ro: >-
+      Documentul principal care arata actul contestat, refuzul autoritatii ori
+      cererea anterioara inregistrata, dupa caz.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copia actului administrativ, a raspunsului de refuz sau a cererii cu numar si data de inregistrare."
+    readiness_checks:
+      - "Dosarul reflecta exact actul sau lipsa de raspuns contestata."
+    status: draft
+  - id: proof_of_prior_complaint_when_required
+    title_ro: "Dovada plangerii prealabile cand este obligatorie"
+    description_ro: >-
+      Dovada ca procedura prealabila a fost indeplinita in cazurile in care
+      legea o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a plangerii prealabile si dovada depunerii ori comunicarii."
+    readiness_checks:
+      - "Cazul tau nu intra intr-o exceptie confirmata de la plangerea prealabila."
+    status: draft
+  - id: court_fee_50_lei_for_annulment_or_recognition
+    title_ro: "Taxa judiciara de timbru de 50 lei"
+    description_ro: >-
+      Taxa judiciara de timbru folosita pentru cererea de anulare a actului sau
+      de recunoastere a dreptului, in ruta modelata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii taxei judiciare de timbru de 50 lei."
+    readiness_checks:
+      - "Capatul principal al actiunii este cel modelat pentru anulare sau recunoastere."
+    status: draft
+  - id: damage_claim_fee_10_percent_max_300_lei
+    title_ro: "Taxa pentru capatul patrimonial"
+    description_ro: >-
+      Taxa aferenta cererii de reparare a pagubei, calculata in ruta modelata
+      proportional cu valoarea pretinsa, dar in limita indicata de regula.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada platii taxei calculate pentru capatul patrimonial."
+    readiness_checks:
+      - "Actiunea include un capat distinct de despagubiri."
+    status: draft

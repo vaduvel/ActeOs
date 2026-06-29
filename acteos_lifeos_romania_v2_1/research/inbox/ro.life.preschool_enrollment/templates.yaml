@@ -1,0 +1,193 @@
+step_templates:
+  - id: step.preschool.identify_stage
+    semantic_key: preschool_identify_stage
+    title_ro: "Identifică etapa activă de înscriere"
+    instruction_ro: >-
+      Stabilește dacă ești în reînscriere, etapa I, etapa a II-a sau ajustări,
+      folosind data de referință și calendarul oficial curent.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Etapa activă este identificată din calendarul oficial."
+    recovery_actions_ro:
+      - "Dacă data nu intră într-o fereastră standard, verifică ruta de ajustări sau rezultatele afișate."
+    status: draft
+  - id: step.preschool.verify_unit
+    semantic_key: preschool_verify_unit
+    title_ro: "Verifică unitatea și datele locale"
+    instruction_ro: >-
+      Confirmă unitatea aleasă, locurile și criteriile din sursa oficială curentă
+      a inspectoratului sau a unității.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Unitatea și datele locale au fost verificate dintr-o sursă oficială curentă."
+    recovery_actions_ro:
+      - "Dacă datele locale nu sunt confirmate, nu trata recomandarea ca finală și cere verificare suplimentară."
+    status: draft
+  - id: step.preschool.prepare_dossier
+    semantic_key: preschool_prepare_dossier
+    title_ro: "Pregătește dosarul"
+    instruction_ro: >-
+      Strânge cererea cu trei opțiuni, actele copilului, actele părinților și
+      documentele condiționale relevante pentru criterii sau situația familială.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul include toate documentele obligatorii și condiționale aplicabile."
+    recovery_actions_ro:
+      - "Dacă invoci criterii sau ai o situație familială specială, adaugă documentele justificative înainte de depunere."
+    status: draft
+  - id: step.preschool.submit
+    semantic_key: preschool_submit
+    title_ro: "Depune cererea"
+    instruction_ro: >-
+      Depune cererea în fereastra activă, pe canalul permis, și păstrează dovada
+      depunerii sau înregistrării.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cererea a fost depusă în fereastra activă."
+      - "Există dovadă de depunere sau înregistrare."
+    recovery_actions_ro:
+      - "Dacă etapa activă s-a închis, așteaptă următoarea fereastră sau ruta de ajustări."
+    status: draft
+  - id: step.preschool.validate
+    semantic_key: preschool_validate
+    title_ro: "Validează dosarul la unitate"
+    instruction_ro: >-
+      Dacă unitatea sau canalul folosit cer validare, prezintă originalele și
+      obține confirmarea că dosarul a fost validat.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Unitatea a validat dosarul."
+      - "Originalele au fost prezentate când procedura le-a cerut."
+    recovery_actions_ro:
+      - "Dacă ai trimis prin e-mail sau poștă, urmărește separat validarea și prezentarea originalelor."
+    status: draft
+  - id: step.preschool.medical
+    semantic_key: preschool_medical
+    title_ro: "Pregătește documentele medicale"
+    instruction_ro: >-
+      După acceptarea cererii, pregătește documentele medicale la momentul corect
+      pentru începerea frecventării.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Documentele medicale sunt pregătite pentru momentul începerii frecventării."
+    recovery_actions_ro:
+      - "Nu obține avizul epidemiologic prea devreme față de fereastra admisă."
+    status: draft
+  - id: step.preschool.check_result
+    semantic_key: preschool_check_result
+    title_ro: "Verifică rezultatul"
+    instruction_ro: >-
+      Verifică rezultatul etapei și salvează decizia; dacă nu ai loc, identifică
+      următoarea etapă sau ruta de ajustări.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Rezultatul etapei este salvat sau notat."
+    recovery_actions_ro:
+      - "Dacă cererea nu a fost admisă, pregătește imediat ruta pentru etapa următoare."
+    status: draft
+
+requirement_templates:
+  - id: req.preschool.application
+    title_ro: "Cerere-tip cu trei opțiuni"
+    description_ro: >-
+      Cererea folosită pentru înscriere, completată cu opțiunile permise de
+      traseul oficial.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea-tip completată cu opțiunile solicitate."
+    readiness_checks:
+      - "Cererea este completată pentru etapa activă."
+    status: draft
+  - id: req.preschool.birth_certificate
+    title_ro: "Certificatul de naștere al copilului"
+    description_ro: >-
+      Copia certificatului de naștere folosită în dosarul de înscriere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copie a certificatului de naștere al copilului."
+    readiness_checks:
+      - "Certificatul de naștere este disponibil pentru dosar."
+    status: draft
+  - id: req.preschool.parent_ids
+    title_ro: "Actele de identitate ale părinților sau reprezentantului"
+    description_ro: >-
+      Copii ale actelor de identitate ale persoanelor care depun dosarul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copii ale actelor de identitate ale părinților sau reprezentantului."
+    readiness_checks:
+      - "Actele de identitate sunt pregătite pentru dosar."
+    status: draft
+  - id: req.preschool.employment
+    title_ro: "Adeverințe pentru program sau situație profesională"
+    description_ro: >-
+      Documente condiționale legate de programul ales sau de situația
+      profesională a părinților.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverințe de angajat sau alte documente relevante pentru programul ales."
+    readiness_checks:
+      - "Programul sau situația familială fac documentele necesare."
+    status: draft
+  - id: req.preschool.criteria
+    title_ro: "Documente pentru criteriile invocate"
+    description_ro: >-
+      Dovezi pentru criteriile generale sau specifice invocate în dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente justificative pentru criteriile declarate."
+    readiness_checks:
+      - "Ai invocat criterii de departajare."
+    status: draft
+  - id: req.preschool.remote_declaration
+    title_ro: "Declarație pentru depunere la distanță"
+    description_ro: >-
+      Declarația cerută când dosarul este trimis prin e-mail sau poștă.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declarația de veridicitate sau forma echivalentă cerută la depunere la distanță."
+    readiness_checks:
+      - "Dosarul este trimis prin e-mail sau poștă."
+    status: draft
+  - id: req.preschool.parental_authority
+    title_ro: "Dovada autorității părintești sau a locuinței minorului"
+    description_ro: >-
+      Documente condiționale pentru situațiile în care autoritatea părintească
+      sau locuința minorului trebuie dovedite distinct.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotărâre, convenție sau alt document relevant privind autoritatea părintească."
+    readiness_checks:
+      - "Situația familială cere această dovadă."
+    status: draft
+  - id: req.preschool.originals
+    title_ro: "Originalele actelor pentru validare"
+    description_ro: >-
+      Originalele documentelor folosite pentru validarea dosarului la unitate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Originalele actelor depuse în copie."
+    readiness_checks:
+      - "Originalele pot fi prezentate la validare."
+    status: draft
+  - id: req.preschool.medical
+    title_ro: "Documentele medicale de început de frecventare"
+    description_ro: >-
+      Adeverința clinică, avizul epidemiologic sau documentele medicale cerute la
+      intrarea efectivă în colectivitate.
+    obligation: mandatory
+    timing: later
+    accepted_forms:
+      - "Documentele medicale cerute pentru începutul frecventării."
+    readiness_checks:
+      - "Cererea a fost acceptată."
+      - "Documentele sunt obținute în fereastra de timp permisă."
+    status: draft

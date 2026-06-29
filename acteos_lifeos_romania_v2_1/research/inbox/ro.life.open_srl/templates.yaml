@@ -1,0 +1,144 @@
+step_templates:
+  - id: prepare_srl_constitution
+    semantic_key: open_srl_prepare_constitution
+    title_ro: "Pregateste constituirea SRL"
+    instruction_ro: >-
+      Rezerva denumirea, redacteaza actul constitutiv si verifica elementele
+      obligatorii pentru sediu, asociati, administrare si capital.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Pachetul de constituire SRL este pregatit."
+    recovery_actions_ro:
+      - "Daca lipsesc date despre administratori sau beneficiarul real, completeaza-le inainte de depunere."
+    status: draft
+  - id: file_srl_registration
+    semantic_key: open_srl_file_registration
+    title_ro: "Depune inmatricularea la ONRC"
+    instruction_ro: >-
+      Depune dosarul de inmatriculare prin canalul ales si pastreaza dovada de
+      depunere ori confirmarea de primire.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea de inmatriculare SRL este depusa."
+    recovery_actions_ro:
+      - "Daca dosarul este respins pentru forma sau semnatura, corecteaza-l si redepune prin canalul oficial."
+    status: draft
+  - id: pay_initial_share_capital
+    semantic_key: open_srl_pay_initial_share_capital
+    title_ro: "Asigura varsarea capitalului initial"
+    instruction_ro: >-
+      Urmareste regula de varsare a capitalului initial pentru SRL si pastreaza
+      documentele care sustin plata ori varsarea ceruta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Capitalul initial este varsat conform regulii modelate."
+    recovery_actions_ro:
+      - "Daca nu poti demonstra varsarea minima ceruta, nu porni operatiunile societatii."
+    status: draft
+  - id: pay_monitorul_oficial_publication_tariff
+    semantic_key: open_srl_pay_publication_tariff
+    title_ro: "Achita nota de publicare"
+    instruction_ro: >-
+      Dupa admiterea cererii, achita tariful de publicare indicat pentru
+      formalitatea de publicare aferenta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Tariful de publicare este achitat."
+    recovery_actions_ro:
+      - "Nu plati anticipat daca nota nu a fost emisa pentru dosarul admis."
+    status: draft
+  - id: obtain_timisoara_commercial_agreement
+    semantic_key: open_srl_obtain_timisoara_commercial_agreement
+    title_ro: "Obtine acordul comercial Timisoara"
+    instruction_ro: >-
+      Daca activitatea locala il cere, continua separat cu acordul comercial
+      aplicabil pentru amplasamentul din Timisoara.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta acordului comercial local este pregatita sau finalizata."
+    recovery_actions_ro:
+      - "Daca nu este clar daca punctul intra in procedura locala, confirma categoria activitatii."
+    status: draft
+
+requirement_templates:
+  - id: req.srl_constitutive_act
+    title_ro: "Act constitutiv SRL"
+    description_ro: >-
+      Actul constitutiv care stabileste elementele esentiale ale societatii la
+      infiintare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act constitutiv semnat in forma ceruta pentru dosarul ONRC."
+    readiness_checks:
+      - "Actul include datele esentiale despre societate, asociati si administratori."
+    status: draft
+  - id: req.authentic_constitutive_act
+    title_ro: "Act constitutiv in forma autentica"
+    description_ro: >-
+      Forma autentica ceruta in situatiile in care aportul in natura ori cazul
+      concret impune aceasta formalitate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act constitutiv autentificat notarial."
+    readiness_checks:
+      - "Ruta concreta impune forma autentica."
+    status: draft
+  - id: req.onrc_name_reservation
+    title_ro: "Rezervare denumire ONRC"
+    description_ro: >-
+      Dovada rezervarii denumirii firmei folosita in pachetul de constituire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada sau confirmarea rezervarii denumirii emisa prin fluxul ONRC."
+    readiness_checks:
+      - "Denumirea rezervata corespunde societatii care se infiinteaza."
+    status: draft
+  - id: req.onrc_annex_2a
+    title_ro: "Anexa ONRC 2A"
+    description_ro: >-
+      Formularul ONRC folosit in traseul de inmatriculare al SRL-ului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Anexa 2A completata si semnata conform cerintei ONRC."
+    readiness_checks:
+      - "Formularul este completat pentru cazul corect de inregistrare."
+    status: draft
+  - id: req.onrc_annex_4
+    title_ro: "Anexa ONRC 4"
+    description_ro: >-
+      Formularul ONRC folosit in setul de documente pentru inmatricularea SRL.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Anexa 4 completata si semnata in forma ceruta."
+    readiness_checks:
+      - "Anexa este pregatita pentru acelasi dosar de inmatriculare."
+    status: draft
+  - id: req.no_activity_at_registered_office_declaration
+    title_ro: "Declaratie fara activitate la sediu"
+    description_ro: >-
+      Declaratia folosita cand sediul social este intr-o locuinta si nu se
+      desfasoara activitate la acea adresa.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratia ONRC privind lipsa activitatii la sediul social."
+    readiness_checks:
+      - "Sediul este locuinta si ruta concreta cere aceasta declaratie."
+    status: draft
+  - id: req.beneficial_owner_declaration
+    title_ro: "Declaratie privind beneficiarul real"
+    description_ro: >-
+      Documentul prin care sunt declarate datele beneficiarului real in cadrul
+      dosarului de constituire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declaratia sau includerea datelor in forma acceptata de procedura ONRC."
+    readiness_checks:
+      - "Datele beneficiarului real sunt complete si coerente cu actul constitutiv."
+    status: draft

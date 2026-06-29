@@ -1,0 +1,92 @@
+# Step & requirement templates for ro.life.maternity_leave (life.maternity_leave).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: obtain_maternity_medical_certificates
+    semantic_key: obtain_maternity_medical_certificates
+    title_ro: "Obtine certificatele medicale de maternitate"
+    instruction_ro: >-
+      Obtine certificatele medicale pentru sarcina si lauzie pe traseul medical relevant.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Certificatele medicale de maternitate au fost obtinute"
+    recovery_actions_ro:
+      - "Daca certificatul nu este emis, revino pe ruta medicala competenta"
+    status: draft
+
+  - id: submit_certificates_for_payment
+    semantic_key: submit_certificates_for_payment
+    title_ro: "Preda certificatele pentru plata"
+    instruction_ro: >-
+      Preda certificatele medicale catre platitorul relevant in termenul operational aplicabil.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Certificatele au fost predate pentru plata"
+    recovery_actions_ro:
+      - "Daca lipseste un certificat, completeaza seria lunara inainte de depunere"
+    status: draft
+
+  - id: maternity_total_duration
+    semantic_key: maternity_total_duration
+    title_ro: "Verifica durata totala a concediului de maternitate"
+    instruction_ro: >-
+      Verifica impartirea zilelor prenatale si postnatale in limita duratei totale aplicabile.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Durata totala a concediului a fost verificata"
+    recovery_actions_ro:
+      - "Daca planul zilelor nu este corect, reface-l impreuna cu traseul medical"
+    status: draft
+
+  - id: mandatory_postnatal_leave
+    semantic_key: mandatory_postnatal_leave
+    title_ro: "Respecta componenta postnatala obligatorie"
+    instruction_ro: >-
+      Verifica partea minima obligatorie de concediu postnatal inainte de inchiderea planului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Componenta postnatala obligatorie a fost verificata"
+    recovery_actions_ro:
+      - "Daca planul postnatal este sub minimul cerut, ajusteaza distributia zilelor"
+    status: draft
+
+  - id: prove_non_attributable_loss_of_insurance
+    semantic_key: prove_non_attributable_loss_of_insurance
+    title_ro: "Dovedeste pierderea neimputabila a calitatii de asigurat"
+    instruction_ro: >-
+      Daca aplici pe exceptia legata de pierderea neimputabila a calitatii de asigurat, pregateste
+      documentele care sustin aceasta situatie.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Documentele pentru pierderea neimputabila au fost pregatite"
+    recovery_actions_ro:
+      - "Daca nu poti sustine exceptia, revino la ruta standard de eligibilitate"
+    status: draft
+
+requirement_templates:
+  - id: req.maternity_medical_certificate
+    title_ro: "Certificat medical de maternitate"
+    description_ro: >-
+      Certificatul medical folosit pentru concediul si indemnizatia de maternitate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat medical de maternitate"
+    readiness_checks:
+      - "Certificatul medical este emis pentru perioada relevanta"
+    status: draft
+
+  - id: req.official_loss_of_insurance_documents
+    title_ro: "Documente oficiale privind pierderea calitatii de asigurat"
+    description_ro: >-
+      Documentele oficiale care sustin pierderea neimputabila a calitatii de asigurat, daca se
+      invoca aceasta exceptie.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente oficiale privind pierderea calitatii de asigurat"
+    readiness_checks:
+      - "Documentele sustin clar exceptia invocata"
+    status: draft

@@ -1,0 +1,134 @@
+step_templates:
+  - id: prepare_and_submit_health_card_duplicate_request
+    semantic_key: health_card_lost_duplicate_request
+    title_ro: "Pregateste si depune cererea de duplicat"
+    instruction_ro: >-
+      Pregateste cererea tip, copia actului de identitate si dovada platii, apoi
+      depune dosarul la casa de asigurari competenta sau pe canalul permis.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul de duplicat este complet si depus."
+    recovery_actions_ro:
+      - "Confirma adresa de e-mail sau canalul local al CAS inainte de trimitere."
+    status: draft
+  - id: request_new_health_card_at_registered_cas
+    semantic_key: health_card_lost_request_new_card
+    title_ro: "Solicita cardul nou la CAS competenta"
+    instruction_ro: >-
+      Pentru card distrus sau cazurile standard, depune solicitarea la casa de
+      asigurari in evidenta careia te afli.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Solicitarea este inregistrata la CAS competenta."
+    recovery_actions_ro:
+      - "Daca nu este clar ce CAS este competenta, verifica intai judetul de evidenta."
+    status: draft
+  - id: request_free_replacement_for_erroneous_data
+    semantic_key: health_card_lost_free_replacement
+    title_ro: "Solicita inlocuirea gratuita pentru date eronate"
+    instruction_ro: >-
+      Daca noul card este cerut pentru date personale eronate, foloseste ruta de
+      inlocuire gratuita si pregateste dovada erorii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Solicitarea de inlocuire gratuita este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Nu atasa dovada platii daca motivul este strict eroarea de date."
+    status: draft
+  - id: obtain_replacement_certificate
+    semantic_key: health_card_lost_replacement_certificate
+    title_ro: "Obtine adeverinta de inlocuire"
+    instruction_ro: >-
+      Cere adeverinta de inlocuire pentru a putea accesa servicii medicale pana
+      la emiterea noului card.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Adeverinta de inlocuire este emisa."
+    recovery_actions_ro:
+      - "Verifica perioada de valabilitate a adeverintei si reinnoieste ruta daca este expirata."
+    status: draft
+
+requirement_templates:
+  - id: req.health_card_duplicate_application
+    title_ro: "Cerere pentru card duplicat"
+    description_ro: >-
+      Cererea tip folosita pentru pierdere, furt, distrugere sau schimbare de
+      nume, dupa caz.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea tip pentru card duplicat completata si semnata."
+    readiness_checks:
+      - "Cererea este completata pentru motivul corect al inlocuirii."
+    status: draft
+  - id: req.health_card_replacement_application
+    title_ro: "Cerere pentru inlocuire"
+    description_ro: >-
+      Cererea folosita cand cardul trebuie inlocuit din cauza unor date eronate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea completata pentru inlocuirea cardului."
+    readiness_checks:
+      - "Motivul declarat este eroarea de date."
+    status: draft
+  - id: req.identity_document_copy
+    title_ro: "Copie act de identitate"
+    description_ro: >-
+      Copia actului de identitate a titularului sau a persoanei pentru care se
+      solicita inlocuirea cardului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copie lizibila a actului de identitate."
+    readiness_checks:
+      - "Copia documentului este lizibila si actuala."
+    status: draft
+  - id: req.duplicate_card_payment_proof
+    title_ro: "Dovada platii contravalorii cardului duplicat"
+    description_ro: >-
+      Dovada platii sumei publicate de CNAS pentru cardul duplicat, atunci cand
+      plata este aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Chitanta sau alta dovada a platii acceptata de CAS."
+    readiness_checks:
+      - "Ruta nu este cea de inlocuire gratuita pentru date eronate."
+    status: draft
+  - id: req.return_initial_health_card
+    title_ro: "Predarea cardului initial"
+    description_ro: >-
+      Cardul initial, atunci cand schimbarea numelui sau situatia concreta cere
+      returnarea lui.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cardul initial, daca este disponibil si procedura CAS il cere."
+    readiness_checks:
+      - "Motivul inlocuirii este schimbarea numelui."
+    status: draft
+  - id: req.representative_identity_copy
+    title_ro: "Copie act de identitate al reprezentantului"
+    description_ro: >-
+      Copia actului de identitate al reprezentantului legal sau al persoanei
+      imputernicite.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie act de identitate al reprezentantului sau imputernicitului."
+    readiness_checks:
+      - "Cererea este depusa prin reprezentant sau persoana autorizata."
+    status: draft
+  - id: req.proof_of_representation_or_authorization
+    title_ro: "Dovada reprezentarii sau imputernicirii"
+    description_ro: >-
+      Documentul care arata calitatea de reprezentant legal sau imputernicit
+      pentru depunerea cererii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procura, imputernicire sau alt document justificativ."
+    readiness_checks:
+      - "Cererea este depusa de alta persoana decat titularul."
+    status: draft

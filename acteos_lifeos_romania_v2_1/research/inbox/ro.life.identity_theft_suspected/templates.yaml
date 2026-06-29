@@ -1,0 +1,151 @@
+# Step & requirement templates for ro.life.identity_theft_suspected (life.identity_theft_suspected).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: preserve_identity_theft_evidence
+    semantic_key: preserve_identity_theft_evidence
+    title_ro: "Pastreaza dovezile"
+    instruction_ro: >-
+      Pastreaza mesajele, extrasele, contractele, logurile si orice alta dovada a utilizarii
+      neautorizate a datelor sau documentelor.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dovezile disponibile au fost adunate si pastrate"
+    recovery_actions_ro:
+      - "Daca dovezile sunt dispersate, fa o colectie clara inainte de sesizare"
+    status: draft
+
+  - id: choose_competent_reporting_route
+    semantic_key: choose_competent_reporting_route
+    title_ro: "Alege ruta de raportare potrivita"
+    instruction_ro: >-
+      Separă urgentă, incidentul de date și plângerea penală, fără să tratezi cazul ca verdict penal automat.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de raportare a fost aleasa"
+    recovery_actions_ro:
+      - "Daca este o urgenta in desfasurare, foloseste mai intai canalul imediat potrivit"
+    status: draft
+
+  - id: file_criminal_complaint
+    semantic_key: file_criminal_complaint
+    title_ro: "Depune plangerea penala"
+    instruction_ro: >-
+      Daca faptele indica o posibila infractiune, descrie faptele si probele cunoscute in plangerea
+      penala, fara sa inventezi autorul.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Plangerea penala este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca lipseste descrierea faptelor sau identitatea reclamantului, completeaza dosarul"
+    status: draft
+
+  - id: contact_personal_data_controller
+    semantic_key: contact_personal_data_controller
+    title_ro: "Contacteaza operatorul de date"
+    instruction_ro: >-
+      Daca operatorul de date este cunoscut, trimite o cerere si pastreaza dovada contactarii lui.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Operatorul a fost contactat sau pregatit pentru contactare"
+    recovery_actions_ro:
+      - "Daca nu poti identifica operatorul, nu porni direct pe plangerea ANSPDCP"
+    status: draft
+
+  - id: file_anspdcp_complaint
+    semantic_key: file_anspdcp_complaint
+    title_ro: "Depune plangerea la ANSPDCP"
+    instruction_ro: >-
+      Dupa contactarea prealabila a operatorului si in functie de raspuns sau lipsa lui, pregateste
+      plangerea catre ANSPDCP cu corespondenta si dovezile necesare.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Plangerea ANSPDCP este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca nu ai dovada contactarii prealabile a operatorului, aduna-o inainte de plangere"
+    status: draft
+
+requirement_templates:
+  - id: req.complainant_identity
+    title_ro: "Identitatea reclamantului"
+    description_ro: >-
+      Datele si actul de identitate necesare pentru formularea plangerii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+      - "Date de identificare ale reclamantului"
+    readiness_checks:
+      - "Reclamantul poate fi identificat clar"
+    status: draft
+
+  - id: req.fact_description
+    title_ro: "Descrierea faptelor"
+    description_ro: >-
+      Descrierea faptelor cunoscute privind folosirea datelor sau documentelor.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Descriere scrisa a faptelor"
+    readiness_checks:
+      - "Descrierea faptelor este suficient de clara pentru sesizare"
+    status: draft
+
+  - id: req.available_evidence
+    title_ro: "Dovezile disponibile"
+    description_ro: >-
+      Dovezile disponibile care sustin sesizarea privind furtul de identitate sau utilizarea neautorizata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Mesaje"
+      - "Extrase"
+      - "Contracte"
+      - "Loguri"
+      - "Alte dovezi disponibile"
+    readiness_checks:
+      - "Dovezile relevante sunt adunate si pot fi anexate"
+    status: draft
+
+  - id: req.copy_of_controller_request
+    title_ro: "Copie a cererii catre operator"
+    description_ro: >-
+      Copia cererii sau a mesajului transmis operatorului de date, daca plangerea merge pe ruta
+      protectiei datelor.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a cererii catre operator"
+    readiness_checks:
+      - "Exista dovada clara a cererii trimise operatorului"
+    status: draft
+
+  - id: req.controller_correspondence_and_evidence
+    title_ro: "Corespondenta cu operatorul si dovezile"
+    description_ro: >-
+      Corespondenta cu operatorul si documentele care sustin plangerea catre ANSPDCP.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Corespondenta cu operatorul"
+      - "Dovezi atasate"
+    readiness_checks:
+      - "Corespondenta si dovezile sustin plangerea formulata"
+    status: draft
+
+  - id: req.original_messages_statements_contracts_logs
+    title_ro: "Mesaje, extrase, contracte si loguri originale"
+    description_ro: >-
+      Documentele si inregistrarile originale sau copiile lor lizibile folosite ca probe.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mesaje"
+      - "Extrase"
+      - "Contracte"
+      - "Loguri"
+    readiness_checks:
+      - "Probele originale sau copiile lor sunt pastrate si lizibile"
+    status: draft

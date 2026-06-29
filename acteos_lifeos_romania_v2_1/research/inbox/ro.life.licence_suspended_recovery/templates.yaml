@@ -1,0 +1,121 @@
+# Step & requirement templates for ro.life.licence_suspended_recovery (life.licence_suspended_recovery).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.lsr.read_decision
+    semantic_key: step.lsr.read_decision
+    title_ro: "Verifica actul oficial de suspendare"
+    instruction_ro: >-
+      Confirma motivul, durata, data de final si orice conditie speciala direct din actul oficial.
+    sequence_hint: 10
+    completion_evidence_ro: ["Motivul si perioada suspendarii au fost confirmate din actul oficial"]
+    recovery_actions_ro: ["Daca actul oficial nu este clar, nu deduce conditiile de recuperare"]
+    status: draft
+
+  - id: step.lsr.choose_test_authority
+    semantic_key: step.lsr.choose_test_authority
+    title_ro: "Alege autoritatea competenta pentru test"
+    instruction_ro: >-
+      Stabileste autoritatea competenta la data sustinerii testului, conform regulii temporale aplicabile.
+    sequence_hint: 20
+    completion_evidence_ro: ["Autoritatea competenta pentru test a fost identificata"]
+    recovery_actions_ro: ["Daca data sau tranzitia institutionala nu sunt clare, confirma locul testului inainte de prezentare"]
+    status: draft
+
+  - id: step.lsr.test
+    semantic_key: step.lsr.test
+    title_ro: "Sustine testul, daca este obligatoriu"
+    instruction_ro: >-
+      Daca testul este obligatoriu sau necesar pentru reducere, pregateste sustinerea si promovarea lui.
+    sequence_hint: 30
+    completion_evidence_ro: ["Cerinta privind testul a fost clarificata sau indeplinita"]
+    recovery_actions_ro: ["Daca testul nu a fost promovat si este obligatoriu, nu trata permisul ca recuperabil"]
+    status: draft
+
+  - id: step.lsr.pay_fines
+    semantic_key: step.lsr.pay_fines
+    title_ro: "Achita amenzile cerute pentru reducere"
+    instruction_ro: >-
+      Daca se cere reducerea perioadei, pregateste dovada platii amenzilor relevante.
+    sequence_hint: 40
+    completion_evidence_ro: ["Dovezile de plata pentru reducere sunt pregatite"]
+    recovery_actions_ro: ["Daca amenzile cerute nu sunt achitate, nu continua cererea de reducere"]
+    status: draft
+
+  - id: step.lsr.request_reduction
+    semantic_key: step.lsr.request_reduction
+    title_ro: "Depune cererea de reducere"
+    instruction_ro: >-
+      Daca sunt indeplinite conditiile cumulative si nu exista excluderi, pregateste cererea de reducere.
+    sequence_hint: 50
+    completion_evidence_ro: ["Ruta pentru cererea de reducere a fost pregatita"]
+    recovery_actions_ro: ["Daca exista excluderi legale, nu activa aceasta ramura"]
+    status: draft
+
+  - id: step.lsr.surrender
+    semantic_key: step.lsr.surrender
+    title_ro: "Preda permisul la termen, daca este cazul"
+    instruction_ro: >-
+      Daca situatia aplicabila cere predarea permisului intr-un termen anume, pregateste dovada predarii.
+    sequence_hint: 60
+    completion_evidence_ro: ["Cerinta privind predarea permisului a fost clarificata sau indeplinita"]
+    recovery_actions_ro: ["Daca predarea nu este inregistrata si ramura o cere, nu trata recuperarea ca finalizata"]
+    status: draft
+
+  - id: step.lsr.recover
+    semantic_key: step.lsr.recover
+    title_ro: "Recupereaza permisul dupa indeplinirea conditiilor"
+    instruction_ro: >-
+      Dupa expirarea perioadei si indeplinirea conditiilor speciale, pregateste ridicarea permisului.
+    sequence_hint: 70
+    completion_evidence_ro: ["Ruta de recuperare a permisului a fost pregatita"]
+    recovery_actions_ro: ["Daca perioada nu este expirata sau conditiile speciale lipsesc, nu inchide cazul"]
+    status: draft
+
+requirement_templates:
+  - id: req.lsr.test
+    title_ro: "Promovarea testului"
+    description_ro: "Dovada promovarii testului, daca este obligatoriu sau cerut pentru reducere."
+    obligation: conditional
+    timing: before_expiry_or_reduction_request
+    accepted_forms: ["Dovada promovarii testului"]
+    readiness_checks: ["Promovarea testului este confirmata daca ruta o cere"]
+    status: draft
+
+  - id: req.lsr.fines
+    title_ro: "Plata amenzilor cerute pentru reducere"
+    description_ro: "Dovezile de plata cerute pentru ruta de reducere."
+    obligation: conditional
+    timing: before_reduction_request
+    accepted_forms: ["Dovada platii amenzilor relevante"]
+    readiness_checks: ["Amenzile cerute pentru reducere sunt achitate"]
+    status: draft
+
+  - id: req.lsr.one_year_licence
+    title_ro: "Permis detinut de cel putin un an"
+    description_ro: "Conditia de vechime minima a permisului pentru reducere."
+    obligation: conditional
+    timing: for_reduction
+    accepted_forms: ["Dovada vechimii permisului"]
+    readiness_checks: ["Vechimea minima a permisului este confirmata"]
+    status: draft
+
+  - id: req.lsr.no_exclusion
+    title_ro: "Nicio excludere legala de la reducere"
+    description_ro: "Confirmarea ca nu exista excluderi legale care blocheaza reducerea."
+    obligation: conditional
+    timing: for_reduction
+    accepted_forms: ["Confirmare privind lipsa excluderilor legale"]
+    readiness_checks: ["Nu exista excluderi legale de la reducere"]
+    status: draft
+
+  - id: req.lsr.surrender
+    title_ro: "Predarea permisului in termen"
+    description_ro: "Dovada predarii permisului in termen, daca aceasta conditie se aplica."
+    obligation: conditional
+    timing: within_notice_term
+    accepted_forms: ["Dovada predarii permisului"]
+    readiness_checks: ["Predarea permisului este inregistrata daca ruta o cere"]
+    status: draft

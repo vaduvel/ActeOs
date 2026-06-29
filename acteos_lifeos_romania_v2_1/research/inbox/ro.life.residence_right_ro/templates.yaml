@@ -1,0 +1,167 @@
+# Step & requirement templates for ro.life.residence_right_ro (life.residence_right_ro).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: route_to_eu_residence_registration
+    semantic_key: route_to_eu_residence_registration
+    title_ro: "Redirectioneaza spre ruta UE de inregistrare"
+    instruction_ro: >-
+      Daca persoana nu este resortisant al unui stat tert, redirectioneaza cazul spre regimul UE
+      sau alt regim relevant.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Separarea regimului juridic a fost evaluata"
+    recovery_actions_ro:
+      - "Daca persoana nu este din stat tert, nu continua pe ruta de sedere pentru state terte"
+    status: draft
+
+  - id: confirm_visa_or_entry_route
+    semantic_key: confirm_visa_or_entry_route
+    title_ro: "Confirma ruta de intrare sau viza"
+    instruction_ro: >-
+      Clarifica baza de intrare in Romania inainte de cererea pentru dreptul de sedere.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de intrare sau viza a fost clarificata"
+    recovery_actions_ro:
+      - "Daca baza de intrare nu este clara, nu continua cu cererea de prelungire"
+    status: draft
+
+  - id: apply_personally_for_temporary_extension
+    semantic_key: apply_personally_for_temporary_extension
+    title_ro: "Pregateste depunerea personala pentru prelungirea temporara"
+    instruction_ro: >-
+      Daca este vorba de prelungirea temporara a sederii pentru stat tert, pregateste dosarul si
+      depunerea personala la IGI.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta de prelungire temporara a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca stadiul cererii nu este prelungire temporara, nu continua pe aceasta ramura"
+    status: draft
+
+  - id: apply_work_extension_specific_requirements
+    semantic_key: apply_work_extension_specific_requirements
+    title_ro: "Aplica cerintele specifice pentru munca"
+    instruction_ro: >-
+      Daca scopul sederii este munca, completeaza dosarul cu documentele specifice acestui scop.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cerintele specifice pentru munca au fost evaluate"
+    recovery_actions_ro:
+      - "Daca scopul nu este munca, nu activa aceasta ramura"
+    status: draft
+
+  - id: apply_study_extension_specific_requirements
+    semantic_key: apply_study_extension_specific_requirements
+    title_ro: "Aplica cerintele specifice pentru studii"
+    instruction_ro: >-
+      Daca scopul sederii este studiul, completeaza dosarul cu documentele specifice acestui scop.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Cerintele specifice pentru studii au fost evaluate"
+    recovery_actions_ro:
+      - "Daca scopul nu este studiul, nu activa aceasta ramura"
+    status: draft
+
+  - id: apply_family_extension_specific_requirements
+    semantic_key: apply_family_extension_specific_requirements
+    title_ro: "Aplica cerintele specifice pentru familie"
+    instruction_ro: >-
+      Daca scopul sederii este familial, completeaza dosarul cu documentele specifice acestei ramuri.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Cerintele specifice pentru familie au fost evaluate"
+    recovery_actions_ro:
+      - "Daca scopul nu este familial, nu activa aceasta ramura"
+    status: draft
+
+  - id: confirm_purpose_specific_extension
+    semantic_key: confirm_purpose_specific_extension
+    title_ro: "Confirma extensia specifica scopului"
+    instruction_ro: >-
+      Daca scopul nu este dintre cele clasice, confirma separat cerintele specifice pentru acel scop.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Cerintele specifice scopului au fost confirmate sau evaluate"
+    recovery_actions_ro:
+      - "Daca scopul este neclar, nu continua cu documente nepotrivite"
+    status: draft
+
+  - id: open_stage_specific_residence_route
+    semantic_key: open_stage_specific_residence_route
+    title_ro: "Deschide ruta specifica altui stadiu de sedere"
+    instruction_ro: >-
+      Pentru termen lung, carte de familie sau protectie, separa cazul pe procedura specifica
+      stadiului selectat.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Ruta specifica stadiului de sedere a fost identificata"
+    recovery_actions_ro:
+      - "Daca stadiul nu este clar, nu continua pe o procedura gresita"
+    status: draft
+
+requirement_templates:
+  - id: req.valid_travel_document
+    title_ro: "Document de calatorie valabil"
+    description_ro: >-
+      Documentul de calatorie valabil folosit pentru cererea de sedere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Pasaport valabil"
+      - "Alt document de calatorie valabil"
+    readiness_checks:
+      - "Documentul de calatorie este valabil si disponibil"
+    status: draft
+
+  - id: req.health_insurance
+    title_ro: "Dovada asigurarii de sanatate"
+    description_ro: >-
+      Dovada asigurarii de sanatate pentru ruta de sedere care o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada asigurarii de sanatate"
+    readiness_checks:
+      - "Asigurarea de sanatate este dovedita daca ramura o cere"
+    status: draft
+
+  - id: req.fee_payment_evidence
+    title_ro: "Dovada platii taxelor"
+    description_ro: >-
+      Dovada platii taxelor sau tarifelor relevante pentru cererea de sedere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada platii taxelor"
+    readiness_checks:
+      - "Plata ceruta este dovedita daca ramura o cere"
+    status: draft
+
+  - id: req.purpose_specific_documents
+    title_ro: "Documente specifice scopului sederii"
+    description_ro: >-
+      Documentele specifice scopului pentru care se cere obtinerea sau prelungirea sederii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente specifice scopului sederii"
+    readiness_checks:
+      - "Documentele specifice scopului sunt disponibile"
+    status: draft
+
+  - id: req.legal_housing_and_actual_residence_evidence
+    title_ro: "Dovada locuirii legale si efective"
+    description_ro: >-
+      Dovezile privind locuirea legala si efectiva cerute pentru dosarul de sedere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada locuirii legale"
+      - "Dovada resedintei efective"
+    readiness_checks:
+      - "Locuirea legala si efectiva sunt dovedite daca sunt cerute"
+    status: draft

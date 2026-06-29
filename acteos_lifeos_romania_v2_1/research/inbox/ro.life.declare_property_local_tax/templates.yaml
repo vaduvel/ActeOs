@@ -1,0 +1,99 @@
+step_templates:
+  - id: select_atlas_tax_case
+    semantic_key: declare_property_local_tax_select_atlas_case
+    title_ro: "Selecteaza cazul fiscal in Atlas"
+    instruction_ro: >-
+      Pentru pilotul Timisoara, alege cazul fiscal corect in functie de tipul
+      bunului, tipul proprietarului si evenimentul fiscal.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cazul fiscal este selectat sau clarificat."
+    recovery_actions_ro:
+      - "Daca bunul sau evenimentul nu este mapat explicit, cere confirmare inainte de depunere."
+    status: draft
+  - id: prepare_property_tax_file
+    semantic_key: declare_property_local_tax_prepare_file
+    title_ro: "Pregateste dosarul fiscal pentru proprietate"
+    instruction_ro: >-
+      Strange documentele-suport potrivite cladirii, terenului sau reevaluarii,
+      in functie de cazul selectat.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul de declarare fiscala pentru proprietate este pregatit."
+    recovery_actions_ro:
+      - "Nu inventa termenul national daca acesta nu este verificat numeric in surse."
+    status: draft
+  - id: submit_property_tax_declaration
+    semantic_key: declare_property_local_tax_submit
+    title_ro: "Depune declaratia fiscala pentru proprietate"
+    instruction_ro: >-
+      Depune declaratia fiscala pentru bunul relevant prin canalul local ori
+      prin UAT-ul competent.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Declaratia fiscala pentru proprietate este depusa."
+    recovery_actions_ro:
+      - "Pastreaza dovada depunerii si cazul Atlas ales."
+    status: draft
+  - id: select_atlas_revaluation_case
+    semantic_key: declare_property_local_tax_select_revaluation_case
+    title_ro: "Selecteaza cazul de reevaluare"
+    instruction_ro: >-
+      Daca este vorba despre reevaluarea unei cladiri, foloseste cazul local
+      dedicat si pregateste documentele specifice reevaluarii.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de reevaluare este selectata si clarificata."
+    recovery_actions_ro:
+      - "Nu trata reevaluarea ca simpla declarare de dobandire."
+    status: draft
+  - id: identify_competent_local_tax_authority
+    semantic_key: declare_property_local_tax_identify_other_uat
+    title_ro: "Identifica UAT-ul fiscal competent"
+    instruction_ro: >-
+      Daca bunul nu este in Timisoara, identifica autoritatea fiscala locala
+      competenta si confirma procedura ei concreta.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "UAT-ul fiscal competent este identificat."
+    recovery_actions_ro:
+      - "Nu extrapola fluxul Atlas catre alte UAT-uri."
+    status: draft
+
+requirement_templates:
+  - id: copies_certified_conform_to_original
+    title_ro: "Copii certificate conform cu originalul"
+    description_ro: >-
+      Copiile certificate cerute in unele rute locale, in special pentru
+      persoanele juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copii certificate conform cu originalul."
+    readiness_checks:
+      - "Cazul selectat mentioneaza expres aceasta cerinta."
+    status: draft
+  - id: destination_supporting_documents_if_applicable
+    title_ro: "Documente-suport privind destinatia bunului"
+    description_ro: >-
+      Documentele suplimentare despre destinatia sau folosinta bunului, atunci
+      cand ruta fiscala le cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente justificative privind destinatia bunului."
+    readiness_checks:
+      - "Cazul selectat le cere expres."
+    status: draft
+  - id: revaluation_supporting_document
+    title_ro: "Documentul-suport pentru reevaluare"
+    description_ro: >-
+      Documentul care sustine reevaluarea cladirii in cazul fiscal dedicat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Raport, act sau document de reevaluare acceptat de procedura."
+    readiness_checks:
+      - "Evenimentul fiscal este reevaluarea."
+    status: draft
+

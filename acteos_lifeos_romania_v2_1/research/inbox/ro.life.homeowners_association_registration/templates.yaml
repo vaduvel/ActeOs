@@ -1,0 +1,92 @@
+# Step & requirement templates for ro.life.homeowners_association_registration (life.homeowners_association_registration).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: submit_membership_request
+    semantic_key: submit_membership_request
+    title_ro: "Depune cererea de aderare sau actualizare"
+    instruction_ro: >-
+      Daca proprietarul vrea aderare la o asociatie existenta sau trebuie sa
+      actualizeze datele pe ruta relevanta, pregateste cererea scrisa si anexele cerute.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de aderare sau actualizare este pregatita"
+    recovery_actions_ro:
+      - "Daca nu este o asociatie existenta sau proprietarul nu este persoana relevanta, nu continua aceasta ramura"
+    status: draft
+
+  - id: provide_new_owner_information
+    semantic_key: provide_new_owner_information
+    title_ro: "Comunica datele noului proprietar"
+    instruction_ro: >-
+      Daca locuinta a fost dobandita recent, comunica datele noului proprietar
+      si informatiile cerute pe traseul verificat.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Informatiile noului proprietar sunt pregatite pentru comunicare"
+    recovery_actions_ro:
+      - "Daca schimbarea proprietarului nu este confirmata, nu activa aceasta ramura"
+    status: draft
+
+  - id: notify_occupancy_change
+    semantic_key: notify_occupancy_change
+    title_ro: "Notifica schimbarea ocupantilor"
+    instruction_ro: >-
+      Daca exista schimbare de ocupanti, chiriasi sau comodatar, pregateste notificarea pe ruta relevanta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Notificarea schimbarii ocupantilor este pregatita"
+    recovery_actions_ro:
+      - "Daca nu exista schimbare de ocupanti, nu activa aceasta ramura"
+    status: draft
+
+  - id: request_local_association_guidance
+    semantic_key: request_local_association_guidance
+    title_ro: "Cere indrumare locala de la compartimentul de specialitate"
+    instruction_ro: >-
+      Daca exista refuz sau blocaj local in Timisoara, cere indrumare pe canalul local verificat.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de indrumare locala a fost pregatita"
+    recovery_actions_ro:
+      - "Daca remediul local concret nu este confirmat, mentine cazul in clarificare"
+    status: draft
+
+requirement_templates:
+  - id: req.written_membership_request
+    title_ro: "Cerere scrisa de aderare"
+    description_ro: "Cererea scrisa folosita pentru aderarea ulterioara la asociatie."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Cerere scrisa de aderare"]
+    readiness_checks: ["Cererea de aderare este completata"]
+    status: draft
+
+  - id: req.addendum_to_association_agreement
+    title_ro: "Act aditional la acordul asociatiei"
+    description_ro: "Actul aditional folosit pe ruta verificata pentru aderare sau actualizare."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act aditional la acordul asociatiei"]
+    readiness_checks: ["Actul aditional este pregatit daca ruta il cere"]
+    status: draft
+
+  - id: req.property_information_from_title
+    title_ro: "Informatii despre proprietate din titlu"
+    description_ro: "Datele despre unitate si proprietar extrase din documentul de proprietate."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Informatii din actul de proprietate"]
+    readiness_checks: ["Datele despre proprietate sunt acoperite de document"]
+    status: draft
+
+  - id: req.owner_contact_details
+    title_ro: "Datele de contact ale proprietarului"
+    description_ro: "Datele de contact comunicate asociatiei pentru evidenta."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Date de contact ale proprietarului"]
+    readiness_checks: ["Datele de contact ale proprietarului sunt pregatite"]
+    status: draft

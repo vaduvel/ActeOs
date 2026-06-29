@@ -1,0 +1,53 @@
+step_templates:
+  - id: update_vehicle_registration
+    semantic_key: update_vehicle_registration
+    title_ro: "Actualizează adresa pentru certificatul vehiculului"
+    instruction_ro: >-
+      După schimbarea adresei, pregătește actualizarea certificatului de
+      înmatriculare sau a evidenței aferente vehiculului, folosind noul act de
+      identitate și documentele curente ale vehiculului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul pentru actualizarea adresei vehiculului este pregătit sau depus."
+      - "Noul act de identitate și documentele vehiculului sunt atașate."
+    recovery_actions_ro:
+      - "Dacă noul act de identitate nu este încă disponibil, finalizează mai întâi actualizarea adresei personale."
+      - "Dacă vehiculul nu este pe numele tău, nu continua pe acest traseu."
+    status: draft
+
+requirement_templates:
+  - id: req.new_id_card
+    title_ro: "Noul act de identitate"
+    description_ro: >-
+      Actul de identitate care reflectă adresa actualizată și susține cererea
+      pentru documentele vehiculului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate actualizat cu noua adresă."
+    readiness_checks:
+      - "Adresa nouă apare în actul de identitate."
+    status: draft
+  - id: req.old_registration_certificate
+    title_ro: "Certificatul vechi de înmatriculare"
+    description_ro: >-
+      Certificatul curent al vehiculului care urmează să fie actualizat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificatul de înmatriculare curent al vehiculului."
+    readiness_checks:
+      - "Certificatul curent este disponibil pentru dosar."
+    status: draft
+  - id: req.rca_valid
+    title_ro: "RCA valabilă"
+    description_ro: >-
+      Polița RCA valabilă a vehiculului, dacă procedura o cere la actualizarea
+      documentelor.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Poliță RCA valabilă."
+    readiness_checks:
+      - "RCA este în termen de valabilitate."
+    status: draft

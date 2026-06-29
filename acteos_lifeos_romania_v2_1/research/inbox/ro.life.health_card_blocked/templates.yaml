@@ -1,0 +1,52 @@
+step_templates:
+  - id: ask_contract_provider_to_open_helpdesk_ticket
+    semantic_key: health_card_blocked_open_ticket
+    title_ro: "Cere furnizorului sa deschida tichet la helpdesk"
+    instruction_ro: >-
+      Daca blocarea prin PIN este confirmata, cere furnizorului medical aflat in
+      contract sa contacteze helpdesk-ul CNAS si sa obtina numarul de tichet.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Furnizorul a initiat tichetul sau a confirmat contactarea helpdesk-ului."
+    recovery_actions_ro:
+      - "Daca nu esti la un furnizor aflat in contract, cere indrumare CAS pentru ruta corecta."
+    status: draft
+  - id: ask_provider_or_cas_for_pin_procedure
+    semantic_key: health_card_blocked_pin_procedure
+    title_ro: "Cere procedura pentru PIN uitat"
+    instruction_ro: >-
+      Pentru PIN uitat, cere furnizorului sau CAS procedura curenta si nu
+      continua introducerea aleatorie a PIN-ului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ai instructiunea actuala pentru cazul de PIN uitat."
+    recovery_actions_ro:
+      - "Nu continua incercarile pana la pragul de blocare."
+    status: draft
+  - id: provider_diagnoses_reader_or_pias_error
+    semantic_key: health_card_blocked_reader_error
+    title_ro: "Cere furnizorului sa diagnosticheze eroarea"
+    instruction_ro: >-
+      Daca problema pare de cititor sau sistem, cere furnizorului sa verifice
+      daca eroarea vine din card, cititor sau PIAS.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cauza probabila a erorii este clarificata de furnizor."
+    recovery_actions_ro:
+      - "Nu declara automat cardul blocat pana la diagnostic."
+    status: draft
+  - id: delay_emergency_for_card_resolution
+    semantic_key: health_card_blocked_delay_emergency
+    title_ro: "Amana serviciul de urgenta pentru rezolvarea cardului"
+    instruction_ro: >-
+      Acest pas nu trebuie urmat pentru urgente; este mentinut doar ca referinta
+      pentru a marca explicit ca rezolvarea cardului nu trebuie sa intarzie
+      accesul la serviciul de urgenta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta confirma ca serviciul de urgenta nu a fost amanat pentru card."
+    recovery_actions_ro:
+      - "In caz de urgenta, foloseste serviciul medical fara a astepta deblocarea cardului."
+    status: draft
+
+requirement_templates: []

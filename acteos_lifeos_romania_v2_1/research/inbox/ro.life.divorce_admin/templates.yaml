@@ -1,0 +1,93 @@
+# Step & requirement templates for ro.life.divorce_admin (ro.life.divorce_admin).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: file_administrative_divorce_request
+    semantic_key: file_administrative_divorce_request
+    title_ro: "Depune cererea de divort administrativ"
+    instruction_ro: >-
+      Daca sunt indeplinite conditiile pentru ruta administrativa cercetata,
+      pregateste si depune cererea cu actele de stare civila si identitate.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de divort administrativ este pregatita pentru depunere"
+    recovery_actions_ro:
+      - "Daca lipseste acordul sotilor, exista copii minori sau exista procedura paralela, nu continua aceasta ruta"
+    status: draft
+
+  - id: replace_identity_document_after_divorce
+    semantic_key: replace_identity_document_after_divorce
+    title_ro: "Schimba actul de identitate dupa divort"
+    instruction_ro: >-
+      Daca divortul este definitiv si numele s-a schimbat, pregateste inlocuirea
+      actului de identitate pe baza actului final relevant.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de schimbare a actului de identitate dupa divort a fost pregatita"
+    recovery_actions_ro:
+      - "Daca numele nu s-a schimbat, nu activa aceasta ramura pentru motivul numelui"
+    status: draft
+
+requirement_templates:
+  - id: req.spouses_identity_documents
+    title_ro: "Actele de identitate ale sotilor"
+    description_ro: >-
+      Documentele de identitate folosite la cererea de divort administrativ.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Actele de identitate ale sotilor"
+    readiness_checks:
+      - "Actele de identitate ale ambilor soti sunt disponibile"
+    status: draft
+
+  - id: req.spouses_birth_certificates_original
+    title_ro: "Certificatele de nastere in original ale sotilor"
+    description_ro: >-
+      Certificatele de nastere in original folosite pe ruta administrativa verificata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificate de nastere in original"
+    readiness_checks:
+      - "Certificatele de nastere in original sunt pregatite"
+    status: draft
+
+  - id: req.marriage_certificate_original
+    title_ro: "Certificatul de casatorie in original"
+    description_ro: >-
+      Certificatul de casatorie in original folosit pentru cererea de divort administrativ.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de casatorie in original"
+    readiness_checks:
+      - "Certificatul de casatorie in original este disponibil"
+    status: draft
+
+  - id: req.final_divorce_certificate_or_judgment
+    title_ro: "Certificatul sau hotararea definitiva de divort"
+    description_ro: >-
+      Actul final care dovedeste divortul definitiv pentru actualizarea identitatii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de divort definitiv"
+      - "Hotarare definitiva de divort"
+    readiness_checks:
+      - "Actul final privind divortul este disponibil"
+    status: draft
+
+  - id: req.current_identity_document
+    title_ro: "Actul de identitate actual"
+    description_ro: >-
+      Actul de identitate actual care urmeaza sa fie inlocuit dupa schimbarea numelui.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Actul de identitate actual"
+    readiness_checks:
+      - "Actul de identitate actual este disponibil pentru inlocuire"
+    status: draft
