@@ -105,18 +105,18 @@ def test_prepare_projection_rows_preserves_rich_step_and_requirement_objects():
                         "id": "apply_identity_card_expired",
                         "template_id": "tmpl.step.identity",
                         "title_ro": "Depune cererea",
-                        "instruction_ro": "Mergi la ghișeu cu actele.",
+                        "instruction_ro": "Mergi la ghi\u0219eu cu actele.",
                         "sequence": 7,
                         "status": "needs_confirmation",
                         "completion_evidence_ro": ["Bon de programare"],
-                        "recovery_actions_ro": ["Reprogramează"],
+                        "recovery_actions_ro": ["Reprogrameaz\u0103"],
                         "source_claim_ids": [_UUID_1],
                         "requirements": [
                             {
                                 "id": "req.identity_photo",
                                 "template_id": "tmpl.req.identity_photo",
-                                "title_ro": "Fotografie recentă",
-                                "description_ro": "Tip pașaport.",
+                                "title_ro": "Fotografie recent\u0103",
+                                "description_ro": "Tip pa\u0219aport.",
                                 "obligation": "mandatory",
                                 "timing": "later",
                                 "accepted_forms": ["original"],
@@ -137,12 +137,12 @@ def test_prepare_projection_rows_preserves_rich_step_and_requirement_objects():
             "template_id": "tmpl.step.identity",
             "semantic_key": "apply_identity_card_expired",
             "title_ro": "Depune cererea",
-            "instruction_ro": "Mergi la ghișeu cu actele.",
+            "instruction_ro": "Mergi la ghi\u0219eu cu actele.",
             "sequence": 7,
             "status": "needs_confirmation",
             "deadline": None,
             "completion_evidence_ro": ["Bon de programare"],
-            "recovery_actions_ro": ["Reprogramează"],
+            "recovery_actions_ro": ["Reprogrameaz\u0103"],
             "source_claim_ids": [_UUID_1],
             "version": 1,
         }
@@ -152,8 +152,8 @@ def test_prepare_projection_rows_preserves_rich_step_and_requirement_objects():
             "journey_step_semantic_key": "apply_identity_card_expired",
             "template_id": "tmpl.req.identity_photo",
             "semantic_key": "req.identity_photo",
-                "title_ro": "Fotografie recentă",
-                "description_ro": "Tip pașaport.",
+                "title_ro": "Fotografie recent\u0103",
+                "description_ro": "Tip pa\u0219aport.",
                 "obligation": "mandatory",
                 "timing": "later",
                 "accepted_forms": ["original"],
@@ -331,3 +331,31 @@ def test_compiled_replay_query_uses_latest_journey_snapshot():
     assert "where app.journeys.case_id" in sql
     assert "order by app.journeys.revision desc" in sql
     assert "limit" in sql
+
+
+def test_prepare_rows_persists_intent_discovery_columns():
+    case_row, _ = prepare_rows(
+        _case(discovery_source="intent_search", event_context_ids=["life.identity_card_expired"]),
+        _RULE_SET_ID,
+    )
+    assert case_row["intent_type_id"] == "ro.intent.identity.renew_expired_id"
+    assert case_row["event_context_ids"] == ["life.identity_card_expired"]
+    assert case_row["discovery_source"] == "intent_search"
+
+
+def test_prepare_rows_defaults_event_context_ids_to_empty_list():
+    case_row, _ = prepare_rows(_case(), _RULE_SET_ID)
+    assert case_row["event_context_ids"] == []
+    assert case_row["discovery_source"] is None
+
+
+def test_intent_only_case_without_legacy_event_is_valid():
+    case_row, _ = prepare_rows(_case(event_type_id=None), _RULE_SET_ID)
+    assert case_row["event_type_id"] is None
+    assert case_row["intent_type_id"] == "ro.intent.identity.renew_expired_id"
+    assert validate_case_row(case_row) == []
+
+
+def test_case_without_intent_or_event_is_a_violation():
+    case_row, _ = prepare_rows(_case(event_type_id=None, intent_type_id=None), _RULE_SET_ID)
+    assert any("intent_or_event" in v for v in validate_case_row(case_row))

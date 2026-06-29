@@ -325,6 +325,8 @@ def _case(**overrides: Any) -> dict[str, Any]:
         "engine_version": engine_version,
         "ruleset_version": RULESET_VERSION,
         "trust_state": "trusted",
+        "discovery_source": "intent_search",
+        "event_context_ids": [EVENT_TYPE_ID],
         "events": [
             {
                 "event_type_id": EVENT_TYPE_ID,
@@ -433,6 +435,36 @@ def test_sqlalchemy_case_repository_persists_and_replays_latest_snapshot(engine:
         "apply_identity_card_expired"
     }
     assert {row["status"] for row in projected_requirements} == {"missing"}
+
+
+def test_case_row_persists_intent_discovery_columns(engine: Engine):
+    repo = SqlAlchemyCaseRepository(engine)
+    case_id = "88888888-8888-8888-8888-888888888888"
+    repo.save(_case(id=case_id, facts_hash="e" * 64))
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(
+                "select intent_type_id, event_context_ids, discovery_source "
+                "from app.cases where id = :case_id"
+            ),
+            {"case_id": case_id},
+        ).mappings().one()
+    assert row["intent_type_id"] == "ro.intent.identity.renew_expired_id"
+    assert row["event_context_ids"] == [EVENT_TYPE_ID]
+    assert row["discovery_source"] == "intent_search"
+
+
+def test_intent_only_case_persists_without_legacy_event(engine: Engine):
+    repo = SqlAlchemyCaseRepository(engine)
+    case_id = "99999999-9999-9999-9999-999999999999"
+    repo.save(_case(id=case_id, event_type_id=None, facts_hash="f" * 64))
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("select event_type_id, intent_type_id from app.cases where id = :case_id"),
+            {"case_id": case_id},
+        ).mappings().one()
+    assert row["event_type_id"] is None
+    assert row["intent_type_id"] == "ro.intent.identity.renew_expired_id"
 
 
 def test_sqlalchemy_case_repository_rejects_unpublished_ruleset(engine: Engine):

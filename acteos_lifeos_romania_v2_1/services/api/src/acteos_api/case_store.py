@@ -81,7 +81,10 @@ _EVENT_TO_STEP_STATUS = {
     "cancelled": "blocked",
 }
 
-_CASE_REQUIRED = ("event_type_id", "reference_date", "jurisdiction_path", "status", "version")
+# ``event_type_id`` is intentionally absent: db/0004_intent_discovery.sql made it
+# nullable and a case is valid when either ``intent_type_id`` or
+# ``event_type_id`` is present (enforced separately in ``validate_case_row``).
+_CASE_REQUIRED = ("reference_date", "jurisdiction_path", "status", "version")
 _JOURNEY_REQUIRED = (
     "case_id",
     "revision",
@@ -316,6 +319,10 @@ def validate_case_row(row: Mapping[str, Any]) -> list[str]:
     # app.cases.case_identity_ck: user_id is not null OR installation_id is not null
     if not row.get("user_id") and not row.get("installation_id"):
         violations.append(f"app.cases:{ident}:identity(user_id|installation_id)")
+    # app.cases.case_intent_or_legacy_event_ck (db/0004_intent_discovery.sql):
+    # intent_type_id is not null OR event_type_id is not null
+    if not row.get("intent_type_id") and not row.get("event_type_id"):
+        violations.append(f"app.cases:{ident}:intent_or_event(intent_type_id|event_type_id)")
     for column in _CASE_REQUIRED:
         if row.get(column) is None:
             violations.append(f"app.cases:{ident}:{column}")
@@ -434,6 +441,9 @@ def prepare_rows(case: Mapping[str, Any], rule_set_id: str) -> tuple[dict[str, A
         "user_id": case.get("user_id"),
         "installation_id": case.get("installation_id"),
         "event_type_id": case.get("event_type_id"),
+        "intent_type_id": case.get("intent_type_id"),
+        "event_context_ids": _as_string_list(case.get("event_context_ids")),
+        "discovery_source": case.get("discovery_source"),
         "subject_ref": case.get("subject_ref"),
         "reference_date": reference_date,
         "timezone": case.get("timezone", "Europe/Bucharest"),
