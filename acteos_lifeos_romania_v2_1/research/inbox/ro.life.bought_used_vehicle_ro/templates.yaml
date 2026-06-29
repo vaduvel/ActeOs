@@ -1,0 +1,65 @@
+step_templates:
+  - id: declare_vehicle_local_tax
+    semantic_key: declare_vehicle_local_tax
+    title_ro: "Declară vehiculul la taxele locale"
+    instruction_ro: >-
+      După cumpărarea vehiculului, pregătește declararea la organul fiscal local
+      competent și păstrează dovada depunerii pentru continuarea traseului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Declarația fiscală locală a fost depusă."
+      - "Există dovadă de depunere sau înregistrare."
+    recovery_actions_ro:
+      - "Dacă UAT-ul cere un formular local, folosește modelul indicat de canalul oficial."
+    status: draft
+  - id: transcribe_vehicle
+    semantic_key: transcribe_vehicle
+    title_ro: "Transcrie dreptul de proprietate al vehiculului"
+    instruction_ro: >-
+      Pregătește ruta de transcriere a vehiculului pe numele tău, folosind actul
+      de dobândire, dovada fiscală și documentele de circulație aplicabile.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul pentru transcriere este completat."
+      - "Documentele de proprietate și fiscale sunt pregătite."
+    recovery_actions_ro:
+      - "Dacă lipsesc documente de la vânzător, cere completarea lor înainte de depunere."
+    status: draft
+  - id: do_itp
+    semantic_key: do_itp
+    title_ro: "Verifică starea ITP-ului"
+    instruction_ro: >-
+      Confirmă dacă inspecția tehnică periodică este valabilă și, dacă nu este,
+      programează vehiculul pentru ITP înainte de utilizarea lui curentă.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Valabilitatea ITP-ului este confirmată sau inspecția este efectuată."
+    recovery_actions_ro:
+      - "Dacă ITP-ul este expirat, nu trata vehiculul ca pregătit pentru circulație până la reînnoire."
+    status: draft
+
+requirement_templates:
+  - id: req.rca_buyer
+    title_ro: "RCA pe numele cumpărătorului"
+    description_ro: >-
+      Asigurarea RCA valabilă pe numele noului proprietar, atunci când dosarul
+      sau utilizarea vehiculului o cer.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Poliță RCA valabilă pe numele cumpărătorului."
+    readiness_checks:
+      - "RCA este valabilă și emisă pe numele cumpărătorului."
+    status: draft
+  - id: req.new_plates_fee
+    title_ro: "Dovada taxei pentru plăcuțe noi, dacă se aplică"
+    description_ro: >-
+      Dovada plății pentru plăcuțe noi numai dacă traseul ales sau autoritatea
+      competentă confirmă că sunt necesare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada plății tarifului cerut pentru plăcuțe noi, dacă este cazul."
+    readiness_checks:
+      - "Autoritatea competentă a confirmat că sunt necesare plăcuțe noi."
+    status: draft

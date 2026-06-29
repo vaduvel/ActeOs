@@ -1,0 +1,99 @@
+step_templates:
+  - id: file_pfa_working_point_closure
+    semantic_key: close_working_point_file_pfa_closure
+    title_ro: "Depune inchiderea punctului de lucru PFA"
+    instruction_ro: >-
+      Identifica exact punctul de lucru din registru si pregateste mentiunea de
+      inchidere pentru PFA.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta PFA pentru inchiderea punctului de lucru este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca locatia nu este clar identificata in registru, clarifica mai intai adresa exacta."
+    status: draft
+  - id: approve_secondary_office_closure
+    semantic_key: close_working_point_approve_secondary_office_closure
+    title_ro: "Aproba intern inchiderea sediului secundar"
+    instruction_ro: >-
+      Pentru SRL, obtine hotararea interna necesara inchiderii punctului de
+      lucru si verifica daca este necesara modificarea actului constitutiv.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Decizia interna pentru inchiderea sediului secundar este pregatita."
+    recovery_actions_ro:
+      - "Daca nu este clar daca inchiderea modifica actul constitutiv, verifica textul actual inainte de depunere."
+    status: draft
+  - id: file_secondary_office_closure
+    semantic_key: close_working_point_file_secondary_office_closure
+    title_ro: "Depune mentiunea ONRC pentru inchidere"
+    instruction_ro: >-
+      Depune mentiunea de desfiintare a sediului secundar prin canalul oficial
+      si pastreaza dovada depunerii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Mentiunea ONRC de inchidere este depusa."
+    recovery_actions_ro:
+      - "Daca dosarul este incomplet, completeaza actul modificator ori documentele de sustinere."
+    status: draft
+  - id: cancel_local_agreement_for_point
+    semantic_key: close_working_point_cancel_local_agreement
+    title_ro: "Anuleaza acordul local al punctului"
+    instruction_ro: >-
+      Daca locatia are acord comercial sau autorizare locala distincta, urmeaza
+      separat ruta de anulare a acesteia.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta de anulare a acordului local este pregatita sau finalizata."
+    recovery_actions_ro:
+      - "Nu presupune ca radierea ONRC anuleaza automat acordul local."
+    status: draft
+
+requirement_templates:
+  - id: req.onrc_pfa_mention_request
+    title_ro: "Cerere ONRC pentru mentiunea PFA"
+    description_ro: >-
+      Cererea folosita pentru inchiderea punctului de lucru al unui PFA in
+      registrul comertului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea sau formularul ONRC pregatit pentru mentiunea de inchidere."
+    readiness_checks:
+      - "Cererea identifica exact punctul de lucru ce urmeaza a fi inchis."
+    status: draft
+  - id: req.amending_act
+    title_ro: "Act modificator"
+    description_ro: >-
+      Actul intern prin care SRL consemneaza schimbarea atunci cand inchiderea
+      punctului de lucru modifica actul constitutiv.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare, act aditional sau alt act modificator acceptat de ONRC."
+    readiness_checks:
+      - "Inchiderea punctului de lucru schimba actul constitutiv."
+    status: draft
+  - id: req.updated_constitutive_act
+    title_ro: "Act constitutiv actualizat"
+    description_ro: >-
+      Forma consolidata a actului constitutiv, actualizata dupa inchiderea
+      sediului secundar, atunci cand este necesara.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Text complet actualizat al actului constitutiv."
+    readiness_checks:
+      - "Modificarile au fost integrate corect in forma consolidata."
+    status: draft
+  - id: req.local_documents_certified_true_copy
+    title_ro: "Copii certificate pentru dosarul local"
+    description_ro: >-
+      Copiile cerute de ruta locala de anulare a acordului sau autorizatiei
+      punctului de lucru.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copii certificate conform cerintei formularului local aplicabil."
+    readiness_checks:
+      - "Exista efectiv o procedura locala de anulare pentru acea locatie."
+    status: draft

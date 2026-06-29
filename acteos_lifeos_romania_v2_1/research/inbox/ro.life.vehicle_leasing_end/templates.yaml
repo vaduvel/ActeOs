@@ -1,0 +1,134 @@
+step_templates:
+  - id: step.vle.obtain_lessor_docs
+    semantic_key: vehicle_leasing_end_obtain_lessor_docs
+    title_ro: "Obtine actele finale de la finantator"
+    instruction_ro: >-
+      Colecteaza documentul final care atesta transferul proprietatii si orice
+      alte acte predate la inchiderea leasingului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Actele finale de la finantator sunt obtinute."
+    recovery_actions_ro:
+      - "Nu incepe transcrierea daca documentul de transfer al proprietatii lipseste."
+    status: draft
+  - id: step.vle.register_local_tax
+    semantic_key: vehicle_leasing_end_register_local_tax
+    title_ro: "Inregistreaza documentul la fiscal"
+    instruction_ro: >-
+      Inregistreaza documentul de proprietate in evidenta fiscala locala inainte
+      de depunerea dosarului de transcriere, daca ruta aleasa o cere.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Documentul de proprietate este inregistrat fiscal."
+    recovery_actions_ro:
+      - "Verifica diferenta dintre fluxul la ghiseu si cel online pentru documentul fiscal cerut."
+    status: draft
+  - id: step.vle.choose_channel
+    semantic_key: vehicle_leasing_end_choose_channel
+    title_ro: "Alege canalul de transcriere"
+    instruction_ro: >-
+      Alege intre depunerea la ghiseu si fluxul online, apoi pregateste
+      documentele suplimentare specifice acelui canal.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Canalul de depunere este ales si documentele aferente sunt clarificate."
+    recovery_actions_ro:
+      - "Nu presupune ca fluxul online si cel la ghiseu cer exact aceleasi acte."
+    status: draft
+  - id: step.vle.book_timis
+    semantic_key: vehicle_leasing_end_book_timis
+    title_ro: "Fa programarea in Timis"
+    instruction_ro: >-
+      Pentru pilotul Timis, verifica daca este necesara programare HUB ori bon de
+      ordine si obtine confirmarea corespunzatoare.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Programarea sau prezentarea in Timis este clarificata."
+    recovery_actions_ro:
+      - "Disponibilitatea sloturilor este operationala si trebuie verificata aproape de depunere."
+    status: draft
+  - id: step.vle.submit_transcription
+    semantic_key: vehicle_leasing_end_submit_transcription
+    title_ro: "Depune transcrierea dupa leasing"
+    instruction_ro: >-
+      Depune transcrierea dreptului de proprietate in termenul de 90 de zile de
+      la dobandirea proprietatii.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Dosarul de transcriere dupa leasing este depus."
+    recovery_actions_ro:
+      - "Urmareste atent data dobandirii proprietatii pentru calculul termenului."
+    status: draft
+  - id: step.vle.verify_roadworthiness
+    semantic_key: vehicle_leasing_end_verify_roadworthiness
+    title_ro: "Verifica ITP si RCA inainte de circulatie"
+    instruction_ro: >-
+      Confirma ca ITP si RCA sunt valabile daca vrei sa folosesti vehiculul pe
+      drum public inainte sau dupa transcriere.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Starea ITP si RCA este clarificata pentru circulatie."
+    recovery_actions_ro:
+      - "Nu folosi vehiculul pe drum public daca ITP sau RCA sunt expirate."
+    status: draft
+
+requirement_templates:
+  - id: req.vle.ownership_document
+    title_ro: "Documentul de transfer al proprietatii"
+    description_ro: >-
+      Actul final care dovedeste transferul proprietatii dupa incetarea
+      leasingului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Document final de transfer al proprietatii emis la finalul leasingului."
+    readiness_checks:
+      - "Documentul este disponibil si identifica vehiculul corect."
+    status: draft
+  - id: req.vle.local_tax_registration
+    title_ro: "Inregistrarea fiscala locala a documentului"
+    description_ro: >-
+      Dovada ca documentul de proprietate este inregistrat in evidenta fiscala
+      locala atunci cand procedura o cere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Document fiscal local sau confirmare a inregistrarii."
+    readiness_checks:
+      - "Canalul de depunere selectat cere aceasta etapa."
+    status: draft
+  - id: req.vle.tax_certificate_online
+    title_ro: "Certificat fiscal pentru fluxul online"
+    description_ro: >-
+      Certificatul fiscal cerut suplimentar de fluxul online, daca ruta locala
+      il impune.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat fiscal valabil pentru depunerea online."
+    readiness_checks:
+      - "Canalul ales este online."
+    status: draft
+  - id: req.vle.valid_itp
+    title_ro: "ITP valabil"
+    description_ro: >-
+      Dovada ITP valabile pentru utilizarea vehiculului pe drum public.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "ITP valabil confirmat in acte sau verificare oficiala."
+    readiness_checks:
+      - "Vehiculul urmeaza sa fie folosit pe drum public."
+    status: draft
+  - id: req.vle.valid_rca
+    title_ro: "RCA valabila"
+    description_ro: >-
+      Dovada RCA valabile pentru utilizarea vehiculului pe drum public.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Polita RCA valabila."
+    readiness_checks:
+      - "Vehiculul urmeaza sa fie folosit pe drum public."
+    status: draft
+

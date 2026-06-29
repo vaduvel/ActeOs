@@ -1,0 +1,121 @@
+step_templates:
+  - id: step.pet.choose_authority
+    semantic_key: administrative_petition_choose_authority
+    title_ro: "Alege autoritatea competenta"
+    instruction_ro: >-
+      Identifica institutia care trebuie sa primeasca petitia si verifica daca
+      este autoritatea competenta pentru problema descrisa.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Autoritatea destinatara este aleasa."
+    recovery_actions_ro:
+      - "Daca exista indoiala privind competenta, confirma inainte de depunere."
+    status: draft
+  - id: step.pet.prepare
+    semantic_key: administrative_petition_prepare
+    title_ro: "Pregateste petitia"
+    instruction_ro: >-
+      Redacteaza clar problema, cererea concreta si datele de contact, apoi
+      atasaza documentele strict necesare pentru intelegerea situatiei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Textul petitiei este complet si coerent."
+    recovery_actions_ro:
+      - "Daca lipsesc detalii esentiale, completeaza-le inainte de trimitere."
+    status: draft
+  - id: step.pet.submit
+    semantic_key: administrative_petition_submit
+    title_ro: "Depune petitia"
+    instruction_ro: >-
+      Trimite petitia prin canalul oficial disponibil si pastreaza dovada
+      inregistrarii sau a trimiterii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Exista o dovada de depunere sau inregistrare."
+    recovery_actions_ro:
+      - "Daca nu primesti dovada, reia depunerea pe canalul oficial si solicita confirmare."
+    status: draft
+  - id: step.pet.follow_forwarding
+    semantic_key: administrative_petition_follow_forwarding
+    title_ro: "Urmareste redirectionarea"
+    instruction_ro: >-
+      Daca petitia a fost trimisa unei autoritati necompetente, urmareste
+      redirectionarea sau comunicarea catre institutia corecta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Exista confirmare ca petitia a fost directionata sau preluata corect."
+    recovery_actions_ro:
+      - "Daca nu primesti confirmare, revino cu numarul de inregistrare."
+    status: draft
+  - id: step.pet.track_deadline
+    semantic_key: administrative_petition_track_deadline
+    title_ro: "Urmareste termenul de raspuns"
+    instruction_ro: >-
+      Monitorizeaza termenul comunicat sau termenul legal aplicabil si noteaza
+      orice prelungire transmisa oficial.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Termenul de raspuns este notat si urmarit."
+    recovery_actions_ro:
+      - "Daca apare o prelungire, pastreaza notificarea si noul termen comunicat."
+    status: draft
+
+requirement_templates:
+  - id: req.pet.content
+    title_ro: "Continutul petitiei"
+    description_ro: >-
+      Expunerea clara a situatiei si a solicitarii adresate autoritatii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Textul petitiei redactat clar, cu problema si cererea concreta."
+    readiness_checks:
+      - "Solicitarea poate fi inteleasa fara completari majore."
+    status: draft
+  - id: req.pet.registration_proof
+    title_ro: "Dovada depunerii"
+    description_ro: >-
+      Confirmarea oficiala ca petitia a fost primita sau inregistrata.
+    obligation: mandatory
+    timing: later
+    accepted_forms:
+      - "Numar de inregistrare, recipisa, e-mail de confirmare sau alta dovada oficiala."
+    readiness_checks:
+      - "Dovada poate fi pastrata pentru urmarirea raspunsului."
+    status: draft
+  - id: req.pet.identity
+    title_ro: "Date de identificare ale petentului"
+    description_ro: >-
+      Datele minime prin care autoritatea poate identifica petentul si
+      comunica raspunsul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Numele si datele de contact cerute de formularul sau canalul oficial."
+    readiness_checks:
+      - "Datele sunt complete si utilizabile pentru comunicare."
+    status: draft
+  - id: req.pet.extension_notice
+    title_ro: "Notificare de prelungire"
+    description_ro: >-
+      Comunicarea oficiala prin care autoritatea anunta prelungirea termenului
+      de raspuns, daca este cazul.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "E-mail, adresa sau alta notificare oficiala privind prelungirea."
+    readiness_checks:
+      - "Exista o prelungire comunicata expres."
+    status: draft
+  - id: req.pet.timis_attachment
+    title_ro: "Anexa locala ceruta de fluxul Timis"
+    description_ro: >-
+      Documentul sau anexa suplimentara ceruta de varianta locala modelata
+      pentru depunerea petitiei.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Anexa solicitata de canalul local aplicabil."
+    readiness_checks:
+      - "Petitia foloseste ruta locala pentru care aceasta anexa este mentionata."
+    status: draft

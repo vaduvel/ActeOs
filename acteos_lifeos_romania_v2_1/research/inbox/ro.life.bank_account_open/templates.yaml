@@ -1,0 +1,98 @@
+step_templates:
+  - id: step.choose_provider_product
+    semantic_key: choose_provider_product
+    title_ro: "Alege banca si tipul de cont"
+    instruction_ro: >-
+      Selecteaza banca, produsul si daca vrei un cont standard sau un cont de
+      plati cu servicii de baza.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Banca si tipul de cont sunt alese."
+    recovery_actions_ro:
+      - "Daca nu esti sigur ce produs ti se potriveste, cere comparatia oficiala a bancii."
+    status: draft
+  - id: step.prepare_identity
+    semantic_key: prepare_identity
+    title_ro: "Pregateste identificarea"
+    instruction_ro: >-
+      Foloseste un act de identitate valabil si pregateste informatiile cerute
+      de banca pentru cunoasterea clientelei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Identitatea poate fi verificata de banca."
+    recovery_actions_ro:
+      - "Daca verificarea online esueaza, incearca din nou sau foloseste canalul fizic."
+    status: draft
+  - id: step.submit_application
+    semantic_key: submit_application
+    title_ro: "Trimite cererea"
+    instruction_ro: >-
+      Depune cererea prin canalul oficial al bancii si pastreaza confirmarea ca
+      dosarul a fost primit.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Exista confirmarea primirii cererii."
+    recovery_actions_ro:
+      - "Daca nu primesti confirmare, contacteaza banca prin canalul oficial."
+    status: draft
+  - id: step.receive_decision
+    semantic_key: receive_decision
+    title_ro: "Primeste decizia si activeaza contul"
+    instruction_ro: >-
+      Verifica decizia bancii, contractul, IBAN-ul si pasii necesari pentru
+      activarea contului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Contractul sau refuzul motivat este primit."
+      - "IBAN-ul si accesul la cont sunt confirmate, daca cererea a fost acceptata."
+    recovery_actions_ro:
+      - "Pentru contul de baza, urmareste termenul legal publicat de 10 zile lucratoare de la cererea completa."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_identity
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate folosit de banca pentru verificarea identitatii
+      inainte de deschiderea contului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil, in original sau in formatul acceptat de banca."
+    readiness_checks:
+      - "Documentul este valabil si lizibil."
+    status: draft
+  - id: req.kyc_information
+    title_ro: "Informatiile KYC cerute de banca"
+    description_ro: >-
+      Informatiile solicitate pentru cunoasterea clientelei inainte de
+      deschiderea relatiei de afaceri.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declaratii si campuri completate in fluxul oficial al bancii."
+    readiness_checks:
+      - "Informatiile KYC pot fi completate integral."
+    status: draft
+  - id: req.camera_device
+    title_ro: "Dispozitiv cu camera"
+    description_ro: >-
+      Dispozitiv necesar pentru unele fluxuri de onboarding online.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Telefon sau alt dispozitiv cu camera functionala."
+    readiness_checks:
+      - "Fluxul ales este online si solicita verificare video."
+    status: draft
+  - id: req.internet_connection
+    title_ro: "Conexiune la internet"
+    description_ro: >-
+      Conexiune necesara pentru depunerea cererii si verificarea online.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Conexiune la internet functionala."
+    readiness_checks:
+      - "Canalul ales este online."
+    status: draft

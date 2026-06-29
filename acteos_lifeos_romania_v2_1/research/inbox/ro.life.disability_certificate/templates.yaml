@@ -1,0 +1,338 @@
+# Step & requirement templates for ro.life.disability_certificate (life.disability_certificate).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_adult_complex_evaluation_file
+    semantic_key: prepare_adult_complex_evaluation_file
+    title_ro: "Pregateste dosarul de evaluare complexa pentru adult"
+    instruction_ro: >-
+      Pentru adult, pregateste dosarul de evaluare complexa cu actele medicale si sociale cerute de
+      ruta competenta.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul de evaluare complexa pentru adult este pregatit"
+    recovery_actions_ro:
+      - "Daca lipsesc acte medicale sau sociale, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: submit_adult_disability_evaluation_request_to_dgaspc
+    semantic_key: submit_adult_disability_evaluation_request_to_dgaspc
+    title_ro: "Depune cererea de evaluare pentru adult la DGASPC"
+    instruction_ro: >-
+      Dupa pregatirea dosarului adultului, depune cererea pe canalul DGASPC competent.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea de evaluare pentru adult este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca dosarul nu este complet, nu continua depunerea"
+    status: draft
+
+  - id: request_adult_evaluation_at_home
+    semantic_key: request_adult_evaluation_at_home
+    title_ro: "Solicita evaluarea la domiciliu pentru adult"
+    instruction_ro: >-
+      Daca adultul se incadreaza in situatia verificata pentru evaluare la domiciliu, pregateste
+      cererea corespunzatoare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta evaluarii la domiciliu pentru adult a fost evaluata"
+    recovery_actions_ro:
+      - "Daca situatia de evaluare la domiciliu nu este dovedita, nu activa aceasta ramura"
+    status: draft
+
+  - id: receive_certificate_and_piris
+    semantic_key: receive_certificate_and_piris
+    title_ro: "Primeste certificatul si PIRIS"
+    instruction_ro: >-
+      Dupa solutionarea evaluarii, preia certificatul si documentele asociate, inclusiv PIRIS daca
+      ruta il produce.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Certificatul si documentele asociate au fost primite sau urmarite"
+    recovery_actions_ro:
+      - "Daca documentele finale nu sunt comunicate, urmareste dosarul la autoritatea competenta"
+    status: draft
+
+  - id: prepare_and_submit_adult_certificate_contestation
+    semantic_key: prepare_and_submit_adult_certificate_contestation
+    title_ro: "Pregateste si depune contestatia adultului"
+    instruction_ro: >-
+      Daca adultul contesta certificatul comunicat, pregateste contestatia si probele suport pe
+      ruta speciala relevanta.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Contestatia adultului este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca lipseste copia certificatului sau motivarea, completeaza dosarul contestatiei"
+    status: draft
+
+  - id: prepare_child_complex_evaluation_file
+    semantic_key: prepare_child_complex_evaluation_file
+    title_ro: "Pregateste dosarul de evaluare complexa pentru copil"
+    instruction_ro: >-
+      Pentru copil, pregateste dosarul minim national si documentele medicale, psihologice,
+      educationale si de reprezentare cerute.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul de evaluare complexa pentru copil este pregatit"
+    recovery_actions_ro:
+      - "Daca lipseste o piesa din dosarul minim, completeaz-o inainte de depunere"
+    status: draft
+
+  - id: submit_child_disability_evaluation_request_to_dgaspc
+    semantic_key: submit_child_disability_evaluation_request_to_dgaspc
+    title_ro: "Depune cererea de evaluare pentru copil la DGASPC"
+    instruction_ro: >-
+      Dupa pregatirea dosarului copilului, depune cererea pe canalul DGASPC competent.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Cererea de evaluare pentru copil este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca dosarul nu este complet, nu continua depunerea"
+    status: draft
+
+requirement_templates:
+  - id: req.adult_evaluation_application
+    title_ro: "Cerere de evaluare pentru adult"
+    description_ro: >-
+      Cererea folosita pentru evaluarea adultului in vederea incadrarii in grad de handicap.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de evaluare pentru adult"
+    readiness_checks:
+      - "Cererea pentru adult este completata"
+    status: draft
+
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate valabil al persoanei evaluate sau al persoanei relevante din dosar.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: req.current_medical_documents
+    title_ro: "Documente medicale actuale"
+    description_ro: >-
+      Documentele medicale actuale folosite pentru evaluarea incadrarii in grad de handicap.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente medicale actuale"
+    readiness_checks:
+      - "Documentele medicale sunt actuale si relevante"
+    status: draft
+
+  - id: req.social_inquiry_if_required_by_local_file
+    title_ro: "Ancheta sociala, daca este ceruta local"
+    description_ro: >-
+      Ancheta sociala ceruta de dosarul local, daca aceasta se aplica.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Ancheta sociala"
+    readiness_checks:
+      - "Ancheta sociala este disponibila daca dosarul local o cere"
+    status: draft
+
+  - id: req.home_evaluation_request
+    title_ro: "Cerere de evaluare la domiciliu"
+    description_ro: >-
+      Cererea folosita pentru evaluarea la domiciliu, acolo unde ruta o permite.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere de evaluare la domiciliu"
+    readiness_checks:
+      - "Cererea de evaluare la domiciliu este pregatita daca ramura se aplica"
+    status: draft
+
+  - id: req.disability_certificate
+    title_ro: "Certificatul de handicap"
+    description_ro: >-
+      Certificatul emis in urma evaluarii, folosit in etapele ulterioare sau la contestatie.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "Certificat de handicap"
+    readiness_checks:
+      - "Certificatul este disponibil daca a fost emis"
+    status: draft
+
+  - id: req.piris
+    title_ro: "PIRIS"
+    description_ro: >-
+      Documentul PIRIS asociat rutei adultului, daca este emis impreuna cu certificatul.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "PIRIS"
+    readiness_checks:
+      - "PIRIS este disponibil daca a fost emis"
+    status: draft
+
+  - id: req.contested_certificate_copy
+    title_ro: "Copie a certificatului contestat"
+    description_ro: >-
+      Copia certificatului contestat in cazul adultului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie a certificatului contestat"
+    readiness_checks:
+      - "Copia certificatului contestat este disponibila"
+    status: draft
+
+  - id: req.contestation_reason_and_supporting_evidence
+    title_ro: "Motivele contestatiei si probele suport"
+    description_ro: >-
+      Motivele contestatiei si documentele suport pentru contestarea certificatului adultului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Motivele contestatiei"
+      - "Probe suport"
+    readiness_checks:
+      - "Contestatia este motivata si sustinuta documentar"
+    status: draft
+
+  - id: req.child_disability_application
+    title_ro: "Cerere de evaluare pentru copil"
+    description_ro: >-
+      Cererea folosita pentru evaluarea copilului in vederea incadrarii in grad de handicap.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de evaluare pentru copil"
+    readiness_checks:
+      - "Cererea pentru copil este completata"
+    status: draft
+
+  - id: req.child_birth_certificate_or_identity_copy
+    title_ro: "Certificat de nastere sau copie de identitate a copilului"
+    description_ro: >-
+      Documentul de identificare al copilului folosit in dosarul de evaluare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere"
+      - "Copie a actului de identitate al copilului"
+    readiness_checks:
+      - "Identitatea copilului este dovedita documentar"
+    status: draft
+
+  - id: req.parents_or_legal_representative_identity_copies
+    title_ro: "Copii ale actelor de identitate ale parintilor sau reprezentantului legal"
+    description_ro: >-
+      Copiile actelor de identitate ale parintilor sau reprezentantului legal pentru dosarul copilului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copii ale actelor de identitate ale parintilor"
+      - "Copie a actului reprezentantului legal"
+    readiness_checks:
+      - "Reprezentantii copilului pot fi identificati documentar"
+    status: draft
+
+  - id: req.proof_of_legal_representation_if_applicable
+    title_ro: "Dovada reprezentarii legale, daca este cazul"
+    description_ro: >-
+      Dovada reprezentarii legale pentru dosarul copilului, daca este folosita o alta persoana decat parintii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada reprezentarii legale"
+    readiness_checks:
+      - "Reprezentarea legala este dovedita daca este aplicabila"
+    status: draft
+
+  - id: req.social_inquiry
+    title_ro: "Ancheta sociala"
+    description_ro: >-
+      Ancheta sociala folosita in dosarul copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Ancheta sociala"
+    readiness_checks:
+      - "Ancheta sociala este disponibila daca este ceruta"
+    status: draft
+
+  - id: req.synthetic_medical_sheet
+    title_ro: "Fisa medicala sintetica"
+    description_ro: >-
+      Fisa medicala sintetica folosita in dosarul de evaluare al copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Fisa medicala sintetica"
+    readiness_checks:
+      - "Fisa medicala sintetica este disponibila daca este ceruta"
+    status: draft
+
+  - id: req.medical_certificate_a5
+    title_ro: "Certificat medical A5"
+    description_ro: >-
+      Certificatul medical A5 folosit in dosarul de evaluare al copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat medical A5"
+    readiness_checks:
+      - "Certificatul A5 este disponibil daca este cerut"
+    status: draft
+
+  - id: req.additional_medical_documents
+    title_ro: "Documente medicale suplimentare"
+    description_ro: >-
+      Documentele medicale suplimentare necesare pentru dosarul copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente medicale suplimentare"
+    readiness_checks:
+      - "Documentele medicale suplimentare sunt disponibile daca sunt cerute"
+    status: draft
+
+  - id: req.psychological_evaluation_if_applicable
+    title_ro: "Evaluare psihologica, daca este cazul"
+    description_ro: >-
+      Evaluarea psihologica folosita in dosarul copilului, daca este aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Evaluare psihologica"
+    readiness_checks:
+      - "Evaluarea psihologica este disponibila daca este ceruta"
+    status: draft
+
+  - id: req.psychopedagogical_sheet
+    title_ro: "Fisa psihopedagogica"
+    description_ro: >-
+      Fisa psihopedagogica folosita in dosarul copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Fisa psihopedagogica"
+    readiness_checks:
+      - "Fisa psihopedagogica este disponibila daca este ceruta"
+    status: draft
+
+  - id: req.specialist_palliative_care_certificate
+    title_ro: "Certificat de la specialist sau paliatie"
+    description_ro: >-
+      Certificatul medical specializat folosit in ramurile speciale ale evaluarii copilului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat medical specializat"
+    readiness_checks:
+      - "Certificatul specializat este disponibil daca ramura il cere"
+    status: draft

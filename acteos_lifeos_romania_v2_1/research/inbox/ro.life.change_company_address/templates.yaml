@@ -1,0 +1,110 @@
+step_templates:
+  - id: file_pfa_seat_change
+    semantic_key: change_company_address_file_pfa_same_county
+    title_ro: "Depune schimbarea sediului PFA"
+    instruction_ro: >-
+      Daca mutarea sediului profesional ramane in acelasi judet, pregateste si
+      depune mentiunea la ONRC cu noua adresa si dovada folosintei.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Mentiunea de schimbare a sediului PFA este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca lipseste dovada noului sediu, completeaza-o inainte de depunere."
+    status: draft
+  - id: file_pfa_cross_county_seat_change
+    semantic_key: change_company_address_file_pfa_cross_county
+    title_ro: "Depune mutarea PFA in alt judet"
+    instruction_ro: >-
+      Pentru mutarea in alt judet, foloseste ruta speciala care trateaza
+      vechiul si noul sediu in acelasi flux procedural.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de mutare interjudeteana a PFA este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Verifica atent judetul nou si documentele de sediu pentru a evita o depunere pe traseu gresit."
+    status: draft
+  - id: approve_srl_seat_change
+    semantic_key: change_company_address_approve_srl_seat_change
+    title_ro: "Aproba schimbarea sediului SRL"
+    instruction_ro: >-
+      Pentru SRL, obtine hotararea interna de mutare a sediului social si
+      verifica modificarile necesare in actul constitutiv.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Hotararea interna pentru schimbarea sediului social este pregatita."
+    recovery_actions_ro:
+      - "Daca nu este clar daca mutarea afecteaza si alte sedii ori autorizatii, separa acele evenimente."
+    status: draft
+  - id: file_srl_seat_change
+    semantic_key: change_company_address_file_srl_seat_change
+    title_ro: "Depune mentiunea ONRC pentru sediul SRL"
+    instruction_ro: >-
+      Depune mentiunea privind schimbarea sediului social si include forma
+      actualizata a documentelor cerute.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Mentiunea ONRC de schimbare a sediului SRL este depusa."
+    recovery_actions_ro:
+      - "Daca dreptul actual de sediu a expirat, trateaza cu prioritate clarificarea noului sediu."
+    status: draft
+  - id: modify_timisoara_agreement_for_seat
+    semantic_key: change_company_address_modify_timisoara_agreement
+    title_ro: "Modifica acordul comercial pentru sediu"
+    instruction_ro: >-
+      Daca mutarea sediului afecteaza acordul comercial local din Timisoara,
+      urmeaza separat procedura de modificare.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta locala de modificare a acordului pentru sediu este pregatita."
+    recovery_actions_ro:
+      - "Mutarea la ONRC nu actualizeaza automat acordul local."
+    status: draft
+
+requirement_templates:
+  - id: req.new_seat_use_right_document
+    title_ro: "Document de folosinta pentru noul sediu"
+    description_ro: >-
+      Documentul care dovedeste dreptul de folosinta asupra noii adrese folosite
+      ca sediu profesional sau social.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contract sau alt inscris acceptat pentru noua adresa de sediu."
+    readiness_checks:
+      - "Documentul corespunde exact noii adrese declarate."
+    status: draft
+  - id: req.amending_act
+    title_ro: "Act modificator"
+    description_ro: >-
+      Actul care formalizeaza schimbarea sediului atunci cand este necesara
+      modificarea actului constitutiv al societatii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare, act aditional sau alt act modificator acceptat de ONRC."
+    readiness_checks:
+      - "Ruta concreta presupune modificarea actului constitutiv."
+    status: draft
+  - id: req.updated_constitutive_act
+    title_ro: "Act constitutiv actualizat"
+    description_ro: >-
+      Textul consolidat al actului constitutiv dupa schimbarea sediului social.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Forma actualizata complet a actului constitutiv."
+    readiness_checks:
+      - "Noua adresa este reflectata corect in textul consolidat."
+    status: draft
+  - id: req.no_activity_at_registered_office_declaration
+    title_ro: "Declaratie fara activitate la sediu"
+    description_ro: >-
+      Declaratia folosita cand noul sediu este locuinta si nu se desfasoara
+      activitate efectiva la acea adresa.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratia ONRC privind lipsa activitatii la noul sediu."
+    readiness_checks:
+      - "Noul sediu este locuinta si traseul concret cere aceasta declaratie."
+    status: draft

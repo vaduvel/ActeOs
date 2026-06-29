@@ -1,0 +1,57 @@
+# Step & requirement templates for ro.life.driving_licence_expired (life.driving_licence_expired).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: request_licence_new_validity
+    semantic_key: request_licence_new_validity
+    title_ro: "Solicita preschimbarea cu valabilitate noua"
+    instruction_ro: >-
+      Pregateste cererea pentru permis cu valabilitate noua pe canalul acceptat,
+      cu plata, identitatea si documentele relevante confirmate.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta pentru permis cu valabilitate noua a fost pregatita"
+    recovery_actions_ro:
+      - "Daca dosarul, plata sau documentul medical aplicabil nu sunt confirmate, nu continua depunerea"
+    status: draft
+
+  - id: obtain_address_certificate
+    semantic_key: obtain_address_certificate
+    title_ro: "Obtine certificatul de adresa, daca este necesar"
+    instruction_ro: >-
+      Daca solicitantul intra pe ruta conditionala relevanta, pregateste si
+      certificatul de adresa inainte de depunere.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cerinta privind certificatul de adresa a fost clarificata"
+    recovery_actions_ro:
+      - "Daca nu este clar daca certificatul se aplica, confirma ruta inainte de depunere"
+    status: draft
+
+requirement_templates:
+  - id: req.payment_89_ron
+    title_ro: "Dovada platii de 89 lei"
+    description_ro: >-
+      Dovada platii contravalorii publicate pentru emiterea permisului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii de 89 lei"
+    readiness_checks:
+      - "Plata este efectuata si poate fi dovedita"
+    status: draft
+
+  - id: req.identity_and_signature_capture
+    title_ro: "Identitatea si captarea semnaturii"
+    description_ro: >-
+      Actul de identitate si pregatirea pentru formalitatile de identificare si semnatura.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+      - "Prezentare pentru captarea semnaturii"
+    readiness_checks:
+      - "Identitatea este confirmata si solicitantul poate finaliza formalitatile de semnatura"
+    status: draft

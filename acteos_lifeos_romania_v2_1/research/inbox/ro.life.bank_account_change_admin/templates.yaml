@@ -1,0 +1,87 @@
+step_templates:
+  - id: select_cnpp_payment_change_form
+    semantic_key: select_cnpp_payment_change_form
+    title_ro: "Alege formularul CNPP pentru schimbarea modalitatii de plata"
+    instruction_ro: >-
+      Verifica daca plata este gestionata de CNPP sau casa teritoriala competenta
+      si foloseste formularul oficial pentru schimbarea modalitatii de plata.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Formularul corect CNPP este identificat."
+    recovery_actions_ro:
+      - "Daca plata nu este gestionata de CNPP, treci la procedura institutiei platitoare."
+    status: draft
+  - id: prepare_cnpp_payment_change_request
+    semantic_key: prepare_cnpp_payment_change_request
+    title_ro: "Pregateste cererea CNPP"
+    instruction_ro: >-
+      Completeaza cererea pentru schimbarea modalitatii de plata si verifica
+      datele beneficiarului, metoda noua de plata si casa competenta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea este completata pentru metoda noua de plata."
+    recovery_actions_ro:
+      - "Daca lipsesc datele beneficiarului sau ale contului, completeaza-le inainte de depunere."
+    status: draft
+  - id: switch_cnpp_payment_to_bank
+    semantic_key: switch_cnpp_payment_to_bank
+    title_ro: "Schimba plata din posta in cont bancar"
+    instruction_ro: >-
+      Foloseste cererea CNPP pentru a muta plata din posta in cont curent sau
+      cont de card, pe baza noului IBAN confirmat.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Noua metoda de plata bancara este indicata in cerere."
+    recovery_actions_ro:
+      - "Confirma IBAN-ul si titularul contului inainte de depunere."
+    status: draft
+  - id: switch_cnpp_payment_to_post
+    semantic_key: switch_cnpp_payment_to_post
+    title_ro: "Schimba plata din cont bancar in posta"
+    instruction_ro: >-
+      Foloseste cererea CNPP pentru a reveni la plata la domiciliu sau
+      resedinta, conform optiunii beneficiarului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Optiunea pentru plata prin posta este indicata in cerere."
+    recovery_actions_ro:
+      - "Confirma adresa de plata si casa competenta inainte de depunere."
+    status: draft
+  - id: replace_cnpp_payment_account
+    semantic_key: replace_cnpp_payment_account
+    title_ro: "Inlocuieste contul bancar folosit de CNPP"
+    instruction_ro: >-
+      Daca plata ramane in cont bancar, completeaza cererea cu noul IBAN si
+      verifica diferenta fata de contul vechi.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Noul IBAN este trecut corect in cerere."
+    recovery_actions_ro:
+      - "Daca IBAN-ul nou este identic cu cel vechi, verifica daca exista alta schimbare reala de operat."
+    status: draft
+
+requirement_templates:
+  - id: cnpp_payment_method_change_form
+    title_ro: "Formularul CNPP pentru schimbarea modalitatii de plata"
+    description_ro: >-
+      Formularul oficial folosit pentru schimbarea modalitatii de plata a
+      pensiei, indemnizatiei sau pensiei de serviciu.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Formularul oficial CNPP completat."
+    readiness_checks:
+      - "Formularul este completat pentru institutia platitoare corecta."
+    status: draft
+  - id: cnpp_beneficiary_data_change_form
+    title_ro: "Formularul CNPP pentru modificarea datelor beneficiarului"
+    description_ro: >-
+      Formular distinct folosit cand se modifica si datele beneficiarului, nu
+      doar modalitatea de plata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Formularul CNPP pentru modificarea datelor beneficiarului."
+    readiness_checks:
+      - "Exista schimbari de identitate sau contact care trebuie declarate separat."
+    status: draft

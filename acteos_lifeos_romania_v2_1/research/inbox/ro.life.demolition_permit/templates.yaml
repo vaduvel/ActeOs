@@ -1,0 +1,203 @@
+# Step & requirement templates for ro.life.demolition_permit (life.demolition_permit).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: obtain_urbanism_certificate
+    semantic_key: obtain_urbanism_certificate
+    title_ro: "Obtine certificatul de urbanism"
+    instruction_ro: >-
+      Obtine certificatul de urbanism relevant inainte de pregatirea dosarului de desfiintare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Certificatul de urbanism este disponibil"
+    recovery_actions_ro:
+      - "Daca certificatul lipseste, nu continua dosarul"
+    status: draft
+
+  - id: complete_environmental_procedure
+    semantic_key: complete_environmental_procedure
+    title_ro: "Finalizeaza procedura de mediu"
+    instruction_ro: >-
+      Verifica si obtine actul autoritatii de mediu, daca demolarea sau dezafectarea o cere.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Etapa de mediu a fost verificata sau finalizata"
+    recovery_actions_ro:
+      - "Daca etapa de mediu este necesara si lipseste, nu continua dosarul"
+    status: draft
+
+  - id: obtain_required_approvals
+    semantic_key: obtain_required_approvals
+    title_ro: "Obtine avizele si acordurile cerute"
+    instruction_ro: >-
+      Strange avizele si acordurile indicate de certificatul de urbanism pentru demolare sau
+      dezafectare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Avizele si acordurile pentru demolare sunt pregatite"
+    recovery_actions_ro:
+      - "Daca lipseste un aviz cerut, completeaza-l inainte de depunere"
+    status: draft
+
+  - id: prepare_demolition_technical_documentation
+    semantic_key: prepare_demolition_technical_documentation
+    title_ro: "Pregateste documentatia tehnica pentru desfiintare"
+    instruction_ro: >-
+      Pregateste documentatia tehnica folosita la autorizarea demolarii sau dezafectarii.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Documentatia tehnica pentru desfiintare este pregatita"
+    recovery_actions_ro:
+      - "Daca documentatia tehnica nu este gata, nu marca dosarul ca complet"
+    status: draft
+
+  - id: pay_authorisation_fee
+    semantic_key: pay_authorisation_fee
+    title_ro: "Achita taxa pentru autorizatia de desfiintare"
+    instruction_ro: >-
+      Achita taxa relevanta pe ruta locala confirmata si pastreaza dovada platii.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Dovada platii taxei este disponibila"
+    recovery_actions_ro:
+      - "Daca suma locala nu este confirmata, nu presupune valoarea taxei"
+    status: draft
+
+  - id: submit_demolition_permit_file
+    semantic_key: submit_demolition_permit_file
+    title_ro: "Depune dosarul de desfiintare"
+    instruction_ro: >-
+      Depune dosarul complet pentru autorizatia de desfiintare dupa pregatirea tuturor pieselor
+      cerute.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul de desfiintare a fost depus"
+    recovery_actions_ro:
+      - "Daca dosarul este incomplet, completeaza lipsurile inainte de depunere"
+    status: draft
+
+  - id: receive_demolition_permit
+    semantic_key: receive_demolition_permit
+    title_ro: "Primeste autorizatia de desfiintare"
+    instruction_ro: >-
+      Urmareste solutionarea dosarului si primeste autorizatia pe canalul local confirmat.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Autorizatia de desfiintare a fost primita"
+    recovery_actions_ro:
+      - "Daca lipseste decizia sau apar completari, urmareste dosarul la autoritatea competenta"
+    status: draft
+
+  - id: identify_authorising_local_authority
+    semantic_key: identify_authorising_local_authority
+    title_ro: "Identifica autoritatea locala competenta"
+    instruction_ro: >-
+      Pentru alte UAT-uri, identifica autoritatea locala competenta si canalul curent de depunere.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Autoritatea locala competenta a fost identificata"
+    recovery_actions_ro:
+      - "Daca autoritatea nu este clara, confirma local inainte de depunere"
+    status: draft
+
+requirement_templates:
+  - id: proof_of_title_or_real_right
+    title_ro: "Dovada titlului sau a dreptului real"
+    description_ro: >-
+      Dovada titlului sau a dreptului real asupra imobilului pentru dosarul de desfiintare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate"
+      - "Alt document privind dreptul real"
+    readiness_checks:
+      - "Dreptul asupra imobilului este dovedit"
+    status: draft
+
+  - id: urbanism_certificate
+    title_ro: "Certificat de urbanism"
+    description_ro: >-
+      Certificatul de urbanism folosit pentru autorizatia de desfiintare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de urbanism"
+    readiness_checks:
+      - "Certificatul de urbanism este disponibil si relevant"
+    status: draft
+
+  - id: current_cadastral_plan_and_land_book_extract_if_applicable
+    title_ro: "Plan cadastral curent si extras de carte funciara, daca este cazul"
+    description_ro: >-
+      Documentele cadastrale si de carte funciara cerute de dosarul de desfiintare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Plan cadastral curent"
+      - "Extras de carte funciara"
+    readiness_checks:
+      - "Documentele cadastrale cerute sunt disponibile"
+    status: draft
+
+  - id: technical_documentation_for_demolition
+    title_ro: "Documentatie tehnica pentru desfiintare"
+    description_ro: >-
+      Documentatia tehnica folosita pentru autorizarea demolarii sau dezafectarii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documentatie tehnica pentru desfiintare"
+    readiness_checks:
+      - "Documentatia tehnica pentru desfiintare este pregatita"
+    status: draft
+
+  - id: approvals_and_agreements_from_urbanism_certificate
+    title_ro: "Avize si acorduri din certificatul de urbanism"
+    description_ro: >-
+      Avizele si acordurile cerute prin certificatul de urbanism pentru demolare sau dezafectare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Avize si acorduri relevante"
+    readiness_checks:
+      - "Avizele si acordurile cerute sunt prezente in dosar"
+    status: draft
+
+  - id: environmental_authority_act_if_applicable
+    title_ro: "Actul autoritatii de mediu, daca este aplicabil"
+    description_ro: >-
+      Actul autoritatii de mediu cerut pentru dosarul de desfiintare, daca este cazul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act al autoritatii de mediu"
+    readiness_checks:
+      - "Etapa de mediu este acoperita pentru situatie"
+    status: draft
+
+  - id: authorisation_fee_payment_proof
+    title_ro: "Dovada platii taxei de autorizare"
+    description_ro: >-
+      Dovada platii taxei aferente autorizatiei de desfiintare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii taxei"
+    readiness_checks:
+      - "Dovada platii este disponibila pentru dosar"
+    status: draft
+
+  - id: specific_heritage_and_protected_area_approvals
+    title_ro: "Avize specifice pentru patrimoniu sau zona protejata"
+    description_ro: >-
+      Avizele specifice pentru desfiintare in zone protejate sau cu implicatii de patrimoniu.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Avize de patrimoniu"
+      - "Avize pentru zona protejata"
+    readiness_checks:
+      - "Ruta speciala pentru zona protejata este acoperita documentar"
+    status: draft

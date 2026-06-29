@@ -1,0 +1,123 @@
+step_templates:
+  - id: request_first_identity_card
+    semantic_key: identity_card_first_request
+    title_ro: "Depune cererea pentru primul act de identitate"
+    instruction_ro: >-
+      Verifica varsta, termenul legal si actele cerute pentru prima emitere,
+      apoi depune cererea prin canalul oficial corespunzator CEI sau CIS.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru primul act de identitate este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca lipseste un document de stare civila ori de domiciliu, completeaza dosarul inainte de depunere."
+    status: draft
+  - id: request_optional_cei_for_child
+    semantic_key: identity_card_first_optional_child_cei
+    title_ro: "Solicita CEI optionala pentru copil sub 14 ani"
+    instruction_ro: >-
+      Daca se urmeaza ruta optionala pentru copil sub 14 ani, verifica persoana
+      autorizata, acordul necesar si prezenta titularului la depunere.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta optionala de CEI pentru copil este clarificata si pregatita."
+    recovery_actions_ro:
+      - "Nu folosi aceasta ruta pentru CIS, care este blocata sub 14 ani."
+    status: draft
+
+requirement_templates:
+  - id: req.parent_or_legal_representative_present
+    title_ro: "Parinte sau reprezentant legal prezent"
+    description_ro: >-
+      Prezenta persoanei autorizate sa insoteasca minorul la depunerea cererii,
+      atunci cand ruta o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Prezenta la ghișeu a parintelui sau reprezentantului legal competent."
+    readiness_checks:
+      - "Situatia minorului cere insotire sau reprezentare."
+    status: draft
+  - id: req.birth_certificate_original
+    title_ro: "Certificat de nastere in original"
+    description_ro: >-
+      Certificatul de nastere folosit pentru identificarea titularului la prima
+      emitere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere in original."
+    readiness_checks:
+      - "Documentul este disponibil si corespunde titularului."
+    status: draft
+  - id: req.parent_identity_and_address_proof
+    title_ro: "Actul parintelui si dovada adresei"
+    description_ro: >-
+      Documentele de identificare ale parintelui si dovada domiciliului ori a
+      adresei folosite in dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al parintelui si dovada adresei acceptata de procedura."
+    readiness_checks:
+      - "Adresa declarata pentru minor poate fi sustinuta prin documente."
+    status: draft
+  - id: req.parental_status_documents_if_applicable
+    title_ro: "Documente privind situatia parintilor"
+    description_ro: >-
+      Actele privind custodia, divortul, consimtamantul autentificat ori alta
+      situatie parentala relevanta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare, acord autentificat sau alt document privind situatia parintilor."
+    readiness_checks:
+      - "Situatia familiala a minorului cere document suplimentar."
+    status: draft
+  - id: req.identity_confirmation_declaration
+    title_ro: "Declaratie de confirmare a identitatii"
+    description_ro: >-
+      Declaratia folosita in cazurile in care traseul pentru prima emitere o
+      cere pentru confirmarea identitatii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratia completata in forma ceruta de autoritatea emitenta."
+    readiness_checks:
+      - "Ruta concreta pentru titularul major sau cazul special cere aceasta declaratie."
+    status: draft
+  - id: req.proof_of_domicile
+    title_ro: "Dovada domiciliului"
+    description_ro: >-
+      Documentul care sustine adresa de domiciliu folosita pentru emiterea
+      actului de identitate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Document de domiciliu acceptat de procedura locala sau nationala."
+    readiness_checks:
+      - "Adresa din dosar poate fi dovedita in mod coerent."
+    status: draft
+  - id: req.authorized_parent_or_representative
+    title_ro: "Parinte sau reprezentant autorizat"
+    description_ro: >-
+      Persoana autorizata sa depuna cererea pentru ruta optionala de CEI a
+      copilului sub 14 ani.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Parinte, reprezentant legal sau alta persoana admisa de procedura."
+    readiness_checks:
+      - "Ruta aleasa este cea de CEI optionala pentru copil."
+    status: draft
+  - id: req.applicant_physical_presence
+    title_ro: "Prezenta fizica a titularului"
+    description_ro: >-
+      Prezenta titularului la depunerea cererii pentru preluarea datelor si
+      finalizarea dosarului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Prezentare fizica la ghișeu sau in canalul oficial care solicita prezenta."
+    readiness_checks:
+      - "Titularul poate fi prezent la momentul depunerii."
+    status: draft

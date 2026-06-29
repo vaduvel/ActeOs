@@ -1,0 +1,123 @@
+step_templates:
+  - id: prepare_pfa_registration
+    semantic_key: open_pfa_prepare_registration
+    title_ro: "Pregateste dosarul PFA"
+    instruction_ro: >-
+      Clarifica activitatile, sediul profesional si formularistica ONRC, apoi
+      strange declaratiile si anexele cerute pentru inregistrarea initiala.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul PFA este pregatit pentru depunere."
+    recovery_actions_ro:
+      - "Daca lipseste un document de sediu sau o declaratie ONRC, completeaza-l inainte de depunere."
+    status: draft
+  - id: file_pfa_registration
+    semantic_key: open_pfa_file_registration
+    title_ro: "Depune cererea la ONRC"
+    instruction_ro: >-
+      Depune cererea prin canalul ales si pastreaza dovada transmiterii ori a
+      inregistrarii dosarului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea de inregistrare PFA este depusa."
+    recovery_actions_ro:
+      - "Daca nu primesti confirmare, verifica semnatarul si canalul oficial folosit."
+    status: draft
+  - id: obtain_sector_permits
+    semantic_key: open_pfa_obtain_sector_permits
+    title_ro: "Obtine avizele sau licentele speciale"
+    instruction_ro: >-
+      Pentru activitatile reglementate, urmeaza separat ruta de avizare sau
+      licentiere ceruta de actul special aplicabil.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Avizul ori licenta speciala este obtinuta sau traseul este clarificat."
+    recovery_actions_ro:
+      - "Daca activitatea este reglementata, nu porni operarea fara confirmarea avizului necesar."
+    status: draft
+  - id: obtain_timisoara_commercial_agreement
+    semantic_key: open_pfa_obtain_timisoara_commercial_agreement
+    title_ro: "Obtine acordul comercial Timisoara"
+    instruction_ro: >-
+      Daca activitatea si amplasamentul intra in procedura locala, continua
+      separat cu acordul comercial aplicabil in Timisoara.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta acordului comercial local este deschisa sau finalizata."
+    recovery_actions_ro:
+      - "Daca nu este clar daca activitatea intra in procedura locala, confirma cazul concret inainte de a continua."
+    status: draft
+
+requirement_templates:
+  - id: req.professional_seat_use_right_document
+    title_ro: "Document de folosinta pentru sediul profesional"
+    description_ro: >-
+      Documentul care arata dreptul de folosinta asupra sediului profesional al
+      PFA-ului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contract sau alt inscris acceptat de ONRC pentru folosinta sediului."
+    readiness_checks:
+      - "Documentul acopera adresa folosita ca sediu profesional."
+    status: draft
+  - id: req.no_activity_at_professional_seat_declaration
+    title_ro: "Declaratie ca nu se desfasoara activitate la sediu"
+    description_ro: >-
+      Declaratia folosita cand sediul este locuinta si activitatea nu se
+      desfasoara efectiv la adresa respectiva.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratia ONRC privind lipsa activitatii la sediul profesional."
+    readiness_checks:
+      - "Sediul este locuinta si ruta aleasa cere aceasta declaratie."
+    status: draft
+  - id: req.professional_qualification_or_experience_proof
+    title_ro: "Dovada calificarii sau experientei profesionale"
+    description_ro: >-
+      Documentul care sustine indeplinirea cerintei profesionale pentru
+      activitatile ce o cer.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Diploma, atestat, certificat sau alt document acceptat de cadrul special."
+    readiness_checks:
+      - "Activitatea aleasa are cerinta de calificare ori experienta."
+    status: draft
+  - id: req.special_sector_permit
+    title_ro: "Aviz sau permis sectorial"
+    description_ro: >-
+      Avizul, licenta ori permisul cerut de regimul special al activitatii
+      economice respective.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Avizul sau licenta emisa de autoritatea competenta."
+    readiness_checks:
+      - "Pentru activitatea selectata exista un act special care cere autorizare prealabila."
+    status: draft
+  - id: req.onrc_annex_2b
+    title_ro: "Anexa ONRC 2B"
+    description_ro: >-
+      Formularul ONRC folosit in dosarul de inregistrare initiala al PFA-ului,
+      atunci cand este cerut de ruta modelata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Anexa 2B completata si semnata in forma ceruta de ONRC."
+    readiness_checks:
+      - "Formularul este completat pentru cazul corect."
+    status: draft
+  - id: req.onrc_annex_4
+    title_ro: "Anexa ONRC 4"
+    description_ro: >-
+      Formularul ONRC inclus in pachetul de inregistrare initiala conform
+      traseului modelat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Anexa 4 completata si semnata in forma ceruta."
+    readiness_checks:
+      - "Anexa corespunde dosarului care se depune."
+    status: draft

@@ -1,0 +1,158 @@
+# Step & requirement templates for ro.life.diploma_duplicate (life.diploma_duplicate).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: identify_issuing_school_or_archive_holder
+    semantic_key: identify_issuing_school_or_archive_holder
+    title_ro: "Identifica emitentul sau detinatorul arhivei"
+    instruction_ro: >-
+      Pentru actele preuniversitare, identifica unitatea emitenta sau institutia
+      care detine arhiva inainte de a depune cererea pentru duplicat.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Emitentul sau detinatorul arhivei a fost identificat"
+    recovery_actions_ro:
+      - "Daca arhiva nu este la unitatea emitenta, clarifica ruta cu detinatorul arhivei"
+    status: draft
+
+  - id: submit_duplicate_request
+    semantic_key: submit_duplicate_request
+    title_ro: "Depune cererea pentru duplicat"
+    instruction_ro: >-
+      Dupa pregatirea motivului si a documentelor relevante, depune cererea
+      pentru emiterea duplicatului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea pentru duplicat este pregatita pentru depunere"
+    recovery_actions_ro:
+      - "Daca lipsesc documentele specifice motivului invocat, completeaza dosarul"
+    status: draft
+
+  - id: issuer_reconstructs_from_archive
+    semantic_key: issuer_reconstructs_from_archive
+    title_ro: "Emitentul reconstituie actul din arhiva"
+    instruction_ro: >-
+      Daca motivul este deteriorarea sau eroarea emitentului, urmeaza ruta de
+      reconstituire din arhiva pe baza cererii scrise.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta de reconstituire din arhiva a fost pregatita"
+    recovery_actions_ro:
+      - "Daca motivul real este pierderea sau furtul, foloseste setul de documente corespunzator"
+    status: draft
+
+  - id: obtain_archives_supporting_documents
+    semantic_key: obtain_archives_supporting_documents
+    title_ro: "Obtine documentele suport din arhive"
+    instruction_ro: >-
+      Daca arhiva este la Arhivele Nationale, pregateste documentele suport
+      necesare pentru a continua ruta inspectoratului scolar.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Documentele suport din arhive au fost pregatite"
+    recovery_actions_ro:
+      - "Daca arhiva nu este la Arhivele Nationale, revino la emitentul sau detinatorul corect"
+    status: draft
+
+  - id: submit_to_school_inspectorate
+    semantic_key: submit_to_school_inspectorate
+    title_ro: "Depune la inspectoratul scolar"
+    instruction_ro: >-
+      Daca ruta preuniversitara trece prin inspectoratul scolar, depune
+      documentele pregatite pe acest circuit.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta prin inspectoratul scolar a fost pregatita"
+    recovery_actions_ro:
+      - "Daca inspectoratul nu este implicat in cazul concret, urmeaza emitentul sau arhiva relevanta"
+    status: draft
+
+  - id: contact_accredited_issuing_higher_education_institution
+    semantic_key: contact_accredited_issuing_higher_education_institution
+    title_ro: "Contacteaza institutia de invatamant superior emitenta"
+    instruction_ro: >-
+      Pentru invatamant superior, foloseste institutia acreditata care a emis
+      actul pentru a confirma procedura concreta de duplicat.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Institutia emitenta pentru invatamant superior a fost identificata si contactata"
+    recovery_actions_ro:
+      - "Daca institutia emitenta nu este clara, confirma arhiva sau succesorul institutional"
+    status: draft
+
+requirement_templates:
+  - id: req.notarial_or_consular_declaration
+    title_ro: "Declaratie notariala sau consulara"
+    description_ro: >-
+      Declaratia folosita pentru pierdere, furt sau distrugere in ruta preuniversitara.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie notariala"
+      - "Declaratie consulara"
+    readiness_checks:
+      - "Declaratia este pregatita daca motivul invocat o cere"
+    status: draft
+
+  - id: req.monitorul_oficial_part_iii_proof
+    title_ro: "Dovada publicarii in Monitorul Oficial Partea a III-a"
+    description_ro: >-
+      Dovada publicarii cerute pentru anumite cazuri de duplicat preuniversitar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada publicarii in Monitorul Oficial Partea a III-a"
+    readiness_checks:
+      - "Dovada publicarii este pregatita daca ruta o cere"
+    status: draft
+
+  - id: req.notarized_birth_or_marriage_certificate_copy
+    title_ro: "Copie legalizata a certificatului de nastere sau casatorie"
+    description_ro: >-
+      Documentul de stare civila cerut in forma legalizata pentru dosarul de duplicat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie legalizata certificat de nastere"
+      - "Copie legalizata certificat de casatorie"
+    readiness_checks:
+      - "Documentul de stare civila este pregatit in forma ceruta"
+    status: draft
+
+  - id: req.two_color_photos_3x4
+    title_ro: "Doua fotografii color 3x4"
+    description_ro: >-
+      Fotografiile cerute pentru dosarul de duplicat preuniversitar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Doua fotografii color 3x4"
+    readiness_checks:
+      - "Fotografiile cerute sunt pregatite"
+    status: draft
+
+  - id: req.isj_board_written_approval
+    title_ro: "Aprobarea scrisa a inspectoratului scolar"
+    description_ro: >-
+      Aprobarea scrisa relevanta pentru emiterea duplicatului pe ruta verificata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Aprobare scrisa a inspectoratului scolar"
+    readiness_checks:
+      - "Aprobarea scrisa este pregatita daca ruta o cere"
+    status: draft
+
+  - id: req.written_request
+    title_ro: "Cerere scrisa"
+    description_ro: >-
+      Cererea scrisa folosita pentru deteriorare sau eroare imputabila emitentului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere scrisa"
+    readiness_checks:
+      - "Cererea scrisa este pregatita pentru cazul relevant"
+    status: draft

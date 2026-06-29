@@ -1,0 +1,134 @@
+step_templates:
+  - id: define_power_of_attorney_scope
+    semantic_key: power_of_attorney_define_scope
+    title_ro: "Defineste mandatul si mandatarul"
+    instruction_ro: >-
+      Stabileste exact pentru ce operatie este data procura, cine este
+      mandatarul si ce puteri concrete trebuie mentionate.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Mandatul si mandatarul sunt clar definite."
+    recovery_actions_ro:
+      - "Daca destinatarul are cerinte proprii de formulare, confirma-le inainte de redactare."
+    status: draft
+  - id: book_notary_for_authentic_power_of_attorney
+    semantic_key: power_of_attorney_book_authentic_notary
+    title_ro: "Programeaza procura autentica la notar"
+    instruction_ro: >-
+      Daca procedura cere forma autentica, mergi la notarul public pentru
+      autentificarea procurii.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de autentificare a procurii este stabilita."
+    recovery_actions_ro:
+      - "Nu inlocui autentificarea cu simpla legalizare a semnaturii daca forma autentica este ceruta."
+    status: draft
+  - id: principal_appears_and_consents_before_notary
+    semantic_key: power_of_attorney_principal_before_notary
+    title_ro: "Mandantul se prezinta si isi exprima consimtamantul"
+    instruction_ro: >-
+      Mandantul se prezinta personal la notar cu actul de identitate si
+      confirma procura in procedura de autentificare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Prezentarea si consimtamantul mandantului sunt indeplinite."
+    recovery_actions_ro:
+      - "Daca mandantul nu se poate prezenta, confirma daca exista o alta ruta legala pentru situatia concreta."
+    status: draft
+  - id: prepare_authentic_succession_power_of_attorney
+    semantic_key: power_of_attorney_prepare_succession_authentic
+    title_ro: "Pregateste procura succesorala autentica"
+    instruction_ro: >-
+      Pentru reprezentarea in succesiune, pregateste procura in forma autentica
+      si clarifica expres actele ori operatiunile acoperite.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Procura succesorala autentica este pregatita."
+    recovery_actions_ro:
+      - "Daca obiectul reprezentarii nu este clar, defineste-l mai precis inainte de autentificare."
+    status: draft
+  - id: find_notary
+    semantic_key: power_of_attorney_find_notary
+    title_ro: "Gaseste notarul competent"
+    instruction_ro: >-
+      Foloseste canalele oficiale notariale pentru a identifica notarul la care
+      vei autentifica procura.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Un notar relevant pentru procedura este identificat."
+    recovery_actions_ro:
+      - "Daca ai nevoie de orientare teritoriala, porneste de la camera notariala competenta."
+    status: draft
+
+requirement_templates:
+  - id: underlying_act_or_procedure
+    title_ro: "Actul sau procedura reprezentata"
+    description_ro: >-
+      Operatiunea concreta pentru care este data procura, astfel incat
+      intinderea mandatului sa poata fi descrisa precis.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Descriere clara a procedurii, operatiunii sau dosarului pentru care se da procura."
+    readiness_checks:
+      - "Este clar ce trebuie sa poata face mandatarul."
+    status: draft
+  - id: attorney_identity
+    title_ro: "Identitatea mandatarului"
+    description_ro: >-
+      Datele persoanei imputernicite sa reprezinte mandantul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Numele si datele de identificare necesare pentru individualizarea mandatarului."
+    readiness_checks:
+      - "Mandatarul este identificat fara ambiguitate."
+    status: draft
+  - id: specific_authorised_actions
+    title_ro: "Actiunile autorizate in mod specific"
+    description_ro: >-
+      Lista puterilor pe care mandatarul trebuie sa le poata exercita in numele
+      mandantului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Enumerarea actiunilor ori a limitarilor de mandat."
+    readiness_checks:
+      - "Puterea data este suficient de precisa pentru procedura concreta."
+    status: draft
+  - id: principal_valid_identity_document
+    title_ro: "Act de identitate valabil al mandantului"
+    description_ro: >-
+      Documentul de identitate folosit pentru identificarea mandantului in fata
+      notarului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil in original."
+    readiness_checks:
+      - "Documentul este disponibil la data prezentarii."
+    status: draft
+  - id: authentic_form
+    title_ro: "Forma autentica"
+    description_ro: >-
+      Cerinta expresa ca procura sa fie autentificata notarial pentru ruta
+      concreta urmarita.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Confirmarea ca procedura cere procura autentica."
+    readiness_checks:
+      - "Cazul urmat este unul pentru care forma autentica este obligatorie."
+    status: draft
+  - id: recipient_power_of_attorney_model
+    title_ro: "Modelul de procura cerut de destinatar"
+    description_ro: >-
+      Modelul sau instructiunile furnizate de institutia ori procedura pentru
+      care se emite procura.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Modelul, cerinta scrisa sau lista de elemente cerute de destinatar."
+    readiness_checks:
+      - "Destinatarul a publicat sau a transmis un model concret."
+    status: draft

@@ -1,0 +1,181 @@
+# Step & requirement templates for ro.life.guardianship (life.guardianship).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: obtain_guardianship_or_protection_judgment
+    semantic_key: obtain_guardianship_or_protection_judgment
+    title_ro: "Obtine hotararea definitiva de tutela sau ocrotire"
+    instruction_ro: >-
+      Separă instituirea judiciara a masurii de ocrotire de etapa de luare in evidenta la autoritatea tutelara.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Necesitatea hotararii definitive a fost clarificata"
+    recovery_actions_ro:
+      - "Daca hotararea definitiva nu exista, nu continua cu dosarul local post-hotarare"
+    status: draft
+
+  - id: register_minor_guardianship_with_tutelary_authority
+    semantic_key: register_minor_guardianship_with_tutelary_authority
+    title_ro: "Inregistreaza tutela minorului la autoritatea tutelara"
+    instruction_ro: >-
+      Dupa hotararea definitiva, pregateste dosarul local pentru luarea in evidenta a tutelei minorului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul pentru tutela minorului este pregatit sau depus"
+    recovery_actions_ro:
+      - "Daca lipsesc actele minorului sau ale tutorelui, completeaza dosarul"
+    status: draft
+
+  - id: register_legally_protected_adult
+    semantic_key: register_legally_protected_adult
+    title_ro: "Inregistreaza adultul ocrotit legal"
+    instruction_ro: >-
+      Dupa hotararea definitiva, pregateste dosarul local pentru luarea in evidenta a adultului ocrotit.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul pentru adultul ocrotit este pregatit sau depus"
+    recovery_actions_ro:
+      - "Daca lipsesc actele adultului ocrotit sau ale ocrotitorului, completeaza dosarul"
+    status: draft
+
+requirement_templates:
+  - id: req.final_guardianship_judgment
+    title_ro: "Hotarare definitiva de tutela"
+    description_ro: >-
+      Hotararea definitiva folosita pentru luarea in evidenta a tutelei minorului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Hotarare definitiva de tutela"
+    readiness_checks:
+      - "Hotararea definitiva este disponibila"
+    status: draft
+
+  - id: req.minor_birth_certificate
+    title_ro: "Certificat de nastere al minorului"
+    description_ro: >-
+      Certificatul de nastere al minorului folosit in dosarul de tutela.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere al minorului"
+    readiness_checks:
+      - "Identitatea minorului este dovedita documentar"
+    status: draft
+
+  - id: req.minor_medical_and_school_documents
+    title_ro: "Documente medicale si scolare ale minorului"
+    description_ro: >-
+      Documentele medicale si scolare ale minorului, daca sunt cerute in dosarul local.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente medicale ale minorului"
+      - "Documente scolare ale minorului"
+    readiness_checks:
+      - "Documentele medicale si scolare ale minorului sunt disponibile daca sunt cerute"
+    status: draft
+
+  - id: req.parent_status_documents
+    title_ro: "Documente privind situatia parintilor"
+    description_ro: >-
+      Documentele privind situatia parintilor, folosite in dosarul de tutela al minorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente privind situatia parintilor"
+    readiness_checks:
+      - "Situatia parintilor este dovedita documentar daca ramura o cere"
+    status: draft
+
+  - id: req.guardian_identity_and_civil_status_documents
+    title_ro: "Actele de identitate si stare civila ale tutorelui sau ocrotitorului"
+    description_ro: >-
+      Documentele de identitate si stare civila ale tutorelui sau persoanei ocrotitoare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte de identitate"
+      - "Acte de stare civila"
+    readiness_checks:
+      - "Tutorele sau ocrotitorul poate fi identificat documentar"
+    status: draft
+
+  - id: req.guardian_medical_income_criminal_integrity_documents
+    title_ro: "Documente medicale, de venit si integritate ale tutorelui"
+    description_ro: >-
+      Documentele privind starea medicala, veniturile si integritatea tutorelui sau ocrotitorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente medicale ale tutorelui"
+      - "Documente de venit"
+      - "Documente privind integritatea"
+    readiness_checks:
+      - "Documentele tutorelui sau ocrotitorului sunt disponibile daca sunt cerute"
+    status: draft
+
+  - id: req.minor_identity_document
+    title_ro: "Actul de identitate al minorului"
+    description_ro: >-
+      Actul de identitate al minorului, daca varsta il face aplicabil.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al minorului"
+    readiness_checks:
+      - "Actul de identitate al minorului este disponibil daca este aplicabil"
+    status: draft
+
+  - id: req.final_protection_judgment
+    title_ro: "Hotarare definitiva de ocrotire"
+    description_ro: >-
+      Hotararea definitiva folosita pentru luarea in evidenta a adultului ocrotit legal.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Hotarare definitiva de ocrotire"
+    readiness_checks:
+      - "Hotararea definitiva este disponibila"
+    status: draft
+
+  - id: req.protected_adult_identity_and_birth_documents
+    title_ro: "Acte de identitate si nastere ale adultului ocrotit"
+    description_ro: >-
+      Documentele de identitate si de nastere ale adultului ocrotit.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte de identitate ale adultului ocrotit"
+      - "Documente de nastere"
+    readiness_checks:
+      - "Adultul ocrotit este identificabil documentar"
+    status: draft
+
+  - id: req.protected_adult_medical_income_property_documents
+    title_ro: "Documente medicale, de venit si proprietate ale adultului ocrotit"
+    description_ro: >-
+      Documentele medicale, de venit si proprietate ale adultului ocrotit, daca sunt cerute in dosarul local.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente medicale"
+      - "Documente de venit"
+      - "Documente de proprietate"
+    readiness_checks:
+      - "Documentele adultului ocrotit sunt disponibile daca sunt cerute"
+    status: draft
+
+  - id: req.guardian_spouse_consent
+    title_ro: "Acordul sotului sau sotiei tutorelui"
+    description_ro: >-
+      Acordul sotului sau sotiei tutorelui, daca lista locala il cere pentru dosarul post-hotarare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acordul sotului sau sotiei"
+    readiness_checks:
+      - "Acordul sotului sau sotiei este disponibil daca este cerut"
+    status: draft

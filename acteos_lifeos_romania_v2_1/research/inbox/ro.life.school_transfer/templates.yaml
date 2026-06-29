@@ -1,0 +1,120 @@
+# Step & requirement templates for ro.life.school_transfer (life.school_transfer).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.transfer.verify_rules
+    semantic_key: step.transfer.verify_rules
+    title_ro: "Verifica regulile de transfer"
+    instruction_ro: >-
+      Stabileste nivelul, perioada si conditiile de baza aplicabile transferului solicitat.
+    sequence_hint: 10
+    completion_evidence_ro: ["Ruta de transfer aplicabila a fost clarificata"]
+    recovery_actions_ro: ["Daca perioada sau nivelul nu permit transferul solicitat, nu continua dosarul ca eligibil"]
+    status: draft
+
+  - id: step.transfer.submit_request
+    semantic_key: step.transfer.submit_request
+    title_ro: "Depune cererea la unitatea primitoare"
+    instruction_ro: >-
+      Pregateste si depune cererea de transfer la unitatea primitoare, conform procedurii verificate.
+    sequence_hint: 20
+    completion_evidence_ro: ["Cererea de transfer este pregatita pentru depunere"]
+    recovery_actions_ro: ["Daca procedura unitatii nu este verificata, cere clarificare inainte de depunere"]
+    status: draft
+
+  - id: step.transfer.difference_exams
+    semantic_key: step.transfer.difference_exams
+    title_ro: "Parcurge examenele de diferenta"
+    instruction_ro: >-
+      Daca unitatea primitoare stabileste diferente, pregateste sustinerea si documentarea lor.
+    sequence_hint: 30
+    completion_evidence_ro: ["Ruta pentru examenele de diferenta a fost pregatita"]
+    recovery_actions_ro: ["Daca nu sint diferente stabilite, nu activa aceasta ramura"]
+    status: draft
+
+  - id: step.transfer.obtain_decisions
+    semantic_key: step.transfer.obtain_decisions
+    title_ro: "Obtine aprobarile consiliilor de administratie"
+    instruction_ro: >-
+      Urmareste acordul unitatii primitoare si avizul consultativ al unitatii de plecare.
+    sequence_hint: 40
+    completion_evidence_ro: ["Aprobarea si avizul relevante au fost clarificate"]
+    recovery_actions_ro: ["Daca lipseste una dintre decizii, nu trata transferul ca aprobat"]
+    status: draft
+
+  - id: step.transfer.request_written_refusal
+    semantic_key: step.transfer.request_written_refusal
+    title_ro: "Solicita refuzul motivat in scris"
+    instruction_ro: >-
+      Daca unitatea primitoare refuza transferul, solicita motivarea scrisa pe canalul relevant.
+    sequence_hint: 50
+    completion_evidence_ro: ["Ruta pentru refuzul scris a fost pregatita"]
+    recovery_actions_ro: ["Daca nu exista refuz, nu activa aceasta ramura"]
+    status: draft
+
+  - id: step.transfer.records
+    semantic_key: step.transfer.records
+    title_ro: "Urmareste transferul situatiei scolare"
+    instruction_ro: >-
+      Dupa aprobare, urmareste trimiterea si primirea situatiei scolare de catre unitatea primitoare.
+    sequence_hint: 60
+    completion_evidence_ro: ["Ruta de transfer a situatiei scolare a fost pregatita"]
+    recovery_actions_ro: ["Daca situatia scolara nu a ajuns la unitatea primitoare, mentine cazul deschis"]
+    status: draft
+
+requirement_templates:
+  - id: req.transfer.application
+    title_ro: "Cererea de transfer"
+    description_ro: "Cererea de transfer depusa la unitatea primitoare."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Cerere de transfer"]
+    readiness_checks: ["Cererea de transfer este completata"]
+    status: draft
+
+  - id: req.transfer.exception_proof
+    title_ro: "Dovada motivului exceptional"
+    description_ro: "Dovada motivului exceptional, daca transferul are loc in timpul cursurilor sau pe o ruta speciala."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada motivului exceptional"]
+    readiness_checks: ["Motivul exceptional este sustinut prin documente daca se aplica"]
+    status: draft
+
+  - id: req.transfer.difference_results
+    title_ro: "Dovada promovarii diferentelor"
+    description_ro: "Rezultatele examenelor de diferenta, daca au fost stabilite."
+    obligation: conditional
+    timing: later
+    accepted_forms: ["Rezultatele examenelor de diferenta"]
+    readiness_checks: ["Diferentele sint promovate daca ramura se aplica"]
+    status: draft
+
+  - id: req.transfer.ca_approval
+    title_ro: "Acordul consiliului de administratie primitor"
+    description_ro: "Acordul unitatii primitoare pentru transfer."
+    obligation: mandatory
+    timing: later
+    accepted_forms: ["Acordul consiliului de administratie primitor"]
+    readiness_checks: ["Acordul unitatii primitoare este disponibil"]
+    status: draft
+
+  - id: req.transfer.outgoing_opinion
+    title_ro: "Avizul consultativ al unitatii de plecare"
+    description_ro: "Avizul unitatii de plecare pe ruta de transfer."
+    obligation: mandatory
+    timing: later
+    accepted_forms: ["Aviz consultativ al unitatii de plecare"]
+    readiness_checks: ["Avizul unitatii de plecare este disponibil"]
+    status: draft
+
+  - id: req.transfer.local_documents
+    title_ro: "Documentele cerute de unitatea primitoare"
+    description_ro: "Documentele stabilite de procedura unitatii primitoare."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documentele cerute de unitatea primitoare"]
+    readiness_checks: ["Documentele locale cerute de unitatea primitoare sint pregatite"]
+    status: draft

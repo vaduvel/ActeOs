@@ -1,0 +1,107 @@
+# Step & requirement templates for ro.life.fishing_permit (ro.life.fishing_permit).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.identify_water_regime_and_administrator
+    semantic_key: step.identify_water_regime_and_administrator
+    title_ro: "Identifica regimul apei si administratorul"
+    instruction_ro: >-
+      Stabileste daca apa este in Delta, zona de frontiera sau alta categorie si
+      confirma administratorul competent.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Regimul apei si administratorul au fost identificate"
+    recovery_actions_ro:
+      - "Daca administratorul nu este confirmat, nu afisa permisul ca obtinut prin ruta gresita"
+    status: draft
+
+  - id: step.check_current_fishing_restrictions
+    semantic_key: step.check_current_fishing_restrictions
+    title_ro: "Verifica restrictiile curente"
+    instruction_ro: >-
+      Verifica separat prohibitiile si restrictiile curente pentru apa aleasa.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Restrictiile curente au fost verificate separat"
+    recovery_actions_ro:
+      - "Daca restrictiile nu sunt confirmate, nu prezenta permisul ca suficient"
+    status: draft
+
+  - id: step.obtain_arbdd_recreational_fishing_permit
+    semantic_key: step.obtain_arbdd_recreational_fishing_permit
+    title_ro: "Obtine permisul ARBDD de pescuit recreativ"
+    instruction_ro: >-
+      Pentru Delta Dunarii, pregateste permisul ARBDD relevant inainte de iesirea la pescuit.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta pentru permisul ARBDD a fost pregatita"
+    recovery_actions_ro:
+      - "Daca apa nu este in RBDD, foloseste administratorul corect"
+    status: draft
+
+  - id: step.obtain_or_verify_tourist_access_permit
+    semantic_key: step.obtain_or_verify_tourist_access_permit
+    title_ro: "Obtine sau verifica permisul de acces turistic"
+    instruction_ro: >-
+      Pentru Delta, confirma si permisul de acces turistic aplicabil, separat de permisul de pescuit.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cerinta privind permisul de acces turistic a fost clarificata"
+    recovery_actions_ro:
+      - "Daca accesul turistic este necesar, nu considera permisul de pescuit suficient singur"
+    status: draft
+
+  - id: step.request_border_police_prior_approval
+    semantic_key: step.request_border_police_prior_approval
+    title_ro: "Solicita avizul prealabil al Politiei de Frontiera"
+    instruction_ro: >-
+      Pentru apele de frontiera sau maritime relevante, pregateste avizul prealabil al Politiei de Frontiera.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta pentru avizul Politiei de Frontiera a fost pregatita"
+    recovery_actions_ro:
+      - "Daca apa intra in zona de frontiera, nu omite avizul prealabil"
+    status: draft
+
+  - id: step.identify_water_administrator
+    semantic_key: step.identify_water_administrator
+    title_ro: "Identifica administratorul apei"
+    instruction_ro: >-
+      Daca apa nu intra in cazurile speciale verificate, confirma administratorul
+      competent inainte de a continua.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Administratorul apei a fost identificat sau cerut spre confirmare"
+    recovery_actions_ro:
+      - "Daca administratorul nu este confirmat, mentine cazul in needs confirmation"
+    status: draft
+
+requirement_templates:
+  - id: req.arbdd_recreational_fishing_permit
+    title_ro: "Permisul ARBDD de pescuit recreativ"
+    description_ro: "Permisul relevant pentru pescuit recreativ in Delta Dunarii."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Permis ARBDD de pescuit recreativ"]
+    readiness_checks: ["Permisul ARBDD este pregatit daca apa este in RBDD"]
+    status: draft
+
+  - id: req.rbdd_tourist_access_permit
+    title_ro: "Permisul de acces turistic in RBDD"
+    description_ro: "Permisul de acces turistic necesar separat, unde se aplica."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Permis de acces turistic RBDD"]
+    readiness_checks: ["Permisul de acces este pregatit daca ruta il cere"]
+    status: draft
+
+  - id: req.border_police_prior_approval
+    title_ro: "Avizul prealabil al Politiei de Frontiera"
+    description_ro: "Avizul necesar pentru pescuit in zonele de frontiera sau maritime relevante."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Aviz prealabil al Politiei de Frontiera"]
+    readiness_checks: ["Avizul Politiei de Frontiera este pregatit daca zona il cere"]
+    status: draft

@@ -1,0 +1,82 @@
+# Step & requirement templates for ro.life.paternity_leave (life.paternity_leave).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: request_paternity_leave
+    semantic_key: request_paternity_leave
+    title_ro: "Solicita concediul paternal"
+    instruction_ro: >-
+      Depune cererea la angajator in fereastra aplicabila dupa nasterea copilului si anexeaza
+      dovezile necesare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru concediul paternal a fost depusa"
+    recovery_actions_ro:
+      - "Daca lipseste un act, completeaza dosarul inainte de expirarea ferestrei"
+    status: draft
+
+  - id: paternity_leave_duration
+    semantic_key: paternity_leave_duration
+    title_ro: "Verifica durata concediului paternal"
+    instruction_ro: >-
+      Verifica durata aplicabila a concediului paternal si eventualul supliment legat de
+      puericultura.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Durata concediului paternal a fost verificata"
+    recovery_actions_ro:
+      - "Daca lipseste dovada pentru zile suplimentare, foloseste doar ruta de baza"
+    status: draft
+
+  - id: request_unused_maternity_remainder
+    semantic_key: request_unused_maternity_remainder
+    title_ro: "Solicita restul de concediu ramas din maternitate, daca situatia o cere"
+    instruction_ro: >-
+      Daca exista situatia speciala prevazuta pentru decesul mamei, pregateste dosarul pentru
+      partea ramasa din concediul de maternitate.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta speciala pentru restul de concediu a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu poti dovedi situatia speciala, nu continua pe aceasta ramura"
+    status: draft
+
+requirement_templates:
+  - id: req.child_birth_certificate
+    title_ro: "Certificat de nastere al copilului"
+    description_ro: >-
+      Certificatul de nastere folosit pentru concediul paternal.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere"
+    readiness_checks:
+      - "Certificatul corespunde copilului pentru care se cere dreptul"
+    status: draft
+
+  - id: req.puericulture_certificate
+    title_ro: "Atestat sau certificat de puericultura"
+    description_ro: >-
+      Documentul care sustine acordarea zilelor suplimentare, daca este cazul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Atestat sau certificat de puericultura"
+    readiness_checks:
+      - "Documentul sustine exact suplimentul solicitat"
+    status: draft
+
+  - id: req.mother_death_certificate
+    title_ro: "Certificat de deces al mamei"
+    description_ro: >-
+      Certificatul de deces al mamei, pentru ruta speciala referitoare la restul concediului de
+      maternitate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de deces al mamei"
+    readiness_checks:
+      - "Documentul sustine situatia speciala invocata"
+    status: draft

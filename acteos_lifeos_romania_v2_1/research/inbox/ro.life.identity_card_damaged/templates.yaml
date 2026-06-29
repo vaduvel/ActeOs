@@ -1,0 +1,88 @@
+step_templates:
+  - id: replace_damaged_identity_card
+    semantic_key: identity_card_damaged_replace
+    title_ro: "Solicita inlocuirea actului deteriorat"
+    instruction_ro: >-
+      Verifica termenul de 15 zile, prezinta actul deteriorat si pregateste
+      documentele suplimentare privind starea civila, domiciliul si taxa, daca
+      sunt aplicabile.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de inlocuire a actului deteriorat este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca actul nu mai este in posesia titularului, recalcifica cazul ca pierdere sau furt."
+    status: draft
+  - id: police_identity_verification
+    semantic_key: identity_card_damaged_police_verification
+    title_ro: "Parcurge verificarea identitatii"
+    instruction_ro: >-
+      Daca nu exista imagine in RNEP si nici un alt document foto recent, urmeaza
+      ruta de verificare a identitatii indicata de autoritate.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de verificare a identitatii este activata sau finalizata."
+    recovery_actions_ro:
+      - "Daca poti obtine un document oficial recent cu fotografie, foloseste-l pentru a evita intarzieri."
+    status: draft
+
+requirement_templates:
+  - id: req.damaged_identity_card
+    title_ro: "Actul de identitate deteriorat"
+    description_ro: >-
+      Documentul deteriorat care trebuie prezentat in dosar pentru ruta de
+      inlocuire prin deteriorare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Actul deteriorat, daca este in posesia titularului."
+    readiness_checks:
+      - "Cazul este unul de deteriorare, nu de pierdere sau furt."
+    status: draft
+  - id: req.civil_status_documents_if_applicable
+    title_ro: "Documente de stare civila, daca se aplica"
+    description_ro: >-
+      Documentele suplimentare cerute daca intre timp s-au schimbat datele de
+      stare civila ale titularului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificate sau acte finale care explica schimbarea starii civile."
+    readiness_checks:
+      - "Datele de stare civila s-au schimbat fata de actul deteriorat."
+    status: draft
+  - id: req.proof_of_domicile
+    title_ro: "Dovada domiciliului"
+    description_ro: >-
+      Documentul care sustine domiciliul folosit pentru noul act, atunci cand
+      procedura il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document de domiciliu acceptat de autoritatea emitenta."
+    readiness_checks:
+      - "Domiciliul din actul nou trebuie sustinut prin documente."
+    status: draft
+  - id: req.payment_proof_if_due
+    title_ro: "Dovada platii, daca este datorata"
+    description_ro: >-
+      Dovada taxei pentru documentul solicitat, atunci cand ruta aleasa nu este
+      gratuita.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Chitanta sau alta dovada a platii acceptata oficial."
+    readiness_checks:
+      - "Documentul si data cererii atrag plata unei taxe."
+    status: draft
+  - id: req.recent_official_photo_document
+    title_ro: "Document oficial recent cu fotografie"
+    description_ro: >-
+      Document foto recent folosit pentru confirmarea identitatii cand imaginea
+      faciala nu este disponibila in RNEP.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Pasaport, permis sau alt document oficial recent cu fotografie."
+    readiness_checks:
+      - "Nu exista imagine faciala disponibila in RNEP."
+    status: draft

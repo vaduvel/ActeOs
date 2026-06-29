@@ -1,0 +1,139 @@
+# Step & requirement templates for ro.life.study_equivalence_ro (life.study_equivalence_ro).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.eq.select_procedure
+    semantic_key: step.eq.select_procedure
+    title_ro: "Selecteaza procedura de echivalare"
+    instruction_ro: >-
+      Stabileste nivelul de studii, scopul si autoritatea competenta pentru procedura CNRED relevanta.
+    sequence_hint: 10
+    completion_evidence_ro: ["Procedura de echivalare relevanta a fost clarificata"]
+    recovery_actions_ro: ["Daca profesia este reglementata, redirectioneaza catre autoritatea competenta si nu continua pe ruta generala"]
+    status: draft
+
+  - id: step.eq.verify_authentication
+    semantic_key: step.eq.verify_authentication
+    title_ro: "Verifica apostila sau supralegalizarea"
+    instruction_ro: >-
+      Confirma formalitatea de autentificare aplicabila statului emitent.
+    sequence_hint: 20
+    completion_evidence_ro: ["Formalitatea de autentificare a fost clarificata"]
+    recovery_actions_ro: ["Daca statul emitent sau formalitatea nu sint clare, nu considera dosarul complet"]
+    status: draft
+
+  - id: step.eq.prepare_translation
+    semantic_key: step.eq.prepare_translation
+    title_ro: "Pregateste traducerea relevanta"
+    instruction_ro: >-
+      Daca limba documentelor nu este acceptata direct, pregateste traducerea legalizata in romana.
+    sequence_hint: 30
+    completion_evidence_ro: ["Cerinta de traducere a fost clarificata sau acoperita"]
+    recovery_actions_ro: ["Daca limba este acceptata direct, nu activa inutil traducerea"]
+    status: draft
+
+  - id: step.eq.prepare_dossier
+    semantic_key: step.eq.prepare_dossier
+    title_ro: "Pregateste dosarul complet"
+    instruction_ro: >-
+      Strange diploma, foaia matricola sau suplimentul si actele personale cerute de procedura selectata.
+    sequence_hint: 40
+    completion_evidence_ro: ["Dosarul de echivalare este pregatit"]
+    recovery_actions_ro: ["Daca lipsesc documente esentiale, completeaza dosarul inainte de depunere"]
+    status: draft
+
+  - id: step.eq.submit
+    semantic_key: step.eq.submit
+    title_ro: "Depune dosarul prin canalul oficial"
+    instruction_ro: >-
+      Depune dosarul prin canalul oficial selectat si pastreaza confirmarea sau numarul de dosar.
+    sequence_hint: 50
+    completion_evidence_ro: ["Dosarul este pregatit pentru depunere pe canalul oficial"]
+    recovery_actions_ro: ["Daca canalul nu este confirmat, clarifica procedura inainte de depunere"]
+    status: draft
+
+  - id: step.eq.track_term
+    semantic_key: step.eq.track_term
+    title_ro: "Urmareste termenul de solutionare"
+    instruction_ro: >-
+      Monitorizeaza termenul procedurii dupa completarea dosarului.
+    sequence_hint: 60
+    completion_evidence_ro: ["Termenul de solutionare este monitorizat"]
+    recovery_actions_ro: ["Daca dosarul nu este complet, nu calcula termenul ca si cum ar fi pornit"]
+    status: draft
+
+  - id: step.eq.contest
+    semantic_key: step.eq.contest
+    title_ro: "Depune contestatia, daca este cazul"
+    instruction_ro: >-
+      Daca decizia este contestata, pregateste contestatia in termenul procedurii aplicabile.
+    sequence_hint: 70
+    completion_evidence_ro: ["Ruta de contestatie a fost pregatita"]
+    recovery_actions_ro: ["Daca nu exista decizie contestata, nu activa aceasta ramura"]
+    status: draft
+
+requirement_templates:
+  - id: req.eq.application
+    title_ro: "Cererea procedurii selectate"
+    description_ro: "Cererea relevanta pentru procedura CNRED aleasa."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Cerere a procedurii selectate"]
+    readiness_checks: ["Cererea procedurii selectate este completata"]
+    status: draft
+
+  - id: req.eq.diploma
+    title_ro: "Diploma sau actul de studii"
+    description_ro: "Actul principal de studii pentru echivalare."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Diploma", "Act de studii"]
+    readiness_checks: ["Actul principal de studii este disponibil"]
+    status: draft
+
+  - id: req.eq.transcript
+    title_ro: "Foaia matricola sau suplimentul"
+    description_ro: "Documentul academic suport, daca procedura il cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Foaie matricola", "Supliment la diploma"]
+    readiness_checks: ["Documentul academic suport este disponibil daca se aplica"]
+    status: draft
+
+  - id: req.eq.identity
+    title_ro: "Act de identitate"
+    description_ro: "Actul de identitate al solicitantului."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Act de identitate"]
+    readiness_checks: ["Actul de identitate este disponibil si valabil"]
+    status: draft
+
+  - id: req.eq.name_change
+    title_ro: "Dovada schimbarii numelui"
+    description_ro: "Documentul care explica diferentele de nume, daca exista."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada schimbarii numelui"]
+    readiness_checks: ["Schimbarea numelui este sustinuta prin documente daca se aplica"]
+    status: draft
+
+  - id: req.eq.translation
+    title_ro: "Traducere legalizata in limba romana"
+    description_ro: "Traducerea legalizata a documentelor, daca procedura o cere."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Traducere legalizata in limba romana"]
+    readiness_checks: ["Traducerea legalizata este pregatita daca se aplica"]
+    status: draft
+
+  - id: req.eq.authentication
+    title_ro: "Apostila sau supralegalizarea"
+    description_ro: "Formalitatea de autentificare aplicabila statului emitent."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Apostila", "Supralegalizare"]
+    readiness_checks: ["Formalitatea de autentificare este indeplinita daca se aplica"]
+    status: draft

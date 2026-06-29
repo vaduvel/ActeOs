@@ -1,0 +1,122 @@
+# Step & requirement templates for ro.life.documents_apostille (life.documents_apostille).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: determine_apostille_authority
+    semantic_key: determine_apostille_authority
+    title_ro: "Determina daca e nevoie de apostila si cine este competent"
+    instruction_ro: >-
+      Verifica statul de destinatie, categoria documentului si autoritatea competenta inainte de a
+      porni orice dosar de apostilare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Necesitatea apostilei si autoritatea competenta au fost identificate"
+    recovery_actions_ro:
+      - "Daca regimul statului sau categoria actului nu sunt clare, nu merge automat la prefectura"
+    status: draft
+
+  - id: obtain_apostille
+    semantic_key: obtain_apostille
+    title_ro: "Obtine apostila"
+    instruction_ro: >-
+      Pregateste actul original si documentele solicitantului pentru autoritatea competenta care
+      poate emite apostila.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul pentru apostila este pregatit sau depus"
+    recovery_actions_ro:
+      - "Daca actul nu este original sau autoritatea este gresita, opreste depunerea"
+    status: draft
+
+  - id: submit_to_prefecture_apostille_office
+    semantic_key: submit_to_prefecture_apostille_office
+    title_ro: "Depune la prefectura, daca actul intra pe aceasta competenta"
+    instruction_ro: >-
+      Daca actul este unul administrativ eligibil pentru prefectura, depune dosarul la biroul de
+      apostila competent.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul eligibil pentru prefectura a fost depus"
+    recovery_actions_ro:
+      - "Daca actul tine de alta autoritate, redirectioneaza-l catre competenta corecta"
+    status: draft
+
+requirement_templates:
+  - id: req.original_official_administrative_act
+    title_ro: "Act administrativ oficial in original"
+    description_ro: >-
+      Actul administrativ oficial in original, atunci cand ruta de apostilare il cere pentru
+      prefectura.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act administrativ oficial in original"
+    readiness_checks:
+      - "Actul este original si eligibil pentru ruta selectata"
+    status: draft
+
+  - id: req.validated_hub_account
+    title_ro: "Cont HUB validat"
+    description_ro: >-
+      Contul HUB validat pentru cazurile in care apostilarea online a originalului electronic este
+      disponibila pe aceasta ruta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cont HUB validat"
+    readiness_checks:
+      - "Contul HUB este validat pentru utilizare"
+    status: draft
+
+  - id: req.original_official_act
+    title_ro: "Act oficial in original"
+    description_ro: >-
+      Actul oficial in original cerut de autoritatea competenta pentru emiterea apostilei.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act oficial in original"
+    readiness_checks:
+      - "Actul este original si corespunde categoriei declarate"
+    status: draft
+
+  - id: req.apostille_request_per_holder
+    title_ro: "Cerere de apostilare pe numele titularului"
+    description_ro: >-
+      Cererea de apostilare corespunzatoare titularului sau persoanei indreptatite sa solicite
+      apostila.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de apostilare"
+    readiness_checks:
+      - "Cererea este completata pentru titularul sau reprezentantul corect"
+    status: draft
+
+  - id: req.requester_identity
+    title_ro: "Actul de identitate al solicitantului"
+    description_ro: >-
+      Actul de identitate al persoanei care depune cererea de apostilare.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate al solicitantului"
+    readiness_checks:
+      - "Solicitantul poate fi identificat din act"
+    status: draft
+
+  - id: req.relationship_or_authorization
+    title_ro: "Dovada relatiei sau a imputernicirii"
+    description_ro: >-
+      Dovada relatiei cu titularul sau a imputernicirii, daca solicitarea este facuta de alta
+      persoana.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada relatiei cu titularul"
+      - "Imputernicire sau mandat"
+    readiness_checks:
+      - "Documentul explica de ce solicitantul poate depune cererea"
+    status: draft

@@ -1,0 +1,88 @@
+step_templates:
+  - id: select_atlas_tax_case
+    semantic_key: declare_home_local_tax_select_atlas_case
+    title_ro: "Selecteaza cazul fiscal corect in Atlas"
+    instruction_ro: >-
+      Pentru pilotul Timisoara, alege cazul de declarare fiscala care corespunde
+      tipului de proprietar si locuintei.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cazul fiscal local este selectat in Atlas sau clarificat."
+    recovery_actions_ro:
+      - "Daca cazul nu este mapat explicit, trateaza-l ca punct de confirmare, nu ca presupunere."
+    status: draft
+  - id: prepare_home_tax_file
+    semantic_key: declare_home_local_tax_prepare_file
+    title_ro: "Pregateste dosarul de declarare"
+    instruction_ro: >-
+      Strange documentele relevante pentru cazul ales si verifica daca exista
+      anexe sau documente-suport specifice.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul de declarare fiscala a locuintei este pregatit."
+    recovery_actions_ro:
+      - "Nu ghici termenul national daca sursa il lasa neconfirmat."
+    status: draft
+  - id: submit_home_tax_declaration
+    semantic_key: declare_home_local_tax_submit
+    title_ro: "Depune declaratia fiscala"
+    instruction_ro: >-
+      Depune declaratia prin canalul local sau national competent dupa ce cazul
+      si documentele au fost clarificate.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Declaratia fiscala pentru locuinta este depusa."
+    recovery_actions_ro:
+      - "Pastreaza dovada depunerii pentru urmarirea ulterioara."
+    status: draft
+  - id: identify_competent_local_tax_authority
+    semantic_key: declare_home_local_tax_identify_other_uat
+    title_ro: "Identifica autoritatea fiscala locala competenta"
+    instruction_ro: >-
+      Daca imobilul nu este in pilotul Timisoara, identifica UAT-ul competent si
+      confirma procedura locala aplicabila.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Autoritatea fiscala locala competenta este identificata."
+    recovery_actions_ro:
+      - "Nu extrapola mecanic fluxul Atlas catre alte UAT-uri."
+    status: draft
+
+requirement_templates:
+  - id: destination_supporting_documents_if_applicable
+    title_ro: "Documente justificative pentru destinatia imobilului"
+    description_ro: >-
+      Documentele suplimentare cerute pentru anumite cazuri de declarare a
+      locuintei, in special pentru persoane juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente-suport privind destinatia sau folosinta imobilului."
+    readiness_checks:
+      - "Cazul selectat le cere expres."
+    status: draft
+  - id: utility_expense_supporting_documents_if_applicable
+    title_ro: "Documente-suport pentru cheltuieli de utilitati"
+    description_ro: >-
+      Documentele privind utilitatile sau alte elemente de sustinere cerute de
+      unele cazuri fiscale locale.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Facturi, situatii sau alte documente-suport acceptate."
+    readiness_checks:
+      - "Ruta selectata le mentioneaza explicit."
+    status: draft
+  - id: copies_certified_conform_to_original
+    title_ro: "Copii certificate conform cu originalul"
+    description_ro: >-
+      Copiile certificate cerute in unele fluxuri locale pentru persoanele
+      juridice sau cazurile specifice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copii certificate conform cu originalul."
+    readiness_checks:
+      - "Canalul sau cazul local le cere."
+    status: draft
+

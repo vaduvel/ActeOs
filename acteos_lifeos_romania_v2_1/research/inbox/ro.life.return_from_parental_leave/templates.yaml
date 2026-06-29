@@ -1,0 +1,75 @@
+# Step & requirement templates for ro.life.return_from_parental_leave (life.return_from_parental_leave).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: notify_employer_return
+    semantic_key: notify_employer_return
+    title_ro: "Notifica angajatorul despre revenire"
+    instruction_ro: >-
+      Trimite notificarea scrisa catre angajator cu respectarea termenului relevant inainte de revenire.
+    sequence_hint: 10
+    completion_evidence_ro: ["Notificarea de revenire catre angajator este pregatita sau transmisa"]
+    recovery_actions_ro: ["Daca termenul fata de angajator nu este respectat, replanifica revenirea cu clarificare"]
+    status: draft
+
+  - id: verify_return_conditions
+    semantic_key: verify_return_conditions
+    title_ro: "Verifica conditiile revenirii"
+    instruction_ro: >-
+      Compara postul, conditiile si eventualele schimbari intervenite in perioada concediului.
+    sequence_hint: 20
+    completion_evidence_ro: ["Conditiile revenirii au fost verificate"]
+    recovery_actions_ro: ["Daca sint oferite conditii mai putin favorabile, documenteaza situatia si nu o trata ca acceptata"]
+    status: draft
+
+  - id: apply_insertion_incentive
+    semantic_key: apply_insertion_incentive
+    title_ro: "Deschide ruta pentru stimulentul de insertie"
+    instruction_ro: >-
+      Daca revenirea produce venituri impozabile, deschide subtraseul pentru stimulentul de insertie.
+    sequence_hint: 30
+    completion_evidence_ro: ["Subtraseul pentru stimulentul de insertie a fost identificat"]
+    recovery_actions_ro: ["Daca nu se obtin venituri impozabile, nu activa aceasta ramura"]
+    status: draft
+
+  - id: report_return_to_primaria
+    semantic_key: report_return_to_primaria
+    title_ro: "Comunica revenirea catre autoritatea platitoare"
+    instruction_ro: >-
+      Daca revenirea afecteaza plata concediului sau a stimulentului, pregateste raportarea catre autoritatea relevanta.
+    sequence_hint: 40
+    completion_evidence_ro: ["Raportarea revenirii catre autoritatea relevanta a fost pregatita"]
+    recovery_actions_ro: ["Daca plata nu este afectata sau canalul local nu este confirmat, clarifica inainte de depunere"]
+    status: draft
+
+  - id: resolve_other_parent_reserved_period
+    semantic_key: resolve_other_parent_reserved_period
+    title_ro: "Clarifica perioada rezervata celuilalt parinte"
+    instruction_ro: >-
+      Daca ambii parinti sint eligibili, clarifica stadiul perioadei rezervate celuilalt parinte.
+    sequence_hint: 50
+    completion_evidence_ro: ["Regula perioadei rezervate celuilalt parinte a fost clarificata"]
+    recovery_actions_ro: ["Daca eligibilitatea celuilalt parinte nu este confirmata, nu inchide aceasta regula"]
+    status: draft
+
+  - id: document_and_challenge_return_conditions
+    semantic_key: document_and_challenge_return_conditions
+    title_ro: "Documenteaza si contesta conditiile nefavorabile"
+    instruction_ro: >-
+      Daca revenirea are loc in conditii mai putin favorabile, documenteaza situatia si pregateste escaladarea relevanta.
+    sequence_hint: 60
+    completion_evidence_ro: ["Ruta de documentare si contestare a conditiilor nefavorabile a fost pregatita"]
+    recovery_actions_ro: ["Daca nu exista conditii mai putin favorabile, nu activa aceasta ramura"]
+    status: draft
+
+requirement_templates:
+  - id: req.written_return_notice
+    title_ro: "Notificarea scrisa de revenire"
+    description_ro: "Notificarea scrisa catre angajator privind data revenirii."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Notificare scrisa de revenire"]
+    readiness_checks: ["Notificarea scrisa de revenire este pregatita sau transmisa"]
+    status: draft

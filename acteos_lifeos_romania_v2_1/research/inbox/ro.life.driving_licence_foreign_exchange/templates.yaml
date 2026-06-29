@@ -1,0 +1,152 @@
+# Step & requirement templates for ro.life.driving_licence_foreign_exchange (life.driving_licence_foreign_exchange).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.dlf.verify_eligibility
+    semantic_key: step.dlf.verify_eligibility
+    title_ro: "Verifica eligibilitatea statului si a documentului"
+    instruction_ro: >-
+      Confirma daca statul emitent si tipul permisului intra in ruta oficiala de preschimbare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Eligibilitatea statului si a documentului a fost verificata"
+    recovery_actions_ro:
+      - "Daca eligibilitatea nu este confirmata oficial, nu continua dosarul ca preschimbare admisa"
+    status: draft
+
+  - id: step.dlf.prepare_docs
+    semantic_key: step.dlf.prepare_docs
+    title_ro: "Pregateste permisul, traducerile si actele de identitate"
+    instruction_ro: >-
+      Strange originalul, traducerile conditionale si dovezile de identitate si domiciliu sau resedinta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Documentele de baza pentru preschimbare sunt pregatite"
+    recovery_actions_ro:
+      - "Daca originalul sau traducerea lipsesc, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: step.dlf.prepare_record
+    semantic_key: step.dlf.prepare_record
+    title_ro: "Pregateste cererea si verificarea cazierului"
+    instruction_ro: >-
+      Pregateste cererea si clarifica ruta de verificare sau certificat de cazier aplicabila.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea si ruta de verificare a cazierului sunt pregatite"
+    recovery_actions_ro:
+      - "Daca ruta de cazier nu este clara, confirma-o inainte de depunere"
+    status: draft
+
+  - id: step.dlf.medical
+    semantic_key: step.dlf.medical
+    title_ro: "Obtine fisa medicala pentru valabilitate noua"
+    instruction_ro: >-
+      Daca se cere o noua valabilitate administrativa, pregateste fisa medicala de la unitate autorizata.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cerinta privind fisa medicala a fost acoperita"
+    recovery_actions_ro:
+      - "Daca nu se cere valabilitate noua, nu activa aceasta cerinta conditionala"
+    status: draft
+
+  - id: step.dlf.book_timis
+    semantic_key: step.dlf.book_timis
+    title_ro: "Fa programarea in Timis"
+    instruction_ro: >-
+      Pentru ruta pilot Timis, pregateste programarea oficiala inainte de depunerea personala.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Programarea oficiala pentru Timis a fost pregatita"
+    recovery_actions_ro:
+      - "Daca depunerea nu este in Timis, foloseste serviciul judetean competent"
+    status: draft
+
+  - id: step.dlf.submit_personally
+    semantic_key: step.dlf.submit_personally
+    title_ro: "Depune personal dosarul"
+    instruction_ro: >-
+      Dupa pregatirea documentelor si a programarii aplicabile, depune personal dosarul la serviciul competent.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul este pregatit pentru depunere personala"
+    recovery_actions_ro:
+      - "Daca documentele sau plata nu sunt complete, nu prezenta dosarul ca pregatit"
+    status: draft
+
+requirement_templates:
+  - id: req.dlf.identity_residence
+    title_ro: "Identitate si domiciliu sau resedinta in Romania"
+    description_ro: >-
+      Actele care sustin identitatea si legatura de domiciliu sau resedinta in Romania.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+      - "Dovada domiciliului sau resedintei"
+    readiness_checks:
+      - "Identitatea si domiciliul sau resedinta sunt sustinute prin documente"
+    status: draft
+
+  - id: req.dlf.application
+    title_ro: "Cererea si verificarea cazierului"
+    description_ro: >-
+      Cererea de preschimbare si documentele sau verificarile privind cazierul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere de preschimbare"
+      - "Dovada verificarii sau certificatul de cazier aplicabil"
+    readiness_checks:
+      - "Cererea si ruta de verificare a cazierului sunt pregatite"
+    status: draft
+
+  - id: req.dlf.payment
+    title_ro: "Dovada platii permisului"
+    description_ro: >-
+      Dovada platii necesare pentru preschimbare.
+    obligation: mandatory
+    timing: before_submission
+    accepted_forms:
+      - "Dovada platii permisului"
+    readiness_checks:
+      - "Plata este efectuata si poate fi dovedita"
+    status: draft
+
+  - id: req.dlf.original
+    title_ro: "Permisul strain original"
+    description_ro: >-
+      Permisul strain original, daca ruta aplicabila il cere si documentul este disponibil.
+    obligation: conditional
+    timing: at_submission
+    accepted_forms:
+      - "Permis strain original"
+    readiness_checks:
+      - "Originalul este disponibil daca scenariul aplicabil il cere"
+    status: draft
+
+  - id: req.dlf.translation
+    title_ro: "Traducerea in romana"
+    description_ro: >-
+      Traducerea in limba romana, atunci cand documentele intra pe ruta conditionala relevanta.
+    obligation: conditional
+    timing: at_submission
+    accepted_forms:
+      - "Traducere in limba romana"
+    readiness_checks:
+      - "Traducerea este disponibila daca ruta o cere"
+    status: draft
+
+  - id: req.dlf.medical
+    title_ro: "Fisa medicala pentru valabilitate noua"
+    description_ro: >-
+      Fisa medicala folosita cand se solicita o noua valabilitate administrativa.
+    obligation: conditional
+    timing: at_submission
+    accepted_forms:
+      - "Fisa medicala emisa de unitate autorizata"
+    readiness_checks:
+      - "Fisa medicala este disponibila daca se cere valabilitate noua"
+    status: draft

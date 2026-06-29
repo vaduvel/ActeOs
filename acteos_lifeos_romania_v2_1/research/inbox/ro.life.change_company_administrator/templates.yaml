@@ -1,0 +1,159 @@
+step_templates:
+  - id: approve_administrator_change
+    semantic_key: change_company_administrator_approve_change
+    title_ro: "Aproba schimbarea administratorului"
+    instruction_ro: >-
+      Pregateste hotararea asociatilor sau decizia asociatului unic si verifica
+      validitatea majoritatii ori a procedurii prevazute in actul constitutiv.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Schimbarea administratorului este aprobata in forma ceruta."
+    recovery_actions_ro:
+      - "Daca revocarea ar lasa societatea fara organ statutar, redefineste simultan noua structura."
+    status: draft
+  - id: prepare_updated_constitutive_act
+    semantic_key: change_company_administrator_prepare_updated_act
+    title_ro: "Pregateste actul constitutiv actualizat"
+    instruction_ro: >-
+      Daca schimbarea modifica textul actului constitutiv, actualizeaza forma
+      consolidata cu datele, durata si puterile administratorilor.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Forma actualizata a actului constitutiv este pregatita."
+    recovery_actions_ro:
+      - "Daca lipsesc date despre mandat sau reprezentare, completeaza-le inainte de consolidare."
+    status: draft
+  - id: file_administrator_change_mention
+    semantic_key: change_company_administrator_file_mention
+    title_ro: "Depune mentiunea la ONRC"
+    instruction_ro: >-
+      Depune mentiunea privind schimbarea administratorului prin canalul oficial
+      si pastreaza dovada depunerii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Mentiunea ONRC privind administratorul este depusa."
+    recovery_actions_ro:
+      - "Daca semnatarul nu are autoritate valida la data depunerii, remediaza acest punct inainte de redepunere."
+    status: draft
+  - id: update_beneficial_owner_data
+    semantic_key: change_company_administrator_update_bo
+    title_ro: "Actualizeaza datele beneficiarului real"
+    instruction_ro: >-
+      Daca schimbarea administratorului modifica identitatea ori controlul
+      beneficiarului real, depune si actualizarea corespunzatoare.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Efectul asupra beneficiarului real este clarificat si, daca e cazul, actualizat."
+    recovery_actions_ro:
+      - "Nu presupune automat ca orice administrator nou devine beneficiar real."
+    status: draft
+
+requirement_templates:
+  - id: req.sole_associate_written_decision
+    title_ro: "Decizia scrisa a asociatului unic"
+    description_ro: >-
+      Decizia redactata in scris atunci cand societatea are asociat unic si
+      schimbarea administratorului se aproba prin aceasta forma.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Decizia scrisa a asociatului unic, semnata in forma ceruta."
+    readiness_checks:
+      - "Societatea are asociat unic si foloseste aceasta ruta decizionala."
+    status: draft
+  - id: req.shareholders_resolution
+    title_ro: "Hotararea asociatilor"
+    description_ro: >-
+      Hotararea AGA ori a asociatilor prin care se aproba schimbarea
+      administratorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare a asociatilor semnata in forma ceruta."
+    readiness_checks:
+      - "Majoritatea si procedura interna sunt respectate."
+    status: draft
+  - id: req.new_administrator_identity_data
+    title_ro: "Datele de identitate ale noului administrator"
+    description_ro: >-
+      Datele complete necesare pentru identificarea noului administrator in
+      documentele societatii si ale ONRC.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Nume si date de identificare complete pentru noul administrator."
+    readiness_checks:
+      - "Schimbarea implica numirea ori inlocuirea unui administrator."
+    status: draft
+  - id: req.administrator_mandate_term
+    title_ro: "Durata mandatului administratorului"
+    description_ro: >-
+      Durata mandatului care trebuie stabilita in documentele societatii atunci
+      cand ruta concreta o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Formulare explicita privind durata mandatului."
+    readiness_checks:
+      - "Durata mandatului nu este lasata nedefinita in cazul in care trebuie precizata."
+    status: draft
+  - id: req.administrator_powers_and_representation
+    title_ro: "Puterile si modul de reprezentare"
+    description_ro: >-
+      Descrierea puterilor administratorului si a modului de reprezentare al
+      societatii dupa schimbare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Clauze ori mentiuni despre puteri si reprezentare individuala sau comuna."
+    readiness_checks:
+      - "Modul de reprezentare este clar definit dupa schimbare."
+    status: draft
+  - id: req.amending_act
+    title_ro: "Act modificator"
+    description_ro: >-
+      Actul care consemneaza schimbarea administratorului atunci cand se modifica
+      actul constitutiv.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Hotarare, act aditional sau alt act modificator acceptat de ONRC."
+    readiness_checks:
+      - "Ruta concreta schimba actul constitutiv."
+    status: draft
+  - id: req.updated_constitutive_act
+    title_ro: "Act constitutiv actualizat"
+    description_ro: >-
+      Forma consolidata a actului constitutiv dupa actualizarea administratorilor
+      si a regulilor de reprezentare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Text complet actualizat al actului constitutiv."
+    readiness_checks:
+      - "Datele administratorilor si reprezentarii sunt integrate corect."
+    status: draft
+  - id: req.valid_mention_signature
+    title_ro: "Semnatura valabila pentru mentiune"
+    description_ro: >-
+      Semnatura persoanei care are autoritatea valida de a depune mentiunea la
+      data depunerii.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Semnatura persoanei autorizate in forma ceruta de canalul ONRC."
+    readiness_checks:
+      - "Semnatarul are putere valabila la data depunerii."
+    status: draft
+  - id: req.beneficial_owner_change_declaration
+    title_ro: "Declaratie de schimbare a beneficiarului real"
+    description_ro: >-
+      Declaratia sau setul de date necesare atunci cand schimbarea
+      administratorului afecteaza datele beneficiarului real.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratia ori documentatia ceruta pentru actualizarea beneficiarului real."
+    readiness_checks:
+      - "Schimbarea administratorului modifica identitatea sau controlul beneficiarului real."
+    status: draft

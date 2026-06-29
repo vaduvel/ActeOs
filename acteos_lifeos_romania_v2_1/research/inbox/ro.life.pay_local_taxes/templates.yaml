@@ -1,0 +1,84 @@
+# Step & requirement templates for ro.life.pay_local_taxes (life.pay_local_taxes).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: verify_current_timisoara_local_tax_assessment
+    semantic_key: verify_current_timisoara_local_tax_assessment
+    title_ro: "Verifica soldul si obiectele fiscale curente"
+    instruction_ro: >-
+      Verifica evaluarea curenta sau soldul live pentru impozitele locale din Timisoara inainte de
+      orice plata.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Soldul sau evaluarea curenta a fost verificata"
+    recovery_actions_ro:
+      - "Daca suma nu este verificata pentru anul curent, nu plati valori istorice"
+    status: draft
+
+  - id: pay_first_local_tax_installment_or_verified_full_year
+    semantic_key: pay_first_local_tax_installment_or_verified_full_year
+    title_ro: "Plateste prima rata sau intreg anul, daca este verificat"
+    instruction_ro: >-
+      Daca esti inainte de prima scadenta relevanta, pregateste plata primei rate sau a intregului
+      an doar pe baza valorii verificate curent.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Prima plata relevanta a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca nu ai confirmat suma curenta, revino la verificarea soldului"
+    status: draft
+
+  - id: pay_outstanding_first_installment_and_plan_second
+    semantic_key: pay_outstanding_first_installment_and_plan_second
+    title_ro: "Achita prima rata restanta si planifica a doua rata"
+    instruction_ro: >-
+      Daca prima scadenta a trecut, achita restanta verificata si marcheaza separat urmatoarea
+      rata.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Restanta primei rate a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu este clar ce rata a ramas neachitata, verifica din nou fisa curenta"
+    status: draft
+
+  - id: pay_remaining_local_tax_by_september_30
+    semantic_key: pay_remaining_local_tax_by_september_30
+    title_ro: "Plateste soldul ramas pana la scadenta a doua"
+    instruction_ro: >-
+      Daca te afli inainte de scadenta de toamna, plateste soldul ramas pe baza datelor curente
+      verificate.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Soldul ramas pana la scadenta a doua a fost evaluat"
+    recovery_actions_ro:
+      - "Daca datele curente nu sunt confirmate, nu continua plata"
+    status: draft
+
+  - id: pay_overdue_local_tax_balance
+    semantic_key: pay_overdue_local_tax_balance
+    title_ro: "Plateste soldul local restant dupa scadenta"
+    instruction_ro: >-
+      Daca termenul final a trecut, verifica soldul ramas si pregateste plata pe baza situatiei
+      curente din rol.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Soldul restant a fost verificat"
+    recovery_actions_ro:
+      - "Daca soldul nu este actualizat, cere mai intai clarificarea lui"
+    status: draft
+
+requirement_templates:
+  - id: req.current_local_tax_assessment_or_live_balance
+    title_ro: "Evaluare curenta sau sold live pentru taxele locale"
+    description_ro: >-
+      Evaluarea curenta sau soldul live folosit pentru plata taxelor locale.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Evaluare curenta a taxei locale"
+      - "Sold live al rolului fiscal"
+    readiness_checks:
+      - "Suma si obiectele fiscale sunt verificate pentru anul curent"
+    status: draft

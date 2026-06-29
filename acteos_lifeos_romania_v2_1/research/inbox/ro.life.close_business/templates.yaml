@@ -1,0 +1,110 @@
+step_templates:
+  - id: file_pfa_deregistration
+    semantic_key: close_business_file_pfa_deregistration
+    title_ro: "Depune radierea PFA"
+    instruction_ro: >-
+      Pregateste cererea de radiere a PFA si documentele de sustinere pentru
+      motivul concret al inchiderii.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de radiere PFA este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca motivul inchiderii nu este clar documentat, completeaza mai intai dovada relevanta."
+    status: draft
+  - id: approve_simultaneous_dissolution_liquidation
+    semantic_key: close_business_approve_simultaneous_route
+    title_ro: "Aproba ruta simultana de dizolvare si lichidare"
+    instruction_ro: >-
+      Daca asociatii indeplinesc conditiile pentru ruta simultana, consemneaza
+      hotararea si verifica pasivul si activele ramase.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Eligibilitatea pentru ruta simultana este clarificata."
+    recovery_actions_ro:
+      - "Daca pasivul nu este stins ori regularizat, muta cazul pe ruta standard."
+    status: draft
+  - id: start_standard_dissolution_liquidation
+    semantic_key: close_business_start_standard_route
+    title_ro: "Porneste dizolvarea si lichidarea standard"
+    instruction_ro: >-
+      Daca ruta simplificata nu este disponibila, continua cu procedura
+      etapizata de dizolvare si lichidare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta standard de dizolvare si lichidare este aleasa."
+    recovery_actions_ro:
+      - "Documenteaza separat pasii fiscali, de personal si de arhivare care nu sunt rezolvati automat de aceasta mentiune."
+    status: draft
+  - id: file_srl_dissolution_liquidation
+    semantic_key: close_business_file_srl_dissolution
+    title_ro: "Depune mentiunile SRL la ONRC"
+    instruction_ro: >-
+      Depune mentiunile de dizolvare, lichidare sau radiere prin canalul oficial
+      corespunzator stadiului procedural.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul SRL pentru dizolvare sau lichidare este depus."
+    recovery_actions_ro:
+      - "Daca lipsesc acte despre active, pasiv sau publicare, completeaza-le inainte de depunere."
+    status: draft
+  - id: pay_monitorul_oficial_publication_tariff
+    semantic_key: close_business_pay_publication_tariff
+    title_ro: "Achita nota de publicare"
+    instruction_ro: >-
+      Achita tariful de publicare cerut pentru etapa procedurala in care se afla
+      inchiderea SRL-ului.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Tariful de publicare este achitat pentru dosarul relevant."
+    recovery_actions_ro:
+      - "Plateste numai dupa emiterea notei ori indicatiei oficiale aferente dosarului."
+    status: draft
+  - id: cancel_timisoara_commercial_agreement
+    semantic_key: close_business_cancel_timisoara_agreement
+    title_ro: "Anuleaza acordul comercial Timisoara"
+    instruction_ro: >-
+      Daca activitatea avea acord comercial local, urmeaza separat ruta de
+      anulare in Timisoara.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ruta de anulare a acordului local este deschisa sau finalizata."
+    recovery_actions_ro:
+      - "Nu presupune ca radierea ONRC produce automat si anularea acordului local."
+    status: draft
+
+requirement_templates:
+  - id: req.pfa_deregistration_request
+    title_ro: "Cerere de radiere PFA"
+    description_ro: >-
+      Cererea folosita pentru radierea PFA din registrul comertului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea ori formularul ONRC pregatit pentru radierea PFA."
+    readiness_checks:
+      - "Cererea corespunde motivului si titularului corect."
+    status: draft
+  - id: req.liquidation_income_tax_proof
+    title_ro: "Dovada fiscala pentru lichidare"
+    description_ro: >-
+      Dovada fiscala ceruta de ruta modelata atunci cand se distribuie active
+      ramase in procedura de lichidare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada emisa ori recunoscuta pentru obligatia fiscala aferenta lichidarii."
+    readiness_checks:
+      - "Ruta concreta include distribuirea activelor ramase."
+    status: draft
+  - id: req.local_documents_certified_true_copy
+    title_ro: "Copii certificate pentru anularea locala"
+    description_ro: >-
+      Documentele in copie certificata cerute de procedura locala de anulare a
+      acordului comercial.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copii certificate conform cerintei serviciului local aplicabil."
+    readiness_checks:
+      - "Exista un acord comercial local care trebuie anulat."
+    status: draft

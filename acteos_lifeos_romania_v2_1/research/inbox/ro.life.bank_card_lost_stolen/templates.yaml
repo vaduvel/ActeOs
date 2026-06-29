@@ -1,0 +1,88 @@
+step_templates:
+  - id: step.block_card
+    semantic_key: bank_card_lost_block_card
+    title_ro: "Blocheaza cardul"
+    instruction_ro: >-
+      Foloseste imediat aplicatia sau telefonul oficial al emitentului pentru a
+      bloca cardul.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Blocarea cardului este confirmata."
+      - "Exista un numar de referinta sau o confirmare electronica."
+    recovery_actions_ro:
+      - "Daca aplicatia nu functioneaza, suna emitentul prin canalul oficial."
+    status: draft
+  - id: step.review_transactions
+    semantic_key: bank_card_lost_review_transactions
+    title_ro: "Verifica tranzactiile"
+    instruction_ro: >-
+      Controleaza operatiunile recente si noteaza-le pe cele pe care nu le
+      recunosti.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Lista tranzactiilor contestate este pregatita sau ai confirmat ca nu exista."
+    recovery_actions_ro:
+      - "Daca nu ai acces la istoric, cere extrasul sau asistenta emitentului."
+    status: draft
+  - id: step.report_unauthorized
+    semantic_key: bank_card_lost_report_unauthorized
+    title_ro: "Raporteaza operatiunile neautorizate"
+    instruction_ro: >-
+      Trimite emitentului sesizarea pentru operatiunile neautorizate si
+      pastreaza dovada inregistrarii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Sesizarea este transmisa si inregistrata."
+    recovery_actions_ro:
+      - "Daca banca cere date suplimentare, raspunde doar prin canalele oficiale."
+    status: draft
+  - id: step.request_replacement
+    semantic_key: bank_card_lost_request_replacement
+    title_ro: "Solicita un card nou"
+    instruction_ro: >-
+      Dupa blocare, urmeaza procedura emitentului pentru reemitere si confirma
+      costul, livrarea sau ridicarea.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Reemiterea cardului este confirmata."
+    recovery_actions_ro:
+      - "Confirma costurile si termenul inainte de a finaliza comanda."
+    status: draft
+
+requirement_templates:
+  - id: req.issuer_identification
+    title_ro: "Identificarea emitentului"
+    description_ro: >-
+      Informatiile minime necesare pentru a identifica banca sau emitentul
+      cardului pierdut ori furat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declaratia utilizatorului privind emitentul si tipul cardului."
+    readiness_checks:
+      - "Emitentul este cunoscut sau poate fi identificat din documentele disponibile."
+    status: draft
+  - id: req.security_identification
+    title_ro: "Date de identificare sigura"
+    description_ro: >-
+      Datele de verificare cerute de emitent pentru blocarea cardului in canalul
+      oficial.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Datele de securitate cerute in procedura oficiala a emitentului."
+    readiness_checks:
+      - "Solicitantul poate trece identificarea in canalul oficial."
+    status: draft
+  - id: req.transaction_details
+    title_ro: "Detaliile tranzactiilor contestate"
+    description_ro: >-
+      Lista operatiunilor nerecunoscute, cu data, suma si comerciantul sau
+      referinta disponibila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Extras sau lista a tranzactiilor contestate."
+    readiness_checks:
+      - "Exista operatiuni nerecunoscute care trebuie sesizate."
+    status: draft

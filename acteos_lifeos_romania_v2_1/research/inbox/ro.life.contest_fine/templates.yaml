@@ -1,0 +1,159 @@
+# Step & requirement templates for ro.life.contest_fine (life.contest_fine).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_contravention_complaint
+    semantic_key: prepare_contravention_complaint
+    title_ro: "Pregateste plangerea contraventionala"
+    instruction_ro: >-
+      Redacteaza plangerea impotriva procesului-verbal si separa motivele si probele de orice
+      derogare speciala.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Plangerea contraventionala este pregatita"
+    recovery_actions_ro:
+      - "Daca lipsesc motivele sau procesul-verbal, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: identify_district_court_for_offense_place
+    semantic_key: identify_district_court_for_offense_place
+    title_ro: "Identifica judecatoria de la locul faptei"
+    instruction_ro: >-
+      Daca alegi competenta dupa locul faptei, identifica judecatoria corespunzatoare acelei
+      jurisdictii.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Judecatoria de la locul faptei a fost identificata"
+    recovery_actions_ro:
+      - "Daca locul faptei nu este clar, nu alege aceasta baza de competenta"
+    status: draft
+
+  - id: identify_district_court_for_domicile
+    semantic_key: identify_district_court_for_domicile
+    title_ro: "Identifica judecatoria dupa domiciliu sau sediu"
+    instruction_ro: >-
+      Daca alegi competenta dupa domiciliul sau sediul contravenientului, identifica judecatoria
+      corespunzatoare.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Judecatoria dupa domiciliu sau sediu a fost identificata"
+    recovery_actions_ro:
+      - "Daca domiciliul sau sediul nu sunt clare, verifica mai intai baza aleasa"
+    status: draft
+
+  - id: verify_special_contravention_statute
+    semantic_key: verify_special_contravention_statute
+    title_ro: "Verifica actul special contraventional"
+    instruction_ro: >-
+      Verifica daca exista derogari in actul special aplicabil inainte de depunerea definitiva a
+      plangerii.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Actul special contraventional a fost verificat"
+    recovery_actions_ro:
+      - "Daca actul special nu a fost verificat, nu presupune procedura generala ca suficienta"
+    status: draft
+
+  - id: limit_complaint_to_damages
+    semantic_key: limit_complaint_to_damages
+    title_ro: "Limiteaza plangerea la daune, daca aceasta este ramura corecta"
+    instruction_ro: >-
+      Daca plangerea vizeaza doar daunele, delimiteaza aceasta ramura de contestarea integrala a
+      procesului-verbal.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ramura limitata la daune a fost clarificata"
+    recovery_actions_ro:
+      - "Daca obiectul plangerii este mai larg, revino la ruta generala"
+    status: draft
+
+  - id: limit_complaint_to_confiscation
+    semantic_key: limit_complaint_to_confiscation
+    title_ro: "Limiteaza plangerea la confiscare, daca este cazul"
+    instruction_ro: >-
+      Daca litigiul priveste confiscarea, delimiteaza aceasta ramura de celelalte critici ale
+      procesului-verbal.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ramura privind confiscarea a fost clarificata"
+    recovery_actions_ro:
+      - "Daca nu este vorba de confiscare, revino la obiectul principal al plangerii"
+    status: draft
+
+  - id: prepare_evidence
+    semantic_key: prepare_evidence
+    title_ro: "Pregateste probele"
+    instruction_ro: >-
+      Strange copia procesului-verbal, actele de identitate sau ale societatii si celelalte probe
+      folosite pentru plangere.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Probele pentru plangere sunt pregatite"
+    recovery_actions_ro:
+      - "Daca lipsesc documente suport, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: state_legality_and_merits_arguments
+    semantic_key: state_legality_and_merits_arguments
+    title_ro: "Formuleaza argumentele de legalitate si temeinicie"
+    instruction_ro: >-
+      Expune separat argumentele de legalitate si de temeinicie ale plangerii contraventionale.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Argumentele principale ale plangerii sunt formulate"
+    recovery_actions_ro:
+      - "Daca argumentele sunt prea generale, detaliaza-le pe baza actului si a probelor"
+    status: draft
+
+requirement_templates:
+  - id: court_fee_20_lei
+    title_ro: "Taxa judiciara de timbru de 20 lei"
+    description_ro: >-
+      Taxa folosita pentru plangerea contraventionala in cadrul general indicat de event card.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada platii taxei judiciare de timbru"
+    readiness_checks:
+      - "Dovada platii taxei este pregatita pentru dosar"
+    status: draft
+
+  - id: copy_of_process_verbal
+    title_ro: "Copia procesului-verbal"
+    description_ro: >-
+      Copia procesului-verbal contraventional contestat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Copia procesului-verbal contraventional"
+    readiness_checks:
+      - "Procesul-verbal contestat este disponibil in copie"
+    status: draft
+
+  - id: identity_or_company_documents
+    title_ro: "Acte de identitate sau acte ale societatii"
+    description_ro: >-
+      Actele de identitate ale persoanei ori documentele societatii, dupa caz.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+      - "Documente ale societatii"
+    readiness_checks:
+      - "Persoana sau entitatea care formuleaza plangerea este identificabila"
+    status: draft
+
+  - id: supporting_evidence
+    title_ro: "Probele suport"
+    description_ro: >-
+      Probele care sustin plangerea contraventionala.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Inscrisuri"
+      - "Alte probe suport"
+    readiness_checks:
+      - "Probele sustin motivele plangerii"
+    status: draft

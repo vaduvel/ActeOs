@@ -1,0 +1,63 @@
+step_templates:
+  - id: prepare_timisoara_tax_refund_request
+    semantic_key: tax_refund_prepare_timisoara_refund
+    title_ro: "Pregateste cererea de restituire pentru Timisoara"
+    instruction_ro: >-
+      Daca suma apartine bugetului local al Municipiului Timisoara si urmaresti
+      restituirea, pregateste cererea pe ruta Atlas indicata de fluxul oficial.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea de restituire pentru Timisoara este pregatita."
+    recovery_actions_ro:
+      - "Daca nu esti sigur ca suma este locala si nu centrala, confirma mai intai autoritatea competenta."
+    status: draft
+  - id: prepare_timisoara_tax_compensation_request
+    semantic_key: tax_refund_prepare_timisoara_compensation
+    title_ro: "Pregateste cererea de compensare pentru Timisoara"
+    instruction_ro: >-
+      Daca urmaresti compensarea unei sume locale in Timisoara, pregateste
+      cererea si documentele doveditoare pe ruta Atlas dedicata.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea de compensare pentru Timisoara este pregatita."
+    recovery_actions_ro:
+      - "Nu continua fara documentele care dovedesc dreptul la restituire."
+    status: draft
+  - id: track_tax_refund_or_compensation_request
+    semantic_key: tax_refund_track_request
+    title_ro: "Urmareste cererea depusa"
+    instruction_ro: >-
+      Dupa depunere, pastreaza dovada inregistrarii si urmareste raspunsul ori
+      solicitarile de completare comunicate de autoritatea fiscala.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea are dovada de depunere si poate fi urmarita."
+    recovery_actions_ro:
+      - "Daca nu ai dovada depunerii, obtine confirmarea oficiala inainte de escaladare."
+    status: draft
+
+requirement_templates:
+  - id: req.documents_proving_right_to_refund
+    title_ro: "Documente care dovedesc dreptul la restituire"
+    description_ro: >-
+      Documentele justificative care arata de ce suma trebuie restituita sau
+      poate fi folosita la compensare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acte fiscale, dovezi de plata, decizii sau alte documente justificative relevante."
+    readiness_checks:
+      - "Documentele sustin exact temeiul pentru care ceri compensarea."
+    status: draft
+  - id: req.identify_tax_and_payment_reference
+    title_ro: "Identificarea taxei si a referintei platii"
+    description_ro: >-
+      Informatiile minime care permit organului fiscal sa localizeze suma
+      platita si sa stabileasca traseul de restituire.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Tipul sumei, referinta platii si datele de identificare ale obligatiei."
+    readiness_checks:
+      - "Suma si plata pot fi localizate fara ambiguitate."
+    status: draft

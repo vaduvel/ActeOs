@@ -1,0 +1,119 @@
+# Step & requirement templates for ro.life.electronic_signature (life.electronic_signature).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: confirm_accepted_signature_type
+    semantic_key: confirm_accepted_signature_type
+    title_ro: "Confirma tipul de semnatura acceptat"
+    instruction_ro: >-
+      Verifica daca destinatarul cere semnatura calificata, avansata sau alt tip inainte sa alegi
+      certificatul.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Tipul de semnatura acceptat a fost confirmat"
+    recovery_actions_ro:
+      - "Daca tipul cerut nu este clar, cere confirmare scrisa destinatarului"
+    status: draft
+
+  - id: choose_qualified_provider
+    semantic_key: choose_qualified_provider
+    title_ro: "Alege un prestator calificat"
+    instruction_ro: >-
+      Verifica prestatorul si serviciul in Trusted List oficiala inainte de achizitie.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Prestatorul ales a fost verificat"
+    recovery_actions_ro:
+      - "Daca prestatorul nu este confirmat, nu continua achizitia"
+    status: draft
+
+  - id: complete_order_and_video_identification
+    semantic_key: complete_order_and_video_identification
+    title_ro: "Finalizeaza comanda si identificarea video"
+    instruction_ro: >-
+      Completeaza datele cerute, efectueaza plata si finalizeaza identificarea video pe canalul
+      oficial al prestatorului.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Comanda si identificarea video au fost parcurse"
+    recovery_actions_ro:
+      - "Daca identificarea esueaza, reia captura in conditii tehnice mai bune"
+    status: draft
+
+  - id: receive_and_activate_certificate
+    semantic_key: receive_and_activate_certificate
+    title_ro: "Primeste si activeaza certificatul"
+    instruction_ro: >-
+      Urmeaza instructiunile prestatorului pentru cloud sau token si testeaza activarea
+      certificatului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Certificatul a fost primit si activat"
+    recovery_actions_ro:
+      - "Daca activarea nu merge, foloseste suportul oficial al prestatorului"
+    status: draft
+
+  - id: enroll_certificate_where_needed
+    semantic_key: enroll_certificate_where_needed
+    title_ro: "Inroleaza certificatul unde este necesar"
+    instruction_ro: >-
+      Daca platforma tinta cere o inrolare separata, urmeaza procedura ei oficiala dupa emitere.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Platforma tinta accepta certificatul sau documentul semnat"
+    recovery_actions_ro:
+      - "Daca platforma nu il accepta, verifica ghidul ei oficial"
+    status: draft
+
+requirement_templates:
+  - id: req.valid_id
+    title_ro: "Document de identitate valabil"
+    description_ro: >-
+      Actul de identitate valabil folosit pentru identificarea titularului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+    readiness_checks:
+      - "Actul este valabil, lizibil si disponibil"
+    status: draft
+
+  - id: req.payment_method
+    title_ro: "Metoda de plata online"
+    description_ro: >-
+      Metoda de plata online necesara fluxurilor cercetate de emitere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Card pentru plata online"
+    readiness_checks:
+      - "Metoda de plata este disponibila pentru comanda"
+    status: draft
+
+  - id: req.video_device
+    title_ro: "Dispozitiv pentru identificare video"
+    description_ro: >-
+      Dispozitivul si conditiile tehnice necesare pentru identificarea video.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dispozitiv cu camera si microfon"
+      - "Conexiune la internet"
+    readiness_checks:
+      - "Camera, microfonul si internetul functioneaza"
+    status: draft
+
+  - id: req.recipient_requirement
+    title_ro: "Cerința destinatarului"
+    description_ro: >-
+      Cerinta oficiala sau contractuala a destinatarului privind tipul de semnatura acceptat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerinta oficiala a destinatarului"
+      - "Confirmare scrisa de la destinatar"
+    readiness_checks:
+      - "Cerința destinatarului este clara si verificata"
+    status: draft

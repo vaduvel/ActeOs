@@ -1,0 +1,87 @@
+step_templates:
+  - id: register_residence
+    semantic_key: residence_registration_register
+    title_ro: "Depune cererea pentru reședinta"
+    instruction_ro: >-
+      Verifica pragul de locuire, durata solicitata si competenta teritoriala,
+      apoi depune personal cererea pentru inscrierea reședintei.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru reședinta este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Nu confunda reședinta temporara cu schimbarea domiciliului."
+    status: draft
+  - id: receive_residence_certificate
+    semantic_key: residence_registration_receive_certificate
+    title_ro: "Primeste dovada separata a reședintei"
+    instruction_ro: >-
+      Pentru CEI sau CIS, urmareste emiterea dovezii separate a reședintei, daca
+      aceasta este forma aplicabila.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Forma de iesire pentru CEI sau CIS este clarificata."
+    recovery_actions_ro:
+      - "Nu cere autocolant pe documentele pentru care ruta oficiala da dovada separata."
+    status: draft
+  - id: apply_residence_sticker
+    semantic_key: residence_registration_apply_sticker
+    title_ro: "Aplica autocolantul de reședinta pe CI 1997"
+    instruction_ro: >-
+      Pentru actele vechi tip CI 1997, urmeaza ruta specifica de aplicare a
+      autocolantului de reședinta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Forma de actualizare pentru CI 1997 este clarificata sau finalizata."
+    recovery_actions_ro:
+      - "Nu aplica aceasta ruta pentru CEI sau CIS."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_identity_card
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate al solicitantului, folosit pentru inscrierea
+      reședintei.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "CEI, CIS sau CI valabila, dupa cazul aplicabil."
+    readiness_checks:
+      - "Actul actual poate fi prezentat pentru inscrierea reședintei."
+    status: draft
+  - id: req.proof_of_residence_address
+    title_ro: "Dovada adresei de reședinta"
+    description_ro: >-
+      Documentul care sustine adresa secundara la care se solicita inscrierea
+      reședintei.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate, declaratie de gazduire sau alt document admis legal."
+    readiness_checks:
+      - "Adresa secundara poate fi dovedita formal."
+    status: draft
+  - id: req.applicant_physical_presence
+    title_ro: "Prezenta fizica a solicitantului"
+    description_ro: >-
+      Prezenta personala a solicitantului la depunerea cererii, asa cum este
+      modelata de procedura.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Prezentare personala la serviciul competent."
+    readiness_checks:
+      - "Solicitantul poate depune cererea personal."
+    status: draft
+  - id: req.host_consent_and_title
+    title_ro: "Consimtamantul gazduitorului si dovada titlului"
+    description_ro: >-
+      Documentele suplimentare necesare cand reședinta este inscrisa pe baza
+      gazduirii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Consimtamantul gazduitorului si dovada dreptului sau asupra adresei."
+    readiness_checks:
+      - "Solicitantul este gazduit si nu este titularul direct al adresei."
+    status: draft

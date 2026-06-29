@@ -1,0 +1,95 @@
+# Step & requirement templates for ro.life.military_certificate (ro.life.military_certificate).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.identify_exact_military_document
+    semantic_key: step.identify_exact_military_document
+    title_ro: "Identifica exact documentul militar"
+    instruction_ro: >-
+      Clarifica daca este vorba despre legitimatie de rezervist, livret militar sau adeverinta de statut.
+    sequence_hint: 10
+    completion_evidence_ro: ["Tipul exact de document militar a fost clarificat"]
+    recovery_actions_ro: ["Daca documentul nu este clar, nu folosi denumiri generice care pot induce in eroare"]
+    status: draft
+
+  - id: step.determine_reserve_transition_stage
+    semantic_key: step.determine_reserve_transition_stage
+    title_ro: "Stabileste stadiul trecerii in rezerva"
+    instruction_ro: >-
+      Pentru legitimatia de rezervist sau retragere, confirma daca persoana este in tranzitie ori deja in rezerva.
+    sequence_hint: 20
+    completion_evidence_ro: ["Stadiul trecerii in rezerva a fost clarificat"]
+    recovery_actions_ro: ["Daca emitentul nu este clar, confirma structura competenta inainte de cerere"]
+    status: draft
+
+  - id: step.submit_written_request_for_reserve_id
+    semantic_key: step.submit_written_request_for_reserve_id
+    title_ro: "Depune cererea scrisa pentru legitimatia de rezervist"
+    instruction_ro: >-
+      Pregateste cererea scrisa pe ruta competenta pentru emiterea legitimatiei de rezervist.
+    sequence_hint: 30
+    completion_evidence_ro: ["Cererea pentru legitimatia de rezervist este pregatita"]
+    recovery_actions_ro: ["Daca emitentul nu este confirmat, clarifica-l inainte de depunere"]
+    status: draft
+
+  - id: step.report_lost_or_stolen_reserve_id
+    semantic_key: step.report_lost_or_stolen_reserve_id
+    title_ro: "Raporteaza pierderea sau furtul legitimatiei"
+    instruction_ro: >-
+      Daca legitimatia a fost pierduta sau furata, pregateste raportarea pe ruta relevanta.
+    sequence_hint: 40
+    completion_evidence_ro: ["Ruta de raportare a pierderii sau furtului a fost pregatita"]
+    recovery_actions_ro: ["Daca nu este vorba de legitimatia de rezervist, verifica documentul corect"]
+    status: draft
+
+  - id: step.publish_nullity_in_army_administrative_bulletin
+    semantic_key: step.publish_nullity_in_army_administrative_bulletin
+    title_ro: "Pregateste nulitatea in buletinul administrativ"
+    instruction_ro: >-
+      Daca ruta de inlocuire cere nulitatea documentului pierdut, pregateste pasul pe canalul militar relevant.
+    sequence_hint: 50
+    completion_evidence_ro: ["Cerinta de nulitate a documentului a fost clarificata"]
+    recovery_actions_ro: ["Daca aceasta formalitate nu este confirmata pentru documentul concret, cere clarificare"]
+    status: draft
+
+  - id: step.request_replacement_reserve_id
+    semantic_key: step.request_replacement_reserve_id
+    title_ro: "Solicita inlocuirea legitimatiei de rezervist"
+    instruction_ro: >-
+      Dupa raportarea pierderii si formalitatile prealabile, pregateste cererea de inlocuire.
+    sequence_hint: 60
+    completion_evidence_ro: ["Ruta de inlocuire a legitimatiei de rezervist este pregatita"]
+    recovery_actions_ro: ["Daca lipsesc formalitatile prealabile, nu trata inlocuirea ca pregatita"]
+    status: draft
+
+  - id: step.contact_military_center_for_booklet_route
+    semantic_key: step.contact_military_center_for_booklet_route
+    title_ro: "Contacteaza centrul militar pentru livret"
+    instruction_ro: >-
+      Pentru livret militar sau alta ruta neconfirmata complet, cere checklistul exact de la centrul militar.
+    sequence_hint: 70
+    completion_evidence_ro: ["Ruta prin centrul militar pentru livret a fost solicitata"]
+    recovery_actions_ro: ["Daca checklistul nu este confirmat, mentine ruta in needs confirmation"]
+    status: draft
+
+  - id: step.request_exact_military_status_document
+    semantic_key: step.request_exact_military_status_document
+    title_ro: "Solicita exact documentul de statut militar"
+    instruction_ro: >-
+      Daca este necesara o adeverinta sau confirmare de statut, clarifica denumirea si emitentul documentului.
+    sequence_hint: 80
+    completion_evidence_ro: ["Documentul exact de statut militar a fost clarificat"]
+    recovery_actions_ro: ["Daca denumirea sau emitentul nu sunt confirmate, nu afisa un checklist final"]
+    status: draft
+
+requirement_templates:
+  - id: req.written_request
+    title_ro: "Cerere scrisa"
+    description_ro: "Cererea scrisa folosita pentru documentul militar relevant."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Cerere scrisa"]
+    readiness_checks: ["Cererea scrisa este pregatita pentru ruta relevanta"]
+    status: draft

@@ -1,0 +1,233 @@
+# Step & requirement templates for ro.life.transcribe_foreign_death (life.transcribe_foreign_death).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: classify_foreign_death_transcription
+    semantic_key: classify_foreign_death_transcription
+    title_ro: "Clasifica ruta de transcriere a decesului"
+    instruction_ro: >-
+      Stabileste daca dosarul se depune in Romania sau prin misiune/oficiu consular si identifica
+      autoritatea competenta pentru caz.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta de transcriere a decesului a fost clasificata"
+    recovery_actions_ro:
+      - "Daca autoritatea nu este competenta, reface incadrarea inainte de depunere"
+    status: draft
+
+  - id: open_foreign_death_first_registration
+    semantic_key: open_foreign_death_first_registration
+    title_ro: "Deschide traseul de prima inregistrare, daca este cazul"
+    instruction_ro: >-
+      Daca situatia cere o prima inregistrare in registrele romanesti inainte de transcriere,
+      initiaza acest traseu in ordinea corecta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Necesitatea primei inregistrari a fost evaluata"
+    recovery_actions_ro:
+      - "Daca ordinea pasilor este neclara, opreste depunerea pana la clarificare"
+    status: draft
+
+  - id: prepare_foreign_death_transcription
+    semantic_key: prepare_foreign_death_transcription
+    title_ro: "Pregateste dosarul de transcriere a decesului"
+    instruction_ro: >-
+      Strange certificatul de deces strain, dovezile despre persoana decedata si traducerile sau
+      formalitatile externe cerute pentru dosar.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Documentele de baza pentru transcrierea decesului sunt pregatite"
+    recovery_actions_ro:
+      - "Daca lipsesc acte privind persoana decedata, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: file_at_applicant_or_deceased_competent_uat
+    semantic_key: file_at_applicant_or_deceased_competent_uat
+    title_ro: "Depune la UAT-ul competent"
+    instruction_ro: >-
+      Daca ruta este in Romania, depune dosarul la UAT-ul competent pentru solicitant sau pentru
+      persoana decedata, conform incadrarii facute.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul a fost depus la UAT-ul competent"
+    recovery_actions_ro:
+      - "Daca autoritatea indica lipsa competentei, revino la clasificarea initiala"
+    status: draft
+
+  - id: file_at_romanian_mission_or_consulate
+    semantic_key: file_at_romanian_mission_or_consulate
+    title_ro: "Depune prin misiune sau consulat roman"
+    instruction_ro: >-
+      Pentru ruta consulara, depune dosarul prin misiunea diplomatica sau oficiul consular roman
+      competent pentru locul relevant.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Dosarul a fost depus prin misiunea sau consulatul competent"
+    recovery_actions_ro:
+      - "Daca ai folosit alta misiune, verifica din nou competenta teritoriala"
+    status: draft
+
+  - id: file_sector1_bucharest
+    semantic_key: file_sector1_bucharest
+    title_ro: "Depune la Sector 1 Bucuresti, daca ruta cere asta"
+    instruction_ro: >-
+      Foloseste traseul catre autoritatea de stare civila din Sectorul 1 Bucuresti doar daca
+      incadrarea dosarului il indica expres.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ruta catre Sector 1 Bucuresti a fost confirmata"
+    recovery_actions_ro:
+      - "Daca nu exista temei pentru aceasta autoritate, revino la ruta corecta"
+    status: draft
+
+  - id: file_bucharest_sector_or_county_seat
+    semantic_key: file_bucharest_sector_or_county_seat
+    title_ro: "Depune la sectorul sau municipiul competent"
+    instruction_ro: >-
+      Daca dosarul apartine unei autoritati din Bucuresti sau unui municipiu resedinta de judet,
+      depune la autoritatea locala competenta identificata pentru caz.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Autoritatea locala competenta a fost identificata si folosita"
+    recovery_actions_ro:
+      - "Daca depunerea este refuzata pentru competenta, reface traseul"
+    status: draft
+
+  - id: file_personally_at_competent_mission
+    semantic_key: file_personally_at_competent_mission
+    title_ro: "Prezinta-te personal la misiunea competenta"
+    instruction_ro: >-
+      Daca ruta cere prezenta personala, mergi la misiunea sau consulatul competent cu dosarul
+      complet si documentele de identificare.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Prezenta personala la misiunea competenta a fost asigurata"
+    recovery_actions_ro:
+      - "Daca nu poti finaliza depunerea, reface programarea dupa completarea dosarului"
+    status: draft
+
+  - id: transcribe_birth_ex_officio_before_death
+    semantic_key: transcribe_birth_ex_officio_before_death
+    title_ro: "Verifica transcrierea nasterii inainte de transcrierea decesului"
+    instruction_ro: >-
+      Daca situatia o cere, clarifica mai intai transcrierea sau inregistrarea nasterii in
+      registrele romanesti inainte de dosarul de deces.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Ordinea dintre nastere si deces a fost verificata"
+    recovery_actions_ro:
+      - "Daca lipseste transcrierea nasterii necesare, initiaza acel dosar inainte"
+    status: draft
+
+  - id: book_timisoara_authenticated_appointment
+    semantic_key: book_timisoara_authenticated_appointment
+    title_ro: "Fa programarea ceruta pentru Timisoara"
+    instruction_ro: >-
+      Daca ruta aplicabila cere programare prealabila pentru Timisoara, rezerva intervalul si
+      pastreaza confirmarea pentru depunere.
+    sequence_hint: 100
+    completion_evidence_ro:
+      - "Programarea necesara a fost efectuata"
+    recovery_actions_ro:
+      - "Daca nu exista slot disponibil, cauta un nou interval inainte de prezentare"
+    status: draft
+
+requirement_templates:
+  - id: req.foreign_death_certificate_or_extract_original
+    title_ro: "Act de deces strain in original"
+    description_ro: >-
+      Certificatul sau extrasul de deces emis in strainatate, in original, pentru transcriere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de deces strain in original"
+      - "Extras de deces strain in original"
+    readiness_checks:
+      - "Documentul original este disponibil si lizibil"
+    status: draft
+
+  - id: req.proof_deceased_romanian_citizenship
+    title_ro: "Dovada cetateniei romane a persoanei decedate"
+    description_ro: >-
+      Documentele care sustin cetatenia romana a persoanei decedate pentru dosarul de transcriere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte privind cetatenia romana a persoanei decedate"
+    readiness_checks:
+      - "Dovada cetateniei este prezenta in dosar"
+    status: draft
+
+  - id: req.applicant_identity
+    title_ro: "Actul de identitate al solicitantului"
+    description_ro: >-
+      Documentul de identitate al persoanei care depune dosarul de transcriere a decesului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate al solicitantului"
+    readiness_checks:
+      - "Actul de identitate este valabil si lizibil"
+    status: draft
+
+  - id: req.authenticated_romanian_translation
+    title_ro: "Traducere autorizata in limba romana"
+    description_ro: >-
+      Traducerea in limba romana a actului strain si a altor piese, acolo unde dosarul o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Traducere autorizata in romana"
+    readiness_checks:
+      - "Traducerea acopera documentele straine din dosar"
+    status: draft
+
+  - id: req.apostille
+    title_ro: "Apostila"
+    description_ro: >-
+      Apostila pentru documentul strain, atunci cand aceasta este formalitatea aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Apostila aplicata pe actul strain"
+    readiness_checks:
+      - "Apostila ceruta pentru statul emitent este prezenta"
+    status: draft
+
+  - id: req.supralegalisation
+    title_ro: "Supralegalizare"
+    description_ro: >-
+      Supralegalizarea actului strain, atunci cand aceasta este formalitatea aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act strain supralegalizat"
+    readiness_checks:
+      - "Supralegalizarea corecta este prezenta in dosar"
+    status: draft
+
+  - id: req.additional_authentic_evidence_for_missing_fields
+    title_ro: "Dovezi autentice suplimentare pentru date lipsa"
+    description_ro: >-
+      Documente autentice suplimentare pentru campurile lipsa din actul strain sau din dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente autentice suplimentare"
+    readiness_checks:
+      - "Documentele suplimentare acopera datele lipsa relevante"
+    status: draft
+
+  - id: req.deceased_civil_status_documents
+    title_ro: "Documente de stare civila ale persoanei decedate"
+    description_ro: >-
+      Documentele de stare civila ale persoanei decedate care sustin transcrierea si identificarea.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente de stare civila ale persoanei decedate"
+    readiness_checks:
+      - "Actele de stare civila relevante sunt incluse in dosar"
+    status: draft

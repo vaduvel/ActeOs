@@ -1,0 +1,193 @@
+# Step & requirement templates for ro.life.residence_registration_eu (life.residence_registration_eu).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: apply_for_eu_registration_certificate
+    semantic_key: apply_for_eu_registration_certificate
+    title_ro: "Pregateste certificatul de inregistrare pentru cetatean UE/SEE/Elvetia"
+    instruction_ro: >-
+      Daca sederea depaseste perioada scurta si persoana este cetatean UE/SEE/Elvetia, pregateste
+      dosarul pentru certificatul de inregistrare.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta pentru certificatul de inregistrare a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca sederea nu depaseste pragul sau persoana nu intra in acest grup, nu continua pe aceasta ramura"
+    status: draft
+
+  - id: apply_for_non_eu_family_residence_card
+    semantic_key: apply_for_non_eu_family_residence_card
+    title_ro: "Pregateste cartea de rezidenta pentru membru de familie non-UE"
+    instruction_ro: >-
+      Daca persoana este membru de familie non-UE al unui cetatean eligibil, pregateste dosarul
+      pentru cartea de rezidenta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta pentru cartea de rezidenta a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca membrul de familie nu este non-UE, nu continua pe aceasta ramura"
+    status: draft
+
+  - id: assess_permanent_eu_residence
+    semantic_key: assess_permanent_eu_residence
+    title_ro: "Evalueaza eligibilitatea pentru rezidenta permanenta"
+    instruction_ro: >-
+      Daca exista minimum cinci ani de rezidenta legala continua, evalueaza separat eligibilitatea
+      pentru rezidenta permanenta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Eligibilitatea pentru rezidenta permanenta a fost evaluata"
+    recovery_actions_ro:
+      - "Daca perioada de rezidenta nu este suficient confirmata, nu activa aceasta ramura"
+    status: draft
+
+requirement_templates:
+  - id: req.valid_national_id_or_passport
+    title_ro: "Act national de identitate valabil sau pasaport"
+    description_ro: >-
+      Documentul de identitate valabil folosit pentru certificatul de inregistrare UE.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act national de identitate valabil"
+      - "Pasaport valabil"
+    readiness_checks:
+      - "Documentul de identitate este valabil si disponibil"
+    status: draft
+
+  - id: req.employment_or_worker_evidence
+    title_ro: "Dovada activitatii ca lucrator"
+    description_ro: >-
+      Dovada activitatii ca lucrator sau angajat pentru temeiul de sedere bazat pe munca.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Contract de munca"
+      - "Adeverinta de la angajator"
+      - "Alta dovada a activitatii ca lucrator"
+    readiness_checks:
+      - "Dovada de lucrator este disponibila daca temeiul este munca"
+    status: draft
+
+  - id: req.self_employment_activity_evidence
+    title_ro: "Dovada activitatii independente"
+    description_ro: >-
+      Dovada activitatii independente pentru temeiul de sedere bazat pe activitate proprie.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada activitatii independente"
+    readiness_checks:
+      - "Dovada activitatii independente este disponibila daca temeiul este acesta"
+    status: draft
+
+  - id: req.means_of_support
+    title_ro: "Dovada mijloacelor de intretinere"
+    description_ro: >-
+      Dovada mijloacelor de intretinere pentru temeiurile de sedere care o cer.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada mijloacelor de intretinere"
+    readiness_checks:
+      - "Mijloacele de intretinere sunt dovedite daca ramura o cere"
+    status: draft
+
+  - id: req.health_insurance
+    title_ro: "Dovada asigurarii de sanatate"
+    description_ro: >-
+      Dovada asigurarii de sanatate pentru temeiurile de sedere care o cer.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada asigurarii de sanatate"
+    readiness_checks:
+      - "Asigurarea de sanatate este dovedita daca ramura o cere"
+    status: draft
+
+  - id: req.accredited_study_enrolment
+    title_ro: "Dovada inscrierii la studii acreditate"
+    description_ro: >-
+      Dovada inscrierii la studii acreditate pentru temeiul de sedere bazat pe studii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada inscrierii la studii acreditate"
+    readiness_checks:
+      - "Inscrierea la studii este dovedita daca temeiul este studiul"
+    status: draft
+
+  - id: req.means_declaration_or_evidence
+    title_ro: "Declaratie sau dovada a mijloacelor"
+    description_ro: >-
+      Declaratia sau dovada folosita pentru mijloacele de intretinere acolo unde ruta o permite.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie privind mijloacele"
+      - "Dovada mijloacelor"
+    readiness_checks:
+      - "Forma admisa pentru mijloace este pregatita daca este ceruta"
+    status: draft
+
+  - id: req.family_relationship_document
+    title_ro: "Document care dovedeste relatia de familie"
+    description_ro: >-
+      Documentul care dovedeste relatia de familie pentru rutele familiale UE.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document care dovedeste relatia de familie"
+    readiness_checks:
+      - "Relatia de familie este dovedita documentar"
+    status: draft
+
+  - id: req.sponsor_eu_residence_basis_evidence
+    title_ro: "Dovada temeiului de rezidenta al cetateanului UE sponsor"
+    description_ro: >-
+      Dovada temeiului de rezidenta a cetateanului UE/SEE/Elvetia de care se leaga membrul de familie.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada temeiului de rezidenta al sponsorului UE"
+    readiness_checks:
+      - "Temeiul de rezidenta al sponsorului este dovedit"
+    status: draft
+
+  - id: req.romanian_family_member_id
+    title_ro: "Actul de identitate al membrului de familie roman"
+    description_ro: >-
+      Actul de identitate al membrului de familie roman folosit pentru ramura familiala relevanta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate al membrului de familie roman"
+    readiness_checks:
+      - "Membrul de familie roman poate fi identificat documentar"
+    status: draft
+
+  - id: req.activity_specific_evidence
+    title_ro: "Dovezi specifice activitatii declarate"
+    description_ro: >-
+      Dovezile specifice ramurii de activitate sau scopului declarat, daca aceasta ruta le cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovezi specifice activitatii declarate"
+    readiness_checks:
+      - "Dovezile specifice scopului sunt disponibile daca ramura le cere"
+    status: draft
+
+  - id: req.valid_passport
+    title_ro: "Pasaport valabil"
+    description_ro: >-
+      Pasaportul valabil folosit pentru cartea de rezidenta a membrului de familie non-UE.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Pasaport valabil"
+    readiness_checks:
+      - "Pasaportul este valabil si disponibil"
+    status: draft

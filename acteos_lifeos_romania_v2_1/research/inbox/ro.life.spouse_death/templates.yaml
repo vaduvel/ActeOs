@@ -1,0 +1,126 @@
+# Step & requirement templates for ro.life.spouse_death (ro.life.spouse_death).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: register_spouse_death
+    semantic_key: register_spouse_death
+    title_ro: "Inregistreaza decesul sotului sau sotiei"
+    instruction_ro: >-
+      Pregateste inregistrarea decesului cu documentele medicale, de identitate si dovezile speciale aplicabile.
+    sequence_hint: 10
+    completion_evidence_ro: ["Ruta de inregistrare a decesului sotului sau sotiei a fost pregatita"]
+    recovery_actions_ro: ["Daca lipsesc dovezile speciale sau aprobarea pentru declarare tarzie, completeaza dosarul"]
+    status: draft
+
+  - id: claim_death_benefit
+    semantic_key: claim_death_benefit
+    title_ro: "Solicita ajutorul de deces"
+    instruction_ro: >-
+      Dupa inregistrarea decesului, pregateste dosarul pentru ajutorul de deces pe ramura relevanta.
+    sequence_hint: 20
+    completion_evidence_ro: ["Dosarul pentru ajutorul de deces este pregatit"]
+    recovery_actions_ro: ["Daca lipsesc dovezile cheltuielilor sau ale legaturii civile, completeaza dosarul"]
+    status: draft
+
+  - id: assess_and_claim_survivor_pension
+    semantic_key: assess_and_claim_survivor_pension
+    title_ro: "Evalueaza si pregateste pensia de urmas"
+    instruction_ro: >-
+      Clarifica profilul supravietuitorului si pregateste documentele pentru ramura CNPP a pensiei de urmas.
+    sequence_hint: 30
+    completion_evidence_ro: ["Ruta pentru pensia de urmas a fost pregatita pentru verificare"]
+    recovery_actions_ro: ["Daca profilul supravietuitorului sau conditiile CNPP nu sint clare, mentine cazul in evaluare"]
+    status: draft
+
+requirement_templates:
+  - id: req.medical_death_certificate
+    title_ro: "Certificatul medical constatator al decesului"
+    description_ro: "Documentul medical de baza pentru declararea decesului."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat medical constatator al decesului"]
+    readiness_checks: ["Documentul medical este disponibil si lizibil"]
+    status: draft
+
+  - id: req.deceased_identity_document
+    title_ro: "Actul de identitate al persoanei decedate"
+    description_ro: "Actul de identitate al persoanei decedate, daca este disponibil."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Actul de identitate al persoanei decedate"]
+    readiness_checks: ["Actul de identitate al persoanei decedate este disponibil daca exista"]
+    status: draft
+
+  - id: req.declarant_identity_document
+    title_ro: "Actul de identitate al declarantului"
+    description_ro: "Actul de identitate al persoanei care declara decesul."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Actul de identitate al declarantului"]
+    readiness_checks: ["Declarantul se poate identifica prin document valabil"]
+    status: draft
+
+  - id: req.prosecutor_late_registration_approval
+    title_ro: "Aprobarea pentru inregistrare tarzie"
+    description_ro: "Aprobarea relevanta daca termenul general de declarare a fost depasit."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Aprobare pentru inregistrare tarzie"]
+    readiness_checks: ["Aprobarea pentru declarare tarzie este pregatita daca se aplica"]
+    status: draft
+
+  - id: req.police_or_prosecutor_proof
+    title_ro: "Dovada politiei sau a procurorului"
+    description_ro: "Documentul cerut pentru cauze speciale ale decesului."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada politiei", "Dovada procurorului"]
+    readiness_checks: ["Dovada speciala este pregatita daca ruta o cere"]
+    status: draft
+
+  - id: req.death_certificate
+    title_ro: "Certificatul de deces"
+    description_ro: "Certificatul de deces folosit pentru dosarele ulterioare."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Certificat de deces"]
+    readiness_checks: ["Certificatul de deces este disponibil"]
+    status: draft
+
+  - id: req.applicant_identity_document
+    title_ro: "Actul de identitate al solicitantului"
+    description_ro: "Actul de identitate al persoanei care solicita dreptul relevant."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act de identitate al solicitantului"]
+    readiness_checks: ["Solicitantul se poate identifica prin document valabil"]
+    status: draft
+
+  - id: req.proof_funeral_expenses
+    title_ro: "Dovada cheltuielilor de inmormintare"
+    description_ro: "Documentele care sustin suportarea cheltuielilor funerare."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada cheltuielilor funerare"]
+    readiness_checks: ["Cheltuielile de inmormintare sint sustinute prin documente"]
+    status: draft
+
+  - id: req.civil_status_or_kinship_proof
+    title_ro: "Dovada starii civile sau a rudeniei"
+    description_ro: "Documentele care arata legatura relevanta cu persoana decedata."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documente de stare civila", "Dovada rudeniei"]
+    readiness_checks: ["Legatura relevanta este sustinuta prin documente"]
+    status: draft
+
+  - id: req.civil_status_documents
+    title_ro: "Documentele de stare civila pentru pensia de urmas"
+    description_ro: "Documentele de stare civila cerute pentru verificarea pensiei de urmas."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Documente de stare civila"]
+    readiness_checks: ["Documentele de stare civila sint pregatite pentru pensia de urmas"]
+    status: draft

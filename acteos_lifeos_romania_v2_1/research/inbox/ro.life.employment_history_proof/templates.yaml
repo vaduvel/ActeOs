@@ -1,0 +1,123 @@
+step_templates:
+  - id: access_reges_employee_portal
+    semantic_key: employment_history_access_reges
+    title_ro: "Acceseaza portalul REGES-ONLINE"
+    instruction_ro: >-
+      Intra in portalul oficial pentru salariati si autentifica-te cu metoda
+      disponibila pentru a verifica istoricul contractelor.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Portalul REGES-ONLINE este accesat."
+    recovery_actions_ro:
+      - "Daca nu poti intra, foloseste pasul de creare sau recuperare a accesului."
+    status: draft
+  - id: generate_employment_history_extract
+    semantic_key: employment_history_generate_extract
+    title_ro: "Genereaza extrasul de vechime"
+    instruction_ro: >-
+      Foloseste functia oficiala din portal pentru a genera extrasul privind
+      istoricul raporturilor de munca.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Extrasul de istoric profesional este generat."
+    recovery_actions_ro:
+      - "Daca nu gasesti functia corecta, revino la zona de documente sau extras din portal."
+    status: draft
+  - id: verify_extract_completeness
+    semantic_key: employment_history_verify_extract
+    title_ro: "Verifica daca extrasul este complet"
+    instruction_ro: >-
+      Verifica daca apar perioadele de munca relevante, angajatorii si
+      informatiile de care ai nevoie pentru scopul declarat.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Lipsurile sau conformitatea extrasului sunt clar identificate."
+    recovery_actions_ro:
+      - "Daca lipsesc perioade, activeaza ruta de completare prin angajator sau arhiva."
+    status: draft
+  - id: create_or_recover_reges_employee_access
+    semantic_key: employment_history_create_or_recover_access
+    title_ro: "Creeaza sau recupereaza accesul REGES"
+    instruction_ro: >-
+      Configureaza accesul initial sau recupereaza accesul pierdut pentru
+      portalul salariatilor, folosind datele si canalele oficiale.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Accesul la portal este creat sau recuperat."
+    recovery_actions_ro:
+      - "Daca ruta digitala nu merge, verifica instructiunile oficiale pentru suport sau reinrolare."
+    status: draft
+  - id: request_activity_and_seniority_document_from_employer
+    semantic_key: employment_history_request_document_from_employer
+    title_ro: "Solicita adeverinta de la angajator"
+    instruction_ro: >-
+      Cere angajatorului documentul privind activitatea, durata, salariul si
+      vechimea atunci cand extrasul nu este suficient sau nu poate fi obtinut.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Solicitarea catre angajator este formulata sau documentul este primit."
+    recovery_actions_ro:
+      - "Daca angajatorul nu poate raspunde direct, cauta administratorul judiciar sau lichidatorul."
+    status: draft
+  - id: request_document_from_judicial_administrator_or_liquidator
+    semantic_key: employment_history_request_from_liquidator
+    title_ro: "Solicita documentul de la administratorul judiciar sau lichidator"
+    instruction_ro: >-
+      Daca fostul angajator nu mai functioneaza, cauta persoana sau entitatea
+      care preia legal documentele si formuleaza cererea catre aceasta.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Cererea este directionata catre administratorul judiciar, lichidatorul sau detinatorul arhivei."
+    recovery_actions_ro:
+      - "Daca nu stii cine detine documentele, identifica mai intai arhiva sau procedura succesoare."
+    status: draft
+  - id: notify_active_employer_in_reges
+    semantic_key: employment_history_notify_active_employer
+    title_ro: "Semnaleaza lipsa unui raport activ in REGES"
+    instruction_ro: >-
+      Daca un raport actual nu apare corect in evidenta, anunta angajatorul
+      activ pentru verificare si corectare in registru.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Angajatorul activ este informat despre lipsa sau eroarea din evidenta."
+    recovery_actions_ro:
+      - "Pastreaza dovada sesizarii pentru urmarirea remedierii."
+    status: draft
+
+requirement_templates:
+  - id: roeid_or_email_account_for_reges
+    title_ro: "Cont ROeID sau e-mail pentru REGES"
+    description_ro: >-
+      Datele de acces sau de creare a accesului necesare pentru portalul
+      salariatilor REGES-ONLINE.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cont ROeID, e-mail ori alta metoda acceptata de portal pentru autentificare."
+    readiness_checks:
+      - "Poti primi si folosi confirmarile cerute de fluxul de acces."
+    status: draft
+  - id: employer_activity_duration_salary_and_seniority_document
+    title_ro: "Adeverinta de activitate, durata, salariu si vechime"
+    description_ro: >-
+      Documentul emis de angajator care confirma elementele profesionale
+      necesare pentru dovada vechimii sau a activitatii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverinta emisa de angajator sau de succesorul sau legal."
+    readiness_checks:
+      - "Documentul acopera perioadele relevante pentru solicitare."
+    status: draft
+  - id: supplementary_employer_or_archive_documents
+    title_ro: "Documente suplimentare de la angajator sau arhiva"
+    description_ro: >-
+      Documente de completare atunci cand extrasul digital ori adeverinta
+      initiala nu sunt suficiente.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copii din arhiva, state, contracte sau alte documente oficiale de completare."
+    readiness_checks:
+      - "Exista o lipsa concreta ce trebuie acoperita prin documente suplimentare."
+    status: draft

@@ -1,0 +1,100 @@
+step_templates:
+  - id: request_energy_certificate_copy
+    semantic_key: rented_home_request_energy_copy
+    title_ro: "Cere copia certificatului energetic"
+    instruction_ro: >-
+      Daca locuinta intra in regimul certificatului energetic si copia nu a fost
+      primita inainte de contract, solicit-o proprietarului.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Situatia copiei certificatului energetic este clarificata."
+    recovery_actions_ro:
+      - "Nu confunda copia pentru chirias cu originalul care ramane relevant pentru alte rute."
+    status: draft
+  - id: update_identity_for_new_domicile
+    semantic_key: rented_home_update_identity_domicile
+    title_ro: "Actualizeaza actul de identitate pentru noul domiciliu"
+    instruction_ro: >-
+      Daca locuinta inchiriata devine domiciliu principal, urmeaza separat ruta
+      de schimbare a actului de identitate.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Necesitatea schimbarii domiciliului este clarificata."
+    recovery_actions_ro:
+      - "Daca locuinta nu devine domiciliu principal, nu activa aceasta ruta."
+    status: draft
+  - id: register_residence
+    semantic_key: rented_home_register_residence
+    title_ro: "Inscrie reședinta"
+    instruction_ro: >-
+      Daca locuiesti la adresa secundara peste pragul relevant si nu schimbi
+      domiciliul, urmeaza ruta de inscriere a reședintei.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Necesitatea inscrierii reședintei este clarificata sau cererea este pregatita."
+    recovery_actions_ro:
+      - "Verifica formele legale de dovada a adresei inainte de depunere."
+    status: draft
+  - id: request_house_register_entry
+    semantic_key: rented_home_request_house_register_entry
+    title_ro: "Cere inscrierea in evidenta locativa, daca este necesara"
+    instruction_ro: >-
+      Daca ruta de reședinta sau adresa secundara cere un document locativ
+      suplimentar, solicita-l pe canalul competent.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Necesitatea documentului locativ suplimentar este clarificata."
+    recovery_actions_ro:
+      - "Nu adauga documente suplimentare inutile daca nu sunt cerute de ruta concreta."
+    status: draft
+  - id: submit_c168
+    semantic_key: rented_home_exclude_c168_for_tenant
+    title_ro: "Marcheaza ca formularul C168 nu este pasul chiriasului"
+    instruction_ro: >-
+      Pentru chiriasul obisnuit, retine ca obligatia fiscala C168 apartine
+      locatorului care obtine venitul, nu chiriasului.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta chiriasului este separata de obligatia C168 a locatorului."
+    recovery_actions_ro:
+      - "Daca utilizatorul este si locator in aceeasi speta, reclasifica evenimentul."
+    status: draft
+
+requirement_templates:
+  - id: req.identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate folosit pentru domiciliu sau reședinta la locuinta
+      inchiriata.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Se urmareste domiciliu sau reședinta la adresa inchiriata."
+    status: draft
+  - id: req.address_proof
+    title_ro: "Dovada adresei"
+    description_ro: >-
+      Documentul legal care sustine adresa locuintei inchiriate pentru
+      domiciliu sau reședinta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Contract, declaratie de gazduire sau alt document acceptat legal."
+    readiness_checks:
+      - "Adresa trebuie dovedita formal pentru ruta aleasa."
+    status: draft
+  - id: req.residence_declaration
+    title_ro: "Declaratie pentru reședinta"
+    description_ro: >-
+      Declaratia ori documentul suplimentar folosit pentru inscrierea reședintei,
+      daca procedura il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie completata sau alt formular cerut pentru reședinta."
+    readiness_checks:
+      - "Ruta aleasa este cea de inscriere a reședintei."
+    status: draft
+

@@ -1,0 +1,192 @@
+# Step & requirement templates for ro.life.parental_leave_benefit (life.parental_leave_benefit).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_parental_leave_application
+    semantic_key: prepare_parental_leave_application
+    title_ro: "Pregateste dosarul pentru concediu si indemnizatie"
+    instruction_ro: >-
+      Strange cererea, actele copilului si documentele privind perioadele eligibile sau veniturile
+      folosite pentru CCC.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul pentru CCC este pregatit"
+    recovery_actions_ro:
+      - "Daca lipseste o dovada a perioadelor eligibile, completeaza dosarul inainte de depunere"
+    status: draft
+
+  - id: request_parental_leave_from_employer
+    semantic_key: request_parental_leave_from_employer
+    title_ro: "Solicita concediul de la angajator"
+    instruction_ro: >-
+      Daca esti salariat, transmite angajatorului cererea pentru concediul de crestere a copilului
+      pe ruta operationala relevanta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea catre angajator a fost transmisa"
+    recovery_actions_ro:
+      - "Daca nu ai pregatit data de start, clarific-o inainte de notificare"
+    status: draft
+
+  - id: parental_leave_end
+    semantic_key: parental_leave_end
+    title_ro: "Verifica momentul final al dreptului"
+    instruction_ro: >-
+      Verifica durata aplicabila dreptului in functie de situatia copilului si de traseul eligibil.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Durata dreptului a fost verificata"
+    recovery_actions_ro:
+      - "Daca apar schimbari in situatie, recalculeaza durata pe baza documentelor"
+    status: draft
+
+  - id: plan_other_parent_two_months
+    semantic_key: plan_other_parent_two_months
+    title_ro: "Planifica perioada rezervata celuilalt parinte"
+    instruction_ro: >-
+      Daca ambii parinti sunt eligibili, planifica si separa perioada rezervata celuilalt parinte.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Perioada rezervata celuilalt parinte a fost analizata"
+    recovery_actions_ro:
+      - "Daca eligibilitatea celuilalt parinte nu este clara, confirma-o inainte de planificare"
+    status: draft
+
+  - id: reserved_parent_period
+    semantic_key: reserved_parent_period
+    title_ro: "Confirma perioada rezervata"
+    instruction_ro: >-
+      Marcheaza perioada rezervata pentru celalalt parinte in planul dreptului, daca regula se
+      aplica.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Perioada rezervata este delimitata in plan"
+    recovery_actions_ro:
+      - "Daca nu se aplica regula, elimina pasul din planul final"
+    status: draft
+
+  - id: submit_parental_leave_benefit
+    semantic_key: submit_parental_leave_benefit
+    title_ro: "Depune cererea pentru indemnizatie"
+    instruction_ro: >-
+      Depune cererea si dosarul complet pe canalul administratiei locale competent pentru
+      domiciliu sau resedinta.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Cererea pentru indemnizatie a fost depusa"
+    recovery_actions_ro:
+      - "Daca lipseste o piesa din dosar, completeaz-o si redepune"
+    status: draft
+
+  - id: notify_employer_parental_leave
+    semantic_key: notify_employer_parental_leave
+    title_ro: "Notifica angajatorul privind intrarea in CCC"
+    instruction_ro: >-
+      Daca esti salariat, notifica angajatorul cu anticipatia ceruta de traseul aplicabil.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Angajatorul a fost notificat privind CCC"
+    recovery_actions_ro:
+      - "Daca nu ai trimis notificarea, fa pasul imediat dupa stabilirea datei de start"
+    status: draft
+
+requirement_templates:
+  - id: req.child_disability_certificate
+    title_ro: "Certificat privind dizabilitatea copilului"
+    description_ro: >-
+      Documentul care sustine aplicarea duratei specifice pentru copilul cu dizabilitate, daca este cazul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat privind dizabilitatea copilului"
+    readiness_checks:
+      - "Documentul sustine durata speciala invocata"
+    status: draft
+
+  - id: req.application
+    title_ro: "Cerere pentru concediu si indemnizatie"
+    description_ro: >-
+      Cererea folosita pentru acordarea concediului si indemnizatiei de crestere a copilului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere completata"
+    readiness_checks:
+      - "Cererea este completata pentru traseul corect"
+    status: draft
+
+  - id: req.applicant_identity_document
+    title_ro: "Act de identitate al solicitantului"
+    description_ro: >-
+      Actul de identitate al persoanei care solicita dreptul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: req.child_birth_certificate
+    title_ro: "Certificat de nastere al copilului"
+    description_ro: >-
+      Certificatul de nastere al copilului pentru deschiderea dreptului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere"
+    readiness_checks:
+      - "Certificatul corespunde copilului pentru care se cere dreptul"
+    status: draft
+
+  - id: req.eligible_periods_proof
+    title_ro: "Dovezi ale perioadelor eligibile"
+    description_ro: >-
+      Documentele care sustin lunile eligibile sau perioadele asimilate folosite pentru CCC.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente privind perioadele eligibile"
+      - "Documente privind perioadele asimilate"
+    readiness_checks:
+      - "Documentele sustin lunile folosite la eligibilitate"
+    status: draft
+
+  - id: req.income_proof
+    title_ro: "Dovezi de venit"
+    description_ro: >-
+      Documentele folosite pentru baza de calcul si pentru sustinerea veniturilor eligibile.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente de venit"
+    readiness_checks:
+      - "Documentele de venit acopera perioada relevanta"
+    status: draft
+
+  - id: req.activity_suspension_proof
+    title_ro: "Dovada suspendarii activitatii"
+    description_ro: >-
+      Dovada suspendarii activitatii pentru situatiile in care aceasta este ceruta in dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente privind suspendarea activitatii"
+    readiness_checks:
+      - "Suspendarea acopera intervalul pentru care se cere dreptul"
+    status: draft
+
+  - id: req.employer_parental_leave_request
+    title_ro: "Cerere catre angajator pentru intrarea in CCC"
+    description_ro: >-
+      Cererea sau notificarea transmisa angajatorului pentru intrarea in concediul de crestere a
+      copilului, daca solicitantul este salariat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere sau notificare catre angajator"
+    readiness_checks:
+      - "Cererea catre angajator include data relevanta de start"
+    status: draft

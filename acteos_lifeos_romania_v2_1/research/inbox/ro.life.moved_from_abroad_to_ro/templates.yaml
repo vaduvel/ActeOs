@@ -1,0 +1,228 @@
+# Step & requirement templates for ro.life.moved_from_abroad_to_ro (life.moved_from_abroad_to_ro).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: establish_domicile_and_update_identity
+    semantic_key: establish_domicile_and_update_identity
+    title_ro: "Stabileste domiciliul si actualizeaza actul de identitate"
+    instruction_ro: >-
+      Daca persoana romana isi stabileste domiciliul in Romania, pregateste ruta de actualizare a
+      actului de identitate si a adresei.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Ruta pentru stabilirea domiciliului a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu se stabileste domiciliul, foloseste ramura de resedinta sau alta ruta relevanta"
+    status: draft
+
+  - id: register_residence
+    semantic_key: register_residence
+    title_ro: "Inregistreaza resedinta"
+    instruction_ro: >-
+      Daca persoana locuieste la o adresa secundara peste pragul relevant, pregateste ruta de
+      inregistrare a resedintei.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de inregistrare a resedintei a fost evaluata"
+    recovery_actions_ro:
+      - "Daca pragul de locuire la adresa secundara nu este depasit, nu activa aceasta ramura"
+    status: draft
+
+  - id: submit_z015
+    semantic_key: submit_z015
+    title_ro: "Pregateste si depune formularul Z015"
+    instruction_ro: >-
+      Daca sosirea depaseste pragul relevant si nu exista exceptie, pregateste si depune formularul
+      Z015 pe ruta fiscala de la sosire.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta pentru Z015 a fost evaluata sau pregatita"
+    recovery_actions_ro:
+      - "Daca pragul ori exceptia nu sunt clar confirmate, nu trata ruta fiscala ca finalizata"
+    status: draft
+
+  - id: prepare_igi_registration
+    semantic_key: prepare_igi_registration
+    title_ro: "Pregateste inregistrarea la IGI pentru cetateni UE/SEE/Elvetia"
+    instruction_ro: >-
+      Pentru cetateni UE/SEE/Elvetia, pregateste dosarul de inregistrare la IGI conform temeiului
+      sederii in Romania.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul IGI pentru cetateni UE/SEE/Elvetia este evaluat sau pregatit"
+    recovery_actions_ro:
+      - "Daca persoana este cetatean al unui stat tert, muta cazul pe ruta separata corespunzatoare"
+    status: draft
+
+requirement_templates:
+  - id: req.identity_document
+    title_ro: "Act de identitate"
+    description_ro: >-
+      Actul de identitate folosit pentru domiciliu sau resedinta in Romania.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate"
+    readiness_checks:
+      - "Actul de identitate este disponibil si valabil"
+    status: draft
+
+  - id: req.address_proof
+    title_ro: "Dovada adresei"
+    description_ro: >-
+      Dovada adresei din Romania folosita pentru domiciliu sau resedinta.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovada adresei din Romania"
+    readiness_checks:
+      - "Adresa din Romania este dovedita documentar"
+    status: draft
+
+  - id: req.residence_declaration
+    title_ro: "Declaratie pentru resedinta"
+    description_ro: >-
+      Declaratia folosita la inregistrarea resedintei, daca aceasta ramura este aplicabila.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie pentru resedinta"
+    readiness_checks:
+      - "Declaratia este pregatita daca se cere resedinta"
+    status: draft
+
+  - id: req.valid_passport_or_eu_id
+    title_ro: "Pasaport valabil sau act UE valabil"
+    description_ro: >-
+      Documentul de calatorie sau identitate folosit pentru ruta fiscala ori de imigrare la sosire.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Pasaport valabil"
+      - "Act de identitate UE valabil"
+    readiness_checks:
+      - "Documentul de calatorie sau identitate este valabil"
+    status: draft
+
+  - id: req.romanian_residence_document
+    title_ro: "Document romanesc de rezidenta"
+    description_ro: >-
+      Documentul romanesc de rezidenta sau inregistrare, daca ruta fiscala il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document romanesc de rezidenta"
+    readiness_checks:
+      - "Documentul de rezidenta este disponibil daca este aplicabil"
+    status: draft
+
+  - id: req.romania_housing_proof
+    title_ro: "Dovada locuirii in Romania"
+    description_ro: >-
+      Dovada locuirii sau a locuintei din Romania folosita pentru ruta fiscala sau de imigrare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada locuirii in Romania"
+    readiness_checks:
+      - "Locuinta din Romania este dovedita daca ruta o cere"
+    status: draft
+
+  - id: req.foreign_tax_residence_certificate_if_applicable
+    title_ro: "Certificat de rezidenta fiscala straina, daca este aplicabil"
+    description_ro: >-
+      Certificatul de rezidenta fiscala straina folosit la ruta fiscala de sosire, daca este aplicabil.
+    obligation: conditional
+    timing: later
+    accepted_forms:
+      - "Certificat de rezidenta fiscala straina"
+    readiness_checks:
+      - "Certificatul este atasat doar daca exista si este cerut"
+    status: draft
+
+  - id: req.igi_application
+    title_ro: "Cerere pentru IGI"
+    description_ro: >-
+      Cererea sau formularul de baza pentru ruta de inregistrare la IGI.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Cerere pentru IGI"
+    readiness_checks:
+      - "Cererea IGI este pregatita pentru temeiul ales"
+    status: draft
+
+  - id: req.valid_identity_document
+    title_ro: "Document valabil de identitate"
+    description_ro: >-
+      Documentul valabil de identitate folosit in dosarul de inregistrare la IGI.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document valabil de identitate"
+    readiness_checks:
+      - "Documentul de identitate este valabil si relevant"
+    status: draft
+
+  - id: req.employment_contract_or_employer_certificate
+    title_ro: "Contract de munca sau adeverinta de la angajator"
+    description_ro: >-
+      Dovada raportului de munca folosita pentru temeiul de sedere bazat pe angajare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Contract de munca"
+      - "Adeverinta de la angajator"
+    readiness_checks:
+      - "Dovada angajarii este disponibila daca acest temei este folosit"
+    status: draft
+
+  - id: req.reges_extract
+    title_ro: "Extras REGES"
+    description_ro: >-
+      Extrasul REGES folosit ca dovada suplimentara pentru ruta bazata pe angajare, daca este cerut.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Extras REGES"
+    readiness_checks:
+      - "Extrasul REGES este disponibil daca este cerut"
+    status: draft
+
+  - id: req.enrollment_proof
+    title_ro: "Dovada inscrierii la studii"
+    description_ro: >-
+      Dovada inscrierii la studii folosita pentru temeiul de sedere bazat pe studii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada inscrierii la studii"
+    readiness_checks:
+      - "Dovada inscrierii este disponibila daca temeiul este studiul"
+    status: draft
+
+  - id: req.means_of_support
+    title_ro: "Dovada mijloacelor de intretinere"
+    description_ro: >-
+      Dovada mijloacelor de intretinere folosita pentru temeiurile de sedere care o cer.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada mijloacelor de intretinere"
+    readiness_checks:
+      - "Mijloacele de intretinere sunt dovedite daca temeiul le cere"
+    status: draft
+
+  - id: req.health_insurance
+    title_ro: "Dovada asigurarii de sanatate"
+    description_ro: >-
+      Dovada asigurarii de sanatate folosita pentru rutele de sedere care o cer.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada asigurarii de sanatate"
+    readiness_checks:
+      - "Asigurarea de sanatate este dovedita daca temeiul o cere"
+    status: draft

@@ -1,0 +1,70 @@
+# Step & requirement templates for ro.life.vat_registration (life.vat_registration).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: confirm_vat_registration_basis
+    semantic_key: confirm_vat_registration_basis
+    title_ro: "Confirma temeiul inregistrarii in scopuri de TVA"
+    instruction_ro: >-
+      Verifica daca temeiul este depasirea plafonului, ruta voluntara sau alta ramura speciala,
+      fara sa ghicesti eligibilitatea.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Temeiul inregistrarii in scopuri de TVA a fost confirmat"
+    recovery_actions_ro:
+      - "Daca temeiul nu este clar, nu continua pe ruta formularului 700"
+    status: draft
+
+  - id: verify_existing_vat_registration_status
+    semantic_key: verify_existing_vat_registration_status
+    title_ro: "Verifica statutul actual de TVA"
+    instruction_ro: >-
+      Clarifica daca entitatea este deja inregistrata in scopuri de TVA sau daca este vorba despre o
+      inregistrare noua.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Statutul actual de TVA a fost verificat"
+    recovery_actions_ro:
+      - "Daca statutul actual nu este clar, nu trata cazul ca inregistrare noua"
+    status: draft
+
+  - id: prepare_form_700_vat_registration
+    semantic_key: prepare_form_700_vat_registration
+    title_ro: "Pregateste formularul 700"
+    instruction_ro: >-
+      Daca ruta este cea de actualizare a vectorului fiscal, pregateste formularul 700 curent pentru
+      motivul confirmat.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Formularul 700 este pregatit"
+    recovery_actions_ro:
+      - "Daca nu ai acces la formularul curent sau la depunerea electronica, opreste ruta"
+    status: draft
+
+  - id: assess_special_vat_registration_route
+    semantic_key: assess_special_vat_registration_route
+    title_ro: "Evalueaza ruta speciala de TVA"
+    instruction_ro: >-
+      Daca temeiul declarat intra intr-o ruta speciala, separa-o de inregistrarea standard prin
+      formularul 700.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Aplicabilitatea rutei speciale de TVA a fost evaluata"
+    recovery_actions_ro:
+      - "Daca motivul nu este unul special, revino la ruta standard"
+    status: draft
+
+requirement_templates:
+  - id: req.current_form_700_package
+    title_ro: "Pachetul curent al formularului 700"
+    description_ro: >-
+      Formularul 700 in versiunea curenta si materialele necesare pregatirii lui.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Formularul 700 curent"
+    readiness_checks:
+      - "Versiunea curenta a formularului este disponibila pentru utilizare"
+    status: draft

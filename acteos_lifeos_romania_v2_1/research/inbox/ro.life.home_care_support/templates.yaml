@@ -1,0 +1,67 @@
+# Step & requirement templates for ro.life.home_care_support (life.home_care_support).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: prepare_written_caregiver_leave_request
+    semantic_key: prepare_written_caregiver_leave_request
+    title_ro: "Pregateste cererea scrisa pentru concediul de ingrijitor"
+    instruction_ro: >-
+      Daca persoana este salariat eligibil, pregateste cererea scrisa catre angajator pentru
+      concediul de ingrijitor.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea scrisa pentru concediul de ingrijitor este pregatita"
+    recovery_actions_ro:
+      - "Daca persoana nu este salariat sau a epuizat zilele, nu continua aceasta ruta"
+    status: draft
+
+  - id: attach_medical_supporting_documents
+    semantic_key: attach_medical_supporting_documents
+    title_ro: "Ataseaza documentele medicale suport"
+    instruction_ro: >-
+      Ataseaza documentele care sustin problema medicala grava a persoanei ingrijite, daca acestea sunt cerute.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Documentele medicale suport sunt pregatite"
+    recovery_actions_ro:
+      - "Daca documentele medicale lipsesc, completeaza-le inainte de trimiterea cererii"
+    status: draft
+
+  - id: submit_request_to_employer
+    semantic_key: submit_request_to_employer
+    title_ro: "Trimite cererea catre angajator"
+    instruction_ro: >-
+      Dupa pregatirea cererii si a documentelor suport, transmite dosarul angajatorului.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea catre angajator este pregatita sau transmisa"
+    recovery_actions_ro:
+      - "Daca cererea scrisa nu este pregatita, nu continua trimiterea"
+    status: draft
+
+requirement_templates:
+  - id: documents_supporting_serious_medical_problem
+    title_ro: "Documente care sustin problema medicala grava"
+    description_ro: >-
+      Documentele medicale suport pentru problema medicala grava a persoanei ingrijite.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente medicale suport"
+    readiness_checks:
+      - "Problema medicala grava este sustinuta documentar"
+    status: draft
+
+  - id: written_caregiver_leave_request
+    title_ro: "Cerere scrisa pentru concediul de ingrijitor"
+    description_ro: >-
+      Cererea scrisa adresata angajatorului pentru concediul de ingrijitor.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cerere scrisa catre angajator"
+    readiness_checks:
+      - "Cererea scrisa este pregatita pentru trimitere"
+    status: draft

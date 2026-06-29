@@ -1,0 +1,111 @@
+# Step & requirement templates for ro.life.foreign_document_recognition (life.foreign_document_recognition).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: classify_document_and_intended_use
+    semantic_key: classify_document_and_intended_use
+    title_ro: "Clasifica documentul si scopul folosirii lui"
+    instruction_ro: >-
+      Stabileste categoria documentului, scopul folosirii lui in Romania si daca este vorba despre
+      studii, profesie reglementata, stare civila sau alt efect juridic.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Categoria documentului si scopul folosirii au fost clarificate"
+    recovery_actions_ro:
+      - "Daca nu este clar ce autoritate trebuie sa il recunoasca, nu trimite documentul la CNRED automat"
+    status: draft
+
+  - id: submit_preuniversity_recognition_to_cnred
+    semantic_key: submit_preuniversity_recognition_to_cnred
+    title_ro: "Depune recunoasterea studiilor preuniversitare la CNRED"
+    instruction_ro: >-
+      Daca documentul priveste studii preuniversitare, pregateste ruta CNRED pentru categoria si
+      scopul declarate.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta CNRED pentru studii preuniversitare a fost pregatita"
+    recovery_actions_ro:
+      - "Daca documentul nu este preuniversitar, revino la clasificare"
+    status: draft
+
+  - id: submit_university_recognition_to_cnred
+    semantic_key: submit_university_recognition_to_cnred
+    title_ro: "Depune recunoasterea studiilor universitare la CNRED"
+    instruction_ro: >-
+      Daca documentul priveste studii universitare, pregateste ruta CNRED pentru nivelul de studii
+      si scopul declarat.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta CNRED pentru studii universitare a fost pregatita"
+    recovery_actions_ro:
+      - "Daca documentul nu este universitar, revino la ruta corecta"
+    status: draft
+
+  - id: identify_regulated_profession_authority
+    semantic_key: identify_regulated_profession_authority
+    title_ro: "Identifica autoritatea pentru profesia reglementata"
+    instruction_ro: >-
+      Daca documentul este folosit pentru exercitarea unei profesii reglementate, identifica
+      autoritatea profesionala competenta.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Autoritatea profesionala competenta a fost identificata"
+    recovery_actions_ro:
+      - "Daca profesia nu este clar reglementata, confirma acest lucru inainte de depunere"
+    status: draft
+
+  - id: check_if_profession_is_regulated
+    semantic_key: check_if_profession_is_regulated
+    title_ro: "Verifica daca profesia este reglementata"
+    instruction_ro: >-
+      Verifica daca profesia pentru care vrei sa folosesti documentul este una reglementata in
+      Romania.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Statutul profesiei ca reglementata sau nu a fost verificat"
+    recovery_actions_ro:
+      - "Daca ramane neclar, nu presupune recunoastere profesionala automata"
+    status: draft
+
+  - id: route_to_foreign_civil_status_transcription_or_registration
+    semantic_key: route_to_foreign_civil_status_transcription_or_registration
+    title_ro: "Directioneaza actul de stare civila spre transcriere sau inregistrare"
+    instruction_ro: >-
+      Daca documentul este de stare civila, foloseste ruta de transcriere sau inregistrare
+      relevanta, nu ruta CNRED.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Actul de stare civila a fost directionat pe ruta corecta"
+    recovery_actions_ro:
+      - "Daca ai pornit gresit spre recunoastere academica, revino la ruta de stare civila"
+    status: draft
+
+  - id: confirm_foreign_judgment_recognition_route
+    semantic_key: confirm_foreign_judgment_recognition_route
+    title_ro: "Confirma ruta pentru recunoasterea hotararii straine"
+    instruction_ro: >-
+      Daca documentul este o hotarare judecatoreasca straina, clarifica separat baza si autoritatea
+      pentru recunoasterea efectului ei in Romania.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Ruta pentru hotararea straina a fost clarificata"
+    recovery_actions_ro:
+      - "Daca destinatarul nu este clar, cere baza exacta inainte de depunere"
+    status: draft
+
+  - id: ask_receiving_authority_for_recognition_basis
+    semantic_key: ask_receiving_authority_for_recognition_basis
+    title_ro: "Cere autoritatii primitoare baza exacta a recunoasterii"
+    instruction_ro: >-
+      Pentru cazurile care nu intra clar intr-o categorie publica, cere autoritatii primitoare sa
+      confirme baza concreta a recunoasterii.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Baza exacta a recunoasterii a fost ceruta sau clarificata"
+    recovery_actions_ro:
+      - "Daca raspunsul lipseste, nu presupune efectul juridic al documentului"
+    status: draft
+
+requirement_templates: []

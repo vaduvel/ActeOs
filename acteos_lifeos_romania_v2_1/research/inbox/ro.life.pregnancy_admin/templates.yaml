@@ -1,0 +1,152 @@
+# Step & requirement templates for ro.life.pregnancy_admin (life.pregnancy_admin).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: notify_employer_pregnancy
+    semantic_key: notify_employer_pregnancy
+    title_ro: "Notifica angajatorul despre sarcina"
+    instruction_ro: >-
+      Transmite notificarea scrisa si documentul medical pentru a activa protectiile administrative la locul de munca.
+    sequence_hint: 10
+    completion_evidence_ro: ["Notificarea scrisa si documentul medical sunt pregatite sau transmise"]
+    recovery_actions_ro: ["Daca lipseste notificarea sau documentul medical, nu activa automat protectiile speciale"]
+    status: draft
+
+  - id: request_risk_assessment_and_adaptation
+    semantic_key: request_risk_assessment_and_adaptation
+    title_ro: "Solicita evaluarea riscurilor si adaptarea postului"
+    instruction_ro: >-
+      Dupa notificare, cere evaluarea riscurilor si aplica ierarhia adaptare sau transfer, inainte de risc maternal.
+    sequence_hint: 20
+    completion_evidence_ro: ["Ruta de evaluare a riscurilor si adaptare a fost pregatita"]
+    recovery_actions_ro: ["Daca riscul nu este evaluat, nu sari direct la concediul de risc maternal"]
+    status: draft
+
+  - id: request_maternity_risk_leave
+    semantic_key: request_maternity_risk_leave
+    title_ro: "Solicita concediul de risc maternal"
+    instruction_ro: >-
+      Daca adaptarea sau transferul nu sunt posibile si faptele o sustin, pregateste ruta pentru risc maternal.
+    sequence_hint: 30
+    completion_evidence_ro: ["Ruta pentru concediul de risc maternal a fost pregatita"]
+    recovery_actions_ro: ["Daca adaptarea sau transferul sunt posibile, trateaza concediul de risc maternal ca ultima treapta"]
+    status: draft
+
+  - id: maternity_risk_leave_max
+    semantic_key: maternity_risk_leave_max
+    title_ro: "Clarifica limita concediului de risc maternal"
+    instruction_ro: >-
+      Clarifica limita si incadrarea concediului de risc maternal doar pe baza rutei verificate.
+    sequence_hint: 40
+    completion_evidence_ro: ["Limita concediului de risc maternal a fost clarificata"]
+    recovery_actions_ro: ["Daca incadrarea nu este confirmata, nu afisa durata ca finala"]
+    status: draft
+
+  - id: request_quarter_schedule_reduction
+    semantic_key: request_quarter_schedule_reduction
+    title_ro: "Solicita reducerea programului cu o patrime"
+    instruction_ro: >-
+      Daca exista recomandare medicala, pregateste cererea pentru reducerea programului cu o patrime.
+    sequence_hint: 50
+    completion_evidence_ro: ["Ruta pentru reducerea programului a fost pregatita"]
+    recovery_actions_ro: ["Daca recomandarea medicala lipseste, nu activa aceasta ramura"]
+    status: draft
+
+  - id: request_prenatal_consultation_leave
+    semantic_key: request_prenatal_consultation_leave
+    title_ro: "Solicita timpul pentru consultatiile prenatale"
+    instruction_ro: >-
+      Daca consultatiile pot fi facute doar in programul de lucru, pregateste ruta pentru dispensa relevanta.
+    sequence_hint: 60
+    completion_evidence_ro: ["Ruta pentru consultatiile prenatale a fost pregatita"]
+    recovery_actions_ro: ["Daca consultatiile nu necesita timp in programul de lucru, nu activa aceasta ramura"]
+    status: draft
+
+  - id: prenatal_consultation_monthly_limit
+    semantic_key: prenatal_consultation_monthly_limit
+    title_ro: "Clarifica limita lunara pentru consultatii prenatale"
+    instruction_ro: >-
+      Pastreaza distincta limita lunara verificata pentru consultatiile prenatale.
+    sequence_hint: 70
+    completion_evidence_ro: ["Limita lunara pentru consultatii prenatale a fost clarificata"]
+    recovery_actions_ro: ["Daca baza legala concreta nu este confirmata in caz, nu extinde automat beneficiul"]
+    status: draft
+
+  - id: request_breastfeeding_breaks_or_reduction
+    semantic_key: request_breastfeeding_breaks_or_reduction
+    title_ro: "Solicita pauze sau reducere pentru alaptare"
+    instruction_ro: >-
+      Daca persoana alapteaza si copilul este in intervalul relevant, pregateste cererea pentru pauze sau reducere.
+    sequence_hint: 80
+    completion_evidence_ro: ["Ruta pentru pauze sau reducere la alaptare a fost pregatita"]
+    recovery_actions_ro: ["Daca nu exista alaptare sau copilul este in afara intervalului relevant, nu activa aceasta ramura"]
+    status: draft
+
+  - id: request_day_work_transfer
+    semantic_key: request_day_work_transfer
+    title_ro: "Solicita trecerea la munca de zi"
+    instruction_ro: >-
+      Daca persoana lucreaza in schimb de noapte si protectia se aplica, pregateste transferul la munca de zi.
+    sequence_hint: 90
+    completion_evidence_ro: ["Ruta pentru transfer la munca de zi a fost pregatita"]
+    recovery_actions_ro: ["Daca nu exista munca de noapte, nu activa aceasta ramura"]
+    status: draft
+
+  - id: request_safe_work_transfer
+    semantic_key: request_safe_work_transfer
+    title_ro: "Solicita transferul la loc sigur"
+    instruction_ro: >-
+      Daca munca este insalubra, grea sau prezinta risc, pregateste transferul la un loc sigur.
+    sequence_hint: 100
+    completion_evidence_ro: ["Ruta pentru transfer la loc sigur a fost pregatita"]
+    recovery_actions_ro: ["Daca riscul concret nu este identificat, cere mai intai evaluarea lui"]
+    status: draft
+
+  - id: document_and_challenge_retaliation
+    semantic_key: document_and_challenge_retaliation
+    title_ro: "Documenteaza si contesta represaliile"
+    instruction_ro: >-
+      Daca exista amenintari de concediere sau represalii, documenteaza situatia si pregateste escaladarea catre autoritatile competente.
+    sequence_hint: 110
+    completion_evidence_ro: ["Ruta de documentare si contestare a represaliilor a fost pregatita"]
+    recovery_actions_ro: ["Daca riscul de represalii este imediat, pastreaza documentele si cauta sprijin pe canalul competent"]
+    status: draft
+
+requirement_templates:
+  - id: req.written_pregnancy_notice
+    title_ro: "Notificarea scrisa privind sarcina"
+    description_ro: "Notificarea scrisa catre angajator care activeaza protectiile relevante."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Notificare scrisa privind sarcina"]
+    readiness_checks: ["Notificarea scrisa este pregatita sau transmisa"]
+    status: draft
+
+  - id: req.pregnancy_medical_document
+    title_ro: "Documentul medical privind sarcina"
+    description_ro: "Documentul emis de medicul de familie sau specialist, folosit pentru activarea protectiilor."
+    obligation: mandatory
+    timing: now
+    accepted_forms: ["Document medical privind sarcina"]
+    readiness_checks: ["Documentul medical este disponibil"]
+    status: draft
+
+  - id: req.family_doctor_recommendation
+    title_ro: "Recomandarea medicului de familie"
+    description_ro: "Recomandarea medicala pentru reducerea programului, daca se aplica."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Recomandare a medicului de familie"]
+    readiness_checks: ["Recomandarea medicala este disponibila daca ruta o cere"]
+    status: draft
+
+  - id: req.prenatal_consultation_proof
+    title_ro: "Dovada consultatiilor prenatale"
+    description_ro: "Dovada necesara pentru folosirea timpului destinat consultatiilor prenatale."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada consultatiilor prenatale"]
+    readiness_checks: ["Dovada consultatiilor prenatale este pregatita daca ruta o cere"]
+    status: draft

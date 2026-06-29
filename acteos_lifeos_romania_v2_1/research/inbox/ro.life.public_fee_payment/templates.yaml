@@ -1,0 +1,134 @@
+step_templates:
+  - id: identify_public_fee_obligation
+    semantic_key: public_fee_payment_identify_obligation
+    title_ro: "Identifica obligatia publica"
+    instruction_ro: >-
+      Stabileste institutia emitenta, tipul obligatiei si referinta folosita
+      pentru plata inainte de a initia orice tranzactie.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Obligatia publica este identificata clar."
+    recovery_actions_ro:
+      - "Daca lipseste suma sau referinta, confirma-le din evidenta oficiala."
+    status: draft
+  - id: pay_via_ghiseul_ro
+    semantic_key: public_fee_payment_pay_via_ghiseul
+    title_ro: "Plateste prin Ghiseul.ro"
+    instruction_ro: >-
+      Daca institutia este inrolata si suma este cunoscuta, foloseste canalul
+      oficial Ghiseul.ro pentru plata.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Plata este initiata sau efectuata prin Ghiseul.ro."
+    recovery_actions_ro:
+      - "Daca nu regasesti obligatia, verifica mai intai inrolarea institutiei si referinta platii."
+    status: draft
+  - id: pay_fine_without_ghiseul_login
+    semantic_key: public_fee_payment_pay_fine_without_login
+    title_ro: "Plateste amenda fara autentificare"
+    instruction_ro: >-
+      Pentru ruta modelata a amenzilor, foloseste fluxul oficial care nu cere
+      cont atunci cand datele sunt suficiente pentru identificarea platii.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Fluxul de plata a amenzii fara cont este accesat."
+    recovery_actions_ro:
+      - "Daca datele amenzii nu sunt suficiente, revino la identificarea obligatiei."
+    status: draft
+  - id: pay_known_amount_without_authentication
+    semantic_key: public_fee_payment_pay_known_amount_without_auth
+    title_ro: "Plateste o suma cunoscuta fara autentificare"
+    instruction_ro: >-
+      Daca suma este deja verificata si ruta o permite, foloseste plata fara
+      autentificare prin canalul oficial.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Fluxul de plata fara autentificare este pornit cu suma verificata."
+    recovery_actions_ro:
+      - "Nu continua daca suma este doar estimata sau primita dintr-un mesaj neverificat."
+    status: draft
+  - id: check_timisoara_atlas_obligation
+    semantic_key: public_fee_payment_check_timisoara_atlas
+    title_ro: "Verifica obligatia in Atlas Timisoara"
+    instruction_ro: >-
+      Pentru pilotul Timisoara, verifica in Atlas obligatia locala si ruta de
+      plata disponibila.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Obligatia locala este cautata in Atlas."
+    recovery_actions_ro:
+      - "Daca nu gasesti obligatia, confirma tipul taxei si contul folosit in Atlas."
+    status: draft
+  - id: create_portal_unic_account_for_atlas
+    semantic_key: public_fee_payment_create_portal_unic_account
+    title_ro: "Creeaza contul Portal Unic pentru Atlas"
+    instruction_ro: >-
+      Daca esti persoana fizica si ai nevoie de acces local, creeaza sau
+      activeaza contul care permite folosirea Atlas.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Contul necesar pentru accesul Atlas este creat sau activat."
+    recovery_actions_ro:
+      - "Daca activarea nu merge, reia pasii doar din portalul oficial al Primariei."
+    status: draft
+  - id: request_legal_person_atlas_account
+    semantic_key: public_fee_payment_request_legal_person_atlas
+    title_ro: "Solicita cont Atlas pentru persoana juridica"
+    instruction_ro: >-
+      Pentru persoana juridica, pregateste cererea semnata electronic si
+      documentele cerute pentru obtinerea accesului la Atlas.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Dosarul pentru accesul PJ in Atlas este pregatit sau transmis."
+    recovery_actions_ro:
+      - "Daca lipseste semnatura electronica sau copia CUI, completeaza dosarul inainte de trimitere."
+    status: draft
+
+requirement_templates:
+  - id: authority_id
+    title_ro: "Institutia emitenta"
+    description_ro: >-
+      Identificarea institutiei publice care a emis obligatia de plata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Denumirea institutiei ori a autoritatii emitente."
+    readiness_checks:
+      - "Este clar cine incaseaza obligatia."
+    status: draft
+  - id: fee_type
+    title_ro: "Tipul obligatiei"
+    description_ro: >-
+      Tipul taxei, impozitului, amenzii sau altei obligatii publice care trebuie
+      platite.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Descrierea sau clasificarea obligatiei de plata."
+    readiness_checks:
+      - "Tipul obligatiei este suficient de clar pentru a alege canalul corect."
+    status: draft
+  - id: electronically_signed_pdf_request
+    title_ro: "Cerere PDF semnata electronic"
+    description_ro: >-
+      Cererea in format PDF semnata electronic, folosita pentru accesul Atlas
+      al persoanei juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Fisier PDF semnat electronic conform cerintei portalului."
+    readiness_checks:
+      - "Ruta urmata este cea pentru persoana juridica."
+    status: draft
+  - id: cui_copy
+    title_ro: "Copie CUI"
+    description_ro: >-
+      Copia documentului de identificare fiscala a persoanei juridice, atunci
+      cand este ceruta pentru accesul in portal.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copie lizibila a certificatului sau documentului cu CUI."
+    readiness_checks:
+      - "Accesul este solicitat pentru persoana juridica."
+    status: draft

@@ -1,0 +1,156 @@
+# Step & requirement templates for ro.life.retirement_age (life.retirement_age).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: lookup_annex5_retirement_schedule
+    semantic_key: lookup_annex5_retirement_schedule
+    title_ro: "Identifica data standard din anexa nr. 5"
+    instruction_ro: >-
+      Stabileste data standard de pensionare si stagiul complet folosind anexa relevanta, nu o regula
+      generica despre varsta.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Data standard de pensionare a fost identificata"
+    recovery_actions_ro:
+      - "Daca datele necesare pentru anexa nu sunt clare, nu continua cu o data presupusa"
+    status: draft
+
+  - id: prepare_old_age_pension_application
+    semantic_key: prepare_old_age_pension_application
+    title_ro: "Pregateste cererea pentru pensia de limita de varsta"
+    instruction_ro: >-
+      Dupa verificarea datei standard, a stagiului si a eventualelor reduceri, pregateste cererea
+      si documentele pentru pensia de limita de varsta.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea pentru pensia de limita de varsta este pregatita"
+    recovery_actions_ro:
+      - "Daca stagiul sau reducerea nu sunt clar sustinute, revino la verificare"
+    status: draft
+
+  - id: evaluate_article56_old_age_pension
+    semantic_key: evaluate_article56_old_age_pension
+    title_ro: "Evalueaza ruta de pensionare anticipata prin art. 56"
+    instruction_ro: >-
+      Daca se invoca excesul de stagiu total si reducerea specifica, evalueaza separat aceasta ramura.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Ruta art. 56 a fost evaluata"
+    recovery_actions_ro:
+      - "Daca nu exista baza pentru art. 56, nu continua pe aceasta ramura"
+    status: draft
+
+  - id: calculate_mother_age_reduction
+    semantic_key: calculate_mother_age_reduction
+    title_ro: "Evalueaza reducerea pentru cresterea copiilor"
+    instruction_ro: >-
+      Daca se invoca reducerea legata de copii, pregateste dovezile si delimiteaza aceasta ramura de
+      celelalte reduceri.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ramura reducerii pentru cresterea copiilor a fost evaluata"
+    recovery_actions_ro:
+      - "Daca numarul copiilor sau dovezile nu sunt clare, nu aplica reducerea"
+    status: draft
+
+  - id: evaluate_disability_age_reduction
+    semantic_key: evaluate_disability_age_reduction
+    title_ro: "Evalueaza reducerea de varsta pentru dizabilitate"
+    instruction_ro: >-
+      Daca se invoca reducerea legata de dizabilitate, pregateste dovada certificatului si evalueaza
+      separat aceasta ramura.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ramura reducerii pentru dizabilitate a fost evaluata"
+    recovery_actions_ro:
+      - "Daca certificatul relevant nu este clar, nu aplica reducerea"
+    status: draft
+
+  - id: prepare_severe_visual_old_age_pension
+    semantic_key: prepare_severe_visual_old_age_pension
+    title_ro: "Pregateste ramura pentru deficienta vizuala severa"
+    instruction_ro: >-
+      Daca se invoca deficienta vizuala severa, separa cazul pe aceasta ramura specifica.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ramura pentru deficienta vizuala severa a fost evaluata"
+    recovery_actions_ro:
+      - "Daca gradul relevant nu este confirmat, nu continua pe aceasta ramura"
+    status: draft
+
+  - id: request_annual_employer_agreement_to_continue
+    semantic_key: request_annual_employer_agreement_to_continue
+    title_ro: "Solicita acordul anual pentru continuarea activitatii"
+    instruction_ro: >-
+      Daca persoana doreste continuarea activitatii pana la limita relevanta, pregateste distinct
+      ruta acestui acord.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Ruta pentru continuarea activitatii a fost evaluata"
+    recovery_actions_ro:
+      - "Daca persoana nu doreste continuarea activitatii, nu activa aceasta ramura"
+    status: draft
+
+  - id: submit_old_age_pension_application
+    semantic_key: submit_old_age_pension_application
+    title_ro: "Depune cererea de pensie pentru limita de varsta"
+    instruction_ro: >-
+      Dupa pregatirea dosarului, depune cererea la casa teritoriala competenta pe canalul relevant.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Cererea de pensie pentru limita de varsta este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca lipseste un document esential, completeaza dosarul inainte de depunere"
+    status: draft
+
+requirement_templates:
+  - id: req.annex3_old_age_application
+    title_ro: "Cererea Anexa nr. 3 pentru pensia de limita de varsta"
+    description_ro: >-
+      Cererea folosita pentru pensia de limita de varsta, conform formularului indicat de event card.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Cererea Anexa nr. 3"
+    readiness_checks:
+      - "Cererea pentru pensia de limita de varsta este completata"
+    status: draft
+
+  - id: req.children_birth_or_adoption_proof
+    title_ro: "Dovezi privind nasterea sau adoptia copiilor"
+    description_ro: >-
+      Dovezile privind nasterea sau adoptia copiilor folosite pentru ramura reducerii de varsta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificate de nastere"
+      - "Documente de adoptie"
+    readiness_checks:
+      - "Dovezile privind copiii sunt disponibile daca ramura se aplica"
+    status: draft
+
+  - id: req.child_raising_declaration
+    title_ro: "Declaratie privind cresterea copiilor"
+    description_ro: >-
+      Declaratia folosita pentru sustinerea ramurii de reducere legate de cresterea copiilor.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie privind cresterea copiilor"
+    readiness_checks:
+      - "Declaratia este pregatita daca ramura se aplica"
+    status: draft
+
+  - id: req.permanent_disability_certificate
+    title_ro: "Certificat permanent de dizabilitate"
+    description_ro: >-
+      Certificatul relevant pentru ramura reducerii de varsta legate de dizabilitate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat permanent de dizabilitate"
+    readiness_checks:
+      - "Certificatul relevant este disponibil daca ramura se aplica"
+    status: draft

@@ -1,0 +1,87 @@
+step_templates:
+  - id: request_new_identity_card
+    semantic_key: identity_card_lost_stolen_request_new
+    title_ro: "Solicita un nou act de identitate"
+    instruction_ro: >-
+      Dupa declararea evenimentului corect, pregateste cererea pentru noul act
+      de identitate si documentele privind starea civila si adresa.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Cererea pentru noul act de identitate este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Daca tipul incidentului nu este clar, stabileste mai intai daca este pierdere, furt, distrugere sau deteriorare."
+    status: draft
+  - id: report_theft_police
+    semantic_key: identity_card_lost_stolen_report_theft
+    title_ro: "Declara furtul la politie"
+    instruction_ro: >-
+      Pentru furt, sesizeaza unitatea de politie competenta si obtine dovada
+      necesara continuarii dosarului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Furtul este declarat la politie."
+    recovery_actions_ro:
+      - "Nu folosi acest pas pentru simpla pierdere sau distrugere fara furt."
+    status: draft
+
+requirement_templates:
+  - id: req.anexa11
+    title_ro: "Anexa 11"
+    description_ro: >-
+      Formularul cerut in dosarul de inlocuire pentru actul de identitate
+      pierdut, furat ori distrus, conform rutei modelate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Anexa 11 completata si semnata in forma ceruta."
+    readiness_checks:
+      - "Formularul corespunde tipului de incident si documentului solicitat."
+    status: draft
+  - id: req.civil_status_certificates
+    title_ro: "Certificate de stare civila"
+    description_ro: >-
+      Certificatele de stare civila cerute pentru sustinerea datelor titularului
+      in noul dosar.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificatele de nastere, casatorie ori alte acte de stare civila relevante."
+    readiness_checks:
+      - "Datele de identificare din dosar pot fi sustinute prin actele de stare civila."
+    status: draft
+  - id: req.proof_of_address
+    title_ro: "Dovada adresei"
+    description_ro: >-
+      Documentul care sustine domiciliul sau adresa folosita pentru noul act de
+      identitate.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Document de domiciliu sau declaratie admisa de procedura."
+    readiness_checks:
+      - "Adresa din dosar poate fi demonstrata in forma ceruta."
+    status: draft
+  - id: req.recent_photo_document
+    title_ro: "Document foto recent"
+    description_ro: >-
+      Documentul oficial recent cu fotografie folosit daca imaginea faciala nu
+      este disponibila in RNEP.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Permis, pasaport sau alt document oficial recent cu fotografie."
+    readiness_checks:
+      - "Imaginea faciala nu este deja disponibila in evidente."
+    status: draft
+  - id: req.host_consent_declaration
+    title_ro: "Declaratia de consimtamant a gazduitorului"
+    description_ro: >-
+      Declaratia folosita atunci cand noua adresa este justificata prin
+      gazduire si procedura o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie de primire in spatiu sau alta forma admisa oficial."
+    readiness_checks:
+      - "Relatia cu adresa noua este una de gazduire, nu de proprietate ori familie."
+    status: draft

@@ -1,0 +1,170 @@
+step_templates:
+  - id: provide_energy_certificate_copy_before_contract
+    semantic_key: rent_out_home_provide_energy_copy
+    title_ro: "Da copia certificatului energetic inainte de contract"
+    instruction_ro: >-
+      Daca locuinta intra in regimul certificatului energetic, pune la
+      dispozitia viitorului chirias copia certificatului inainte de contract.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Copia certificatului energetic este pusa la dispozitie inainte de contract."
+    recovery_actions_ro:
+      - "Daca certificatul lipseste, activeaza imediat ruta de obtinere."
+    status: draft
+  - id: obtain_energy_certificate
+    semantic_key: rent_out_home_obtain_energy_certificate
+    title_ro: "Obtine certificatul energetic"
+    instruction_ro: >-
+      Daca locuinta trebuie inchiriata si nu are certificat energetic valabil,
+      selecteaza un auditor atestat si obtine documentul.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Certificatul energetic este obtinut sau valabilitatea lui este confirmata."
+    recovery_actions_ro:
+      - "Nu inventa onorariul sau termenul auditorului."
+    status: draft
+  - id: include_energy_indicators_in_ad
+    semantic_key: rent_out_home_include_energy_indicators
+    title_ro: "Include indicatorii energetici in anunt"
+    instruction_ro: >-
+      Daca publici un anunt de inchiriere, include indicatorii energetici ceruti
+      din certificat.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Anuntul include indicatorii energetici relevanti."
+    recovery_actions_ro:
+      - "Nu publica indicatori inventati daca certificatul nu este disponibil."
+    status: draft
+  - id: submit_c168
+    semantic_key: rent_out_home_submit_c168_initial
+    title_ro: "Depune C168 pentru contractul initial"
+    instruction_ro: >-
+      Pentru contractul eligibil si initial, depune C168 in termenul modelat cu
+      contractul de inchiriere atasat.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Ruta C168 initiala este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Verifica excluderile precum arenda sau camerele turistice inainte de depunere."
+    status: draft
+  - id: submit_c168_modification
+    semantic_key: rent_out_home_submit_c168_modification
+    title_ro: "Depune modificarea C168"
+    instruction_ro: >-
+      Daca intervin schimbari in contractul eligibil, urmeaza ruta de modificare
+      C168 cu documentele de amendare relevante.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Ruta de modificare C168 este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Pastreaza actul aditional sau documentul care justifica modificarea."
+    status: draft
+  - id: submit_c168_termination
+    semantic_key: rent_out_home_submit_c168_termination
+    title_ro: "Gestioneaza incetarea contractului"
+    instruction_ro: >-
+      Pentru incetarea contractului, urmeaza ruta specifica modelata fara a
+      presupune termene neconfirmate pentru un caz neacoperit complet.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Ruta de incetare este clarificata pentru cazul concret."
+    recovery_actions_ro:
+      - "Nu inventa un termen de incetare daca sursa folosita nu il confirma."
+    status: draft
+  - id: notify_association_of_tenant
+    semantic_key: rent_out_home_notify_association
+    title_ro: "Anunta asociatia despre ocupant"
+    instruction_ro: >-
+      Daca locuinta este in condominiu, notifica asociatia cu privire la noul
+      ocupant in termenul modelat.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Asociatia este notificata despre ocupant."
+    recovery_actions_ro:
+      - "Notificarea ocupantului nu muta automat obligatia legala a cotelor de intretinere."
+    status: draft
+  - id: deposit_energy_certificate_copy_at_tax_body
+    semantic_key: rent_out_home_deposit_energy_copy_tax
+    title_ro: "Depune copia certificatului energetic la fiscal, daca este ceruta"
+    instruction_ro: >-
+      Daca formalitatea fiscala aplicabila o cere, pregateste copia
+      certificatului energetic pentru organul fiscal competent.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Necesitatea depunerii copiei la fiscal este clarificata."
+    recovery_actions_ro:
+      - "Nu presupune universal aceasta etapa in toate UAT-urile fara confirmare."
+    status: draft
+  - id: submit_d212_for_2025_income
+    semantic_key: rent_out_home_submit_d212_2025
+    title_ro: "Depune D212 pentru venitul din 2025"
+    instruction_ro: >-
+      Daca venitul din chirie intra in sfera modelata pentru anul 2025, urmeaza
+      separat ruta de declarare anuala D212.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Necesitatea D212 pentru venitul 2025 este clarificata sau pregatita."
+    recovery_actions_ro:
+      - "Nu extrapola automat termenul pentru venituri din alt an."
+    status: draft
+
+requirement_templates:
+  - id: req.energy_certificate_copy
+    title_ro: "Copia certificatului energetic"
+    description_ro: >-
+      Copia certificatului energetic folosita pentru informarea chiriasului si,
+      dupa caz, pentru alte formalitati.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copia certificatului energetic valabil."
+    readiness_checks:
+      - "Locuinta intra in sfera acestei obligatii."
+    status: draft
+  - id: req.energy_performance_indicators
+    title_ro: "Indicatorii de performanta energetica"
+    description_ro: >-
+      Indicatorii extrasi din certificat si folositi in anuntul de inchiriere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Indicatori energetici preluati din certificat."
+    readiness_checks:
+      - "Exista anunt publicat pentru inchiriere."
+    status: draft
+  - id: req.c168
+    title_ro: "Formularul C168"
+    description_ro: >-
+      Formularul C168 folosit pentru declararea contractului de inchiriere in
+      cazurile eligibile modelate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Formular C168 completat in forma curenta relevanta."
+    readiness_checks:
+      - "Cazul nu este exclus din sfera C168."
+    status: draft
+  - id: req.lease_copy
+    title_ro: "Copia contractului de inchiriere"
+    description_ro: >-
+      Copia contractului initial atasata rutei C168 pentru cazurile modelate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Copia contractului de inchiriere semnat."
+    readiness_checks:
+      - "Se depune ruta initiala C168."
+    status: draft
+  - id: req.lease_amendment_copy
+    title_ro: "Copia actului aditional sau a modificarii"
+    description_ro: >-
+      Documentul care sustine modificarea contractului in ruta C168 de
+      actualizare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act aditional sau document echivalent privind modificarea."
+    readiness_checks:
+      - "Se depune o modificare a contractului."
+    status: draft
+

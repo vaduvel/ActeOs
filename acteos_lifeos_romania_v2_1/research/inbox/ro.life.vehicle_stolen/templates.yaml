@@ -1,0 +1,212 @@
+step_templates:
+  - id: notify_competent_police_authority_about_vehicle_theft
+    semantic_key: vehicle_stolen_notify_police
+    title_ro: "Sesizeaza furtul la autoritatea competenta"
+    instruction_ro: >-
+      Declara furtul vehiculului catre autoritatea competenta si obtine dovada
+      necesara pentru pasii urmatori.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Furtul vehiculului este sesizat la autoritatea competenta."
+    recovery_actions_ro:
+      - "Daca exista pericol imediat sau furt in curs, foloseste ruta de urgenta."
+    status: draft
+  - id: call_emergency_112
+    semantic_key: vehicle_stolen_call_112
+    title_ro: "Apeleaza 112 pentru urgenta"
+    instruction_ro: >-
+      Daca furtul este in curs sau exista urgenta imediata, foloseste 112 inainte
+      de orice alt pas administrativ.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Ruta de urgenta este activata, daca era necesara."
+    recovery_actions_ro:
+      - "Nu folosi 112 pentru o situatie fara urgenta imediata."
+    status: draft
+  - id: obtain_competent_authority_theft_proof
+    semantic_key: vehicle_stolen_obtain_theft_proof
+    title_ro: "Obtine dovada oficiala a furtului"
+    instruction_ro: >-
+      Dupa sesizare, obtine documentul oficial privind furtul care va sustine
+      radierea sau alte formalitati.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dovada oficiala a furtului este obtinuta."
+    recovery_actions_ro:
+      - "Pastreaza documentul original sau copia acceptata pentru dosarul ulterior."
+    status: draft
+  - id: prepare_vehicle_deregistration_file
+    semantic_key: vehicle_stolen_prepare_deregistration
+    title_ro: "Pregateste dosarul de radiere dupa furt"
+    instruction_ro: >-
+      Daca utilizatorul urmareste radierea, pregateste certificatul, placutele
+      sau dovezile substitutive si actele de identitate relevante.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dosarul de radiere dupa furt este pregatit."
+    recovery_actions_ro:
+      - "Daca vrei doar dovada politiei, nu continua inutil pe ruta de radiere."
+    status: draft
+  - id: submit_vehicle_deregistration_application
+    semantic_key: vehicle_stolen_submit_deregistration
+    title_ro: "Depune radierea vehiculului furat"
+    instruction_ro: >-
+      Depune cererea de radiere numai dupa ce dovada furtului si calitatea
+      solicitantului sunt clare.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Cererea de radiere a vehiculului furat este depusa."
+    recovery_actions_ro:
+      - "Verifica daca solicitantul este proprietar sau mostenitor legal eligibil."
+    status: draft
+  - id: declare_deregistration_to_local_tax_authority
+    semantic_key: vehicle_stolen_declare_tax
+    title_ro: "Declara radierea la fiscal"
+    instruction_ro: >-
+      Dupa radiere, actualizeaza evidenta fiscala locala a vehiculului furat in
+      termenul aplicabil.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Radierea vehiculului furat este declarata fiscal."
+    recovery_actions_ro:
+      - "Pastreaza documentul de radiere pentru dosarul fiscal local."
+    status: draft
+
+requirement_templates:
+  - id: req.registration_certificate
+    title_ro: "Certificatul de inmatriculare"
+    description_ro: >-
+      Certificatul vehiculului, daca nu a disparut odata cu furtul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de inmatriculare sau dovada substitutiva acceptata."
+    readiness_checks:
+      - "Certificatul nu a fost furat impreuna cu vehiculul."
+    status: draft
+  - id: req.registration_plates_or_substitute_proof
+    title_ro: "Placutele sau dovada substitutiva"
+    description_ro: >-
+      Placutele vehiculului ori documentul care explica lipsa lor in dosarul de
+      radiere dupa furt.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Placute disponibile sau dovada oficiala a indisponibilitatii."
+    readiness_checks:
+      - "Dosarul de radiere este urmarit."
+    status: draft
+  - id: req.valid_identity_or_entity_documents
+    title_ro: "Acte valabile de identitate sau ale entitatii"
+    description_ro: >-
+      Documentele de identificare ale persoanei ori entitatii care continua
+      formalitatile dupa furt.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte valabile de identitate sau documente oficiale ale entitatii."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.competent_authority_document_proving_vehicle_theft
+    title_ro: "Documentul oficial care dovedeste furtul"
+    description_ro: >-
+      Dovada emisa de autoritatea competenta privind furtul vehiculului.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverinta sau alt document oficial privind furtul."
+    readiness_checks:
+      - "Furtul a fost declarat pe canalul competent."
+    status: draft
+  - id: req.proof_replacing_stolen_registration_plates
+    title_ro: "Dovada care inlocuieste placutele furate"
+    description_ro: >-
+      Dovada folosita cand placutele au fost furate odata cu vehiculul sau nu
+      mai pot fi predate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada oficiala care explica lipsa placutelor."
+    readiness_checks:
+      - "Placutele nu mai sunt disponibile."
+    status: draft
+  - id: req.local_fiscal_clearance_certificate_all_obligations_paid
+    title_ro: "Certificat fiscal local cu obligatii achitate"
+    description_ro: >-
+      Certificatul fiscal local cerut pe unele rute de radiere dupa furt.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de atestare fiscala locala valabil."
+    readiness_checks:
+      - "Canalul sau cazul procedural il cere."
+    status: draft
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate valabil al persoanei care depune dosarul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.legal_entity_documents
+    title_ro: "Documentele persoanei juridice"
+    description_ro: >-
+      Documentele necesare cand vehiculul furat apartine unei persoane juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente oficiale ale persoanei juridice."
+    readiness_checks:
+      - "Solicitantul este persoana juridica."
+    status: draft
+  - id: req.legal_representative_identity
+    title_ro: "Actul reprezentantului legal"
+    description_ro: >-
+      Actul de identitate al reprezentantului legal al persoanei juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil al reprezentantului legal."
+    readiness_checks:
+      - "Dosarul este depus prin reprezentant legal."
+    status: draft
+  - id: req.lawyer_mandate
+    title_ro: "Mandat avocatial"
+    description_ro: >-
+      Imputernicirea folosita cand dosarul este depus prin avocat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire avocatiala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin avocat."
+    status: draft
+  - id: req.notarial_power_of_attorney
+    title_ro: "Procura notariala"
+    description_ro: >-
+      Procura folosita cand dosarul este depus prin imputernicit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procura notariala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin imputernicit."
+    status: draft
+  - id: req.company_written_mandate
+    title_ro: "Mandat scris al companiei"
+    description_ro: >-
+      Mandatul intern scris al companiei pentru delegatul care gestioneaza
+      dosarul de furt.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mandat scris semnat de companie."
+    readiness_checks:
+      - "Depunerea este facuta de delegatul companiei."
+    status: draft
+

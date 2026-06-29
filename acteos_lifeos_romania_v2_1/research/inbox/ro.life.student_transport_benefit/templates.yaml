@@ -1,0 +1,146 @@
+# Step & requirement templates for ro.life.student_transport_benefit (life.student_transport_benefit).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.transport.select_regime
+    semantic_key: step.transport.select_regime
+    title_ro: "Alege regimul de compensare"
+    instruction_ro: >-
+      Stabileste daca situatia ta intra pe ruta cu curse regulate, pe suma forfetara sau pe alta
+      procedura anuntata pentru transportul studentilor.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Regimul de compensare a fost ales"
+    recovery_actions_ro:
+      - "Daca ruta aleasa nu se potriveste, reia clasificarea inainte de depunere"
+    status: draft
+
+  - id: step.transport.verify_route
+    semantic_key: step.transport.verify_route
+    title_ro: "Verifica traseul eligibil"
+    instruction_ro: >-
+      Verifica traseul pentru care ceri beneficiul si relatia acestuia cu locul de studiu sau cu
+      celelalte conditii relevante.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Traseul eligibil a fost verificat"
+    recovery_actions_ro:
+      - "Daca traseul nu este eligibil, ajusteaza cererea pentru ruta corecta"
+    status: draft
+
+  - id: step.transport.prepare_proof
+    semantic_key: step.transport.prepare_proof
+    title_ro: "Pregateste dovezile"
+    instruction_ro: >-
+      Strange documentele de student, dovezile de ruta si orice acte cerute de operator sau
+      institutie pentru obtinerea beneficiului.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dovezile pentru beneficiul de transport sunt pregatite"
+    recovery_actions_ro:
+      - "Daca lipseste un document, completeaza dosarul inainte de solicitare"
+    status: draft
+
+  - id: step.transport.boarding_trips
+    semantic_key: step.transport.boarding_trips
+    title_ro: "Foloseste ruta pentru curse regulate"
+    instruction_ro: >-
+      Pentru ruta bazata pe curse regulate, urmeaza procedura de obtinere si justificare a
+      calatoriilor efectuate.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Traseul pentru curse regulate a fost parcurs"
+    recovery_actions_ro:
+      - "Daca operatorul cere acte suplimentare, adauga-le inainte de decont"
+    status: draft
+
+  - id: step.transport.lump_sum
+    semantic_key: step.transport.lump_sum
+    title_ro: "Foloseste ruta cu suma forfetara"
+    instruction_ro: >-
+      Pentru ruta cu suma forfetara, pregateste dosarul specific si urmeaza procedura anuntata de
+      institutie.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Dosarul pentru suma forfetara este pregatit"
+    recovery_actions_ro:
+      - "Daca institutia cere alta forma de dovada, actualizeaza dosarul"
+    status: draft
+
+  - id: step.transport.obtain_benefit
+    semantic_key: step.transport.obtain_benefit
+    title_ro: "Finalizeaza obtinerea beneficiului"
+    instruction_ro: >-
+      Depune sau activeaza beneficiul pe canalul cerut si urmareste confirmarea finala.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Beneficiul de transport a fost solicitat sau activat"
+    recovery_actions_ro:
+      - "Daca lipseste confirmarea, revino la operator sau la institutie cu dovada depunerii"
+    status: draft
+
+requirement_templates:
+  - id: req.transport.status_proof
+    title_ro: "Dovada statutului de student"
+    description_ro: >-
+      Documentul care arata statutul de student pentru acordarea beneficiului de transport.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverinta de student"
+      - "Alt document oficial privind statutul de student"
+    readiness_checks:
+      - "Dovada statutului este valabila pentru perioada folosita"
+    status: draft
+
+  - id: req.transport.boarding_proof
+    title_ro: "Dovezi de calatorie"
+    description_ro: >-
+      Biletele, abonamentele sau alte dovezi ale calatoriilor pentru ruta care le cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Bilet"
+      - "Abonament"
+      - "Alta dovada de calatorie"
+    readiness_checks:
+      - "Dovezile de calatorie corespund traseului solicitat"
+    status: draft
+
+  - id: req.transport.lump_sum_file
+    title_ro: "Dosar pentru suma forfetara"
+    description_ro: >-
+      Documentele cerute pentru ruta in care beneficiul se obtine pe baza sumei forfetare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dosar pentru suma forfetara"
+    readiness_checks:
+      - "Dosarul este complet pentru regimul de suma forfetara"
+    status: draft
+
+  - id: req.transport.route_proof
+    title_ro: "Dovada traseului"
+    description_ro: >-
+      Documentele care sustin traseul pentru care se cere beneficiul de transport.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada traseului"
+    readiness_checks:
+      - "Traseul dovedit este acelasi cu traseul din cerere"
+    status: draft
+
+  - id: req.transport.operator_documents
+    title_ro: "Documente de la operator"
+    description_ro: >-
+      Documentele furnizate sau cerute de operatorul de transport pentru acordarea beneficiului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente de la operatorul de transport"
+    readiness_checks:
+      - "Documentele operatorului sunt compatibile cu ruta solicitata"
+    status: draft

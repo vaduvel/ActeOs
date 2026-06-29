@@ -1,0 +1,152 @@
+step_templates:
+  - id: prepare_temporary_authorisation_file
+    semantic_key: temporary_vehicle_authorisation_prepare_file
+    title_ro: "Pregateste dosarul pentru numere provizorii"
+    instruction_ro: >-
+      Verifica provenienta vehiculului, durata solicitata, RCA si actele de
+      proprietate, apoi pregateste dosarul pentru autorizatia provizorie.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul pentru autorizatia provizorie este pregatit."
+    recovery_actions_ro:
+      - "Daca durata cumulata ar depasi limita legala, ajusteaza solicitarea inainte de depunere."
+    status: draft
+  - id: submit_temporary_authorisation_application
+    semantic_key: temporary_vehicle_authorisation_submit
+    title_ro: "Depune cererea pentru autorizatia provizorie"
+    instruction_ro: >-
+      Depune cererea pentru autorizatia provizorie si placutele aferente numai
+      dupa ce toate actele de provenienta si plata sunt pregatite.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Cererea pentru numere provizorii este depusa."
+    recovery_actions_ro:
+      - "Verifica separat actele straine daca vehiculul provine din afara tarii."
+    status: draft
+
+requirement_templates:
+  - id: req.valid_rca_copy_owner_name
+    title_ro: "RCA valabila pe numele proprietarului"
+    description_ro: >-
+      Dovada RCA valabile pe numele proprietarului pentru perioada solicitata.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Polita RCA valabila sau copia acceptata oficial."
+    readiness_checks:
+      - "Numele din polita corespunde proprietarului vehiculului."
+    status: draft
+  - id: req.ownership_document_original_and_copy
+    title_ro: "Actul de proprietate in original si copie"
+    description_ro: >-
+      Actul care dovedeste proprietatea asupra vehiculului, prezentat in forma
+      ceruta de procedura.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de proprietate in original si copie sau forma acceptata oficial."
+    readiness_checks:
+      - "Actul identifica exact vehiculul solicitat."
+    status: draft
+  - id: req.valid_identity_or_entity_documents
+    title_ro: "Acte valabile de identitate sau ale entitatii"
+    description_ro: >-
+      Documentele de identificare ale persoanei ori entitatii care cere
+      autorizatia provizorie.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte valabile de identitate sau documente oficiale ale entitatii."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.foreign_registration_documents_original_and_copy
+    title_ro: "Acte straine de inmatriculare in original si copie"
+    description_ro: >-
+      Actele straine de inmatriculare ale vehiculului, atunci cand provenienta
+      externa le face necesare.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente straine de inmatriculare in original si copie."
+    readiness_checks:
+      - "Vehiculul este sau a fost inmatriculat in strainatate."
+    status: draft
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate valabil al persoanei care depune dosarul.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.legal_entity_documents
+    title_ro: "Documentele persoanei juridice"
+    description_ro: >-
+      Documentele necesare cand autorizatia provizorie este ceruta pentru un
+      vehicul al unei persoane juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente oficiale ale persoanei juridice."
+    readiness_checks:
+      - "Solicitantul este persoana juridica."
+    status: draft
+  - id: req.legal_representative_identity
+    title_ro: "Actul reprezentantului legal"
+    description_ro: >-
+      Actul de identitate al reprezentantului legal al persoanei juridice.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil al reprezentantului legal."
+    readiness_checks:
+      - "Dosarul este depus prin reprezentant legal."
+    status: draft
+  - id: req.lawyer_mandate
+    title_ro: "Mandat avocatial"
+    description_ro: >-
+      Imputernicirea folosita cand cererea este depusa prin avocat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire avocatiala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin avocat."
+    status: draft
+  - id: req.notarial_power_of_attorney
+    title_ro: "Procura notariala"
+    description_ro: >-
+      Procura folosita cand cererea este depusa prin imputernicit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procura notariala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin imputernicit."
+    status: draft
+  - id: req.company_written_mandate
+    title_ro: "Mandat scris al companiei"
+    description_ro: >-
+      Mandatul intern scris al companiei pentru delegatul care depune dosarul.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mandat scris semnat de companie."
+    readiness_checks:
+      - "Depunerea este facuta de delegatul companiei."
+    status: draft
+  - id: req.temporary_authorisation_and_plate_payment_proof
+    title_ro: "Dovada platii pentru autorizatie si placute"
+    description_ro: >-
+      Dovada platii tarifelor aferente autorizatiei provizorii si placutelor.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Chitanta sau alta dovada oficiala a platii."
+    readiness_checks:
+      - "Plata corespunde exact duratei si configuratiei cerute."
+    status: draft

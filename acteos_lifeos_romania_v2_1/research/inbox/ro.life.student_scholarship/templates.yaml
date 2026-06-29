@@ -1,0 +1,119 @@
+# Step & requirement templates for ro.life.student_scholarship (life.student_scholarship).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.sch.select_type
+    semantic_key: step.sch.select_type
+    title_ro: "Alege tipul de bursa"
+    instruction_ro: >-
+      Stabileste categoria de bursa pentru care vrei sa aplici si separa conditiile specifice ale
+      fiecarei categorii.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Tipul de bursa a fost ales"
+    recovery_actions_ro:
+      - "Daca eligibilitatea nu este clara, compara din nou criteriile disponibile"
+    status: draft
+
+  - id: step.sch.verify_eligibility
+    semantic_key: step.sch.verify_eligibility
+    title_ro: "Verifica eligibilitatea"
+    instruction_ro: >-
+      Verifica daca indeplinesti criteriile de baza pentru categoria de bursa selectata.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Eligibilitatea a fost verificata"
+    recovery_actions_ro:
+      - "Daca lipseste o conditie, nu depune pana nu clarifici traseul potrivit"
+    status: draft
+
+  - id: step.sch.prepare_dossier
+    semantic_key: step.sch.prepare_dossier
+    title_ro: "Pregateste dosarul"
+    instruction_ro: >-
+      Strange documentele pentru categoria de bursa aleasa si pregateste formularistica ceruta de
+      institutie.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Dosarul pentru bursa este pregatit"
+    recovery_actions_ro:
+      - "Daca lipseste o piesa din dosar, completeaz-o inainte de depunere"
+    status: draft
+
+  - id: step.sch.calculate_income
+    semantic_key: step.sch.calculate_income
+    title_ro: "Calculeaza venitul, daca este cazul"
+    instruction_ro: >-
+      Pentru bursele conditionate de venit, pregateste calculul si documentele care sustin
+      veniturile declarate.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Calculul de venit a fost pregatit"
+    recovery_actions_ro:
+      - "Daca veniturile nu sunt complete, reface calculul cu documentele lipsa"
+    status: draft
+
+  - id: step.sch.verify_institution_method
+    semantic_key: step.sch.verify_institution_method
+    title_ro: "Verifica procedura institutiei"
+    instruction_ro: >-
+      Verifica metoda de depunere, calendarul si orice cerinte proprii ale institutiei pentru
+      acordarea burselor.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Procedura institutiei a fost verificata"
+    recovery_actions_ro:
+      - "Daca institutia cere o alta forma de depunere, adapteaza dosarul"
+    status: draft
+
+requirement_templates:
+  - id: req.sch.category_documents
+    title_ro: "Documente pentru categoria de bursa"
+    description_ro: >-
+      Documentele specifice tipului de bursa ales.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Documente pentru categoria de bursa"
+    readiness_checks:
+      - "Documentele corespund tipului de bursa selectat"
+    status: draft
+
+  - id: req.sch.income_declaration
+    title_ro: "Declaratie sau dovezi de venit"
+    description_ro: >-
+      Declaratia si documentele de venit pentru bursele unde venitul este relevant.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie de venit"
+      - "Documente justificative de venit"
+    readiness_checks:
+      - "Veniturile declarate sunt sustinute de documente"
+    status: draft
+
+  - id: req.sch.social_inquiry
+    title_ro: "Ancheta sociala"
+    description_ro: >-
+      Ancheta sociala, daca tipul de bursa sau institutia o cere pentru dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Ancheta sociala"
+    readiness_checks:
+      - "Ancheta sociala este valabila pentru cazul prezentat"
+    status: draft
+
+  - id: req.sch.institution_documents
+    title_ro: "Documente emise sau cerute de institutie"
+    description_ro: >-
+      Formularistica si documentele cerute direct de unitatea de invatamant sau de universitate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente ale institutiei"
+    readiness_checks:
+      - "Documentele respecta procedura interna a institutiei"
+    status: draft

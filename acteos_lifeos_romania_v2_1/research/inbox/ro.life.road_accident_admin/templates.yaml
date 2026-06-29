@@ -1,0 +1,111 @@
+# Step & requirement templates for ro.life.road_accident_admin (life.road_accident_admin).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: step.acc.emergency
+    semantic_key: step.acc.emergency
+    title_ro: "Protejeaza persoanele si anunta urgenta"
+    instruction_ro: >-
+      Daca exista raniti, deces sau pericol, prioritizeaza 112 si politia inaintea altor pasi.
+    sequence_hint: 10
+    completion_evidence_ro: ["Ruta de urgenta a fost clarificata"]
+    recovery_actions_ro: ["Daca exista pericol imediat, nu amina apelul prin pasi administrativi"]
+    status: draft
+
+  - id: step.acc.move_safe
+    semantic_key: step.acc.move_safe
+    title_ro: "Scoate vehiculele in siguranta"
+    instruction_ro: >-
+      Daca este permis si sigur, scoate vehiculele din carosabil si semnalizeaza zona.
+    sequence_hint: 20
+    completion_evidence_ro: ["Cerinta privind mutarea in siguranta a fost clarificata"]
+    recovery_actions_ro: ["Daca mutarea nu este permisa sau sigura, mentine locul conform regulii aplicabile"]
+    status: draft
+
+  - id: step.acc.police_24h
+    semantic_key: step.acc.police_24h
+    title_ro: "Declara accidentul la politie in termen"
+    instruction_ro: >-
+      Daca nu se aplica o exceptie si nu este constatare amiabila admisa, pregateste prezentarea la politie in termenul relevant.
+    sequence_hint: 30
+    completion_evidence_ro: ["Ruta de declarare la politie a fost pregatita"]
+    recovery_actions_ro: ["Daca termenul sau exceptia nu sint clare, nu presupune ca politia poate fi omisa"]
+    status: draft
+
+  - id: step.acc.amicable
+    semantic_key: step.acc.amicable
+    title_ro: "Completeaza constatarea amiabila"
+    instruction_ro: >-
+      Daca sint exact doua vehicule si numai pagube materiale, pregateste formularul de constatare amiabila.
+    sequence_hint: 40
+    completion_evidence_ro: ["Ruta de constatare amiabila a fost clarificata"]
+    recovery_actions_ro: ["Daca nu sint exact doua vehicule sau exista raniti, nu activa aceasta ramura"]
+    status: draft
+
+  - id: step.acc.notify_insurer
+    semantic_key: step.acc.notify_insurer
+    title_ro: "Notifica asiguratorul RCA"
+    instruction_ro: >-
+      Notifica asiguratorul RCA in fereastra relevanta si pastreaza dovada notificarii.
+    sequence_hint: 50
+    completion_evidence_ro: ["Notificarea catre asiguratorul RCA este pregatita sau transmisa"]
+    recovery_actions_ro: ["Daca asiguratorul nu a fost notificat, nu trata dosarul de reparatie ca pregatit"]
+    status: draft
+
+  - id: step.acc.obtain_repair_document
+    semantic_key: step.acc.obtain_repair_document
+    title_ro: "Obtine documentul pentru reparatie"
+    instruction_ro: >-
+      Obtine documentul de constatare relevant de la politie sau asigurator inainte de reparatie.
+    sequence_hint: 60
+    completion_evidence_ro: ["Documentul pentru reparatie a fost clarificat sau obtinut"]
+    recovery_actions_ro: ["Daca documentul lipseste, nu inchide partea administrativa a cazului"]
+    status: draft
+
+requirement_templates:
+  - id: req.acc.call_112
+    title_ro: "Apel 112 si anuntarea politiei"
+    description_ro: "Dovada sau confirmarea notificarii de urgenta, daca ruta o cere."
+    obligation: conditional
+    timing: immediately
+    accepted_forms: ["Apel 112", "Anuntarea politiei"]
+    readiness_checks: ["Urgenta este notificata daca exista raniti, deces sau pericol"]
+    status: draft
+
+  - id: req.acc.police_report
+    title_ro: "Prezentarea la politia competenta"
+    description_ro: "Prezentarea sau documentul cerut pentru declararea la politie."
+    obligation: conditional
+    timing: within_24_hours
+    accepted_forms: ["Prezentare la politie", "Document de constatare al politiei"]
+    readiness_checks: ["Ruta de politie este pregatita daca accidentul nu intra pe o exceptie"]
+    status: draft
+
+  - id: req.acc.amicable_two_vehicles
+    title_ro: "Exact doua vehicule si numai pagube materiale"
+    description_ro: "Conditia de aplicare a constatarii amiabile."
+    obligation: conditional
+    timing: for_amicable
+    accepted_forms: ["Confirmare a celor doua vehicule si a pagubelor materiale"]
+    readiness_checks: ["Conditiile de aplicare a constatarii amiabile sint indeplinite"]
+    status: draft
+
+  - id: req.acc.rca_notice
+    title_ro: "Notificarea asiguratorului RCA"
+    description_ro: "Dovada notificarii asiguratorului RCA."
+    obligation: mandatory
+    timing: within_5_working_days
+    accepted_forms: ["Dovada notificarii RCA"]
+    readiness_checks: ["Asiguratorul RCA este notificat in termenul relevant"]
+    status: draft
+
+  - id: req.acc.repair_document
+    title_ro: "Documentul de constatare pentru reparatie"
+    description_ro: "Documentul relevant pentru deschiderea reparatiei."
+    obligation: mandatory
+    timing: before_repair
+    accepted_forms: ["Document de constatare pentru reparatie"]
+    readiness_checks: ["Documentul pentru reparatie este disponibil inainte de inceperea reparatiei"]
+    status: draft

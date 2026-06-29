@@ -1,0 +1,373 @@
+step_templates:
+  - id: declare_inherited_vehicle_at_local_tax_authority
+    semantic_key: vehicle_inheritance_declare_tax
+    title_ro: "Declara vehiculul mostenit la fiscal"
+    instruction_ro: >-
+      Inainte de transcriere sau de alte operatiuni, inregistreaza documentul
+      succesoral in evidenta fiscala locala atunci cand ruta o cere.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Vehiculul mostenit este declarat fiscal pe ruta aplicabila."
+    recovery_actions_ro:
+      - "Daca documentul succesoral nu este finalizat, nu continua cu declararea fiscala definitiva."
+    status: draft
+  - id: prepare_inherited_vehicle_transcription_file
+    semantic_key: vehicle_inheritance_prepare_transcription
+    title_ro: "Pregateste transcrierea pentru vehiculul mostenit"
+    instruction_ro: >-
+      Strange documentul succesoral, actele tehnice, certificatul anterior si
+      dovezile pentru placute, ITP si RCA ale noului titular.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Dosarul de transcriere pentru mostenire este pregatit."
+    recovery_actions_ro:
+      - "Daca exista co-mostentori sau minori, clarifica mai intai cadrul de dispozitie asupra vehiculului."
+    status: draft
+  - id: submit_vehicle_transcription_application
+    semantic_key: vehicle_inheritance_submit_transcription
+    title_ro: "Depune transcrierea vehiculului mostenit"
+    instruction_ro: >-
+      Depune cererea de transcriere a dreptului de proprietate dupa ce dreptul
+      succesoral si dosarul tehnic sunt clarificate.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea de transcriere pentru vehiculul mostenit este depusa."
+    recovery_actions_ro:
+      - "Pastreaza separat dovada depunerii si data juridica a dobandirii."
+    status: draft
+  - id: establish_inherited_ownership_before_disposal
+    semantic_key: vehicle_inheritance_establish_ownership_before_disposal
+    title_ro: "Dovedeste mostenirea inainte de vanzare sau radiere"
+    instruction_ro: >-
+      Inainte de vanzare ori radiere, dovedeste mai intai dreptul succesoral
+      asupra vehiculului.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Dreptul mostenit asupra vehiculului este dovedit."
+    recovery_actions_ro:
+      - "Nu dispune de vehicul cat timp actele succesorale nu sunt suficiente."
+    status: draft
+  - id: select_verified_deregistration_ground
+    semantic_key: vehicle_inheritance_select_deregistration_ground
+    title_ro: "Alege temeiul verificat de radiere"
+    instruction_ro: >-
+      Daca urmeaza radierea, stabileste motivul de radiere admis si documentul
+      care il sustine.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Temeiul de radiere este selectat si documentat."
+    recovery_actions_ro:
+      - "Daca motivul nu este admis sau nu poate fi dovedit, nu continua dosarul de radiere."
+    status: draft
+  - id: prepare_inherited_vehicle_deregistration_file
+    semantic_key: vehicle_inheritance_prepare_deregistration
+    title_ro: "Pregateste radierea vehiculului mostenit"
+    instruction_ro: >-
+      Strange certificatul, placutele sau dovezile substitutive si dovada
+      motivului de radiere pentru vehiculul mostenit.
+    sequence_hint: 60
+    completion_evidence_ro:
+      - "Dosarul de radiere pentru vehiculul mostenit este pregatit."
+    recovery_actions_ro:
+      - "Daca lipsesc documente retinute odata cu vehiculul, pregateste dovada substitutiva admisa."
+    status: draft
+  - id: submit_vehicle_deregistration_application
+    semantic_key: vehicle_inheritance_submit_deregistration
+    title_ro: "Depune radierea vehiculului mostenit"
+    instruction_ro: >-
+      Depune radierea numai dupa ce calitatea de mostenitor si temeiul de
+      radiere sunt dovedite.
+    sequence_hint: 70
+    completion_evidence_ro:
+      - "Cererea de radiere pentru vehiculul mostenit este depusa."
+    recovery_actions_ro:
+      - "Verifica daca solicitantul este mostenitor legal ori alta persoana neeligibila."
+    status: draft
+  - id: request_transcription_within_90_days
+    semantic_key: vehicle_inheritance_request_transcription_90_days
+    title_ro: "Urmarste termenul de 90 de zile"
+    instruction_ro: >-
+      Pentru pastrarea si utilizarea vehiculului, urmareste depunerea
+      transcrierii in 90 de zile de la data juridica confirmata a dobandirii.
+    sequence_hint: 80
+    completion_evidence_ro:
+      - "Termenul de 90 de zile este calculat si urmarit."
+    recovery_actions_ro:
+      - "Daca data juridica a dobandirii nu este confirmata, nu calcula termenul aproximativ."
+    status: draft
+  - id: declare_vehicle_disposal_to_local_tax_authority
+    semantic_key: vehicle_inheritance_declare_disposal_tax
+    title_ro: "Declara instrainarea vehiculului mostenit la fiscal"
+    instruction_ro: >-
+      Daca vehiculul mostenit este instrainat, declara iesirea lui din evidenta
+      fiscala prin ruta potrivita UAT-ului competent.
+    sequence_hint: 90
+    completion_evidence_ro:
+      - "Instrainarea vehiculului mostenit este declarata fiscal."
+    recovery_actions_ro:
+      - "Pastreaza documentele de instrainare si dovada depunerii fiscale."
+    status: draft
+  - id: declare_deregistration_to_local_tax_authority
+    semantic_key: vehicle_inheritance_declare_deregistration_tax
+    title_ro: "Declara radierea la fiscal"
+    instruction_ro: >-
+      Dupa radierea vehiculului mostenit, actualizeaza si evidenta fiscala
+      locala in termenul aplicabil.
+    sequence_hint: 100
+    completion_evidence_ro:
+      - "Radierea vehiculului mostenit este declarata fiscal."
+    recovery_actions_ro:
+      - "Nu omite aceasta etapa daca radierea a fost obtinuta."
+    status: draft
+
+requirement_templates:
+  - id: req.document_attesting_inherited_ownership_registered_local_tax
+    title_ro: "Actul succesoral inregistrat fiscal"
+    description_ro: >-
+      Documentul succesoral care atesta proprietatea mostenita si este deja
+      inscris in evidenta fiscala locala.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de mostenitor sau alt act succesoral inregistrat fiscal."
+    readiness_checks:
+      - "Ruta aleasa cere inregistrarea fiscala anterioara."
+    status: draft
+  - id: req.previous_registration_certificate_or_substitute
+    title_ro: "Certificatul anterior sau substitutul lui"
+    description_ro: >-
+      Certificatul de inmatriculare anterior ori dovada admisa care il
+      inlocuieste in dosarul succesoral.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat anterior sau document substitutiv acceptat."
+    readiness_checks:
+      - "Vehiculul mostenit urmeaza ruta de transcriere sau radiere."
+    status: draft
+  - id: req.registration_plates_or_substitute
+    title_ro: "Placutele sau dovada substitutiva"
+    description_ro: >-
+      Placutele vehiculului mostenit sau documentul care explica de ce nu sunt
+      disponibile.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Placute disponibile sau dovada substitutiva admisa."
+    readiness_checks:
+      - "Procedura concreta cere predarea ori justificarea lor."
+    status: draft
+  - id: req.valid_vehicle_identity_card_civ
+    title_ro: "CIV valabila"
+    description_ro: >-
+      Cartea de identitate a vehiculului valabila pentru transcrierea ori
+      folosirea vehiculului mostenit.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "CIV in forma acceptata de procedura."
+    readiness_checks:
+      - "Documentul corespunde vehiculului mostenit."
+    status: draft
+  - id: req.valid_itp
+    title_ro: "ITP valabil"
+    description_ro: >-
+      Dovada ITP valabile, atunci cand vehiculul mostenit urmeaza sa circule ori
+      ruta o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "ITP valabil sau verificare oficiala acceptata."
+    readiness_checks:
+      - "Vehiculul mostenit urmeaza sa fie pastrat si utilizat."
+    status: draft
+  - id: req.valid_rca_current_owner_name
+    title_ro: "RCA valabila pe numele proprietarului curent"
+    description_ro: >-
+      Dovada RCA valabile pentru persoana care preia proprietatea asupra
+      vehiculului mostenit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Polita RCA valabila pe numele noului proprietar."
+    readiness_checks:
+      - "Vehiculul mostenit urmeaza sa fie pastrat si folosit."
+    status: draft
+  - id: req.document_attesting_inherited_ownership
+    title_ro: "Actul care atesta proprietatea mostenita"
+    description_ro: >-
+      Documentul succesoral folosit pentru a dovedi dreptul asupra vehiculului
+      inainte de vanzare sau radiere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Certificat de mostenitor sau alt act succesoral relevant."
+    readiness_checks:
+      - "Dreptul mostenit este clar si opozabil."
+    status: draft
+  - id: req.registration_certificate
+    title_ro: "Certificatul de inmatriculare"
+    description_ro: >-
+      Certificatul de inmatriculare al vehiculului mostenit, atunci cand este
+      disponibil.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de inmatriculare sau document substitutiv acceptat."
+    readiness_checks:
+      - "Dosarul de radiere ori transcriere il cere."
+    status: draft
+  - id: req.registration_plates_or_substitute_proof
+    title_ro: "Placutele sau dovada pentru lipsa lor"
+    description_ro: >-
+      Placutele vehiculului mostenit ori documentul care justifica lipsa lor in
+      dosarul de radiere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Placute disponibile sau dovada oficiala substitutiva."
+    readiness_checks:
+      - "Radierea vehiculului mostenit este urmarita."
+    status: draft
+  - id: req.valid_identity_or_entity_documents
+    title_ro: "Acte valabile de identitate sau ale entitatii"
+    description_ro: >-
+      Documentele de identificare ale mostenitorului ori ale entitatii care
+      actioneaza legal.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Acte valabile de identitate sau documente ale entitatii."
+    readiness_checks:
+      - "Solicitantul poate fi identificat si are calitatea relevanta."
+    status: draft
+  - id: req.document_proving_selected_deregistration_ground
+    title_ro: "Dovada temeiului de radiere ales"
+    description_ro: >-
+      Documentul care sustine motivul ales pentru radierea vehiculului mostenit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada oficiala a temeiului de radiere."
+    readiness_checks:
+      - "Temeiul de radiere a fost selectat si este admis."
+    status: draft
+  - id: req.proof_replacing_unavailable_registration_plates
+    title_ro: "Dovada care inlocuieste placutele indisponibile"
+    description_ro: >-
+      Documentul folosit cand placutele vehiculului mostenit nu mai sunt
+      disponibile.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada oficiala care explica lipsa placutelor."
+    readiness_checks:
+      - "Placutele nu pot fi prezentate fizic."
+    status: draft
+  - id: req.proof_replacing_unavailable_registration_certificate
+    title_ro: "Dovada care inlocuieste certificatul indisponibil"
+    description_ro: >-
+      Documentul substitutiv folosit cand certificatul vehiculului mostenit nu
+      mai este disponibil.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada oficiala acceptata care inlocuieste certificatul."
+    readiness_checks:
+      - "Certificatul nu poate fi prezentat in dosar."
+    status: draft
+  - id: req.ownership_document_registered_local_tax
+    title_ro: "Documentul de proprietate inregistrat fiscal"
+    description_ro: >-
+      Actul care atesta proprietatea si este deja inregistrat in evidenta
+      fiscala locala, daca ruta concreta il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de proprietate cu formalitatea fiscala locala indeplinita."
+    readiness_checks:
+      - "Ruta de instrainare sau radiere il cere."
+    status: draft
+  - id: req.local_fiscal_clearance_certificate_all_obligations_paid
+    title_ro: "Certificat fiscal local cu obligatii achitate"
+    description_ro: >-
+      Certificatul fiscal local folosit pe rutele unde datoriile trebuie
+      demonstrate ca achitate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de atestare fiscala locala valabil."
+    readiness_checks:
+      - "Canalul sau UAT-ul il cere pentru pasul concret."
+    status: draft
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Actul de identitate valabil al persoanei care actioneaza in dosar.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.legal_entity_documents
+    title_ro: "Documentele persoanei juridice"
+    description_ro: >-
+      Documentele necesare cand un vehicul mostenit este gestionat printr-o
+      entitate care are rol procedural admis.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Documente oficiale ale persoanei juridice."
+    readiness_checks:
+      - "Solicitantul procedural este persoana juridica."
+    status: draft
+  - id: req.legal_representative_identity
+    title_ro: "Actul reprezentantului legal"
+    description_ro: >-
+      Actul de identitate al reprezentantului legal al entitatii implicate.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil al reprezentantului legal."
+    readiness_checks:
+      - "Dosarul este depus prin reprezentantul legal."
+    status: draft
+  - id: req.lawyer_mandate
+    title_ro: "Mandat avocatial"
+    description_ro: >-
+      Imputernicirea avocatiala folosita atunci cand mostenitorul este
+      reprezentat de avocat.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Imputernicire avocatiala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin avocat."
+    status: draft
+  - id: req.notarial_power_of_attorney
+    title_ro: "Procura notariala"
+    description_ro: >-
+      Procura folosita atunci cand mostenitorul este reprezentat de un
+      imputernicit.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Procura notariala valabila."
+    readiness_checks:
+      - "Reprezentarea este facuta prin imputernicit."
+    status: draft
+  - id: req.company_written_mandate
+    title_ro: "Mandat scris al companiei"
+    description_ro: >-
+      Mandatul intern folosit de delegatul companiei, daca ruta procedurala il
+      accepta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Mandat scris semnat de companie."
+    readiness_checks:
+      - "Depunerea este facuta de delegatul companiei."
+    status: draft
+

@@ -1,0 +1,52 @@
+step_templates:
+  - id: transcribe_vehicle
+    semantic_key: transcribe_vehicle
+    title_ro: "Depune dosarul de transcriere"
+    instruction_ro: >-
+      Pregătește documentele de proprietate, evidența fiscală și documentele de
+      circulație pentru transcrierea vehiculului pe numele noului proprietar.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Dosarul pentru transcriere este pregătit sau depus."
+      - "Documentele de proprietate și fiscale sunt atașate."
+    recovery_actions_ro:
+      - "Dacă dovada fiscală sau actul de proprietate lipsesc, obține-le înainte de depunere."
+    status: draft
+  - id: do_itp
+    semantic_key: do_itp
+    title_ro: "Confirmă valabilitatea ITP-ului"
+    instruction_ro: >-
+      Verifică dacă vehiculul are ITP valabil și, dacă nu, programează inspecția
+      tehnică înainte de utilizarea normală a vehiculului.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Valabilitatea ITP este confirmată sau inspecția este efectuată."
+    recovery_actions_ro:
+      - "Dacă ITP-ul este expirat, tratează pasul ca blocat până la reînnoire."
+    status: draft
+
+requirement_templates:
+  - id: req.ownership_document
+    title_ro: "Documentul de proprietate"
+    description_ro: >-
+      Actul care dovedește dobândirea vehiculului și permite transcrierea pe
+      noul proprietar.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contract de vânzare-cumpărare sau alt document de dobândire acceptat."
+    readiness_checks:
+      - "Documentul de proprietate este semnat și complet."
+    status: draft
+  - id: req.fiscal_declaration_proof
+    title_ro: "Dovada declarării fiscale"
+    description_ro: >-
+      Dovada că vehiculul a fost declarat la organul fiscal local, atunci când
+      traseul de transcriere o cere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Dovadă de depunere sau înregistrare a declarației fiscale."
+    readiness_checks:
+      - "Declarația fiscală locală a fost depusă."
+    status: draft

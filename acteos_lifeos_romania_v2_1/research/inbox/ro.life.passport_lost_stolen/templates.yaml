@@ -1,0 +1,193 @@
+step_templates:
+  - id: declare_passport_event
+    semantic_key: passport_lost_stolen_declare_event
+    title_ro: "Declara pierderea sau distrugerea pasaportului"
+    instruction_ro: >-
+      Pentru pierdere sau distrugere, declara evenimentul la autoritatea
+      competenta astfel incat documentul sa fie invalidat corect.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Evenimentul este declarat prin canalul competent."
+    recovery_actions_ro:
+      - "Daca este vorba de furt, activeaza separat si ruta de politie."
+    status: draft
+  - id: report_passport_theft_to_police
+    semantic_key: passport_lost_stolen_report_theft
+    title_ro: "Declara furtul la politie"
+    instruction_ro: >-
+      Pentru furt, sesizeaza politia competenta si obtine adeverinta sau dovada
+      ceruta pentru continuarea dosarului de pasaport.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Furtul pasaportului este declarat la politie."
+    recovery_actions_ro:
+      - "Pastreaza dovada furtului pentru dosarul noului pasaport."
+    status: draft
+  - id: request_replacement_passport
+    semantic_key: passport_lost_stolen_request_replacement
+    title_ro: "Solicita pasaportul de inlocuire"
+    instruction_ro: >-
+      Dupa declararea evenimentului, pregateste cererea pentru noul pasaport,
+      biometria, plata si documentele specifice varstei si tipului de pasaport.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Cererea pentru pasaportul de inlocuire este pregatita sau depusa."
+    recovery_actions_ro:
+      - "Nu presupune pasaport temporar doar pentru turism ori confort."
+    status: draft
+  - id: surrender_found_invalid_passport
+    semantic_key: passport_lost_stolen_surrender_found
+    title_ro: "Preda pasaportul gasit dupa declarare"
+    instruction_ro: >-
+      Daca documentul este gasit dupa declarare, preda-l autoritatii competente
+      deoarece a devenit nul si nu mai poate fi folosit.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Pasaportul gasit dupa declarare este predat."
+    recovery_actions_ro:
+      - "Nu incerca reutilizarea documentului dupa declararea lui."
+    status: draft
+
+requirement_templates:
+  - id: req.loss_or_destruction_declaration
+    title_ro: "Declaratie de pierdere sau distrugere"
+    description_ro: >-
+      Declaratia necesara pentru pierderea sau distrugerea pasaportului, in
+      forma ceruta de autoritatea competenta.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Declaratie completata in canalul oficial competent."
+    readiness_checks:
+      - "Incidentul este pierdere ori distrugere, nu furt."
+    status: draft
+  - id: req.police_theft_certificate
+    title_ro: "Adeverinta de furt de la politie"
+    description_ro: >-
+      Dovada emisa de politie dupa declararea furtului pasaportului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Adeverinta, proces-verbal sau alta dovada oficiala a declararii furtului."
+    readiness_checks:
+      - "Incidentul este furt."
+    status: draft
+  - id: req.passport_payment_265_ron
+    title_ro: "Plata de 265 lei pentru pasaport"
+    description_ro: >-
+      Plata contravalorii publicate pentru documentul solicitat la data de
+      referinta a cercetarii.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Dovada platii de 265 lei prin canalul oficial acceptat."
+    readiness_checks:
+      - "Ruta si data cererii folosesc cuantumul publicat modelat."
+    status: draft
+  - id: req.valid_identity_document
+    title_ro: "Act de identitate valabil"
+    description_ro: >-
+      Documentul de identitate valabil al solicitantului pentru cererea noului
+      pasaport.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil in forma acceptata de serviciul de pasapoarte."
+    readiness_checks:
+      - "Solicitantul poate fi identificat oficial."
+    status: draft
+  - id: req.payment_proof
+    title_ro: "Dovada platii"
+    description_ro: >-
+      Dovada platii aferente pasaportului solicitat, atunci cand traseul o cere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Chitanta sau dovada oficiala a platii."
+    readiness_checks:
+      - "Plata a fost efectuata pentru tipul corect de pasaport."
+    status: draft
+  - id: req.previous_passport_if_available
+    title_ro: "Pasaportul anterior, daca este disponibil"
+    description_ro: >-
+      Pasaportul anterior prezentat in dosar atunci cand nu este pierdut ori
+      furat si procedura il cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Pasaportul anterior, daca se afla in posesia titularului."
+    readiness_checks:
+      - "Documentul anterior este efectiv disponibil."
+    status: draft
+  - id: req.minor_birth_certificate
+    title_ro: "Certificatul de nastere al minorului"
+    description_ro: >-
+      Certificatul de nastere folosit in dosarul minorului pentru emiterea
+      pasaportului de inlocuire.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Certificat de nastere al minorului in forma ceruta."
+    readiness_checks:
+      - "Solicitantul este minor."
+    status: draft
+  - id: req.parent_or_representative_identity
+    title_ro: "Actul de identitate al parintelui sau reprezentantului"
+    description_ro: >-
+      Actul de identitate al persoanei care reprezinta minorul in dosarul de
+      pasaport.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil al parintelui sau reprezentantului."
+    readiness_checks:
+      - "Cererea este pentru minor."
+    status: draft
+  - id: req.parental_consent_or_legal_basis
+    title_ro: "Consimtamant parental sau temei legal"
+    description_ro: >-
+      Documentul prin care este justificata reprezentarea ori acordul necesar
+      pentru cererea minorului.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acord, hotarare sau alt temei legal acceptat de procedura."
+    readiness_checks:
+      - "Varsta minorului si situatia familiala cer acest document."
+    status: draft
+  - id: req.minor_presence
+    title_ro: "Prezenta minorului"
+    description_ro: >-
+      Prezenta minorului pentru preluarea datelor si depunerea cererii, atunci
+      cand procedura o cere.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Prezentarea minorului la ghișeu sau in canalul relevant."
+    readiness_checks:
+      - "Varsta si ruta de pasaport cer prezenta fizica."
+    status: draft
+  - id: req.minor_valid_identity
+    title_ro: "Act de identitate valabil al minorului"
+    description_ro: >-
+      Actul de identitate valabil al minorului, atunci cand acesta exista si
+      este cerut pentru dosar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Act de identitate valabil al minorului."
+    readiness_checks:
+      - "Minorul are deja un act de identitate relevant pentru dosar."
+    status: draft
+  - id: req.objective_urgent_evidence
+    title_ro: "Dovada unei urgente obiective"
+    description_ro: >-
+      Documentele care sustin existenta unei urgente obiective pentru pasaportul
+      temporar.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Acte medicale, de studii, juridice sau alte dovezi oficiale ale urgentei."
+    readiness_checks:
+      - "Se urmareste pasaport temporar si urgenta nu este doar turistica."
+    status: draft

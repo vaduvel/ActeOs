@@ -1,0 +1,95 @@
+# Step & requirement templates for ro.life.beneficial_owner_update (life.beneficial_owner_update).
+#
+# Authoring note: transcribed from event_card + source claims only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: assess_beneficial_owner_filing_trigger
+    semantic_key: assess_beneficial_owner_filing_trigger
+    title_ro: "Verifica triggerul legal al declaratiei"
+    instruction_ro: >-
+      Stabileste daca exista o schimbare efectiva a beneficiarului real sau daca te afli pe ramura
+      anuala speciala prevazuta pentru anumite structuri.
+    sequence_hint: 10
+    completion_evidence_ro:
+      - "Triggerul legal al declaratiei a fost identificat"
+    recovery_actions_ro:
+      - "Daca nu este clar daca exista schimbare sau ramura anuala speciala, nu presupune o obligatie generala"
+    status: draft
+
+  - id: prepare_and_file_beneficial_owner_change
+    semantic_key: prepare_and_file_beneficial_owner_change
+    title_ro: "Pregateste si depune declaratia la schimbare"
+    instruction_ro: >-
+      Daca beneficiarul real s-a schimbat, pregateste declaratia cu datele de identificare si
+      control necesare si depune-o pe canalul oficial ales.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Declaratia pentru schimbare este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca datele de identificare si control nu sunt complete, nu trimite declaratia"
+    status: draft
+
+  - id: prepare_and_file_annual_beneficial_owner_declaration
+    semantic_key: prepare_and_file_annual_beneficial_owner_declaration
+    title_ro: "Pregateste si depune declaratia anuala speciala"
+    instruction_ro: >-
+      Daca te afli pe ramura anuala speciala, pregateste declaratia dupa aprobarea situatiilor
+      anuale, in fereastra relevanta.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Declaratia anuala speciala este pregatita sau depusa"
+    recovery_actions_ro:
+      - "Daca nu esti pe ramura speciala, nu transforma aceasta etapa intr-o obligatie anuala generala"
+    status: draft
+
+requirement_templates:
+  - id: req.beneficial_owner_declaration
+    title_ro: "Declaratia privind beneficiarul real"
+    description_ro: >-
+      Declaratia folosita pentru actualizarea sau depunerea informatiei despre beneficiarul real.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Declaratia privind beneficiarul real"
+    readiness_checks:
+      - "Declaratia este completata pentru triggerul legal corect"
+    status: draft
+
+  - id: req.beneficial_owner_identification_and_control_data
+    title_ro: "Date de identificare si control ale beneficiarului real"
+    description_ro: >-
+      Datele de identificare si control necesare pentru completarea declaratiei.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Date de identificare ale beneficiarului real"
+      - "Date privind controlul exercitat"
+    readiness_checks:
+      - "Datele de identificare si control sunt disponibile"
+    status: draft
+
+  - id: req.complete_beneficial_owner_identification_and_control_data
+    title_ro: "Date complete de identificare si control"
+    description_ro: >-
+      Confirmarea ca datele de identificare si control sunt complete pentru declaratia depusa.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Set complet de date de identificare si control"
+    readiness_checks:
+      - "Nu lipsesc campuri legale relevante din declaratie"
+    status: draft
+
+  - id: req.representation_form_with_certified_date_or_authorized_form
+    title_ro: "Forma de reprezentare cu data certa sau forma autorizata"
+    description_ro: >-
+      Documentul de reprezentare folosit cand declaratia este depusa prin reprezentant.
+    obligation: conditional
+    timing: now
+    accepted_forms:
+      - "Document de reprezentare cu data certa"
+      - "Forma autorizata de reprezentare"
+    readiness_checks:
+      - "Reprezentantul poate dovedi forma de reprezentare folosita"
+    status: draft

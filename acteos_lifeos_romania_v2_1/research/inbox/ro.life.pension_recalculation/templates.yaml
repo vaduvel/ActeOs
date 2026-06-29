@@ -1,0 +1,92 @@
+# Step & requirement templates for ro.life.pension_recalculation (life.pension_recalculation).
+#
+# Authoring note: transcribed from event_card + rules only. No additional
+# legal text was invented.
+
+step_templates:
+  - id: collect_unvalued_evidence
+    semantic_key: collect_unvalued_evidence
+    title_ro: "Colecteaza dovezile nevalorificate"
+    instruction_ro: >-
+      Identifica perioada sau venitul nevalorificat si strange documentele justificative relevante.
+    sequence_hint: 10
+    completion_evidence_ro: ["Dovezile nevalorificate au fost identificate si strinse"]
+    recovery_actions_ro: ["Daca baza cererii nu este clara, separa recalcularea de revizuire inainte de continuare"]
+    status: draft
+
+  - id: prepare_recalculation_application
+    semantic_key: prepare_recalculation_application
+    title_ro: "Pregateste cererea de recalculare"
+    instruction_ro: >-
+      Pregateste cererea de recalculare si actele suport pentru temeiul invocat.
+    sequence_hint: 20
+    completion_evidence_ro: ["Cererea de recalculare este pregatita"]
+    recovery_actions_ro: ["Daca lipsesc anexele sau adeverintele in forma ceruta, completeaza dosarul"]
+    status: draft
+
+  - id: verify_annual_recalculation_limit
+    semantic_key: verify_annual_recalculation_limit
+    title_ro: "Verifica limita anuala pentru stagiu dupa pensionare"
+    instruction_ro: >-
+      Daca cererea priveste stagiu dupa pensionare, verifica frecventa anuala admisa inainte de depunere.
+    sequence_hint: 30
+    completion_evidence_ro: ["Limita anuala relevanta a fost verificata"]
+    recovery_actions_ro: ["Daca exista deja o cerere in acelasi an calendaristic, nu continua aceasta ramura fara clarificare"]
+    status: draft
+
+  - id: obtain_post_2001_stage_certificate
+    semantic_key: obtain_post_2001_stage_certificate
+    title_ro: "Obtine adeverinta pentru stagiu dupa 1 aprilie 2001"
+    instruction_ro: >-
+      Daca perioada relevanta este dupa 1 aprilie 2001 si datele lipsesc din baza CNPP, pregateste adeverinta necesara.
+    sequence_hint: 40
+    completion_evidence_ro: ["Cerinta de adeverinta pentru perioada post-2001 a fost clarificata"]
+    recovery_actions_ro: ["Daca datele exista deja in baza CNPP, nu activa inutil aceasta ramura"]
+    status: draft
+
+  - id: prepare_pension_review_request
+    semantic_key: prepare_pension_review_request
+    title_ro: "Pregateste cererea de revizuire"
+    instruction_ro: >-
+      Daca problema tine de eroare materiala sau de calcul si nu de recalculare obisnuita, pregateste ruta de revizuire.
+    sequence_hint: 50
+    completion_evidence_ro: ["Ruta de revizuire a pensiei a fost pregatita"]
+    recovery_actions_ro: ["Daca situatia este recalculare la cerere si nu revizuire, revino la traseul corect"]
+    status: draft
+
+requirement_templates:
+  - id: proof_of_rectifying_declaration
+    title_ro: "Dovada declaratiei rectificative"
+    description_ro: "Dovada folosita cand baza recalcularii este declaratia rectificativa."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Dovada declaratiei rectificative"]
+    readiness_checks: ["Dovada declaratiei rectificative este pregatita daca se aplica"]
+    status: draft
+
+  - id: annex_16_application
+    title_ro: "Cererea tip Anexa 16"
+    description_ro: "Formularul tip pentru recalculare pe ruta CNPP relevanta."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Cerere tip Anexa 16"]
+    readiness_checks: ["Cererea Anexa 16 este completata daca aceasta este ruta relevanta"]
+    status: draft
+
+  - id: identity_document
+    title_ro: "Act de identitate"
+    description_ro: "Actul de identitate al pensionarului sau solicitantului."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Act de identitate"]
+    readiness_checks: ["Actul de identitate este disponibil si valabil"]
+    status: draft
+
+  - id: supporting_certificate_meeting_form_requirements
+    title_ro: "Adeverinta suport in forma ceruta"
+    description_ro: "Adeverinta sau documentul justificativ care respecta cerintele de forma relevante."
+    obligation: conditional
+    timing: now
+    accepted_forms: ["Adeverinta suport", "Document justificativ in forma ceruta"]
+    readiness_checks: ["Documentul suport respecta forma relevanta si este lizibil"]
+    status: draft
