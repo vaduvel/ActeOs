@@ -6,12 +6,20 @@ These exercise the gated provenance pipeline in authoring/publish.py:
 - with real sources + snapshots authored, the full FK-linked chain is emitted
   using deterministic uuids;
 - a claim whose snapshot is not authored is deferred (not emitted);
-- authoring provenance never perturbs the rule-bundle manifest hash.
+- authoring provenance never perturbs the rule-bundle manifest hash;
+- provenance authored in a sibling sources.yaml (loaded as ``provenance``) is
+  read by the publish pipeline and takes precedence over inline claims keys.
 """
 
 from __future__ import annotations
 
-from acteos_rule_engine.authoring.publish import compile_bundle, mint_uuid
+from acteos_rule_engine.authoring.loader import load_batch
+from acteos_rule_engine.authoring.publish import (
+    _snapshots,
+    _sources,
+    compile_bundle,
+    mint_uuid,
+)
 
 
 def _claim(cid: str = "claim.x", *, source_id: str = "src.x", snapshot_id: str = "snap.x.2026") -> dict:
@@ -64,6 +72,21 @@ def _batch(*, claims: list[dict], sources: list[dict] | None = None, snapshots: 
         },
         "fixtures": {},
         "claims": doc,
+    }
+
+
+def _provenance_batch(*, claims: list[dict], sources: list[dict], snapshots: list[dict]) -> dict:
+    """A batch whose provenance lives in a separate doc (sources.yaml), NOT inline."""
+    return {
+        "batch_dir": "ro.life.test",
+        "ruleset": {
+            "batch_id": "ro.life.test",
+            "event_type_id": "life.test",
+            "rules": [_rule()],
+        },
+        "fixtures": {},
+        "claims": {"batch_id": "ro.life.test", "claims": claims},
+        "provenance": {"sources": sources, "snapshots": snapshots},
     }
 
 
@@ -156,3 +179,83 @@ def test_manifest_sha256_is_stable_regardless_of_provenance():
     )
     assert base.manifest_sha256 == with_prov.manifest_sha256
     assert base.version == with_prov.version
+
+
+def test_separate_provenance_doc_emits_chain():
+    # Provenance authored in a separate doc (sources.yaml -> batch["provenance"]),
+    # NOT inline in the claims doc. The publish pipeline must read it from there.
+    batch = _provenance_batch(
+        claims=[_claim()], sources=[_SOURCE], snapshots=[_SNAPSHOT]
+    )
+    assert _sources(batch)[0]["id"] == "src.x"
+    assert _snapshots(batch)[0]["id"] == "snap.x.2026"
+    rows = compile_bundle([batch]).as_provenance_rows()
+    assert len(rows["content.sources"]) == 1
+    assert len(rows["content.source_snapshots"]) == 1
+    assert len(rows["content.source_claims"]) == 1
+    assert rows["content.source_snapshots"][0]["source_id"] == rows["content.sources"][0]["id"]
+
+
+def test_provenance_doc_takes_precedence_over_inline_claims_keys():
+    # When both the provenance doc and inline claims-doc lists exist, the sibling
+    # sources.yaml (provenance) wins; here inline is empty and must be ignored.
+    batch = {
+        "batch_dir": "ro.life.test",
+        "ruleset": {
+            "batch_id": "ro.life.test",
+            "event_type_id": "life.test",
+            "rules": [_rule()],
+        },
+        "fixtures": {},
+        "claims": {
+            "batch_id": "ro.life.test",
+            "claims": [_claim()],
+            "sources": [],
+            "snapshots": [],
+        },
+        "provenance": {"sources": [_SOURCE], "snapshots": [_SNAPSHOT]},
+    }
+    assert len(_sources(batch)) == 1
+    rows = compile_bundle([batch]).as_provenance_rows()
+    assert len(rows["content.sources"]) == 1
+    assert len(rows["content.source_claims"]) == 1
+
+
+def test_loader_reads_sibling_sources_yaml(tmp_path):
+    # End-to-end: load_batch surfaces sources.yaml under the "provenance" key and
+    # the publish helpers resolve it.
+    d = tmp_path / "ro.life.test"
+    (d / "fixtures").mkdir(parents=True)
+    (d / "rules.yaml").write_text(
+        "batch_id: ro.life.test\nevent_type_id: life.test\nrules: []\n",
+        encoding="utf-8",
+    )
+    (d / "fixtures" / "golden.yaml").write_text("cases: []\n", encoding="utf-8")
+    (d / "source_claims.yaml").write_text(
+        "batch_id: ro.life.test\nclaims: []\n", encoding="utf-8"
+    )
+    (d / "sources.yaml").write_text(
+        "batch_id: ro.life.test\n"
+        "sources:\n"
+        "  - id: src.x\n"
+        "    canonical_url: https://legislatie.just.ro/example\n"
+        "    publisher: Monitorul Oficial\n"
+        "    authority_level: national_normative\n"
+        "    legal_rank: LEGE\n"
+        "    territory_ids: [RO]\n"
+        "    fetch_mode: manual\n"
+        "    allowed_to_fetch: false\n"
+        "snapshots:\n"
+        "  - id: snap.x.2026\n"
+        "    source_id: src.x\n"
+        "    captured_at: 2026-06-01T10:00:00Z\n"
+        "    sha256: " + ("a" * 64) + "\n"
+        "    http_status: 200\n"
+        "    content_type: text/html\n",
+        encoding="utf-8",
+    )
+    batch = load_batch(d)
+    assert batch["provenance"]["sources"][0]["id"] == "src.x"
+    assert batch["provenance"]["snapshots"][0]["source_id"] == "src.x"
+    assert _sources(batch)[0]["id"] == "src.x"
+    assert _snapshots(batch)[0]["id"] == "snap.x.2026"
