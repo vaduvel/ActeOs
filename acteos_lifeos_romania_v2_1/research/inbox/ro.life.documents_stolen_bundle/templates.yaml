@@ -1,16 +1,77 @@
+# Step & requirement templates for ro.life.documents_stolen_bundle (life.documents_stolen_bundle).
+#
+# Authoring note: transcribed from event_card.md (batch R1A-8, accessed_at
+# 2026-06-25) and the step ids referenced by rules.yaml; no extra legal content
+# or invented amounts were added. This is a COMPOSITE orchestrator event (theft):
+# a single police report covers the whole stolen bundle, then a replacement
+# sub-event is opened for each lost document. Substantive rules (deadlines,
+# documents, null-by-law) live in the child events, so requirement_templates is
+# intentionally empty.
+
 step_templates:
   - id: file_single_police_report
     semantic_key: file_single_police_report
-    title_ro: "Depune o singură sesizare la poliție pentru furt"
+    title_ro: "Depune o singură sesizare la poliție pentru tot pachetul furat"
     instruction_ro: >-
-      Raportează furtul la poliție și păstrează dovada sesizării pentru toate
-      evenimentele de înlocuire pornite din pachetul de documente furate.
+      O singură sesizare la poliție acoperă tot pachetul de acte furate; nu depui câte
+      una pentru fiecare document. Păstrează dovada de înregistrare, deoarece o vei
+      folosi la toate înlocuirile.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Sesizarea furtului a fost depusă."
-      - "Dovada sesizării poate fi refolosită pentru documentele afectate."
+      - "Sesizarea unică de furt a fost înregistrată la poliție (cu număr de înregistrare)"
     recovery_actions_ro:
-      - "Dacă nu sunt toate documentele identificate din primul moment, actualizează lista folosită în evenimentele copil."
+      - "Păstrează dovada de înregistrare; o vei folosi la fiecare subeveniment de înlocuire"
+    status: draft
+
+  - id: replace_identity_card
+    semantic_key: replace_identity_card
+    title_ro: "Înlocuiește cartea de identitate (varianta furt)"
+    instruction_ro: >-
+      Dacă ți-a fost furată cartea de identitate, deschide subevenimentul de înlocuire
+      (varianta furt), folosind dovada sesizării unice la poliție.
+    sequence_hint: 20
+    completion_evidence_ro:
+      - "Subevenimentul de înlocuire a cărții de identitate a fost deschis"
+    recovery_actions_ro:
+      - "Dacă nu ai încă dovada sesizării, finalizează mai întâi sesizarea la poliție"
+    status: draft
+
+  - id: replace_passport
+    semantic_key: replace_passport
+    title_ro: "Înlocuiește pașaportul"
+    instruction_ro: >-
+      Dacă ți-a fost furat și pașaportul, deschide subevenimentul de înlocuire a pașaportului.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Subevenimentul de înlocuire a pașaportului a fost deschis"
+    recovery_actions_ro:
+      - "Păstrează dovada sesizării unice pentru dosarul de înlocuire"
+    status: draft
+
+  - id: replace_driving_license
+    semantic_key: replace_driving_license
+    title_ro: "Înlocuiește permisul de conducere"
+    instruction_ro: >-
+      Dacă ți-a fost furat și permisul de conducere, deschide subevenimentul separat de
+      eliberare a unui duplicat.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Subevenimentul de duplicat al permisului de conducere a fost deschis"
+    recovery_actions_ro:
+      - "Păstrează dovada sesizării unice pentru dosarul de înlocuire"
+    status: draft
+
+  - id: replace_vehicle_registration
+    semantic_key: replace_vehicle_registration
+    title_ro: "Înlocuiește certificatul de înmatriculare (talonul)"
+    instruction_ro: >-
+      Dacă ți-a fost furat și certificatul de înmatriculare (talonul), deschide subevenimentul
+      de eliberare a unui duplicat (se eliberează de SPCRPCIV).
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Subevenimentul de duplicat al certificatului de înmatriculare a fost deschis"
+    recovery_actions_ro:
+      - "Păstrează dovada sesizării unice pentru dosarul de înlocuire"
     status: draft
 
 requirement_templates: []
