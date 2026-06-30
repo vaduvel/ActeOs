@@ -1,120 +1,133 @@
+# Step & requirement templates for ro.life.moved_home (life.moved).
+#
+# Authoring note: transcribed from event_card.md (batch R1A-1, accessed_at
+# 2026-06-25) and the step/requirement ids referenced by rules.yaml; no extra
+# legal content or invented amounts were added. NO fine amount is stated in the
+# templates (the ID-card sanction figure is asserted only inside the rule
+# warning, where it is sourced; the broader sanction-source conflict remains
+# open). update_vehicle_registration and register_residence_visa are governed by
+# needs_confirmation/in_review rules, so they are phrased as conditional and
+# their exact deadlines are not asserted here.
+
 step_templates:
   - id: update_identity_card
     semantic_key: update_identity_card
-    title_ro: "Actualizează actul de identitate pentru noua adresă"
+    title_ro: "Actualizează actul de identitate la noua adresă"
     instruction_ro: >-
-      Pregătește dosarul pentru actualizarea actului de identitate la noua adresă
-      și depune cererea la serviciul de evidență competent, folosind dovada noii
-      adrese și documentele personale aplicabile situației tale.
+      La schimbarea domiciliului cu carte de identitate simplă sau buletin, solicită un
+      nou act de identitate în 15 zile de la mutare, la serviciul de evidența persoanelor.
+      Adu actul de identitate vechi, certificatul de naștere și dovada noii adrese; dacă
+      ești căsătorit, adu și certificatul de căsătorie, iar dacă te muți cu copii sub 14 ani,
+      certificatele lor de naștere. La cartea electronică de identitate (CEI), schimbarea
+      adresei se poate face fără un act nou — confirmă procedura curentă la serviciul de
+      evidența persoanelor.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Cererea pentru actualizarea adresei a fost depusă."
-      - "Dosarul include dovada adresei și documentele personale aplicabile."
+      - "Cererea pentru noul act de identitate a fost înregistrată"
+      - "Termenul de 15 zile de la mutare a fost respectat"
     recovery_actions_ro:
-      - "Dacă dovada adresei nu este acceptată, cere forma exactă solicitată de ghișeu și refă dosarul."
-      - "Dacă situația personală cere documente suplimentare, adaugă-le înainte de redepunere."
+      - "Dacă ai depășit 15 zile, programează-te și depune cererea cât mai curând"
+      - "Dacă ai carte electronică de identitate, confirmă dacă mai este nevoie de un act nou"
     status: draft
+
   - id: update_vehicle_registration
     semantic_key: update_vehicle_registration
-    title_ro: "Actualizează adresa din evidența vehiculului"
+    title_ro: "Actualizează certificatul de înmatriculare al vehiculului"
     instruction_ro: >-
-      Dacă deții un vehicul, pregătește actualizarea certificatului de
-      înmatriculare sau a evidenței asociate după schimbarea domiciliului, pe
-      baza actului de identitate actualizat și a documentelor vehiculului.
+      Dacă deții un vehicul și ți-ai schimbat domiciliul, certificatul de înmatriculare
+      trebuie actualizat la noua adresă, la autoritatea de înmatriculări (DRPCIV).
+      Termenul legal exact este în curs de confirmare din sursa oficială.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Ruta pentru actualizarea documentelor vehiculului a fost pornită."
-      - "Documentele vehiculului și noul act de identitate sunt pregătite."
+      - "Actualizarea adresei pe certificatul de înmatriculare a fost solicitată"
     recovery_actions_ro:
-      - "Dacă nu ai vehicul pe numele tău, marchează acest pas ca neaplicabil."
-      - "Dacă actul de identitate nou nu este încă emis, finalizează mai întâi pasul anterior."
+      - "Confirmă termenul și documentele exacte la autoritatea de înmatriculări"
     status: draft
+
   - id: register_residence_visa
     semantic_key: register_residence_visa
-    title_ro: "Înregistrează viza de reședință, dacă ai nevoie de ea"
+    title_ro: "Solicită viza de reședință (flotant)"
     instruction_ro: >-
-      Dacă traseul tău este pentru reședință temporară, pregătește cererea de
-      viză de reședință și dovada spațiului, inclusiv acordul gazdei atunci când
-      procedura îl cere.
+      Pentru reședință (flotant), solicită viza de reședință la serviciul de evidența
+      persoanelor. Documentele și valabilitatea se confirmă din sursa oficială.
     sequence_hint: 30
     completion_evidence_ro:
-      - "Cererea pentru viză de reședință este pregătită sau depusă."
-      - "Dovada spațiului și acordul gazdei sunt atașate când sunt necesare."
+      - "Cererea pentru viza de reședință a fost înregistrată"
     recovery_actions_ro:
-      - "Dacă ruta este pentru schimbare de domiciliu, nu folosi acest pas în locul actualizării actului de identitate."
-      - "Dacă locuiești în spațiul altei persoane, confirmă forma acceptată pentru acordul gazdei."
+      - "Confirmă documentele și valabilitatea vizei de reședință la serviciul de evidența persoanelor"
     status: draft
 
 requirement_templates:
   - id: req.id_card_old
     title_ro: "Actul de identitate actual"
     description_ro: >-
-      Actul de identitate pe care îl înlocuiești sau îl actualizezi pentru noua
-      adresă.
+      Actul de identitate deținut în prezent, prezentat la actualizarea adresei.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Actul de identitate actual, în forma cerută la depunere."
+      - "Carte de identitate / buletin"
     readiness_checks:
-      - "Actul de identitate actual este disponibil pentru dosar."
+      - "Actul de identitate actual este disponibil"
     status: draft
+
   - id: req.birth_certificate
-    title_ro: "Certificat de naștere"
+    title_ro: "Certificatul de naștere"
     description_ro: >-
-      Certificatul de naștere folosit în dosarul de actualizare a domiciliului
-      sau reședinței, dacă procedura îl cere pentru situația ta.
+      Certificatul de naștere al solicitantului.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Certificat de naștere, în forma cerută de serviciul competent."
+      - "Certificat de naștere"
     readiness_checks:
-      - "Certificatul de naștere este disponibil pentru dosar."
+      - "Certificatul de naștere este disponibil"
     status: draft
+
   - id: req.address_proof
     title_ro: "Dovada noii adrese"
     description_ro: >-
-      Documentul care dovedește dreptul de a locui la noua adresă declarată.
+      Documentul care face dovada noii adrese de domiciliu.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Act de proprietate, contract sau alt document acceptat ca dovadă a adresei."
+      - "Act de proprietate"
+      - "Contract de închiriere / comodat"
+      - "Alt document care atestă adresa"
     readiness_checks:
-      - "Noua adresă este susținută de un document acceptat."
+      - "Documentul atestă noua adresă de domiciliu"
     status: draft
+
   - id: req.marriage_certificate
-    title_ro: "Certificat de căsătorie"
+    title_ro: "Certificatul de căsătorie"
     description_ro: >-
-      Document condițional folosit când situația civilă trebuie dovedită în
-      dosarul pentru actualizarea adresei.
+      Certificatul de căsătorie, necesar când solicitantul este căsătorit.
     obligation: conditional
     timing: now
     accepted_forms:
-      - "Certificat de căsătorie, dacă procedura îl cere."
+      - "Certificat de căsătorie"
     readiness_checks:
-      - "Situația ta civilă face documentul relevant pentru dosar."
+      - "Certificatul de căsătorie este disponibil, dacă este cazul"
     status: draft
+
   - id: req.children_birth_certificates
-    title_ro: "Certificatele de naștere ale copiilor"
+    title_ro: "Certificatele de naștere ale copiilor sub 14 ani"
     description_ro: >-
-      Documente condiționale pentru minorii care trebuie trecuți sau justificați
-      în dosarul de domiciliu/reședință.
+      Certificatele de naștere ale copiilor minori sub 14 ani care se mută împreună cu solicitantul.
     obligation: conditional
     timing: now
     accepted_forms:
-      - "Certificatele de naștere ale copiilor aplicabili."
+      - "Certificat de naștere al copilului"
     readiness_checks:
-      - "Există minori relevanți pentru adresa declarată."
+      - "Certificatele de naștere ale copiilor sub 14 ani sunt disponibile, dacă este cazul"
     status: draft
+
   - id: req.host_consent
-    title_ro: "Acordul gazdei"
+    title_ro: "Declarația de primire în spațiu a gazdei"
     description_ro: >-
-      Acordul persoanei care te primește în spațiu, atunci când procedura de
-      reședință sau de stabilire a adresei îl cere.
+      Când noua adresă este la o gazdă: declarația de primire în spațiu (consimțământul gazdei).
     obligation: conditional
     timing: now
     accepted_forms:
-      - "Acordul gazdei în forma cerută de autoritatea competentă."
+      - "Declarație de primire în spațiu a gazdei"
     readiness_checks:
-      - "Locuiești în spațiul unei alte persoane."
-      - "Procedura aplicabilă cere acordul gazdei."
+      - "Declarația gazdei acoperă noua adresă, dacă este cazul"
     status: draft

@@ -1,33 +1,64 @@
 # Step & requirement templates for ro.life.child_birth (life.child_birth).
 #
-# Authoring note: transcribed from event_card + source claims only. No additional
-# legal text was invented.
+# Authoring note: transcribed from event_card "Traseu determinist" (4 routes) only;
+# no extra legal content or invented amounts were added. This is an orchestrator
+# event: it does not grant rights or collect documents, it only opens the applicable
+# sub-event routes. Therefore requirement_templates is intentionally empty -- each
+# sub-event (registration, allowance, leaves, foreign transcription) carries its own
+# requirements.
 
 step_templates:
-  - id: assess_child_allowance
-    semantic_key: assess_child_allowance
-    title_ro: "Evalueaza pasii pentru alocatia copilului"
+  - id: route_birth_registration
+    semantic_key: route_birth_registration
+    title_ro: "Deschide înregistrarea nașterii"
     instruction_ro: >-
-      Verifica daca situatia copilului deschide pasii urmatori pentru alocatia de stat si noteaza
-      dosarul care trebuie pregatit separat pentru acest drept.
+      Deschide subtraseul de înregistrare a nașterii și alege termenul corect în funcție de
+      rezultatul nașterii (`birth_outcome`). Atașează canalul oficial de înregistrare al primăriei.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Situatia pentru alocatia copilului a fost evaluata"
+      - "Subevenimentul de înregistrare a nașterii a fost deschis"
+      - "Termenul aferent rezultatului nașterii a fost confirmat"
     recovery_actions_ro:
-      - "Daca lipsesc date despre copil sau reprezentant, reia evaluarea dupa completarea lor"
+      - "Dacă rezultatul nașterii nu este clar, confirmă faptul `birth_outcome` înainte de a continua"
     status: draft
 
-  - id: assess_parental_leave
-    semantic_key: assess_parental_leave
-    title_ro: "Evalueaza pasii pentru concediu si indemnizatie"
+  - id: route_birth_benefits
+    semantic_key: route_birth_benefits
+    title_ro: "Deschide alocația de stat"
     instruction_ro: >-
-      Verifica daca nasterea copilului deschide pasii urmatori pentru concediul si indemnizatia
-      asociate ingrijirii copilului si separa dosarul relevant de cel de stare civila.
+      Deschide subtraseul pentru alocație numai după înregistrarea unui copil viu. Pentru copil
+      născut mort, această ramură nu se aplică.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Posibilul traseu pentru concediu sau indemnizatie a fost evaluat"
+      - "Subevenimentul de alocație a fost deschis pentru copilul viu înregistrat"
     recovery_actions_ro:
-      - "Daca situatia profesionala sau familiala nu este clara, actualizeaza analiza inainte de depunere"
+      - "Dacă nașterea nu este încă înregistrată, finalizează mai întâi înregistrarea nașterii"
+    status: draft
+
+  - id: route_employment_leaves
+    semantic_key: route_employment_leaves
+    title_ro: "Deschide concediile relevante"
+    instruction_ro: >-
+      Deschide subtraseele de concedii relevante în funcție de statutul părinților
+      (`father_is_worker`, `mother_insured_for_maternity`, `wants_parental_leave`).
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Subevenimentele de concediu relevante au fost deschise conform statutului părinților"
+    recovery_actions_ro:
+      - "Dacă statutul de muncă/asigurare al părinților lipsește, completează faptele necesare"
+    status: draft
+
+  - id: route_foreign_birth
+    semantic_key: route_foreign_birth
+    title_ro: "Predă către transcrierea nașterii din străinătate"
+    instruction_ro: >-
+      Dacă nașterea a avut loc în străinătate, predă cazul către evenimentul de
+      transcriere/înregistrare consulară. Această ramură necesită confirmare.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Cazul a fost predat către evenimentul de transcriere a nașterii din străinătate"
+    recovery_actions_ro:
+      - "Dacă țara nașterii nu este confirmată, stabilește faptul `birth_country` înainte de hand-off"
     status: draft
 
 requirement_templates: []
