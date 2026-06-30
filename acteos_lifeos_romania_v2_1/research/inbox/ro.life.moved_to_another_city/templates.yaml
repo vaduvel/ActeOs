@@ -1,59 +1,74 @@
 # Step & requirement templates for ro.life.moved_to_another_city (life.moved_to_another_city).
-#
-# Authoring note: transcribed from event_card + source claims only. No additional
-# legal text was invented.
+# Orchestrator event: triggers child events based on facts. No local requirements.
 
 step_templates:
-  - id: update_identity_address_route
-    semantic_key: update_identity_address_route
-    title_ro: "Porneste actualizarea adresei din actul de identitate"
+  - id: trigger_moved_home
+    semantic_key: trigger_moved_home
+    title_ro: "Deschide schimbarea adresei în cartea de identitate"
     instruction_ro: >-
-      La mutarea intr-un alt oras sau alta localitate, porneste mai intai ruta copil pentru
-      actualizarea adresei din actul de identitate.
+      Dacă te-ai mutat în altă localitate, trebuie să actualizezi adresa din cartea de identitate
+      în maxim 15 zile de la mutare. Apelează subtraseul de schimbare a adresei din CI.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Ruta pentru actualizarea adresei din actul de identitate a fost identificata"
+      - "Subtraseul de schimbare a adresei din CI a fost deschis"
     recovery_actions_ro:
-      - "Daca data mutarii nu este clara, stabileste-o inainte de a porni evenimentele copil"
+      - "Dacă nu ești sigur dacă a fost actualizată adresa, verifică cu primăria sau online"
     status: draft
 
-  - id: trigger_vehicle_and_local_tax_routes_if_applicable
-    semantic_key: trigger_vehicle_and_local_tax_routes_if_applicable
-    title_ro: "Porneste rutele pentru vehicul si taxe locale, daca se aplica"
+  - id: trigger_vehicle_change_address
+    semantic_key: trigger_vehicle_change_address
+    title_ro: "Deschide actualizarea adresei în certificatul de înmatriculare"
     instruction_ro: >-
-      Daca persoana detine vehicul si schimba UAT-ul, porneste separat rutele copil pentru talon si
-      declararea la noul organ fiscal.
+      Dacă deții un vehicul și ți-ai schimbat domiciliul, trebuie să actualizezi adresa din
+      certificatul de înmatriculare (talon) în maxim 30 de zile. Apelează subtraseul de
+      actualizare a adresei în talon.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Rutele pentru vehicul si taxe locale au fost evaluate"
+      - "Subtraseul de actualizare a adresei în talon a fost deschis"
     recovery_actions_ro:
-      - "Daca nu exista vehicul sau nu se schimba UAT-ul, nu activa aceasta ramura"
+      - "Verifică dacă talonul conține deja adresa nouă"
     status: draft
 
-  - id: trigger_utility_holder_routes_if_applicable
-    semantic_key: trigger_utility_holder_routes_if_applicable
-    title_ro: "Porneste rutele pentru utilitati, daca persoana este titular"
+  - id: trigger_vehicle_tax_new_uat
+    semantic_key: trigger_vehicle_tax_new_uat
+    title_ro: "Deschide declararea impozitului auto la noua UAT"
     instruction_ro: >-
-      Daca persoana este titular pe contracte de utilitati, porneste evenimentele copil relevante
-      pentru schimbarea titularului sau actualizarea situatiei.
+      Dacă deții un vehicul și te-ai mutat într-o altă UAT (localitate), trebuie să declari
+      vehiculul la organul fiscal local de la noua adresă. Apelează subtraseul de declarare
+      a impozitului pe vehicule.
     sequence_hint: 30
     completion_evidence_ro:
-      - "Rutele pentru utilitati au fost evaluate"
+      - "Subtraseul de declarare a impozitului auto la noua UAT a fost deschis"
     recovery_actions_ro:
-      - "Daca persoana nu este titular, nu activa aceasta ramura"
+      - "Verifică dacă vechiul impozit a fost încasat și dacă s-a făcut transferul fiscal"
     status: draft
 
-  - id: trigger_school_or_kindergarten_routes_if_applicable
-    semantic_key: trigger_school_or_kindergarten_routes_if_applicable
-    title_ro: "Porneste rutele pentru scoala sau gradinita, daca exista copii"
+  - id: trigger_utilities
+    semantic_key: trigger_utilities
+    title_ro: "Deschide schimbarea titularilor la utilități"
     instruction_ro: >-
-      Daca exista copii inscrisi la scoala sau gradinita, marcheaza separat rutele copil legate de
-      noua adresa.
+      Dacă ești titular de contracte de electricitate, gaze și/sau apă, trebuie să schimbi
+      titularul contractelor la noua adresă. Apelează subtraseele respective pentru electricitate,
+      gaze și apă.
     sequence_hint: 40
     completion_evidence_ro:
-      - "Rutele pentru copii la noua adresa au fost evaluate"
+      - "Subtraseele de schimbare a titularului la utilități au fost deschise"
     recovery_actions_ro:
-      - "Daca nu exista copii in sistemul educational, nu activa aceasta ramura"
+      - "Verifică dacă contractele vechi au fost închise și cele noi active"
+    status: draft
+
+  - id: school_advice
+    semantic_key: school_advice
+    title_ro: "Inițiază transferul/înscrierea copiilor la școală/grădiniță"
+    instruction_ro: >-
+      Dacă ai copii înscriși la școală sau grădiniță, inițiază transferul/înscrierea la
+      unitatea de învățământ de la noua adresă. Acest pas nu este un traseu automat,
+      ci o recomandare de acțiune.
+    sequence_hint: 50
+    completion_evidence_ro:
+      - "Cererea de transfer/în scriere a fost depusă la unitatea de învățământ"
+    recovery_actions_ro:
+      - "Contactează inspectoratul școlar județean pentru detalii despre transfer"
     status: draft
 
 requirement_templates: []

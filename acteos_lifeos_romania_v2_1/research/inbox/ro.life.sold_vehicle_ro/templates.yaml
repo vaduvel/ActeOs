@@ -1,42 +1,47 @@
+# Step & requirement templates for ro.life.sold_vehicle_ro (life.vehicle_sold).
+# Transcribed from event_card.md (R1A-veh2). No legal text fabricated.
+
 step_templates:
   - id: obtain_fiscal_certificate
     semantic_key: obtain_fiscal_certificate
-    title_ro: "Obține certificatul fiscal pentru vânzare"
+    title_ro: "Obține certificatul de atestare fiscală / viza pe contract"
     instruction_ro: >-
-      Solicită certificatul fiscal de la organul fiscal local pentru vehiculul pe
-      care îl vinzi și verifică să fie folosit în fereastra de valabilitate
-      aplicabilă.
+      Înainte de a vinde vehiculul, obține de la Direcția Fiscală a Municipiului Timișoara
+      (DFMT) certificatul de atestare fiscală sau viza aplicată pe contractul de vânzare-
+      cumpărare în 5 exemplare. Aceasta dovedește că nu ai datorii și ține loc de certificat
+      fiscal, cu valabilitate 30 de zile.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Certificatul fiscal a fost solicitat sau emis."
-      - "Certificatul este disponibil pentru dosarul de vânzare."
+      - "Certificat de atestare fiscală sau viză aplicată pe contract obținut(ă) de la DFMT"
+      - "Documentul este în termen de valabilitate (30 zile de la emitere)"
     recovery_actions_ro:
-      - "Dacă există datorii locale, clarifică mai întâi situația fiscală."
+      - "Dacă s-au descoperit datorii, achită-le și reia procedura"
+      - "Recomandare: nu lăsa mai mult de 48 ore între viza fiscală și semnarea contractului"
     status: draft
+
   - id: remove_vehicle_from_fiscal_evidence
     semantic_key: remove_vehicle_from_fiscal_evidence
-    title_ro: "Scoate vehiculul din evidența fiscală"
+    title_ro: "Depune declarația de scoatere din evidența fiscală"
     instruction_ro: >-
-      După vânzare, depune documentele cerute pentru radierea vehiculului din
-      evidența fiscală locală și păstrează dovada înregistrării cererii.
+      După finalizarea vânzării, depune la DFMT declarația de scoatere din evidența fiscală
+      (ITL016) în termen de 30 de zile de la data contractului.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Cererea de scoatere din evidență a fost depusă."
-      - "Există dovadă de înregistrare sau confirmare."
+      - "Declarația ITL016 a fost depusă și înregistrată"
+      - "Vehiculul nu mai apare în evidența fiscală pe numele tău"
     recovery_actions_ro:
-      - "Dacă lipsesc documente semnate de ambele părți, refă setul înainte de depunere."
+      - "Verifică la DFMT că scoaterea s-a operat în evidență"
     status: draft
 
 requirement_templates:
   - id: req.contract_5_copies
-    title_ro: "Contract de înstrăinare-dobândire în exemplarele cerute"
+    title_ro: "Contract de vânzare-cumpărare în 5 exemplare"
     description_ro: >-
-      Contractul folosit pentru vânzarea vehiculului, pregătit în numărul de
-      exemplare solicitat de traseul administrativ aplicabil.
-    obligation: mandatory
+      Contractul se întocmește în 5 exemplare pentru a fi vizate de organul fiscal local.
+    obligation: conditional
     timing: now
     accepted_forms:
-      - "Contractul de vânzare-cumpărare / înstrăinare-dobândire semnat."
+      - "5 exemplare fizice ale contractului de vânzare-cumpărare"
     readiness_checks:
-      - "Contractul este semnat și există suficiente exemplare pentru traseul administrativ."
+      - "Toate exemplarele conțin aceleași date (dată, nume, preț, semnături)"
     status: draft

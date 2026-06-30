@@ -1,65 +1,102 @@
+# Step & requirement templates for ro.life.bought_used_vehicle_ro (life.vehicle_bought_used).
+# Transcribed from event_card.md (R1A-veh1). No legal text fabricated.
+
 step_templates:
   - id: declare_vehicle_local_tax
     semantic_key: declare_vehicle_local_tax
     title_ro: "Declară vehiculul la taxele locale"
     instruction_ro: >-
-      După cumpărarea vehiculului, pregătește declararea la organul fiscal local
-      competent și păstrează dovada depunerii pentru continuarea traseului.
+      După achiziționarea vehiculului, declară-l la Direcția Fiscală a Municipiului Timișoara
+      (dfmt.ro) în termen de 30 de zile de la data contractului. Vei obține un certificat
+      de atestare fiscală care dovedește lipsa datoriilor.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Declarația fiscală locală a fost depusă."
-      - "Există dovadă de depunere sau înregistrare."
+      - "Adeverința de la DITL/DFMT a fost obținută cu data depunerii"
+      - "Vehiculul apare înregistrat pe numele noului proprietar la organul fiscal local"
     recovery_actions_ro:
-      - "Dacă UAT-ul cere un formular local, folosește modelul indicat de canalul oficial."
+      - "Dacă nu ai primit confirmarea în 30 de zile, contactează DFMT"
     status: draft
+
   - id: transcribe_vehicle
     semantic_key: transcribe_vehicle
-    title_ro: "Transcrie dreptul de proprietate al vehiculului"
+    title_ro: "Transcrie vehiculul la SPCRPCIV"
     instruction_ro: >-
-      Pregătește ruta de transcriere a vehiculului pe numele tău, folosind actul
-      de dobândire, dovada fiscală și documentele de circulație aplicabile.
+      În termen de 90 de zile (termen de confirmat) de la data contractului, solicită
+      transcrierea dreptului de proprietate la SPCRPCIV Timiș. Vei avea nevoie de CIV valabil,
+      ITP în termen și dovada declarării fiscale.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Dosarul pentru transcriere este completat."
-      - "Documentele de proprietate și fiscale sunt pregătite."
+      - "Cererea de transcriere a fost depusă și înregistrată"
+      - "A fost emis noul certificat de înmatriculare"
     recovery_actions_ro:
-      - "Dacă lipsesc documente de la vânzător, cere completarea lor înainte de depunere."
+      - "Dacă transcrierea e respinsă, verifică cerințele lipsă (ITP, RCA, fiscal)"
     status: draft
+
   - id: do_itp
     semantic_key: do_itp
-    title_ro: "Verifică starea ITP-ului"
+    title_ro: "Efectuează ITP"
     instruction_ro: >-
-      Confirmă dacă inspecția tehnică periodică este valabilă și, dacă nu este,
-      programează vehiculul pentru ITP înainte de utilizarea lui curentă.
-    sequence_hint: 30
+      Dacă ITP-ul vehiculului nu este în termen de valabilitate, efectuează o inspecție
+      tehnică periodică la o stație autorizată înainte de transcriere.
+    sequence_hint: 15
     completion_evidence_ro:
-      - "Valabilitatea ITP-ului este confirmată sau inspecția este efectuată."
+      - "ITP-a fost efectuată și este în termen"
     recovery_actions_ro:
-      - "Dacă ITP-ul este expirat, nu trata vehiculul ca pregătit pentru circulație până la reînnoire."
+      - "Lasă ITP-ul la o stație autorizată de Registrul Auto Român"
     status: draft
 
 requirement_templates:
   - id: req.rca_buyer
-    title_ro: "RCA pe numele cumpărătorului"
+    title_ro: "Poliță RCA valabilă pe numele cumpărătorului"
     description_ro: >-
-      Asigurarea RCA valabilă pe numele noului proprietar, atunci când dosarul
-      sau utilizarea vehiculului o cer.
+      Asigurare de răspundere civilă auto (RCA) încheiată pe numele tău, valabilă la data transcrierii.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Poliță RCA valabilă pe numele cumpărătorului."
+      - "Poliță RCA emisă de un asigurător autorizat, în original sau copie scanată"
     readiness_checks:
-      - "RCA este valabilă și emisă pe numele cumpărătorului."
+      - "Verifică data expirării RCA"
+      - "Verifică că numele asiguratului coincide cu cel din cartea de identitate"
     status: draft
+
   - id: req.new_plates_fee
-    title_ro: "Dovada taxei pentru plăcuțe noi, dacă se aplică"
+    title_ro: "Dovada plății pentru plăcuțe noi (dacă nu păstrezi cele vechi)"
     description_ro: >-
-      Dovada plății pentru plăcuțe noi numai dacă traseul ales sau autoritatea
-      competentă confirmă că sunt necesare.
+      Dacă nu păstrezi numerele de înmatriculare vechi (keeps_old_plates=false), trebuie să
+      plătești contravaloarea plăcuțelor noi și să prezinți dovada plății. Cuantumul exact
+      se confirmă la ghișeu.
     obligation: conditional
     timing: now
     accepted_forms:
-      - "Dovada plății tarifului cerut pentru plăcuțe noi, dacă este cazul."
+      - "Chitanță de plată la SPCRPCIV / online prin ghișeul.ro"
     readiness_checks:
-      - "Autoritatea competentă a confirmat că sunt necesare plăcuțe noi."
+      - "Confirmă cuantumul exact la SPCRPCIV Timiș înainte de plată"
+    status: draft
+
+  - id: req.ownership_document
+    title_ro: "Document de proprietate în original și copie"
+    description_ro: >-
+      Contract de vânzare-cumpărare în original (cerere, document de proprietate orig+copie)
+      pentru transcriere.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Contract de vânzare-cumpărare semnat de ambele părți"
+      - "Act de donație, moștenire, etc., după caz"
+    readiness_checks:
+      - "Verifică semnăturile și data contractului"
+      - "Verifică transcrierea în cartea de identitate a vânzătorului"
+    status: draft
+
+  - id: req.fiscal_declaration_proof
+    title_ro: "Dovada declarării fiscale la organul local"
+    description_ro: >-
+      Adeverință/certificat de atestare fiscală eliberată de organul fiscal local de la
+      domiciliul cumpărătorului, prin care se atestă că vehiculul a fost declarat.
+    obligation: mandatory
+    timing: now
+    accepted_forms:
+      - "Adeverință emisă de DFMT/DITL în original"
+    readiness_checks:
+      - "Verifică că adeverința este în termen de valabilitate"
     status: draft

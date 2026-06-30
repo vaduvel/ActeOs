@@ -1,192 +1,183 @@
 step_templates:
-  - id: step.prep.determine_age_route
-    semantic_key: prep_determine_age_route
-    title_ro: "Determină ruta de vârstă"
-    instruction_ro: >-
-      Încadrează copilul în cohorta de vârstă relevantă și stabilește dacă
-      traseul este standard, cu recomandare sau cu evaluare CJRAE.
-    sequence_hint: 10
-    completion_evidence_ro:
-      - "Cohorta de vârstă este determinată corect."
-    recovery_actions_ro:
-      - "Dacă vârsta nu intră în cohortele standard, nu continua fără ruta oficială aplicabilă."
-    status: draft
-  - id: step.prep.obtain_recommendation
-    semantic_key: prep_obtain_recommendation
-    title_ro: "Obține recomandarea pentru clasa pregătitoare"
-    instruction_ro: >-
-      Dacă traseul copilului cere recomandare, solicită documentul de la
-      grădiniță și verifică să fie favorabil pentru înscriere.
-    sequence_hint: 20
-    completion_evidence_ro:
-      - "Recomandarea este obținută și poate fi atașată dosarului."
-    recovery_actions_ro:
-      - "Dacă recomandarea nu este favorabilă, nu trata ruta standard ca validată."
-    status: draft
-  - id: step.prep.cjrae_evaluation
-    semantic_key: prep_cjrae_evaluation
-    title_ro: "Solicită evaluarea CJRAE"
-    instruction_ro: >-
-      Dacă traseul copilului cere evaluare CJRAE sau CMBRAE, programează și
-      obține rezultatul înainte de depunerea finală a dosarului.
-    sequence_hint: 30
-    completion_evidence_ro:
-      - "Rezultatul evaluării CJRAE este disponibil."
-    recovery_actions_ro:
-      - "Dacă evaluarea nu este favorabilă, nu continua ca și cum înscrierea ar fi aprobată."
-    status: draft
-  - id: step.prep.verify_catchment
-    semantic_key: prep_verify_catchment
-    title_ro: "Verifică circumscripția și școala"
-    instruction_ro: >-
-      Confirmă școala de circumscripție sau criteriile pentru altă școală dintr-o
-      sursă oficială locală curentă.
-    sequence_hint: 40
-    completion_evidence_ro:
-      - "Școala și circumscripția sunt verificate din sursa oficială curentă."
-    recovery_actions_ro:
-      - "Dacă maparea locală nu este confirmată, nu calcula automat școala arondată."
-    status: draft
-  - id: step.prep.prepare_dossier
-    semantic_key: prep_prepare_dossier
-    title_ro: "Pregătește dosarul"
-    instruction_ro: >-
-      Strânge cererea, actele părintelui, actele copilului și documentele
-      condiționale pentru recomandare, evaluare, criterii sau amânare.
-    sequence_hint: 50
-    completion_evidence_ro:
-      - "Dosarul include toate documentele obligatorii și condiționale aplicabile."
-    recovery_actions_ro:
-      - "Dacă alegi o altă școală decât cea de circumscripție, verifică separat criteriile și documentele necesare."
-    status: draft
-  - id: step.prep.submit_validate
-    semantic_key: prep_submit_validate
-    title_ro: "Depune și validează cererea"
-    instruction_ro: >-
-      Completează cererea pe canalul permis și finalizează validarea la școală în
-      fereastra oficială aplicabilă.
-    sequence_hint: 60
-    completion_evidence_ro:
-      - "Cererea este validată și are confirmare sau număr de înregistrare."
-    recovery_actions_ro:
-      - "Dacă ai completat online, urmărește separat validarea fizică cerută de procedură."
-    status: draft
-  - id: step.prep.check_result
-    semantic_key: prep_check_result
-    title_ro: "Verifică rezultatul"
-    instruction_ro: >-
-      Verifică rezultatul etapei și salvează decizia pentru școala aleasă sau
-      pentru etapa următoare.
-    sequence_hint: 70
-    completion_evidence_ro:
-      - "Rezultatul etapei este salvat sau notat."
-    recovery_actions_ro:
-      - "Dacă nu ai fost admis, pregătește imediat ruta pentru etapa următoare sau pentru soluționare."
-    status: draft
-  - id: step.prep.unresolved_route
-    semantic_key: prep_unresolved_route
-    title_ro: "Urmează ruta pentru situații rămase"
-    instruction_ro: >-
-      Dacă etapele standard s-au încheiat fără rezultat, urmărește comunicările
-      ISJ și procedura pentru soluționarea situațiilor rămase.
-    sequence_hint: 80
-    completion_evidence_ro:
-      - "Există dovadă că situația rămasă a fost comunicată sau repartizată."
-    recovery_actions_ro:
-      - "Dacă nu există comunicare oficială, nu presupune automat repartizarea."
-    status: draft
-
+- id: step.prep.determine_age_route
+  semantic_key: determine_age_route
+  title_ro: Determină ruta de vârstă
+  instruction_ro: 'Determină în ce cohortă de vârstă se încadrează copilul: până la
+    31 august sau între 1 septembrie – 31 decembrie. Ruta determină dacă ai nevoie
+    de recomandare sau evaluare CJRAE.'
+  sequence_hint: 10
+  completion_evidence_ro:
+  - Copilul este încadrat în cohorta corespunzătoare
+  recovery_actions_ro:
+  - Recalculează data nașterii sau data de referință
+  status: draft
+- id: step.prep.obtain_recommendation
+  semantic_key: obtain_recommendation
+  title_ro: Obține recomandarea grădiniței
+  instruction_ro: Dacă copilul este în cohorta septembrie – decembrie, obține o recomandare
+    din partea grădiniței frecventate. Recomandarea trebuie să fie favorabilă.
+  sequence_hint: 20
+  completion_evidence_ro:
+  - Recomandarea este emisă și favorabilă
+  recovery_actions_ro:
+  - Solicită grădiniței lămuriri dacă recomandarea nu e favorabilă
+  status: draft
+- id: step.prep.cjrae_evaluation
+  semantic_key: cjrae_evaluation
+  title_ro: Solicită evaluarea CJRAE
+  instruction_ro: Dacă este cazul (conform metodologiei curente), solicită evaluarea
+    CJRAE (Centrul Județean de Resurse și Asistență Educațională) pentru copil. Așteaptă
+    rezultatul favorabil.
+  sequence_hint: 30
+  completion_evidence_ro:
+  - Există rezultatul evaluării și este favorabil
+  recovery_actions_ro:
+  - Reprogramare la CJRAE dacă evaluarea inițială nu a fost favorabilă
+  status: draft
+- id: step.prep.verify_catchment
+  semantic_key: verify_catchment
+  title_ro: Verifică circumscripția și locurile
+  instruction_ro: Verifică pe site-ul ISJ Timiș sau al unității că adresa completă
+    este mapată la școala arondată (catchment) și că locurile sunt disponibile. Citești
+    dataset-ul local.
+  sequence_hint: 40
+  completion_evidence_ro:
+  - Adresa completă este mapată la școala arondată
+  - Dataset-ul oficial este curent și confirmat
+  recovery_actions_ro:
+  - Dacă datele locale nu sunt verificate, nu afișa recomandare fermă
+  status: draft
+- id: step.prep.prepare_dossier
+  semantic_key: prepare_dossier
+  title_ro: Pregătește dosarul
+  instruction_ro: 'Pregătește dosarul cu toate actele aplicabile: cerere-tip, act
+    de identitate părinte, certificat de naștere copil, recomandare/evaluare dacă
+    e cazul, documente criterii dacă se optează pentru școală ne-arondată, hotărâre
+    judecătorească dacă e cazul.'
+  sequence_hint: 50
+  completion_evidence_ro:
+  - Cererea și toate actele aplicabile sunt prezente
+  recovery_actions_ro:
+  - Verifică dacă ai nevoie de documente pentru criteriile școlii ne-arondată
+  status: draft
+- id: step.prep.submit_validate
+  semantic_key: submit_validate
+  title_ro: Depune și validează cererea
+  instruction_ro: Depune cererea-tip la școala aleasă în fereastra calendaristică
+    activă. Online sau fizic (online_application boolean). La depunere se face validarea
+    dosarului.
+  sequence_hint: 60
+  completion_evidence_ro:
+  - Cererea este validată și are confirmare/număr de înregistrare
+  recovery_actions_ro:
+  - Completează cererea cu documente lipsă înainte de termen
+  status: draft
+- id: step.prep.check_result
+  semantic_key: check_result
+  title_ro: Verifică rezultatul
+  instruction_ro: Verifică rezultatul primei sau celei de-a doua etape (calendarul
+    publicat prin Ordinul nr. 3.334/2026).
+  sequence_hint: 70
+  completion_evidence_ro:
+  - Rezultatul primei sau celei de-a doua etape este salvat
+  recovery_actions_ro:
+  - Dacă e respins, așteaptă etapa a II-a sau soluționarea ISJ
+  status: draft
+- id: step.prep.unresolved_route
+  semantic_key: unresolved_route
+  title_ro: Solicită soluționarea situației rămase
+  instruction_ro: Dacă cererea nu a fost soluționată, ISJ Timiș sau structura similară
+    repartizează copilul sau comunică soluția către familie.
+  sequence_hint: 80
+  completion_evidence_ro:
+  - ISJ a repartizat copilul sau a comunicat soluția
+  recovery_actions_ro:
+  - Contactează ISJ Timiș pentru clarificarea situației
+  status: draft
 requirement_templates:
-  - id: req.prep.application
-    title_ro: "Cerere-tip de înscriere"
-    description_ro: >-
-      Cererea folosită pentru înscrierea în clasa pregătitoare.
-    obligation: mandatory
-    timing: now
-    accepted_forms:
-      - "Cererea-tip completată pentru școala aleasă."
-    readiness_checks:
-      - "Cererea este completată pentru etapa activă."
-    status: draft
-  - id: req.prep.parent_id
-    title_ro: "Actul de identitate al părintelui sau reprezentantului"
-    description_ro: >-
-      Documentul de identitate al persoanei care depune dosarul.
-    obligation: mandatory
-    timing: now
-    accepted_forms:
-      - "Act de identitate al părintelui sau reprezentantului."
-    readiness_checks:
-      - "Actul de identitate este disponibil pentru dosar."
-    status: draft
-  - id: req.prep.birth_certificate
-    title_ro: "Certificatul de naștere al copilului"
-    description_ro: >-
-      Certificatul de naștere folosit în dosarul de înscriere.
-    obligation: mandatory
-    timing: now
-    accepted_forms:
-      - "Certificatul de naștere al copilului, în forma cerută la depunere."
-    readiness_checks:
-      - "Certificatul de naștere este disponibil pentru dosar."
-    status: draft
-  - id: req.prep.recommendation
-    title_ro: "Recomandarea pentru înscriere"
-    description_ro: >-
-      Documentul favorabil pentru copiii care urmează ruta bazată pe
-      recomandare.
-    obligation: conditional
-    timing: now
-    accepted_forms:
-      - "Recomandarea emisă pentru înscriere în clasa pregătitoare."
-    readiness_checks:
-      - "Copilul urmează ruta care cere recomandare."
-    status: draft
-  - id: req.prep.cjrae_result
-    title_ro: "Rezultatul evaluării CJRAE sau CMBRAE"
-    description_ro: >-
-      Documentul rezultat din evaluarea CJRAE/CMBRAE pentru copiii care urmează
-      această rută.
-    obligation: conditional
-    timing: now
-    accepted_forms:
-      - "Rezultatul evaluării CJRAE/CMBRAE."
-    readiness_checks:
-      - "Copilul urmează ruta care cere evaluare CJRAE/CMBRAE."
-    status: draft
-  - id: req.prep.criteria_documents
-    title_ro: "Documente pentru criteriile altei școli"
-    description_ro: >-
-      Documente justificative pentru criteriile aplicabile când alegi o altă
-      școală decât cea de circumscripție.
-    obligation: conditional
-    timing: now
-    accepted_forms:
-      - "Documentele cerute de criteriile școlii alese."
-    readiness_checks:
-      - "Alegi altă școală decât cea de circumscripție."
-    status: draft
-  - id: req.prep.divorce_judgment
-    title_ro: "Document privind autoritatea părintească"
-    description_ro: >-
-      Document condițional pentru situațiile în care autoritatea părintească
-      trebuie dovedită distinct.
-    obligation: conditional
-    timing: now
-    accepted_forms:
-      - "Hotărâre definitivă sau alt document relevant privind autoritatea părintească."
-    readiness_checks:
-      - "Situația familială cere o dovadă distinctă a autorității părintești."
-    status: draft
-  - id: req.prep.defer_request
-    title_ro: "Cerere de amânare și documente justificative"
-    description_ro: >-
-      Cererea scrisă și documentele justificative pentru amânarea înscrierii,
-      atunci când familia solicită această rută.
-    obligation: conditional
-    timing: now
-    accepted_forms:
-      - "Cerere scrisă de amânare și documentele justificative relevante."
-    readiness_checks:
-      - "Se solicită amânarea înscrierii."
-    status: draft
+- id: req.prep.application
+  title_ro: Cerere-tip de înscriere
+  description_ro: Cererea-tip conform Ordinului nr. 3.334/2026 (clasa pregătitoare,
+    an școlar 2026-2027).
+  obligation: mandatory
+  timing: now
+  accepted_forms:
+  - Cerere-tip online / formular online complet
+  readiness_checks:
+  - Verifică completitudinea câmpurilor
+  status: draft
+- id: req.prep.parent_id
+  title_ro: Act identitate părinte/reprezentant
+  description_ro: Copie după actul de identitate al părintelui sau reprezentantului
+    legal.
+  obligation: mandatory
+  timing: now
+  accepted_forms:
+  - Copie CI/BI
+  readiness_checks:
+  - Verifică valabilitatea CI
+  status: draft
+- id: req.prep.birth_certificate
+  title_ro: Certificat de naștere al copilului
+  description_ro: Copie după certificatul de naștere al copilului.
+  obligation: mandatory
+  timing: now
+  accepted_forms:
+  - Copie certificat de naștere
+  readiness_checks:
+  - Verifică lizibilitatea
+  status: draft
+- id: req.prep.recommendation
+  title_ro: Recomandarea pentru înscriere
+  description_ro: Recomandare din partea grădiniței, necesară pentru copiii din cohorta
+    septembrie – decembrie.
+  obligation: conditional
+  timing: now
+  accepted_forms:
+  - Recomandare scrisă a grădiniței
+  readiness_checks:
+  - Verifică dacă cohorta impune recomandare
+  status: draft
+- id: req.prep.cjrae_result
+  title_ro: Rezultat evaluare CJRAE/CMBRAE
+  description_ro: Rezultatul favorabil al evaluării CJRAE/CMBRAE, când este cazul.
+  obligation: conditional
+  timing: now
+  accepted_forms:
+  - Adresă oficială de la CJRAE cu rezultat favorabil
+  readiness_checks:
+  - Verifică data emiterii și tipul evaluării
+  status: draft
+- id: req.prep.criteria_documents
+  title_ro: Documente pentru criteriile școlii ne-arondată
+  description_ro: Documente justificative pentru criteriile publicate de școala ne-arondată
+    (school_choice=other).
+  obligation: conditional
+  timing: now
+  accepted_forms:
+  - Adeverințe, declarații sau alte documente
+  readiness_checks:
+  - Coroborează cu lista oficială a criteriilor
+  status: draft
+- id: req.prep.divorce_judgment
+  title_ro: Hotărâre judecătorească privind autoritatea părintească
+  description_ro: Hotărâre judecătorească definitivă privind autoritatea părintească,
+    dovada calității de reprezentant legal etc.
+  obligation: conditional
+  timing: now
+  accepted_forms:
+  - Hotărâre judecătorească definitivă
+  readiness_checks:
+  - Verifică concordanța cu cererea
+  status: draft
+- id: req.prep.defer_request
+  title_ro: Cerere de amânare a înscrierii
+  description_ro: Cerere scrisă și documente justificative pentru amânarea înscrierii
+    în clasa pregătitoare (conform metodologiei).
+  obligation: conditional
+  timing: now
+  accepted_forms:
+  - Cerere scrisă + documente medicale/juridice suport
+  readiness_checks:
+  - Confirmă pe site-ul ISJ Timiș condițiile pentru amânare
+  status: draft

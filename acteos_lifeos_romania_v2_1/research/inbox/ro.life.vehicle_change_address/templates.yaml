@@ -1,53 +1,57 @@
+# Step & requirement templates for ro.life.vehicle_change_address (life.vehicle_change_address).
+# Transcribed from event_card.md (R1A-veh5). No legal text fabricated.
+
 step_templates:
   - id: update_vehicle_registration
     semantic_key: update_vehicle_registration
-    title_ro: "Actualizează adresa pentru certificatul vehiculului"
+    title_ro: "Actualizează adresa în talon (certificatul de înmatriculare)"
     instruction_ro: >-
-      După schimbarea adresei, pregătește actualizarea certificatului de
-      înmatriculare sau a evidenței aferente vehiculului, folosind noul act de
-      identitate și documentele curente ale vehiculului.
+      După schimbarea domiciliului, obține un nou certificat de înmatriculare cu adresa
+      actualizată, în termen de 30 de zile (termen de confirmat din Ordinul 1501/2006 / OUG 195/2002).
+      Depune cererea la SPCRPCIV Timiș.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Dosarul pentru actualizarea adresei vehiculului este pregătit sau depus."
-      - "Noul act de identitate și documentele vehiculului sunt atașate."
+      - "Cererea a fost depusă și înregistrată la SPCRPCIV Timiș"
+      - "A fost emis noul certificat de înmatriculare cu noua adresă"
     recovery_actions_ro:
-      - "Dacă noul act de identitate nu este încă disponibil, finalizează mai întâi actualizarea adresei personale."
-      - "Dacă vehiculul nu este pe numele tău, nu continua pe acest traseu."
+      - "Confirmă termenul exact la DGPCI sau SPCRPCIV înainte de depunere"
+      - "Dacă nu s-a schimbat domiciliul din CI, talonul nu trebuie actualizat pentru adresă"
     status: draft
 
 requirement_templates:
   - id: req.new_id_card
-    title_ro: "Noul act de identitate"
+    title_ro: "Carte de identitate cu noua adresă"
     description_ro: >-
-      Actul de identitate care reflectă adresa actualizată și susține cererea
-      pentru documentele vehiculului.
+      Cartea de identitate eliberată cu adresa de domiciliu nouă.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Act de identitate actualizat cu noua adresă."
+      - "Carte de identitate valabilă cu adresa de domiciliu actualizată"
     readiness_checks:
-      - "Adresa nouă apare în actul de identitate."
+      - "Verifică concordanța adresei din CI cu adresa de pe contractul de vânzare-cumpărare"
     status: draft
+
   - id: req.old_registration_certificate
-    title_ro: "Certificatul vechi de înmatriculare"
+    title_ro: "Certificatul de înmatriculare vechi"
     description_ro: >-
-      Certificatul curent al vehiculului care urmează să fie actualizat.
+      Talonul (certificatul de înmatriculare) anterior, cu adresa veche, care trebuie predat la
+      transcriere.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Certificatul de înmatriculare curent al vehiculului."
+      - "Certificat de înmatriculare în original"
     readiness_checks:
-      - "Certificatul curent este disponibil pentru dosar."
+      - "Verifică starea documentului (să nu fie deteriorat sau cu date ilizibile)"
     status: draft
+
   - id: req.rca_valid
-    title_ro: "RCA valabilă"
+    title_ro: "Poliță RCA valabilă"
     description_ro: >-
-      Polița RCA valabilă a vehiculului, dacă procedura o cere la actualizarea
-      documentelor.
-    obligation: mandatory
+      Asigurare de răspundere civilă auto (RCA) valabilă la data emiterii noului certificat.
+    obligation: conditional
     timing: now
     accepted_forms:
-      - "Poliță RCA valabilă."
+      - "Poliță RCA în original sau copie scanată"
     readiness_checks:
-      - "RCA este în termen de valabilitate."
+      - "Verifică data expirării RCA"
     status: draft
