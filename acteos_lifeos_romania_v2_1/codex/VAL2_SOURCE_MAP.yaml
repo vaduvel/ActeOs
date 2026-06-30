@@ -25,8 +25,7 @@ new_central_sources:
     allowed_to_fetch: true
     status: active
     claims_collapse:
-      - src.legal.cod_fiscal.current_processing (declare_property_local_tax)
-      - src.cod_fiscal_227_2015 (declare_vehicle_local_tax)
+      - src.legal.cod_fiscal.current_processing
 
   - id: src.legislation.oug80_2013
     canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/149314
@@ -48,7 +47,7 @@ new_central_sources:
     allowed_to_fetch: true
     status: active
 
-  - id: src.anaf_d212
+  - id: src.anaf_d212_web
     canonical_url: https://www.anaf.ro/declaratii/duf
     publisher: ANAF
     authority_level: national_operational
@@ -58,9 +57,19 @@ new_central_sources:
     status: active
     claims_collapse:
       - src.anaf.d212.web_2026
-      - src.anaf.d212.prefill_guide_2026 (PDF, different URL — but guide for same form)
 
-  - id: src.anaf_c168
+  - id: src.anaf_d212_guide
+    canonical_url: https://www.anaf.ro/declaratii/doc/Ghid_Precompletare_Declaratie_Unica_D212_2026._v1.pdf
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.anaf.d212.prefill_guide_2026
+
+  - id: src.anaf_c168_form
     canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/168.html
     publisher: ANAF
     authority_level: national_operational
@@ -70,8 +79,28 @@ new_central_sources:
     status: active
     claims_collapse:
       - src.anaf.c168.2026
-      - src.anaf.c168.structure.2026 (PDF)
-      - src.anaf.c168.web (portal web)
+
+  - id: src.anaf_c168_structure
+    canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/AplicatiiDec/structura_C168_2026_260326.pdf
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.anaf.c168.structure.2026
+
+  - id: src.anaf_c168_web
+    canonical_url: https://www.anaf.ro/declaratii/c168
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.anaf.c168.web
 
   - id: src.anaf_form700
     canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/700.html
@@ -91,21 +120,35 @@ new_central_sources:
     allowed_to_fetch: true
     status: active
 
-  - id: src.cnpp
-    canonical_url: https://www.cnpp.ro/
+  - id: src.cnpp_forms
+    canonical_url: https://www.cnpp.ro/formulare-pensii
     publisher: Casa Națională de Pensii Publice
     authority_level: national_operational
     territory_ids: [ro]
     fetch_mode: manual
     allowed_to_fetch: true
     status: active
-    claims_collapse:
-      - src.cnpp.forms
-      - src.cnpp.old_age
-      - src.cnpp.territorial_houses
 
-  - id: src.ghiseul
-    canonical_url: https://www.ghiseul.ro/
+  - id: src.cnpp_old_age
+    canonical_url: https://www.cnpp.ro/ro/pensia-pentru-limita-de-varsta
+    publisher: Casa Națională de Pensii Publice
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.cnpp_territorial
+    canonical_url: https://www.cnpp.ro/casele-teritoriale-de-pensii
+    publisher: Casa Națională de Pensii Publice
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.ghiseul_home
+    canonical_url: https://www.ghiseul.ro/ghiseul/public/
     publisher: Ghiseul.ro
     authority_level: national_operational
     territory_ids: [ro]
@@ -138,11 +181,13 @@ new_central_sources:
     canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/254028
     publisher: Portal Legislativ — Guvernul României
     authority_level: national_normative
-    legal_rank: Legea 129/2019 (beneficiar real)
+    legal_rank: Legea 129/2019 (prevenirea spălării banilor — beneficii/registru)
     territory_ids: [ro]
     fetch_mode: manual
     allowed_to_fetch: true
     status: active
+    # NOTĂ: URL diferit de src.lege129_2019 (DetaliiDocument/216157 — același act,
+    # alt format de afișare pe portal). De confirmat la certificare dacă se colapsează.
 
   - id: src.oug44_2008
     canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/91808
@@ -481,18 +526,9 @@ new_central_sources:
     allowed_to_fetch: true
     status: active
 
-  - id: src.pmt_local_taxes_info
-    canonical_url: https://servicii.primariatm.ro/ (combined with local tax info)
-    publisher: Primăria Municipiului Timișoara / DFMT
-    authority_level: uat
-    territory_ids: [ro, ro.tm.timisoara]
-    fetch_mode: manual
-    allowed_to_fetch: true
-    status: active
-    claims_collapse:
-      - src.dfmt.timisoara.local_taxes_2026
-      - src.dfmt.timisoara.payment_deadlines
-      - src.dfmt.timisoara.payment_methods
+  # NOTĂ: pay_local_taxes claims folosesc dfmt.ro URLs (3 pagini separate).
+  # Sursele sunt src.dfmt_taxes_2026, src.dfmt_payment_deadlines, src.dfmt_payment_methods.
+  # NU colapsa — URL-uri distincte.
 
   # --- Prefectura Timis ---
   - id: src.prefectura_timis_vehicle
@@ -687,19 +723,55 @@ new_central_sources:
     allowed_to_fetch: true
     status: active
 
-  - id: src.dfmt_generic
-    canonical_url: (generic DFMT contact — TBD)
+  - id: src.dfmt_ro
+    canonical_url: https://www.dfmt.ro
     publisher: Direcția Fiscală / DFMT
-    authority_level: uat
-    territory_ids: [ro, ro.tm.timisoara]
+    authority_level: institution
+    territory_ids: [ro]
     fetch_mode: manual
     allowed_to_fetch: true
     status: active
     claims_collapse:
       - src.dfmt (declare_vehicle_local_tax)
 
+  - id: src.dfmt_taxes_2026
+    canonical_url: https://www.dfmt.ro/taxe-si-impozite/impozite-si-taxe-locale-aferente-anului-fiscal-2026
+    publisher: DFMT
+    authority_level: institution
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.dfmt_payment_deadlines
+    canonical_url: https://www.dfmt.ro/taxe-si-impozite/termene-de-plata
+    publisher: DFMT
+    authority_level: institution
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.dfmt_payment_methods
+    canonical_url: https://www.dfmt.ro/taxe-si-impozite/modalitati-de-plata
+    publisher: DFMT
+    authority_level: institution
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_atlas
+    canonical_url: https://servicii.primariatm.ro/cont-atlas
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
   - id: src.ditl3_acte
-    canonical_url: (DITL Sector 3 — TBD)
+    canonical_url: (DITL Sector 3 — needs capture)
     publisher: DITL Sector 3
     authority_level: uat
     territory_ids: [ro]
@@ -743,13 +815,18 @@ events:
     category: tax_money_penalties
     reused_central_sources:
       - src.cod_fiscal
-      - src.pmt_service_hub  # if Timișoara-specific claims
-      - src.dfmt_generic
+      - src.dfmt_ro
     new_sources_needed:
+      - id: src.ditl5_vehicle
+        canonical_url: https://ditl5.ro/persoane-fizice/
+        publisher: DITL Sector 5
+        authority_level: uat
+        territory_ids: [ro]
       - id: src.taxeimpozite4
         canonical_url: https://www.taxeimpozite4.ro/autoturisme/
         publisher: DGITL Sector 4
         authority_level: uat
+        territory_ids: [ro]
 
   - event_id: ro.life.remove_vehicle_local_tax
     category: tax_money_penalties
@@ -768,8 +845,10 @@ events:
   - event_id: ro.life.pay_local_taxes
     category: tax_money_penalties
     reused_central_sources:
-      - src.pmt_local_taxes_info  # colapsează cele 3 surse DFMT locale
-      - src.ghiseul
+      - src.dfmt_taxes_2026
+      - src.dfmt_payment_deadlines
+      - src.dfmt_payment_methods
+      - src.ghiseul_home
 
   - event_id: ro.life.pay_fine
     category: tax_money_penalties
@@ -784,12 +863,15 @@ events:
   - event_id: ro.life.declare_rental_income
     category: tax_money_penalties
     reused_central_sources:
-      - src.anaf_c168
+      - src.anaf_c168_form
+      - src.anaf_c168_structure
+      - src.anaf_c168_web
 
   - event_id: ro.life.tax_return_individual
     category: tax_money_penalties
     reused_central_sources:
-      - src.anaf_d212
+      - src.anaf_d212_web
+      - src.anaf_d212_guide
 
   - event_id: ro.life.tax_decision_contest
     category: tax_money_penalties
@@ -806,14 +888,16 @@ events:
   - event_id: ro.life.public_fee_payment
     category: tax_money_penalties
     reused_central_sources:
-      - src.ghiseul
-      - src.pmt_atlas  # per-event source
+      - src.ghiseul_home
+      - src.pmt_atlas
       - src.pmt_hcl719
 
   - event_id: ro.life.bank_account_change_admin
     category: tax_money_penalties
     reused_central_sources:
-      - src.cnpp
+      - src.cnpp_forms
+      - src.cnpp_old_age
+      - src.cnpp_territorial
 
   # ====== BUSINESS (15 evenimente, dar remove_vehicle_local_tax fără folder) ======
   - event_id: ro.life.open_srl
