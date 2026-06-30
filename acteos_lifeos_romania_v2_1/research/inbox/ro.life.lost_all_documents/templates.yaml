@@ -1,33 +1,71 @@
 # Step & requirement templates for ro.life.lost_all_documents (life.lost_all_documents).
 #
-# Authoring note: transcribed from event_card + source claims only. No additional
-# legal text was invented.
+# Authoring note: transcribed from event_card.md (batch R1A-9, accessed_at
+# 2026-06-25) only; no extra legal content or invented amounts were added.
+# This is a COMPOSITE orchestrator event (loss, not theft): its rules only
+# trigger child replacement events (id_card_lost_stolen, passport_first_or_renew,
+# driving_license_duplicate, vehicle_registration_duplicate) -- the substantive
+# rules and documents live in those child events. Therefore requirement_templates
+# is intentionally empty here. The key documented ordering is: rebuild the
+# identity card FIRST, because the other documents need a valid identity card.
+#
+# Because this is a loss (not theft), a police report is generally not required
+# (this differs from documents_stolen_bundle). The claim behind that statement is
+# still in_review (rule.lad.loss_not_theft), so no police step is asserted here.
 
 step_templates:
-  - id: replace_id_card_first
-    semantic_key: replace_id_card_first
-    title_ro: "Refa mai intai actul de identitate"
+  - id: replace_identity_card_first
+    semantic_key: replace_identity_card_first
+    title_ro: "Reface întâi cartea de identitate"
     instruction_ro: >-
-      Pentru pierderea tuturor actelor, porneste cu inlocuirea cartii de identitate, fiindca ea este
-      necesara pentru celelalte documente.
+      Reface mai întâi cartea de identitate, pentru că restul documentelor au nevoie
+      de un act de identitate valid. Fiind o pierdere (nu un furt), de regulă nu este
+      necesară sesizarea la poliție. Deschide subevenimentul de înlocuire a cărții de
+      identitate.
     sequence_hint: 10
     completion_evidence_ro:
-      - "Ruta pentru refacerea actului de identitate a fost pornita prima"
+      - "Subevenimentul de înlocuire a cărții de identitate a fost deschis"
     recovery_actions_ro:
-      - "Daca incerci sa inlocuiesti alte acte fara CI, revino la acest pas"
+      - "Dacă nu știi sigur dacă este pierdere sau furt, confirmă situația înainte de a continua"
     status: draft
 
-  - id: open_replacement_routes_for_each_lost_document
-    semantic_key: open_replacement_routes_for_each_lost_document
-    title_ro: "Deschide ruta de inlocuire pentru fiecare act pierdut"
+  - id: replace_passport
+    semantic_key: replace_passport
+    title_ro: "Înlocuiește pașaportul"
     instruction_ro: >-
-      Dupa actul de identitate, urmeaza separat evenimentele copil potrivite pentru pasaport,
-      permis sau talon, in functie de ce s-a pierdut.
+      Dacă ai pierdut și pașaportul, deschide subevenimentul de înlocuire a pașaportului,
+      după ce ai un act de identitate valid.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Au fost identificate rutele copil pentru fiecare document pierdut"
+      - "Subevenimentul de înlocuire a pașaportului a fost deschis"
     recovery_actions_ro:
-      - "Daca lipseste un document din inventar, completeaza lista actelor pierdute"
+      - "Dacă nu ai încă un act de identitate valid, finalizează mai întâi refacerea cărții de identitate"
+    status: draft
+
+  - id: replace_driving_license
+    semantic_key: replace_driving_license
+    title_ro: "Înlocuiește permisul de conducere"
+    instruction_ro: >-
+      Dacă ai pierdut și permisul de conducere, deschide subevenimentul de eliberare a
+      unui duplicat, după ce ai un act de identitate valid.
+    sequence_hint: 30
+    completion_evidence_ro:
+      - "Subevenimentul de duplicat al permisului de conducere a fost deschis"
+    recovery_actions_ro:
+      - "Dacă nu ai încă un act de identitate valid, finalizează mai întâi refacerea cărții de identitate"
+    status: draft
+
+  - id: replace_vehicle_registration
+    semantic_key: replace_vehicle_registration
+    title_ro: "Înlocuiește certificatul de înmatriculare (talonul)"
+    instruction_ro: >-
+      Dacă ai pierdut și certificatul de înmatriculare (talonul), deschide subevenimentul
+      de eliberare a unui duplicat, după ce ai un act de identitate valid.
+    sequence_hint: 40
+    completion_evidence_ro:
+      - "Subevenimentul de duplicat al certificatului de înmatriculare a fost deschis"
+    recovery_actions_ro:
+      - "Dacă nu ai încă un act de identitate valid, finalizează mai întâi refacerea cărții de identitate"
     status: draft
 
 requirement_templates: []
