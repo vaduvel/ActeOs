@@ -1,0 +1,1025 @@
+# Val 2 (Taxes/Business/Property) — Source Reuse Map
+# Generat: 2026-06-30
+# Reguli:
+#   1. O sursă = un id = un canonical_url. Reutilizează id-ul central.
+#   2. Niciun id inventat per-eveniment pentru un URL deja în registru.
+#   3. Când redenumești un snapshot/fișier, actualizează în aceeași tranzacție:
+#      source_claims.snapshot_id + sources.yaml.snapshots[].storage_object_key + sha256.
+#   4. Verifică canonical_url unic înainte de capturi.
+
+# =============================================================================
+# S1: SURSE CENTRAL PROPUSE (de adăugat în research/sources.yaml)
+# =============================================================================
+# Acestea sunt surse reutilizabile cross-eveniment.
+# Source_ids din claims care colapsează la același URL sunt unificate aici.
+# =============================================================================
+new_central_sources:
+  # --- Taxe ---
+  - id: src.cod_fiscal
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/171282
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 227/2015 (Codul Fiscal)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.legal.cod_fiscal.current_processing (declare_property_local_tax)
+      - src.cod_fiscal_227_2015 (declare_vehicle_local_tax)
+
+  - id: src.legislation.oug80_2013
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/149314
+    publisher: Ministerul Justiției — Portal Legislativ
+    authority_level: national_normative
+    legal_rank: OUG nr. 80/2013 (taxe judiciare)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.legislation.fiscal_procedure_code
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/170005
+    publisher: Ministerul Justiției — Portal Legislativ
+    authority_level: national_normative
+    legal_rank: Legea 207/2015 (Codul de procedură fiscală)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.anaf_d212
+    canonical_url: https://www.anaf.ro/declaratii/duf
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.anaf.d212.web_2026
+      - src.anaf.d212.prefill_guide_2026 (PDF, different URL — but guide for same form)
+
+  - id: src.anaf_c168
+    canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/168.html
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.anaf.c168.2026
+      - src.anaf.c168.structure.2026 (PDF)
+      - src.anaf.c168.web (portal web)
+
+  - id: src.anaf_form700
+    canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/700.html
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.anaf_form301
+    canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/301.html
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.cnpp
+    canonical_url: https://www.cnpp.ro/
+    publisher: Casa Națională de Pensii Publice
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.cnpp.forms
+      - src.cnpp.old_age
+      - src.cnpp.territorial_houses
+
+  - id: src.ghiseul
+    canonical_url: https://www.ghiseul.ro/
+    publisher: Ghiseul.ro
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  # --- Business ---
+  - id: src.law31_1990
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/56732
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 31/1990 (societăți)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.law265_2022
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/257835
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 265/2022 (registrul comerțului)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.law129_2019
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/254028
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 129/2019 (beneficiar real)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.oug44_2008
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/91808
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: OUG 44/2008 (PFA)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.onrc
+    canonical_url: https://www.onrc.ro/index.php/ro/
+    publisher: Oficiul Național al Registrului Comerțului
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.onrc_forms_2026
+      - src.onrc_home_2026
+      - src.onrc_pf_mentions_2026
+      - src.onrc_pj_mentions_2026
+      - src.onrc_pf_closure_2026
+      - src.onrc_pj_closure_2026
+
+  - id: src.onrc_admin_change
+    canonical_url: https://www.onrc.ro/index.php/ro/mentiuni/persoane-juridice/modificarea-datelor-de-identificare
+    publisher: ONRC
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.onrc.admin_identity_change
+      - src.onrc.general_filing_rules
+      - src.onrc.registrar_procedure
+
+  - id: src.onrc_admin_replacement
+    canonical_url: https://www.onrc.ro/index.php/ro/mentiuni/persoane-juridice/schimbarea-membrilor-organelor-de-conducere-si-de-control
+    publisher: ONRC
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.lege129_2019
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/216157
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 129/2019 (spălarea banilor)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.lege129.art56
+      - src.lege129.art57
+
+  - id: src.oug195_2005
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/41006
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: OUG 195/2005 (circulație)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  # --- Property ---
+  - id: src.legea50_1991
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/55794
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 50/1991 (autorizare construcții)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.legea50.1991.art1
+      - src.legea50.1991.art2_art7
+      - src.legea50.1991.art3.protected
+      - src.legea50.1991.art7
+      - src.legea50.1991.art7.incomplete
+      - src.legea50.1991.art7.start_notice
+      - src.legea50.1991.art7.start_omission
+      - src.legea50.1991.art7.validity
+      - src.legea50.1991.art7_art8
+      - src.legea50.1991.art8
+      - src.legea50.1991.art8.combined
+      - src.legea50.1991.art11.general
+      - src.legea50.1991.art11.list
+      - src.legea50.1991.art11.energy_change_use
+      - src.legea50.1991.art11.protected_zone
+      - src.legea50.1991.art11.monument_notice
+      - src.legea50.1991.art11_1.extension
+      - src.legea50.1991.art26.start_notice
+      - src.legea50.1991.consolidated
+      - src.law50 (urbanism_certificate)
+
+  - id: src.hg273_1994
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/188977
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: HG 273/1994 (recepție construcții)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.hg273.1994.reception.* (6 variants)
+
+  - id: src.law372_2005
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/66970
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 372/2005 (performanță energetică)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.law372
+
+  - id: src.ancpi_orders
+    canonical_url: https://www.ancpi.ro/ordine-director-general/
+    publisher: ANCPI
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.ancpi.orders.index.2025_2026
+      - src.ancpi.order289.2026
+      - src.ancpi.order292.2026
+      - src.ancpi.order293.2026
+
+  - id: src.ocpi_timis_docs
+    canonical_url: https://tm.ancpi.ro/documente-necesare/
+    publisher: OCPI Timiș
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.ocpi_timis.documents.ownership
+      - src.ocpi_timis.documents.finished_construction
+
+  - id: src.ocpi_timis_tariffs
+    canonical_url: https://tm.ancpi.ro/tarife-servicii/
+    publisher: OCPI Timiș
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.ocpi_timis_terms
+    canonical_url: https://tm.ancpi.ro/termene-servicii/
+    publisher: OCPI Timiș
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.ocpi_timis_split_merge
+    canonical_url: (separate URL for dezmembrare/alipire — TBD from capture)
+    publisher: OCPI Timiș
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  # --- PMT (Primăria Timișoara) cross-event pages ---
+  - id: src.pmt_service_hub
+    canonical_url: https://servicii.primariatm.ro/
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.pmt.service_index.tax_property
+      - src.tm_commerce_hub_2026
+
+  - id: src.pmt_taxes_land_pf
+    canonical_url: https://servicii.primariatm.ro/dfmt-pf-declararea-terenurilor
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_taxes_land_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-declararea-dobandirii-terenurilor
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_taxes_building_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-declararea-cladirilor-dobandite
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_taxes_revaluation_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-declararea-reevaluarii-cladirilor
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_authorization_service
+    canonical_url: https://servicii.primariatm.ro/autorizatie-construire-desfiintare
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_construction_start
+    canonical_url: https://servicii.primariatm.ro/inceperea-lucrarilor
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_construction_finalization
+    canonical_url: https://servicii.primariatm.ro/finalizarea-lucrarilor
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_art11_approval
+    canonical_url: https://servicii.primariatm.ro/aprobare-lucrari-art-11
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_urbanism_certificate
+    canonical_url: https://servicii.primariatm.ro/certificat-urbanism
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_public_domain
+    canonical_url: https://servicii.primariatm.ro/ocupare-domeniu-public
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_hcl719
+    canonical_url: https://www.primariatm.ro/hcl/2025/719
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_vehicle_declare_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-declararea-mijloacelor-de-transport
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_vehicle_sale_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-declararea-instrainarii-mijloc-transport
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_vehicle_fiscal_certificate
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-eliberare-cf-instrainarii-mijloc-transport
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_refund_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-cerere-restituire
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_compensation_pj
+    canonical_url: https://servicii.primariatm.ro/dfmt-pj-cerere-compensare
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.pmt_local_taxes_info
+    canonical_url: https://servicii.primariatm.ro/ (combined with local tax info)
+    publisher: Primăria Municipiului Timișoara / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.dfmt.timisoara.local_taxes_2026
+      - src.dfmt.timisoara.payment_deadlines
+      - src.dfmt.timisoara.payment_methods
+
+  # --- Prefectura Timis ---
+  - id: src.prefectura_timis_vehicle
+    canonical_url: https://tm.prefectura.mai.gov.ro/permise-auto-si-inmatriculari/
+    publisher: Prefectura Timiș
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.prefectura_timis.vehicle_2026
+      - src.prefectura_timis.appointments
+
+  # --- Utility companies ---
+  - id: src.anre_gas_connection
+    canonical_url: https://anre.ro/consumatori/gaze-naturale/racordare-la-gaze/
+    publisher: ANRE
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.anre_gas_authorizations
+    canonical_url: https://anre.ro/consumatori/gaze-naturale/care-sunt-operatorii-economici-autorizati-pentru-efectuarea-verificarilor-la-instalatiile-de-gaze/
+    publisher: ANRE
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.aquatim_contract
+    canonical_url: https://www.aquatim.ro/informa%C8%9Bii-utile/cum-deveni%C8%9Bi-client-aquatim/%C3%AEncheiere-contract/
+    publisher: Aquatim
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.aquatim_reception
+    canonical_url: https://www.aquatim.ro/informa%C8%9Bii-utile/cum-deveni%C8%9Bi-client-aquatim/recep%C8%9Bie-bran%C8%99amente-%C8%99i-racorduri-noi/
+    publisher: Aquatim
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.aquatim_technical_approval
+    canonical_url: https://www.aquatim.ro/informa%C8%9Bii-utile/cum-deveni%C8%9Bi-client-aquatim/ob%C8%9Binere-avize-tehnice/
+    publisher: Aquatim
+    authority_level: institution
+    territory_ids: [ro, ro.tm]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.retele_electrice
+    canonical_url: https://www.reteleelectrice.ro/racordare/consumator/
+    publisher: Rețele Electrice România
+    authority_level: institution
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.retele_electrice_connection
+
+  - id: src.colterm_connection
+    canonical_url: https://www.colterm.ro/relatii-clienti/racordare-debransare
+    publisher: Colterm Timișoara
+    authority_level: institution
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.digi_terms
+    canonical_url: (PDF URL — to be captured)
+    publisher: Digi România
+    authority_level: institution
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.hire_first_employee_labor_code
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/128647
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 53/2003 (Codul Muncii)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.hire_first_employee.cim_copy
+      - src.hire_first_employee.cim_register
+      - src.hire_first_employee.cim_written
+      - src.hire_first_employee.medical_aptitude
+      - src.hire_first_employee.foreign_medical
+
+  - id: src.hire_first_employee_ssm
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/73772
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 319/2006 (SSM)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.hire_first_employee.ssm_employer
+      - src.hire_first_employee.ssm_plan
+
+  - id: src.hire_first_employee_risk
+    canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/82130
+    publisher: Portal Legislativ — Guvernul României
+    authority_level: national_normative
+    legal_rank: Legea 346/2002 (risc profesional)
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.hire_first_employee_d112
+    canonical_url: https://static.anaf.ro/static/10/Anaf/Declaratii_R/112.html
+    publisher: ANAF
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.hire_first_employee.d112_current
+      - src.hire_first_employee.d112_deadline_gap
+
+  - id: src.hire_first_employee_reges
+    canonical_url: https://reges.inspectiamuncii.ro/ajutor/intrebari-frecvente/
+    publisher: Inspecția Muncii — REGES
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.igi_work_abroad
+    canonical_url: https://igi.mai.gov.ro/obtinerea-avizului/
+    publisher: IGI / MAI
+    authority_level: national_operational
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.tm_commerce_modify
+    canonical_url: https://servicii.primariatm.ro/modificare-acord-activitati-comert
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.tm_commerce_cancel
+    canonical_url: https://servicii.primariatm.ro/anulare-acord-activitati-comert-toate
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.tm_commerce_open_food
+    canonical_url: https://servicii.primariatm.ro/acord-activitati-alimentatie-publica
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.tm_commerce_open_retail
+    canonical_url: https://servicii.primariatm.ro/acord-activitati-comert-amanuntul-cash-carry-servicii
+    publisher: Primăria Municipiului Timișoara
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+  - id: src.dfmt_generic
+    canonical_url: (generic DFMT contact — TBD)
+    publisher: Direcția Fiscală / DFMT
+    authority_level: uat
+    territory_ids: [ro, ro.tm.timisoara]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+    claims_collapse:
+      - src.dfmt (declare_vehicle_local_tax)
+
+  - id: src.ditl3_acte
+    canonical_url: (DITL Sector 3 — TBD)
+    publisher: DITL Sector 3
+    authority_level: uat
+    territory_ids: [ro]
+    fetch_mode: manual
+    allowed_to_fetch: true
+    status: active
+
+# =============================================================================
+# S2: RECONCILIATION — source_ids din claims care trebuie rescrise
+# =============================================================================
+# Aceste source_ids din claims trebuie actualizate să folosească id-ul central.
+reconciliation_needed:
+  - claim_src_id: src.legislation.og2_2001
+    central_id: src.legislation.og2_contraventions
+    events: [ro.life.contest_fine, ro.life.pay_fine]
+    nota: "Același URL (DetaliiDocument/29779) — id diferit în claims. Se reconciliază la central."
+
+  - claim_src_id: src.cod_fiscal_227_2015
+    central_id: src.cod_fiscal
+    events: [ro.life.declare_vehicle_local_tax]
+    nota: "Codul Fiscal L227/2015 — URL unic"
+
+  - claim_src_id: src.legal.cod_fiscal.current_processing
+    central_id: src.cod_fiscal
+    events: [ro.life.declare_property_local_tax]
+    nota: "Același URL ca Cod Fiscal — colaps"
+
+# =============================================================================
+# S3: HARTĂ PER-EVENIMENT
+# =============================================================================
+# Pentru fiecare eveniment: surse din central de reutilizat + surse noi per-eveniment
+# =============================================================================
+events:
+  # ====== TAXES (11 evenimente) ======
+  - event_id: ro.life.local_tax_certificate
+    category: tax_money_penalties
+    status: HAS_sources_yaml  # already has sources.yaml + source_claims.yaml
+    note: "4 surse deja promovate la central. Surse per-eveniment: src.cpf_207_2015, src.ditl3_acte_pf (rămân locale)"
+
+  - event_id: ro.life.declare_vehicle_local_tax
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.cod_fiscal
+      - src.pmt_service_hub  # if Timișoara-specific claims
+      - src.dfmt_generic
+    new_sources_needed:
+      - id: src.taxeimpozite4
+        canonical_url: https://www.taxeimpozite4.ro/autoturisme/
+        publisher: DGITL Sector 4
+        authority_level: uat
+
+  - event_id: ro.life.remove_vehicle_local_tax
+    category: tax_money_penalties
+    status: NO_FOLDER  # exists in taxonomy, not yet in inbox
+
+  - event_id: ro.life.declare_property_local_tax
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.cod_fiscal
+      - src.pmt_service_hub
+      - src.pmt_taxes_land_pf
+      - src.pmt_taxes_land_pj
+      - src.pmt_taxes_building_pj
+      - src.pmt_taxes_revaluation_pj
+
+  - event_id: ro.life.pay_local_taxes
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.pmt_local_taxes_info  # colapsează cele 3 surse DFMT locale
+      - src.ghiseul
+
+  - event_id: ro.life.pay_fine
+    category: tax_money_penalties
+    status: HAS_sources_yaml
+
+  - event_id: ro.life.contest_fine
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.legislation.og2_contraventions  # după reconciliere
+      - src.legislation.oug80_2013
+
+  - event_id: ro.life.declare_rental_income
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.anaf_c168
+
+  - event_id: ro.life.tax_return_individual
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.anaf_d212
+
+  - event_id: ro.life.tax_decision_contest
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.legislation.fiscal_procedure_code
+
+  - event_id: ro.life.tax_refund_request
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.legislation.fiscal_procedure_code
+      - src.pmt_refund_pj
+      - src.pmt_compensation_pj
+
+  - event_id: ro.life.public_fee_payment
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.ghiseul
+      - src.pmt_atlas  # per-event source
+      - src.pmt_hcl719
+
+  - event_id: ro.life.bank_account_change_admin
+    category: tax_money_penalties
+    reused_central_sources:
+      - src.cnpp
+
+  # ====== BUSINESS (15 evenimente, dar remove_vehicle_local_tax fără folder) ======
+  - event_id: ro.life.open_srl
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.law129_2019
+      - src.onrc
+      - src.pmt_service_hub  # for tm_commerce_hub claims
+
+  - event_id: ro.life.open_pfa
+    category: business_self_employment
+    reused_central_sources:
+      - src.oug44_2008
+      - src.law265_2022
+      - src.onrc
+      - src.pmt_service_hub
+
+  - event_id: ro.life.suspend_business
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_modify
+
+  - event_id: ro.life.resume_business
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_modify
+
+  - event_id: ro.life.close_business
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_cancel
+
+  - event_id: ro.life.change_company_address
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_modify
+
+  - event_id: ro.life.change_company_administrator
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.law129_2019
+      - src.onrc
+      - src.onrc_admin_replacement
+
+  - event_id: ro.life.change_business_activity
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_modify
+
+  - event_id: ro.life.open_working_point
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_open_food
+      - src.tm_commerce_open_retail
+
+  - event_id: ro.life.close_working_point
+    category: business_self_employment
+    reused_central_sources:
+      - src.law31_1990
+      - src.law265_2022
+      - src.oug44_2008
+      - src.onrc
+      - src.tm_commerce_cancel
+
+  - event_id: ro.life.hire_first_employee
+    category: business_self_employment
+    reused_central_sources:
+      - src.hire_first_employee_labor_code
+      - src.hire_first_employee_ssm
+      - src.hire_first_employee_risk
+      - src.hire_first_employee_d112
+      - src.hire_first_employee_reges
+      - src.igi_work_abroad
+
+  - event_id: ro.life.vat_registration
+    category: business_self_employment
+    reused_central_sources:
+      - src.anaf_form700
+      - src.anaf_form301
+
+  - event_id: ro.life.beneficial_owner_update
+    category: business_self_employment
+    reused_central_sources:
+      - src.lege129_2019
+
+  - event_id: ro.life.company_vehicle_change
+    category: business_self_employment
+    reused_central_sources:
+      - src.oug195_2005
+      - src.prefectura_timis_vehicle
+      - src.pmt_vehicle_declare_pj
+      - src.pmt_vehicle_sale_pj
+      - src.pmt_vehicle_fiscal_certificate
+
+  - event_id: ro.life.company_admin_personal_change
+    category: business_self_employment
+    reused_central_sources:
+      - src.onrc_admin_change
+      - src.onrc_admin_replacement
+
+  # ====== PROPERTY (12 evenimente) ======
+  - event_id: ro.life.urbanism_certificate
+    category: property_construction
+    reused_central_sources:
+      - src.legea50_1991  # colapsează src.law50
+      - src.pmt_urbanism_certificate
+
+  - event_id: ro.life.building_permit
+    category: property_construction
+    reused_central_sources:
+      - src.legea50_1991
+      - src.pmt_authorization_service
+
+  - event_id: ro.life.house_extension
+    category: property_construction
+    reused_central_sources:
+      - src.legea50_1991
+      - src.pmt_authorization_service
+
+  - event_id: ro.life.demolition_permit
+    category: property_construction
+    reused_central_sources:
+      - src.legea50_1991
+      - src.pmt_authorization_service
+
+  - event_id: ro.life.construction_start_notice
+    category: property_construction
+    reused_central_sources:
+      - src.legea50_1991
+      - src.pmt_construction_start
+
+  - event_id: ro.life.construction_reception
+    category: property_construction
+    reused_central_sources:
+      - src.hg273_1994
+      - src.pmt_construction_finalization
+
+  - event_id: ro.life.renovation_authorisation_check
+    category: property_construction
+    reused_central_sources:
+      - src.legea50_1991
+      - src.pmt_art11_approval
+
+  - event_id: ro.life.energy_performance_certificate
+    category: property_construction
+    reused_central_sources:
+      - src.law372_2005
+
+  - event_id: ro.life.property_cadastral_registration
+    category: property_construction
+    reused_central_sources:
+      - src.ancpi_orders
+      - src.ocpi_timis_docs
+      - src.ocpi_timis_tariffs
+      - src.ocpi_timis_terms
+
+  - event_id: ro.life.land_split_merge
+    category: property_construction
+    reused_central_sources:
+      - src.ancpi_orders
+      - src.ocpi_timis_split_merge
+      - src.ocpi_timis_tariffs
+      - src.ocpi_timis_terms
+
+  - event_id: ro.life.utility_connection_construction
+    category: property_construction
+    reused_central_sources:
+      - src.anre_gas_connection
+      - src.anre_gas_authorizations
+      - src.aquatim_contract
+      - src.aquatim_reception
+      - src.aquatim_technical_approval
+      - src.retele_electrice
+      - src.colterm_connection
+      - src.digi_terms
+
+  - event_id: ro.life.public_domain_occupation
+    category: property_construction
+    reused_central_sources:
+      - src.pmt_public_domain
+      - src.pmt_hcl719
