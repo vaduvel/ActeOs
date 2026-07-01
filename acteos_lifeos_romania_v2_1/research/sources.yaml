@@ -727,6 +727,18 @@ sources:
   claims_collapse:
   - src.prefectura_timis.vehicle_2026
   - src.prefectura_timis.appointments
+  - src.tm_dl
+  - src.prefectura.timis.spcrpciv_contact_2026
+  - src.prefectura.timis.fiscal_vehicle_operations_2026
+  - src.prefectura.timis.online_duplicate_certificate_2025
+  - src.prefectura.timis.vehicle_plate_tariffs_2025
+  - src.claim_vle_inperson_fiscal_record
+  - src.claim_vle_online_fiscal_certificate
+  - src.claim_vle_timis_submission
+  - src.claim_vle_timis_appointment
+  - src.claim_vle_eid_address
+  - src.claim_dlf_timis_appointment
+  - src.claim_dlf_eid_address
 - id: src.pmt_vehicle_declare_pj
   canonical_url: https://servicii.primariatm.ro/dfmt-pj-declararea-mijloacelor-de-transport
   publisher: Primăria Municipiului Timișoara / DFMT
@@ -1761,6 +1773,192 @@ sources:
   fetch_mode: manual
   allowed_to_fetch: true
   status: active
+
+# === Vehicles & Mobility — Category 3 new sources ===
+- id: src.prefectura_bucuresti_vehicle
+  canonical_url: https://b.prefectura.mai.gov.ro/permise-auto-si-inmatriculari/
+  publisher: Prefectura București / SPCRPCIV
+  authority_level: county
+  territory_ids:
+  - ro
+  - ro.b
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.prefectura.bucuresti.vehicle_procedures_2026
+  - src.prefectura.bucuresti.vehicle_fees_2026
+  - src.claim_dlf_personal_county
+  - src.claim_dlf_original_translation
+  - src.claim_dlf_country_specific
+  - src.claim_dlf_loss_eu
+  - src.claim_dlf_identity_residence
+  - src.claim_dlf_application_record
+  - src.claim_dlf_medical_new_validity
+  - src.claim_dlf_fee_89
+- id: src.oug195_rca_accident
+  canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/190029
+  publisher: Portal Legislativ — Parlamentul României
+  authority_level: national_normative
+  legal_rank: OUG 195/2005 privind circulația pe drumurile publice
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: false
+  status: active
+  note: just.ro returnează 403
+  claims_collapse:
+  - src.claim_rca_maintain
+  - src.claim_rca_reminder_30d
+  - src.claim_rca_duration
+  - src.claim_rca_suspension_conditions
+  - src.claim_rca_transfer_end
+  - src.claim_acc_amicable_scope
+  - src.claim_acc_rca_notice_5wd
+- id: src.oug195_vehicle_itp_lsr
+  canonical_url: https://legislatie.just.ro/Public/DetaliiDocument/74028
+  publisher: Portal Legislativ — Guvernul României
+  authority_level: national_normative
+  legal_rank: OUG 195/2005
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: false
+  status: active
+  note: just.ro returnează 403
+  claims_collapse:
+  - src.claim_itp_required
+  - src.claim_itp_no_road_expired
+  - src.claim_itp_authorized_station
+  - src.claim_rca_no_public_road
+  - src.claim_vle_transcription_90d
+  - src.claim_vle_fiscal_notice_5wd
+  - src.claim_vle_no_road_without_itp_rca
+  - src.claim_lsr_reduction_conditions
+  - src.claim_lsr_no_ro_domicile_fine
+  - src.claim_lsr_reduction_exclusions
+  - src.claim_lsr_mandatory_test
+  - src.claim_lsr_plus_30
+  - src.claim_lsr_location_until_june
+  - src.claim_lsr_location_from_july
+  - src.claim_lsr_surrender_5d
+  - src.claim_acc_injury_emergency
+  - src.claim_acc_no_alcohol_after
+  - src.claim_acc_material_move_report
+  - src.claim_acc_material_exceptions
+  - src.claim_acc_other_damage_24h
+  - src.claim_acc_repair_document
+- id: src.rarom_itp
+  canonical_url: https://www.rarom.ro/?page_id=776
+  publisher: Registrul Auto Român R.A.
+  authority_level: national_operational
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.claim_itp_date_source
+  - src.claim_itp_certificate_automatic
+- id: src.rarom_rntr1
+  canonical_url: https://www.rarom.ro/cs-uploads/RNTR%201.pdf
+  publisher: Registrul Auto Român R.A.
+  authority_level: national_operational
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: false
+  status: active
+  note: PDF — nu se capturează ca HTML
+  claims_collapse:
+  - src.claim_itp_six_months
+  - src.claim_itp_one_year
+  - src.claim_itp_two_years
+  - src.claim_itp_passenger_12_years
+  - src.claim_itp_first_new_passenger
+  - src.claim_itp_first_motorhome
+- id: src.dfmt_timis_vehicle_declaration
+  canonical_url: https://servicii.primariatm.ro/dfmt-pf-declararea-mijloacelor-de-transport
+  publisher: Municipiul Timișoara — Direcția Fiscală
+  authority_level: uat
+  territory_ids:
+  - ro
+  - ro.tm.timisoara
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.dfmt.vehicle_declaration_2026
+- id: src.dfmt_timis_vehicle_disposal
+  canonical_url: https://servicii.primariatm.ro/dfmt-pf-declararea-instrainarii-mijloc-transport
+  publisher: Municipiul Timișoara — Direcția Fiscală
+  authority_level: uat
+  territory_ids:
+  - ro
+  - ro.tm.timisoara
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.dfmt.vehicle_disposal_declaration_2026
+- id: src.eu_your_europe_car_vat
+  canonical_url: https://europa.eu/youreurope/citizens/vehicles/cars/vat-buying-selling-cars/index_en.htm
+  publisher: Uniunea Europeană — Your Europe
+  authority_level: eu
+  territory_ids:
+  - eu
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.eu.your_europe.car_vat
+- id: src.rarom_eu_vehicle_civ
+  canonical_url: https://www.rarom.ro/?page_id=254
+  publisher: Registrul Auto Român R.A.
+  authority_level: national_operational
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.rar.eu_vehicle_civ_anaf_protocol
+- id: src.igpr_petitions
+  canonical_url: https://politiaromana.ro/ro/petitii-online
+  publisher: Poliția Română — IGPR
+  authority_level: national_operational
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.igpr.petitions_112
+- id: src.aida_rca
+  canonical_url: https://www.aida.info.ro/polite-rca
+  publisher: BAAR — Administrare Istoric Date Asigurări Auto
+  authority_level: institution
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: true
+  status: active
+  claims_collapse:
+  - src.claim_rca_aida_channel
+- id: src.hg1391_2006
+  canonical_url: https://legislatie.just.ro/Public/DetaliiDocumentAfis/268632
+  publisher: Portal Legislativ — Guvernul României
+  authority_level: national_normative
+  legal_rank: HG 1391/2006 (regulament circulație)
+  territory_ids:
+  - ro
+  fetch_mode: manual
+  allowed_to_fetch: false
+  status: active
+  note: just.ro returnează 403
+  claims_collapse:
+  - src.claim_lsr_test_score
 
 # === Family ===
 - id: src.paternity_law
