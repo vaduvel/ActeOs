@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>
+        Acas&#x103; - AEP Registrul Electoral v5
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" type="text/css" href="/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/lib/font-awesome/css/all.min.css" />
+    <link type="text/css" rel="stylesheet" media="all" href="/lib/toastr.js/toastr.min.css" />
+    <link rel="stylesheet" type="text/css" href="/ui/css/style.v5.css?v=v5.0.90" />
+    <link type="text/css" rel="stylesheet" media="all" href="/ui/css/custom.css?v=v5.0.90" />
+    <link type="text/css" rel="stylesheet" href="/lib/jqueryui/themes/base/jquery-ui.min.css">
+</head>
+<body>
+
+
+    <div class="container-fluid bg-header bg-white">
+        <div class="container">
+            <div class="row w-100 d-flex flex-row align-center">
+                <div class="col mt-2 mb-2">
+                    <a class="navbar-brand" href="/">
+                        <img class="img-responsive brand-logo img-fluid" src="/ui/img/logo.png" alt="" width="444" height="auto">
+                    </a>
+                </div>
+                    <div class="col text-end g-3 autentificare">
+                        <a onclick="dropMenuAut(); return false;">
+                            <span class="d-none d-sm-block">
+                                <i class="fa fa-circle-down" aria-hidden="true">&nbsp;</i>
+                                Autentificare
+                            </span>
+                            <span class="d-block d-sm-none btn-aut">
+                                <i class="fa fa-user" aria-hidden="true">&nbsp;</i>
+                            </span>
+                        </a>
+                    </div>
+            </div>
+        </div>
+        <div class="dropdown-autentificare" id="form-auth" data-context="login" data-scope="webpart" data-post-url-token="/apicert/autentificarecertificat/login">
+            <div class="container">
+                <div class="row justify-content-end  mb-2">
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        <input type="text" class="form-control form-control-sm" id="UserName" name="UserName" placeholder="Utilizator(email)" data-scope="login-username" autocomplete="off">
+                    </div>
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        <input type="password" class="form-control form-control-sm" id="Password" name="Password" placeholder="Parola" data-scope="login-password" autocomplete="off">
+                    </div>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-1">
+                        <input type="checkbox" name="TOKEN" id="TOKEN" data-model="LOGIN_WITH_CERTIFICATE" data-scope="login-token">
+                        <strong style="color:#fff;">Autentificare cu certificat digital</strong>
+                    </div>
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-1">
+                        <a class="btn btn-primary btn-private-primary" href="/#" data-form="form-auth" data-url="/api/public/login" id="button_login">CONECTARE</a>
+                    </div>
+                </div>
+                <ul class="optiuni">
+                    <li>
+                        <a href="/creare-cont">Creare cont</a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="/AmUitatParola">Am uitat parola</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- meniul principal -->
+    <div class="menu-container mainMenu" style="z-index: 4; margin-top: -1px;">
+        <nav class="navbar navbar-dark bg-dark bg-primary  flex-column mb-2 " data-bs-theme="dark">
+            <div class="container navbar-expand-lg">
+
+                <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="row d-flex">
+                    <div class="col d-flex">
+                        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/">Acasă</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/cetateni">Cetățeni</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/linkuri-utile">Link-uri utile</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/contact">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container-fluid body-content">
+        
+<!-- AFLĂ CARE ESTE SECŢIA TA DE VOTARE -->
+<div class="container-fluid mt-3"> 
+    <div class="container section-line" id="index-form" async-content="/api/public/cauta-sectie" async-event="load-form" after-post-event="form-after-post" show-wait="">
+        <div class="row text-center">
+            <div class="col-lg-12 col-md-12 col-sm-12 sectia-ta">
+                <h1>AFLĂ CARE ESTE SECŢIA TA DE VOTARE</h1>
+            </div>
+        </div>
+        <div class="row d-flex flex-row justify-content-center align-items-center">
+            <div class="col-lg-4 col-md-6 col-sm-12 text-right">
+                <div class="container-md">
+                    <div class="container-md card rounded box-shadow-material bg-white" id="form-sectie">
+                        <br />
+                        <div class="mb-3">
+                            <label for="CNP" class="form-label">
+                                CNP
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="CNP" name="CNP" data-model="CNP" placeholder="CNP">
+                        </div>
+                        <div class="mb-3">
+                            <label for="NUME" class="form-label">
+                                Nume de familie
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="NUME" name="NUME" data-model="NUME" placeholder="Nume">
+                        </div>
+
+
+                        <div class="mb-3" show-Scrutin style="display:none">
+                            <label for="SCRUTIN_ID">Tip alegeri</label> 
+                            <select name="SCRUTIN_ID" id="SCRUTIN_ID" class="form-select form-select-sm" data-model="SCRUTIN_ID" data-source="/api/public/noms/scrutineviitor" async-event="bind-combo">                                  
+                                </select> 
+                        </div> 
+                        <div class="g-recaptcha mt-1 mb-1 d-flex justify-content-center" data-sitekey="6Lc6G94qAAAAACicIeGaoQshVuksRKNmoQu6sJin"></div>
+                        <div class="d-flex flex-column  mb-2">
+                            <a class="btn btn-primary" data-form="form-sectie" data-url="/api/public/cautasectie" data-scope="button-save">
+                                <span class="btn-label">
+                                    <i class="fa fa-search"> </i>
+                                    Caută
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-5 col-sm-6 text-end header-image">
+                <img src="/ui/img/cutie-votare.svg" class="img-fluid" alt="..." style="mix-blend-mode: multiply;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CATRE HARTI-->
+<div class="container-fluid">
+    <div class="container">
+        <div class="row row d-flex flex-row justify-content-center align-items-center g-1 d-grid">
+            <div class="col-lg-2 col-md-6 col-sm-8  text-center map1">
+                <img src="/ui/img/map1.svg" class="img-fluid" style="mix-blend-mode: multiply;" alt="...">
+            </div>
+
+
+            <div class="col-lg-4 col-md-6 col-sm-8 text-center d-flex flex-column">
+                <a href="https://gis.registrulelectoral.ro/HartaSectiiPrezidentiale/" title="Harta secțiilor de votare pentru alegerile Prezidențiale" target="_blank" class="btn btn-outline-primary mb-0 m-4">
+                    <span>HARTA SECŢIILOR DE VOTARE PENTRU ALEGERILE PREZIDENȚIALE</span>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-8 text-center d-flex flex-column">
+                <a href="https://gis.registrulelectoral.ro/CereriVotSectiePresedinte/" title="Harta cererilor de vot la secție alegeri Prezidențiale" target="_blank" class="btn btn-outline-primary mb-0 m-4">
+                    <span>HARTA CERERILOR DE VOT LA SECŢIE ALEGERI PREZIDENŢIALE</span>
+                </a>
+            </div> 
+            <div class="col-lg-2 col-md-6 col-sm-8  text-center map2">
+                <img src="/ui/img/map2.svg" class="img-fluid" style="mix-blend-mode: multiply;" alt="...">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INFORMAȚII UTILE -->
+
+
+        <div class="modal" id="waitModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-3" style="display: none;" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="progress grid-info">
+                            <div class="loading progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="modal_confirm_login" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-3" style="display: none;" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 form-group">
+                            <div class="alert alert-warning" role="alert">
+                                <h5 class="alert-heading">
+                                    <i class="fa fa-exclamation-triangle"></i> Atenție!
+                                </h5>
+                                <hr>
+                                <ul class="mb-0">
+                                    <li>Nu salvați parola în browser.</li>
+                                    <li>Accesați Registrul Electoral numai de pe calculatoare cu antivirus instalat și actualizat.</li>
+                                </ul>
+                                <hr>
+                                <p class="mb-0">
+                                    <small>Continuarea autentificării confirmă respectarea regulilor.</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn btn-private-primary btn-primary btn-sm" href="#" title="Confirm" id="button_confirm_login">
+                            <span class="fa fa-check" aria-hidden="true"></span>&nbsp;Confirm
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal"> <span class="fa fa-power-off" aria-hidden="true"></span>&nbsp;Anulează</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- footer -->
+    <footer class="bg-section">
+        <div class="container-fluid bg-section">
+            <div class="container d-flex justify-content-center text-center flex-column">
+                <ul class="navbar-nav footer d-flex flex-row flex-wrap d-flex text-center justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/">ACASĂ </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/contact">CONTACT </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/conditii-utilizare">CONDIȚII DE UTILIZARE </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/conditii-legale">CONDIȚII LEGALE </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/upload/public/FormulareCereri/Nota de informare finala RE.pdf" target="_blank">NOTĂ DE INFORMARE </a>
+                    </li>
+                </ul>
+                <div>COPYRIGHT © 2026 AUTORITATEA ELECTORALĂ PERMANENTĂ. TOATE DREPTURILE REZERVATE. v5.0.90</div>
+            </div>
+        </div>
+    </footer>
+    <script src="/lib/jquery/jquery.min.js"></script>
+    <script src="/lib/jqueryui/jquery-ui.min.js"></script>
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="/lib/toastr.js/toastr.min.js"></script>
+    <script type="text/javascript" src="/js/aepglobal-1.1.1.js?v=v5.0.90"></script>
+    <script type="text/javascript" src="/js/custom.js?v=v5.0.90"></script>
+    <script type="text/javascript" src="/js/login.js?v=v5.0.90"></script>
+    
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+
+        <script>
+            (function (i, s, o, g, r, a, m) { i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () { (i[r].q = i[r].q || []).push(arguments) }, i[r].l = 1 * new Date(); a = s.createElement(o), m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m) })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga'); ga('create', 'UA-79680523-1', 'auto'); ga('send', 'pageview');
+        </script>
+</body>
+</html>
