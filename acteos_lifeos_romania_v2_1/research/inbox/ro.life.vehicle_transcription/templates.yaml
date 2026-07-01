@@ -1,52 +1,60 @@
+# Step & requirement templates for ro.life.vehicle_transcription (life.vehicle_transcription).
+# Transcribed from event_card.md (R1A-veh4). No legal text fabricated.
+
 step_templates:
   - id: transcribe_vehicle
     semantic_key: transcribe_vehicle
-    title_ro: "Depune dosarul de transcriere"
+    title_ro: "Transcrie vehiculul la SPCRPCIV Timiș"
     instruction_ro: >-
-      Pregătește documentele de proprietate, evidența fiscală și documentele de
-      circulație pentru transcrierea vehiculului pe numele noului proprietar.
-    sequence_hint: 10
-    completion_evidence_ro:
-      - "Dosarul pentru transcriere este pregătit sau depus."
-      - "Documentele de proprietate și fiscale sunt atașate."
-    recovery_actions_ro:
-      - "Dacă dovada fiscală sau actul de proprietate lipsesc, obține-le înainte de depunere."
-    status: draft
-  - id: do_itp
-    semantic_key: do_itp
-    title_ro: "Confirmă valabilitatea ITP-ului"
-    instruction_ro: >-
-      Verifică dacă vehiculul are ITP valabil și, dacă nu, programează inspecția
-      tehnică înainte de utilizarea normală a vehiculului.
+      Solicită transcrierea dreptului de proprietate la SPCRPCIV Timiș, cu programare prealabilă.
+      Documente necesare (Ordinul MAI 1501/2006, art. 8): cererea, documentul de proprietate
+      (original + copie), CIV valabil, ITP în termen, dovada declarării fiscale la organul fiscal
+      local. Termen orientativ: 90 de zile de la data contractului.
     sequence_hint: 20
     completion_evidence_ro:
-      - "Valabilitatea ITP este confirmată sau inspecția este efectuată."
+      - "Cererea a fost depusă și înregistrată la SPCRPCIV Timiș"
+      - "A fost emis noul certificat de înmatriculare"
     recovery_actions_ro:
-      - "Dacă ITP-ul este expirat, tratează pasul ca blocat până la reînnoire."
+      - "Dacă transcrierea este respinsă, completează documentele lipsă (ITP, RCA, fiscal)"
+      - "Termenul de 90 zile este orientativ; confirmă exactitudinea textului Ordinului 1501/2006"
+    status: draft
+
+  - id: do_itp
+    semantic_key: do_itp
+    title_ro: "Efectuează ITP"
+    instruction_ro: >-
+      Dacă ITP-ul vehiculului nu este în termen de valabilitate, efectuează o inspecție
+      tehnică periodică la o stație autorizată înainte de transcriere.
+    sequence_hint: 15
+    completion_evidence_ro:
+      - "ITP-a fost efectuată și este în termen"
+    recovery_actions_ro:
+      - "Lasă ITP-ul la o stație autorizată de Registrul Auto Român"
     status: draft
 
 requirement_templates:
   - id: req.ownership_document
-    title_ro: "Documentul de proprietate"
+    title_ro: "Document de proprietate (original + copie)"
     description_ro: >-
-      Actul care dovedește dobândirea vehiculului și permite transcrierea pe
-      noul proprietar.
+      Contract de vânzare-cumpărare sau alt act de proprietate în original și copie, conform
+      art. 8 din Ordinul MAI 1501/2006.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Contract de vânzare-cumpărare sau alt document de dobândire acceptat."
+      - "Contract de vânzare-cumpărare în original + copie"
+      - "Act de donație, moștenire etc., când e cazul"
     readiness_checks:
-      - "Documentul de proprietate este semnat și complet."
+      - "Verifică semnăturile și datele din act"
     status: draft
+
   - id: req.fiscal_declaration_proof
-    title_ro: "Dovada declarării fiscale"
+    title_ro: "Dovada declarării fiscale la organul local"
     description_ro: >-
-      Dovada că vehiculul a fost declarat la organul fiscal local, atunci când
-      traseul de transcriere o cere.
+      Adeverință/certificat care dovedește că vehiculul a fost declarat la organul fiscal local.
     obligation: mandatory
     timing: now
     accepted_forms:
-      - "Dovadă de depunere sau înregistrare a declarației fiscale."
+      - "Adeverință emisă de DFMT/DITL în original"
     readiness_checks:
-      - "Declarația fiscală locală a fost depusă."
+      - "Verifică că documentul este în termen de valabilitate"
     status: draft
