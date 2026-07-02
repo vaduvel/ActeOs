@@ -1,0 +1,123 @@
+schema_ref: ../../../contracts/rule.schema.json
+batch_id: R1_REMOVE_VEHICLE_LOCAL_TAX
+event_type_id: life.vehicle_local_tax_remove
+status: draft
+rules:
+- id: rule.rmv.tax_30d
+  canonical_rule_id: vehicle_local_tax_remove.tax_30d
+  event_type_id: life.vehicle_local_tax_remove
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2016-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_step
+    step_id: file_tax_removal_declaration
+  - type: set_deadline
+    step_id: file_tax_removal_declaration
+    value:
+      kind: relative_days
+      anchor: removal_date
+      days: 30
+  - type: include_requirement
+    requirement_id: req.removal_fiscal_form
+  source_claim_ids:
+  - claim.rmv.tax_30d_declaration
+  status: draft
+- id: rule.rmv.required_docs
+  canonical_rule_id: vehicle_local_tax_remove.required_docs
+  event_type_id: life.vehicle_local_tax_remove
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2016-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.removal_evidence_doc
+  - type: include_requirement
+    requirement_id: req.owner_id
+  - type: include_requirement
+    requirement_id: req.vehicle_civ
+  source_claim_ids:
+  - claim.rmv.docs_removal
+  status: draft
+- id: rule.rmv.cert_for_sale
+  canonical_rule_id: vehicle_local_tax_remove.cert_for_sale
+  event_type_id: life.vehicle_local_tax_remove
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: operational
+  effective_from: '2016-01-01'
+  when:
+    op: eq
+    field: tax_certificate_needed
+    value: for_transcription
+  effects:
+  - type: include_step
+    step_id: request_fiscal_certificate
+  - type: include_requirement
+    requirement_id: req.sale_fiscal_certificate
+  source_claim_ids:
+  - claim.rmv.fiscal_certificate_for_sale
+  status: draft
+- id: rule.rmv.owner_until_dec31
+  canonical_rule_id: vehicle_local_tax_remove.owner_until_dec31
+  event_type_id: life.vehicle_local_tax_remove
+  jurisdiction_ids:
+  - ro
+  authority_level: institution
+  severity: explanatory
+  effective_from: '2016-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: emit_warning
+    message_ro: Impozitul pe intreg anul fiscal este datorat de cel care detinea
+      vehiculul la 31 decembrie a anului anterior, indiferent cand are loc instrainarea.
+  source_claim_ids:
+  - claim.rmv.owner_until_dec31
+  status: draft
+- id: rule.rmv.tm_channel
+  canonical_rule_id: vehicle_local_tax_remove.tm_channel
+  event_type_id: life.vehicle_local_tax_remove
+  jurisdiction_ids:
+  - ro.tm.timisoara
+  authority_level: uat
+  severity: explanatory
+  effective_from: '2016-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: attach_channel
+    channel_id: ch.dfmt_timisoara
+  source_claim_ids:
+  - claim.rmv.tm_channel
+  status: in_review
+- id: rule.rmv.cod_fiscal_basis
+  canonical_rule_id: vehicle_local_tax_remove.cod_fiscal_basis
+  event_type_id: life.vehicle_local_tax_remove
+  jurisdiction_ids:
+  - ro
+  authority_level: national_normative
+  severity: critical
+  effective_from: '2016-01-01'
+  when:
+    op: const
+    value: true
+  effects:
+  - type: include_requirement
+    requirement_id: req.cod_fiscal_basis
+  source_claim_ids:
+  - claim.rmv.cod_fiscal_basis
+  status: draft
