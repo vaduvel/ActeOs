@@ -101,7 +101,8 @@ gates:
   - claim.life_insurance_claim.groupama_preparation
 - id: gate.nn_hospital_window
   priority: 90
-  when: insurer_id == nn and event_type in [hospitalization,surgery] and more than 72 hours since discharge/intervention
+  when: insurer_id == nn and event_type in [hospitalization,surgery] and more than
+    72 hours since discharge/intervention
   effect: needs_confirmation
   code: NN_72H_WINDOW_MAY_BE_EXCEEDED
   message: Termenul operațional publicat de NN poate fi depășit.
@@ -114,7 +115,8 @@ gates:
   when: policy_number_known == false
   effect: warn
   code: POLICY_NUMBER_MISSING
-  message: Poți începe contactul, dar identificarea dosarului poate necesita date suplimentare.
+  message: Poți începe contactul, dar identificarea dosarului poate necesita date
+    suplimentare.
   recovery_actions:
   - Caută polița, extrasul sau corespondența asigurătorului.
   source_claim_ids:
@@ -124,7 +126,8 @@ gates:
   when: event_documents_available == false
   effect: needs_confirmation
   code: EVENT_DOCUMENTS_MISSING
-  message: Dosarul nu poate fi evaluat complet fără documentele evenimentului cerute de contract.
+  message: Dosarul nu poate fi evaluat complet fără documentele evenimentului cerute
+    de contract.
   recovery_actions:
   - Solicită certificatele/rapoartele medicale sau civile aplicabile.
   source_claim_ids:
@@ -142,7 +145,8 @@ steps:
   depends_on: []
   deadline:
     kind: none
-  completion_evidence: Asigurătorul și polița sunt identificate sau ai suficiente date pentru căutarea contractului.
+  completion_evidence: Asigurătorul și polița sunt identificate sau ai suficiente
+    date pentru căutarea contractului.
   recovery_actions:
   - Contactează asigurătorul cu datele persoanei asigurate.
   official_channel_ids:
@@ -177,7 +181,8 @@ steps:
   - claim.life_insurance_claim.groupama_phone
 - id: step.prepare_documents
   title: Completează formularul și documentele
-  instruction: Încarcă formularul și documentele medicale/civile cerute pentru evenimentul și contractul concret.
+  instruction: Încarcă formularul și documentele medicale/civile cerute pentru evenimentul
+    și contractul concret.
   sequence_hint: 3
   applies_when:
     op: const
@@ -186,7 +191,8 @@ steps:
   - step.notify_event
   deadline:
     kind: none
-  completion_evidence: Asigurătorul confirmă primirea și comunică dacă dosarul este complet.
+  completion_evidence: Asigurătorul confirmă primirea și comunică dacă dosarul este
+    complet.
   recovery_actions:
   - Răspunde solicitărilor suplimentare prin canalul oficial.
   official_channel_ids:
@@ -412,7 +418,7 @@ rules:
   competence_scope:
   - provider:nn
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -445,7 +451,7 @@ rules:
   competence_scope:
   - provider:nn
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -476,7 +482,7 @@ rules:
   authority_level: mixed
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -498,7 +504,7 @@ rules:
   authority_level: mixed
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -536,7 +542,8 @@ rules:
     - unknown
   effects:
   - type: require_confirmation
-    message_ro: Condițiile poliței trebuie confirmate înainte de a prezenta un termen sau o listă finală de acte.
+    message_ro: Condițiile poliței trebuie confirmate înainte de a prezenta un termen
+      sau o listă finală de acte.
   source_claim_ids:
   - claim.life_insurance_claim.nn_form_and_docs
   - claim.life_insurance_claim.allianz_death_docs

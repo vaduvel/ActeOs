@@ -25,6 +25,7 @@ rules:
   source_claim_ids:
   - claim.vote.registry
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.local_residence
   canonical_rule_id: vote.local_residence
   event_type_id: life.vote_address_change
@@ -56,6 +57,7 @@ rules:
   source_claim_ids:
   - claim.vote.local_residence_6m_45d
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.local_under6m
   canonical_rule_id: vote.local_under6m
   event_type_id: life.vote_address_change
@@ -78,10 +80,12 @@ rules:
   effects:
   - type: block
     tag: local_vote_at_residence_requires_over_6_months
-    message_ro: Pentru această reședință sub 6 luni, regula verificată indică votul la domiciliu.
+    message_ro: Pentru această reședință sub 6 luni, regula verificată indică votul
+      la domiciliu.
   source_claim_ids:
   - claim.vote.local_under6m
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.local_request_missing
   canonical_rule_id: vote.local_request_missing
   event_type_id: life.vote_address_change
@@ -104,10 +108,12 @@ rules:
   effects:
   - type: emit_warning
     tag: local_register_request_may_be_required
-    message_ro: Verifică și depune cererea pentru Registrul Electoral la reședință în termenul legal.
+    message_ro: Verifică și depune cererea pentru Registrul Electoral la reședință
+      în termenul legal.
   source_claim_ids:
   - claim.vote.local_residence_6m_45d
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.parliamentary_residence
   canonical_rule_id: vote.parliamentary_residence
   event_type_id: life.vote_address_change
@@ -139,6 +145,7 @@ rules:
   source_claim_ids:
   - claim.vote.parliamentary_45d
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.presidential_same
   canonical_rule_id: vote.presidential_same
   event_type_id: life.vote_address_change
@@ -165,6 +172,7 @@ rules:
   source_claim_ids:
   - claim.vote.presidential_same_uat
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.presidential_other
   canonical_rule_id: vote.presidential_other
   event_type_id: life.vote_address_change
@@ -186,10 +194,12 @@ rules:
     step_id: step.vote.use_supplementary
   - type: emit_advice
     tag: presidential_supplementary_list_other_uat
-    message_ro: În altă UAT poți vota la o secție din UAT-ul în care te afli, conform regulii prezidențiale.
+    message_ro: În altă UAT poți vota la o secție din UAT-ul în care te afli, conform
+      regulii prezidențiale.
   source_claim_ids:
   - claim.vote.presidential_other_uat
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.mobility
   canonical_rule_id: vote.mobility
   event_type_id: life.vote_address_change
@@ -209,10 +219,12 @@ rules:
   effects:
   - type: emit_advice
     tag: accessible_section_same_locality
-    message_ro: Poți folosi o secție accesibilă din aceeași localitate, în condițiile legii.
+    message_ro: Poți folosi o secție accesibilă din aceeași localitate, în condițiile
+      legii.
   source_claim_ids:
   - claim.vote.reduced_mobility
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.residence_not_completed
   canonical_rule_id: vote.residence_not_completed
   event_type_id: life.vote_address_change
@@ -234,10 +246,12 @@ rules:
     step_id: step.vote.register_residence
   - type: block
     tag: residence_registration_not_completed
-    message_ro: Finalizează stabilirea reședinței înainte de a folosi ruta electorală bazată pe reședință.
+    message_ro: Finalizează stabilirea reședinței înainte de a folosi ruta electorală
+      bazată pe reședință.
   source_claim_ids:
   - claim.vote.timis_residence
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.timis_residence
   canonical_rule_id: vote.timis_residence
   event_type_id: life.vote_address_change
@@ -259,17 +273,19 @@ rules:
     channel_id: ch.vote.timis_residence
   - type: emit_advice
     tag: timisoara_residence_service_5_working_days
-    message_ro: Pagina locală indică 5 zile lucrătoare pentru eliberarea mențiunii de reședință.
+    message_ro: Pagina locală indică 5 zile lucrătoare pentru eliberarea mențiunii
+      de reședință.
   source_claim_ids:
   - claim.vote.timis_residence
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.unsourced_election
   canonical_rule_id: vote.unsourced_election
   event_type_id: life.vote_address_change
   jurisdiction_ids:
   - ro
   authority_level: national_operational
-  severity: critical
+  severity: operational
   when:
     op: in
     field: election_type
@@ -280,9 +296,11 @@ rules:
   effects:
   - type: require_confirmation
     tag: election_specific_address_rule_unverified
-    message_ro: Regula pentru acest tip de scrutin trebuie verificată în actul electoral curent; nu extrapola din locale/parlamentare/prezidențiale.
+    message_ro: Regula pentru acest tip de scrutin trebuie verificată în actul electoral
+      curent; nu extrapola din locale/parlamentare/prezidențiale.
   source_claim_ids: []
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.other_uat
   canonical_rule_id: vote.other_uat
   event_type_id: life.vote_address_change
@@ -297,9 +315,11 @@ rules:
   effects:
   - type: require_confirmation
     tag: verify_local_residence_service
-    message_ro: Verifică serviciul de evidență a persoanelor și procedura electorală locală competentă.
+    message_ro: Verifică serviciul de evidență a persoanelor și procedura electorală
+      locală competentă.
   source_claim_ids: []
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.exact_threshold_unknown
   canonical_rule_id: vote.exact_threshold_unknown
   event_type_id: life.vote_address_change
@@ -322,11 +342,13 @@ rules:
   effects:
   - type: require_confirmation
     tag: residence_six_month_threshold_needs_review
-    message_ro: Cazul exact de frontieră trebuie calculat și confirmat pentru data scrutinului.
+    message_ro: Cazul exact de frontieră trebuie calculat și confirmat pentru data
+      scrutinului.
   source_claim_ids:
   - claim.vote.local_residence_6m_45d
   - claim.vote.local_under6m
   status: draft
+  effective_from: '2026-06-25'
 - id: rule.vote.parliamentary_request_missing
   canonical_rule_id: vote.parliamentary_request_missing
   event_type_id: life.vote_address_change
@@ -349,7 +371,9 @@ rules:
   effects:
   - type: emit_warning
     tag: parliamentary_register_request_may_be_required
-    message_ro: Verifică și depune cererea de înscriere la reședință până la termenul legal.
+    message_ro: Verifică și depune cererea de înscriere la reședință până la termenul
+      legal.
   source_claim_ids:
   - claim.vote.parliamentary_45d
   status: draft
+  effective_from: '2026-06-25'

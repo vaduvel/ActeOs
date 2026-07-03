@@ -116,7 +116,8 @@ gates:
   when: candidate_age_years >= 16 and candidate_consents == false
   effect: block
   code: AGE_16_PERSONAL_RELIGIOUS_CHOICE
-  message: De la 16 ani, minorul își alege singur religia; botezul nu poate continua fără voința sa.
+  message: De la 16 ani, minorul își alege singur religia; botezul nu poate continua
+    fără voința sa.
   recovery_actions:
   - Solicită consimțământul liber al persoanei.
   source_claim_ids:
@@ -124,8 +125,8 @@ gates:
   - claim.baptism.freedom_no_coercion
 - id: gate.age_14_change
   priority: 96
-  when: candidate_age_years >= 14 and candidate_age_years < 16 and religion_change_involved == true and candidate_consents
-    == false
+  when: candidate_age_years >= 14 and candidate_age_years < 16 and religion_change_involved
+    == true and candidate_consents == false
   effect: block
   code: AGE_14_CONSENT_FOR_CHANGE_REQUIRED
   message: Schimbarea religiei după 14 ani nu se poate face fără consimțământul copilului.
@@ -149,7 +150,8 @@ gates:
   when: candidate_age_years < 16 and guardians_agree == false
   effect: needs_confirmation
   code: GUARDIAN_DISAGREEMENT
-  message: Aplicația nu decide un conflict între reprezentanții legali privind opțiunea religioasă.
+  message: Aplicația nu decide un conflict între reprezentanții legali privind opțiunea
+    religioasă.
   recovery_actions:
   - Solicită consiliere juridică adecvată și discută cu unitatea de cult.
   source_claim_ids:
@@ -183,7 +185,8 @@ gates:
   when: religion_data_storage_consent == false
   effect: warn
   code: RELIGION_DATA_NOT_STORED
-  message: ActeOS nu va păstra cultul sau apartenența religioasă fără consimțământ expres.
+  message: ActeOS nu va păstra cultul sau apartenența religioasă fără consimțământ
+    expres.
   recovery_actions:
   - Continuă fără memorarea datelor sensibile sau acordă consimțământ explicit.
   source_claim_ids:
@@ -203,7 +206,8 @@ gates:
 steps:
 - id: step.confirm_free_consent
   title: Confirmă voința și reprezentarea
-  instruction: Verifică consimțământul persoanei conform vârstei și, pentru minor, situația reprezentanților legali.
+  instruction: Verifică consimțământul persoanei conform vârstei și, pentru minor,
+    situația reprezentanților legali.
   sequence_hint: 1
   applies_when:
     op: const
@@ -211,7 +215,8 @@ steps:
   depends_on: []
   deadline:
     kind: none
-  completion_evidence: Consimțământul necesar și autoritatea de reprezentare sunt clarificate.
+  completion_evidence: Consimțământul necesar și autoritatea de reprezentare sunt
+    clarificate.
   recovery_actions:
   - Oprește traseul dacă există constrângere sau conflict nerezolvat.
   official_channel_ids:
@@ -223,7 +228,8 @@ steps:
   - claim.baptism.child_16_choice
 - id: step.select_cult_parish
   title: Alege cultul și unitatea locală
-  instruction: Folosește directorul oficial și canalele eparhiale/parohiale pentru localitatea aleasă.
+  instruction: Folosește directorul oficial și canalele eparhiale/parohiale pentru
+    localitatea aleasă.
   sequence_hint: 2
   applies_when:
     op: const
@@ -246,8 +252,8 @@ steps:
   - claim.baptism.catholic_timisoara_channel
 - id: step.request_local_checklist
   title: Solicită checklistul local
-  instruction: Cere în scris actele, condițiile pentru candidat și nași/sponsori, pregătirea/cateheza, programarea și contribuțiile,
-    dacă există.
+  instruction: Cere în scris actele, condițiile pentru candidat și nași/sponsori,
+    pregătirea/cateheza, programarea și contribuțiile, dacă există.
   sequence_hint: 3
   applies_when:
     op: const
@@ -268,8 +274,8 @@ steps:
   - claim.baptism.cults_may_set_contributions
 - id: step.prepare_local_requirements
   title: Pregătește numai cerințele confirmate
-  instruction: Adună documentele și finalizează pregătirea indicată de unitatea de cult; nu folosi checklisturi generice de
-    pe bloguri.
+  instruction: Adună documentele și finalizează pregătirea indicată de unitatea de
+    cult; nu folosi checklisturi generice de pe bloguri.
   sequence_hint: 4
   applies_when:
     op: const
@@ -288,7 +294,8 @@ steps:
   - claim.baptism.cult_autonomy
 - id: step.confirm_ceremony
   title: Confirmă ceremonia și dovada ulterioară
-  instruction: Obține confirmarea datei și întreabă dacă/în ce formă se eliberează un certificat sau extras după botez.
+  instruction: Obține confirmarea datei și întreabă dacă/în ce formă se eliberează
+    un certificat sau extras după botez.
   sequence_hint: 5
   applies_when:
     op: const
@@ -297,7 +304,8 @@ steps:
   - step.prepare_local_requirements
   deadline:
     kind: none
-  completion_evidence: Ai confirmarea programării și știi cum se obține dovada, dacă este necesară.
+  completion_evidence: Ai confirmarea programării și știi cum se obține dovada, dacă
+    este necesară.
   recovery_actions:
   - Reprogramează sau solicită duplicatul direct unității de cult.
   official_channel_ids:
@@ -308,8 +316,8 @@ steps:
 requirements:
 - id: req.consent_confirmation
   title: Confirmarea consimțământului
-  description: Dovada/confirmarea că alegerea este liberă și respectă pragurile de vârstă; forma concretă se stabilește local
-    și legal.
+  description: Dovada/confirmarea că alegerea este liberă și respectă pragurile de
+    vârstă; forma concretă se stabilește local și legal.
   obligation: mandatory
   timing: now
   applies_when:
@@ -330,7 +338,8 @@ requirements:
   - claim.baptism.child_16_choice
 - id: req.guardian_authority_confirmation
   title: Confirmarea reprezentării minorului
-  description: Necesară numai pentru minor; documentul exact nu este generalizat și se confirmă pentru situația concretă.
+  description: Necesară numai pentru minor; documentul exact nu este generalizat și
+    se confirmă pentru situația concretă.
   obligation: conditional
   timing: now
   applies_when:
@@ -439,7 +448,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -466,7 +475,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -490,7 +499,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -522,7 +531,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -544,7 +553,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -568,7 +577,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:

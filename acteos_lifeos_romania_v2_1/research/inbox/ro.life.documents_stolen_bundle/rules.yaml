@@ -25,7 +25,7 @@ rules:
     canonical_rule_id: documents_stolen_bundle.trigger_id_card
     event_type_id: life.documents_stolen_bundle
     jurisdiction_ids: [ro]
-    severity: critical
+    severity: operational
     effective_from: '2021-04-19'
     when:
       op: eq
@@ -33,8 +33,8 @@ rules:
       value: true
     effects:
       - { type: trigger_child_event, event_type_id: life.id_card_lost_stolen }
-    source_claim_ids: []
-    status: draft
+    source_claim_ids: [claim.dsb.single_police_report]
+    status: in_review
   - id: rule.dsb.trigger_passport
     canonical_rule_id: documents_stolen_bundle.trigger_passport
     event_type_id: life.documents_stolen_bundle
@@ -47,8 +47,8 @@ rules:
       value: true
     effects:
       - { type: trigger_child_event, event_type_id: life.passport_first_or_renew }
-    source_claim_ids: []
-    status: draft
+    source_claim_ids: [claim.dsb.single_police_report]
+    status: in_review
   - id: rule.dsb.trigger_driving_license
     canonical_rule_id: documents_stolen_bundle.trigger_driving_license
     event_type_id: life.documents_stolen_bundle
@@ -62,8 +62,8 @@ rules:
     effects:
       - { type: trigger_child_event, event_type_id: life.driving_license_duplicate }
       - { type: emit_warning, message_ro: 'Inlocuirea permisului de conducere este un eveniment separat (R1B/ulterior).' }
-    source_claim_ids: []
-    status: draft
+    source_claim_ids: [claim.dsb.single_police_report]
+    status: in_review
   - id: rule.dsb.trigger_vehicle_registration
     canonical_rule_id: documents_stolen_bundle.trigger_vehicle_registration
     event_type_id: life.documents_stolen_bundle
@@ -77,5 +77,5 @@ rules:
     effects:
       - { type: trigger_child_event, event_type_id: life.vehicle_registration_duplicate }
       - { type: emit_warning, message_ro: 'Duplicat certificat de inmatriculare se elibereaza de SPCRPCIV (Ordinul 1501/2006).' }
-    source_claim_ids: []
-    status: draft
+    source_claim_ids: [claim.dsb.single_police_report]
+    status: in_review

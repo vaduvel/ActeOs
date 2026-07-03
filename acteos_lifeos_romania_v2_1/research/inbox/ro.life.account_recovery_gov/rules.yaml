@@ -86,7 +86,8 @@ facts:
 - id: roeid_old_phone_available
   type: boolean
   label: Mai ai vechiul telefon ROeID?
-  reason: Schimbarea telefonului presupune o nouă înregistrare, indiferent de disponibilitatea vechiului telefon.
+  reason: Schimbarea telefonului presupune o nouă înregistrare, indiferent de disponibilitatea
+    vechiului telefon.
   sensitive: true
   required_for_resolution: false
 - id: reset_message_received
@@ -126,7 +127,8 @@ gates:
   when: platform_id == ghiseul and registered_email_access == false
   effect: needs_confirmation
   code: GHISEUL_REGISTERED_EMAIL_UNAVAILABLE
-  message: Fluxul automat trimite credențialele pe e-mailul asociat; fără acces este necesar suportul oficial.
+  message: Fluxul automat trimite credențialele pe e-mailul asociat; fără acces este
+    necesar suportul oficial.
   recovery_actions:
   - Contactează suportul Ghișeul.ro prin canalul oficial.
   source_claim_ids:
@@ -134,8 +136,8 @@ gates:
   - claim.account_recovery_gov.ghiseul_support_after_failure
 - id: gate.anaf_missing_inputs
   priority: 85
-  when: platform_id == anaf_spv and issue_type in [forgot_password,forgot_username] and (cnp_available == false or registered_email_access
-    == false)
+  when: platform_id == anaf_spv and issue_type in [forgot_password,forgot_username]
+    and (cnp_available == false or registered_email_access == false)
   effect: needs_confirmation
   code: ANAF_RECOVERY_INPUTS_MISSING
   message: Recuperarea automată SPV cere CNP și acces la e-mailul folosit la înregistrare.
@@ -145,18 +147,21 @@ gates:
   - claim.account_recovery_gov.anaf_recovery_inputs
 - id: gate.anaf_change_email_missing
   priority: 80
-  when: platform_id == anaf_spv and issue_type == change_email and (username_known == false or current_password_known == false
-    or security_answer_known == false or new_email_available == false)
+  when: platform_id == anaf_spv and issue_type == change_email and (username_known
+    == false or current_password_known == false or security_answer_known == false
+    or new_email_available == false)
   effect: block
   code: ANAF_EMAIL_CHANGE_INPUTS_MISSING
-  message: Pagina de schimbare e-mail nu poate fi completată fără toate credențialele și răspunsul de siguranță.
+  message: Pagina de schimbare e-mail nu poate fi completată fără toate credențialele
+    și răspunsul de siguranță.
   recovery_actions:
   - Recuperează mai întâi credențialele sau solicită suport oficial.
   source_claim_ids:
   - claim.account_recovery_gov.anaf_change_email_inputs
 - id: gate.hub_no_contact
   priority: 75
-  when: platform_id == hub_mai and registered_email_access == false and registered_phone_access == false
+  when: platform_id == hub_mai and registered_email_access == false and registered_phone_access
+    == false
   effect: needs_confirmation
   code: HUB_MAI_VALIDATED_CONTACT_UNAVAILABLE
   message: Resetarea automată cere acces la e-mailul utilizat sau telefonul validat.
@@ -169,7 +174,8 @@ gates:
   when: reset_message_received == false
   effect: warn
   code: RESET_MESSAGE_NOT_RECEIVED
-  message: Verifică spamul și datele introduse; apoi folosește suportul oficial al platformei.
+  message: Verifică spamul și datele introduse; apoi folosește suportul oficial al
+    platformei.
   recovery_actions:
   - Nu comunica parola, codul sau datele de acces unor terți.
   source_claim_ids:
@@ -211,7 +217,8 @@ steps:
   - step.identify_platform
   deadline:
     kind: none
-  completion_evidence: Ai datele necesare fluxului ales, fără a le transmite aplicației ActeOS.
+  completion_evidence: Ai datele necesare fluxului ales, fără a le transmite aplicației
+    ActeOS.
   recovery_actions:
   - Dacă nu mai ai acces la e-mail/telefon, treci la suportul instituției.
   official_channel_ids:
@@ -226,7 +233,8 @@ steps:
   - claim.account_recovery_gov.hub_mai_validated_contact
 - id: step.run_official_recovery
   title: Rulează recuperarea pe pagina oficială
-  instruction: Solicită resetarea, reînrolarea sau schimbarea e-mailului prin fluxul platformei.
+  instruction: Solicită resetarea, reînrolarea sau schimbarea e-mailului prin fluxul
+    platformei.
   sequence_hint: 3
   applies_when:
     op: const
@@ -254,7 +262,8 @@ steps:
   - claim.account_recovery_gov.hub_mai_reset_channels
 - id: step.set_new_credentials
   title: Setează credențialele noi
-  instruction: Deschide mesajul numai dacă domeniul este oficial și setează o parolă nouă, unică.
+  instruction: Deschide mesajul numai dacă domeniul este oficial și setează o parolă
+    nouă, unică.
   sequence_hint: 4
   applies_when:
     op: const
@@ -276,8 +285,8 @@ steps:
   - claim.account_recovery_gov.hub_mai_reset_channels
 - id: step.secure_account
   title: Securizează contul recuperat
-  instruction: Verifică e-mailul și telefonul asociat, deconectează sesiunile necunoscute unde platforma permite și păstrează
-    parola în siguranță.
+  instruction: Verifică e-mailul și telefonul asociat, deconectează sesiunile necunoscute
+    unde platforma permite și păstrează parola în siguranță.
   sequence_hint: 5
   applies_when:
     op: const
@@ -321,7 +330,8 @@ requirements:
   - claim.account_recovery_gov.anaf_recovery_inputs
 - id: req.cnp
   title: CNP
-  description: Folosit pentru identificarea contului în fluxurile Ghișeul.ro și SPV persoană fizică.
+  description: Folosit pentru identificarea contului în fluxurile Ghișeul.ro și SPV
+    persoană fizică.
   obligation: conditional
   timing: now
   applies_when:
@@ -386,7 +396,8 @@ requirements:
   - claim.account_recovery_gov.hub_mai_validated_contact
 - id: req.roeid_reenrolment_kit
   title: Kit pentru reînrolare ROeID
-  description: Smartphone, act de identitate și acces la noul e-mail/telefon, după caz.
+  description: Smartphone, act de identitate și acces la noul e-mail/telefon, după
+    caz.
   obligation: conditional
   timing: now
   applies_when:
@@ -484,7 +495,7 @@ rules:
   competence_scope:
   - platform:roeid
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -517,7 +528,7 @@ rules:
   competence_scope:
   - platform:roeid
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -552,7 +563,7 @@ rules:
   competence_scope:
   - platform:ghiseul
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -580,7 +591,7 @@ rules:
   competence_scope:
   - platform:anaf_spv
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -615,7 +626,7 @@ rules:
   competence_scope:
   - platform:anaf_spv
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -645,7 +656,7 @@ rules:
   competence_scope:
   - platform:hub_mai
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:

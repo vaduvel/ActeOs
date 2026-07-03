@@ -344,6 +344,28 @@ def _certify_global_provenance(
 
     source_url_by_id: dict[str, str] = {}
     ids_by_url: dict[str, set[str]] = {}
+    cc_by_id: dict[str, list[str]] = {}
+
+    # Pre-load central claims_collapse from research/sources.yaml
+    import os
+    _central_sources_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "..", "..", "..",
+        "research", "sources.yaml"
+    )
+    _central_path = os.path.normpath(_central_sources_path)
+    if os.path.isfile(_central_path):
+        import yaml
+        try:
+            with open(_central_path) as _fh:
+                _central = yaml.safe_load(_fh)
+            for _src in (_central.get("sources") or []):
+                _sid = _src.get("id")
+                _cc = _src.get("claims_collapse")
+                if isinstance(_sid, str) and isinstance(_cc, list):
+                    cc_by_id[_sid] = [a for a in _cc if isinstance(a, str)]
+        except Exception:
+            pass  # best-effort; collisions will remain if central is broken
+
     for batch in batches:
         for src in _provenance_sources(batch):
             sid = src.get("id")
@@ -354,6 +376,22 @@ def _certify_global_provenance(
                 continue
             source_url_by_id[sid] = url
             ids_by_url.setdefault(url, set()).add(sid)
+            cc = src.get("claims_collapse")
+            if isinstance(cc, list):
+                cc_by_id[sid] = [a for a in cc if isinstance(a, str)]
+
+    # Resolve aliases: if a source claims_collapse into another source
+    # with the same URL, the alias is not a collision
+    for url, ids in list(ids_by_url.items()):
+        if len(ids) <= 1:
+            continue
+        alias_to_canonical: dict[str, str] = {}
+        for sid in ids:
+            for alias in cc_by_id.get(sid, []):
+                if alias in ids:
+                    alias_to_canonical[alias] = sid
+        ids_by_url[url] = {sid for sid in ids if sid not in alias_to_canonical}
+
     for url, ids in sorted(ids_by_url.items()):
         if len(ids) > 1:
             findings.append(

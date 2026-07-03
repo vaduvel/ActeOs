@@ -56,8 +56,8 @@ rules:
   effects:
   - type: block
     tag: requester_not_entitled
-    message_ro: Pentru naștere/căsătorie, solicitantul trebuie să fie titular, reprezentant legal ori împuternicit admis de
-      lege.
+    message_ro: Pentru naștere/căsătorie, solicitantul trebuie să fie titular, reprezentant
+      legal ori împuternicit admis de lege.
   source_claim_ids:
   - claim.civil.eligible_birth_marriage
   - claim.civil.proxy_lawyer
@@ -86,7 +86,8 @@ rules:
   effects:
   - type: block
     tag: requester_not_entitled
-    message_ro: Calitatea solicitantului pentru certificatul de deces nu este admisă de regulile verificate.
+    message_ro: Calitatea solicitantului pentru certificatul de deces nu este admisă
+      de regulile verificate.
   source_claim_ids:
   - claim.civil.eligible_death
   - claim.civil.proxy_lawyer
@@ -224,7 +225,7 @@ rules:
   event_type_id: life.civil_status_duplicate
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2025-03-31'
   when:
     op: eq
@@ -233,8 +234,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: electronic_channel_conflict
-    message_ro: Legea permite emiterea/transmiterea electronică, dar pagina operațională HUB spune că acest serviciu nu gestionează
-      documente electronice.
+    message_ro: Legea permite emiterea/transmiterea electronică, dar pagina operațională
+      HUB spune că acest serviciu nu gestionează documente electronice.
   - type: set_freshness_state
     value: conflicting
   source_claim_ids:
@@ -246,7 +247,7 @@ rules:
   event_type_id: life.civil_status_duplicate
   jurisdiction_ids:
   - ro.tm.timisoara
-  severity: critical
+  severity: operational
   effective_from: '2025-03-31'
   when:
     op: in
@@ -257,8 +258,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: tm_remote_channel_archived
-    message_ro: Pagina locală disponibilă este arhivată și spune că e-mailul/poșta nu sunt acceptate; verifică procedura curentă
-      înainte de depunere.
+    message_ro: Pagina locală disponibilă este arhivată și spune că e-mailul/poșta
+      nu sunt acceptate; verifică procedura curentă înainte de depunere.
   source_claim_ids:
   - claim.civil.tm_presence_no_email_archived
   status: in_review
@@ -342,7 +343,7 @@ rules:
   event_type_id: life.civil_status_duplicate
   jurisdiction_ids:
   - ro.tm.timisoara
-  severity: critical
+  severity: operational
   effective_from: '2025-03-31'
   when:
     op: const
@@ -350,8 +351,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: local_fee_conflict
-    message_ro: HUB indică taxe stabilite local, iar pagina arhivată Timișoara indică gratuitate; cuantumul curent trebuie
-      verificat.
+    message_ro: HUB indică taxe stabilite local, iar pagina arhivată Timișoara indică
+      gratuitate; cuantumul curent trebuie verificat.
   - type: set_freshness_state
     value: conflicting
   source_claim_ids:

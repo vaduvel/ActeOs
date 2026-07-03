@@ -9,7 +9,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: const
@@ -17,7 +17,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: missing_blocked_card_facts
-    message_ro: Precizează tipul problemei, numărul de încercări PIN și dacă este o urgență medicală.
+    message_ro: Precizează tipul problemei, numărul de încercări PIN și dacă este
+      o urgență medicală.
   source_claim_ids:
   - claim.health_card_blocked.five_wrong_pin
   status: draft
@@ -30,7 +31,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -48,7 +49,8 @@ rules:
     channel_id: ch.cnas_card_helpdesk_0212026995
   - type: emit_advice
     tag: provider_initiates_unblock
-    message_ro: La furnizor, medicul contactează helpdesk-ul CNAS și primește un număr de tichet.
+    message_ro: La furnizor, medicul contactează helpdesk-ul CNAS și primește un număr
+      de tichet.
   source_claim_ids:
   - claim.health_card_blocked.five_wrong_pin
   - claim.health_card_blocked.provider_helpdesk
@@ -58,7 +60,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -75,7 +77,8 @@ rules:
     message_ro: Sursa CNAS definește blocarea după cinci încercări greșite consecutive.
   - type: require_confirmation
     tag: forgotten_pin_or_reader_diagnosis
-    message_ro: Nu mai încerca PIN-uri la întâmplare; cere furnizorului să identifice problema.
+    message_ro: Nu mai încerca PIN-uri la întâmplare; cere furnizorului să identifice
+      problema.
   source_claim_ids:
   - claim.health_card_blocked.five_wrong_pin
   status: draft
@@ -84,7 +87,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -93,7 +96,8 @@ rules:
   effects:
   - type: emit_advice
     tag: emergency_without_card
-    message_ro: Pentru serviciile medicale de urgență nu este necesară utilizarea cardului.
+    message_ro: Pentru serviciile medicale de urgență nu este necesară utilizarea
+      cardului.
   - type: exclude_step
     step_id: delay_emergency_for_card_resolution
   source_claim_ids:
@@ -104,7 +108,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -115,10 +119,12 @@ rules:
     step_id: ask_provider_or_cas_for_pin_procedure
   - type: require_confirmation
     tag: forgotten_pin_current_procedure
-    message_ro: CNAS nu publică pe pagina verificată o procedură self-service pentru PIN uitat; confirmă la furnizor/CAS.
+    message_ro: CNAS nu publică pe pagina verificată o procedură self-service pentru
+      PIN uitat; confirmă la furnizor/CAS.
   - type: emit_warning
     tag: do_not_guess_pin
-    message_ro: 'Nu continua încercările la întâmplare: a cincea încercare greșită consecutivă blochează cardul.'
+    message_ro: 'Nu continua încercările la întâmplare: a cincea încercare greșită
+      consecutivă blochează cardul.'
   source_claim_ids:
   - claim.health_card_blocked.five_wrong_pin
   - claim.health_card_blocked.normal_use
@@ -128,7 +134,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -139,7 +145,8 @@ rules:
     step_id: provider_diagnoses_reader_or_pias_error
   - type: require_confirmation
     tag: reader_or_system_error_route
-    message_ro: Nu declara cardul blocat doar pentru că un cititor nu îl acceptă; furnizorul trebuie să identifice cauza.
+    message_ro: Nu declara cardul blocat doar pentru că un cititor nu îl acceptă;
+      furnizorul trebuie să identifice cauza.
   source_claim_ids:
   - claim.health_card_blocked.normal_use
   status: draft
@@ -148,7 +155,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -169,7 +176,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -186,7 +193,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: provider_contact_needed
-    message_ro: Procedura publicată pornește prin medic/furnizor; contactează un furnizor aflat în contract sau CAS.
+    message_ro: Procedura publicată pornește prin medic/furnizor; contactează un furnizor
+      aflat în contract sau CAS.
   source_claim_ids:
   - claim.health_card_blocked.provider_helpdesk
   status: draft
@@ -247,7 +255,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -264,7 +272,8 @@ rules:
   effects:
   - type: emit_warning
     tag: published_route_is_provider_initiated
-    message_ro: Procedura publicată este inițiată de furnizorul medical; nu presupune deblocarea directă de către asigurat.
+    message_ro: Procedura publicată este inițiată de furnizorul medical; nu presupune
+      deblocarea directă de către asigurat.
   source_claim_ids:
   - claim.health_card_blocked.provider_helpdesk
   status: draft
@@ -273,7 +282,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: in
@@ -294,7 +303,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -303,7 +312,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: activation_at_provider_not_unblock_route
-    message_ro: Confirmă procedura de activare la furnizor; nu aplica automat ruta pentru card blocat.
+    message_ro: Confirmă procedura de activare la furnizor; nu aplica automat ruta
+      pentru card blocat.
   source_claim_ids:
   - claim.health_card_blocked.normal_use
   status: draft
@@ -312,7 +322,7 @@ rules:
   event_type_id: life.health_card_blocked
   jurisdiction_ids:
   - ro
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -326,7 +336,8 @@ rules:
   effects:
   - type: emit_warning
     tag: likely_reader_or_system_issue_not_confirmed
-    message_ro: Funcționarea pe alt cititor sugerează o problemă locală, dar diagnosticul trebuie confirmat de furnizor.
+    message_ro: Funcționarea pe alt cititor sugerează o problemă locală, dar diagnosticul
+      trebuie confirmat de furnizor.
   source_claim_ids:
   - claim.health_card_blocked.normal_use
   status: draft

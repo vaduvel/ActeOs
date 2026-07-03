@@ -31,8 +31,8 @@ rules:
     step_id: classify_foreign_death_transcription
   - type: emit_warning
     tag: transcription_requires_foreign_registration
-    message_ro: Mai întâi verifică dacă decesul a fost înregistrat în străinătate; altfel se aplică procedura de întocmire,
-      nu transcrierea.
+    message_ro: Mai întâi verifică dacă decesul a fost înregistrat în străinătate;
+      altfel se aplică procedura de întocmire, nu transcrierea.
   source_claim_ids:
   - claim.tfd.power_and_route
   - claim.tfd.unregistered_death
@@ -53,7 +53,8 @@ rules:
   effects:
   - type: block
     tag: deceased_not_romanian
-    message_ro: Transcrierea art. 41 privește actele de stare civilă ale cetățenilor români.
+    message_ro: Transcrierea art. 41 privește actele de stare civilă ale cetățenilor
+      români.
   source_claim_ids:
   - claim.tfd.power_and_route
   status: in_review
@@ -73,7 +74,8 @@ rules:
   effects:
   - type: block
     tag: deceased_status_uncertain
-    message_ro: Cetățenia persoanei la data decesului trebuie clarificată înainte de stabilirea procedurii.
+    message_ro: Cetățenia persoanei la data decesului trebuie clarificată înainte
+      de stabilirea procedurii.
   - type: require_confirmation
     tag: prove_deceased_romanian_status
     message_ro: Obține dovada oficială a cetățeniei române la data decesului.
@@ -104,12 +106,14 @@ rules:
   effects:
   - type: block
     tag: death_not_registered_abroad
-    message_ro: Nu există un act străin de transcris; deschide procedura art. 39^2 pentru întocmirea actului de deces.
+    message_ro: Nu există un act străin de transcris; deschide procedura art. 39^2
+      pentru întocmirea actului de deces.
   - type: include_step
     step_id: open_foreign_death_first_registration
   - type: require_confirmation
     tag: art39_2_documents
-    message_ro: Confirmă certificatul medical, verificarea MAE și aprobările cerute de art. 39^2.
+    message_ro: Confirmă certificatul medical, verificarea MAE și aprobările cerute
+      de art. 39^2.
   source_claim_ids:
   - claim.tfd.unregistered_death
   status: in_review
@@ -120,7 +124,7 @@ rules:
   jurisdiction_ids:
   - ro
   authority_level: national_normative
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -149,7 +153,7 @@ rules:
   jurisdiction_ids:
   - ro
   authority_level: national_normative
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -161,8 +165,8 @@ rules:
   effects:
   - type: emit_warning
     tag: request_within_6m_normative
-    message_ro: Legea națională cere solicitarea în 6 luni de la înregistrarea decesului în străinătate sau de la dobândirea/redobândirea
-      cetățeniei.
+    message_ro: Legea națională cere solicitarea în 6 luni de la înregistrarea decesului
+      în străinătate sau de la dobândirea/redobândirea cetățeniei.
   source_claim_ids:
   - claim.tfd.deadline_normative
   status: in_review
@@ -173,7 +177,7 @@ rules:
   jurisdiction_ids:
   - ro
   authority_level: national_normative
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -257,8 +261,8 @@ rules:
     step_id: file_sector1_bucharest
   - type: emit_advice
     tag: sector1_60d
-    message_ro: Pentru persoana fără domiciliu anterior în România, alta decât art. 10/11, aplică ruta Sectorului 1 și termenul
-      legal de 60 de zile.
+    message_ro: Pentru persoana fără domiciliu anterior în România, alta decât art.
+      10/11, aplică ruta Sectorului 1 și termenul legal de 60 de zile.
   source_claim_ids:
   - claim.tfd.no_domicile_routes
   status: in_review
@@ -291,7 +295,8 @@ rules:
     step_id: file_bucharest_sector_or_county_seat
   - type: emit_advice
     tag: art10_11_ro_60d
-    message_ro: Ruta art. 10/11 fără domiciliu anterior se soluționează în țară prin autoritățile desemnate, în 60 de zile.
+    message_ro: Ruta art. 10/11 fără domiciliu anterior se soluționează în țară prin
+      autoritățile desemnate, în 60 de zile.
   source_claim_ids:
   - claim.tfd.no_domicile_routes
   status: in_review
@@ -326,7 +331,8 @@ rules:
     channel_id: ch.romanian_mission
   - type: emit_advice
     tag: art10_11_consular_90d
-    message_ro: Ruta consulară specială are termen legal de 90 de zile și cerere personală în fereastra legală de la jurământ.
+    message_ro: Ruta consulară specială are termen legal de 90 de zile și cerere personală
+      în fereastra legală de la jurământ.
   source_claim_ids:
   - claim.tfd.art10_11_consular
   status: in_review
@@ -354,7 +360,8 @@ rules:
     step_id: transcribe_birth_ex_officio_before_death
   - type: emit_advice
     tag: birth_before_death
-    message_ro: Ofițerul competent poate transcrie nașterea din oficiu și gratuit înaintea transcrierii decesului.
+    message_ro: Ofițerul competent poate transcrie nașterea din oficiu și gratuit
+      înaintea transcrierii decesului.
   - type: trigger_child_event
     event_type_id: ro.life.transcribe_foreign_birth
   source_claim_ids:
@@ -382,7 +389,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: birth_transcription_status_check
-    message_ro: Verifică existența actului românesc de naștere al persoanei decedate înainte de finalizarea dosarului.
+    message_ro: Verifică existența actului românesc de naștere al persoanei decedate
+      înainte de finalizarea dosarului.
   source_claim_ids:
   - claim.tfd.birth_first
   status: in_review
@@ -393,7 +401,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -419,7 +427,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -444,7 +452,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -469,7 +477,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -493,7 +501,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -502,7 +510,8 @@ rules:
   effects:
   - type: emit_advice
     tag: vienna_no_apostille_translation
-    message_ro: Extrasul multilingv eligibil este acceptat local fără apostilă și fără traducere.
+    message_ro: Extrasul multilingv eligibil este acceptat local fără apostilă și
+      fără traducere.
   source_claim_ids:
   - claim.tfd.local_eu_vienna
   status: in_review
@@ -512,7 +521,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: eq
@@ -521,7 +530,8 @@ rules:
   effects:
   - type: require_confirmation
     tag: electronic_document_acceptance
-    message_ro: Confirmă autenticitatea, verificarea și forma de prezentare acceptată pentru documentul electronic.
+    message_ro: Confirmă autenticitatea, verificarea și forma de prezentare acceptată
+      pentru documentul electronic.
   source_claim_ids:
   - claim.tfd.local_docs
   status: in_review
@@ -553,7 +563,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -575,11 +585,12 @@ rules:
     requirement_id: req.deceased_civil_status_documents
   - type: emit_advice
     tag: timisoara_30d_no_fee
-    message_ro: Pagina locală indică 30 de zile și fără taxe; reconfirmă checklistul deoarece detaliile provin și din pagina
-      oficială arhivată.
+    message_ro: Pagina locală indică 30 de zile și fără taxe; reconfirmă checklistul
+      deoarece detaliile provin și din pagina oficială arhivată.
   - type: require_confirmation
     tag: timisoara_local_recheck
-    message_ro: Verifică în portalul curent programarea și lista finală înainte de depunere.
+    message_ro: Verifică în portalul curent programarea și lista finală înainte de
+      depunere.
   source_claim_ids:
   - claim.tfd.local_channel_timing_fee
   - claim.tfd.current_death_portal
@@ -591,7 +602,7 @@ rules:
   jurisdiction_ids:
   - ro.tm.timisoara
   authority_level: uat
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   when:
     op: all
@@ -607,11 +618,12 @@ rules:
   effects:
   - type: emit_warning
     tag: deadline_anchor_conflict
-    message_ro: Legea actuală leagă termenul de înregistrarea străină/dobândirea cetățeniei, iar pagina locală de întoarcere/primirea
-      certificatului.
+    message_ro: Legea actuală leagă termenul de înregistrarea străină/dobândirea cetățeniei,
+      iar pagina locală de întoarcere/primirea certificatului.
   - type: require_confirmation
     tag: deadline_anchor_authority_confirmation
-    message_ro: Aplică termenul legal conservator și cere clarificare locală pentru formularea nealiniată.
+    message_ro: Aplică termenul legal conservator și cere clarificare locală pentru
+      formularea nealiniată.
   source_claim_ids:
   - claim.tfd.deadline_normative
   - claim.tfd.deadline_local

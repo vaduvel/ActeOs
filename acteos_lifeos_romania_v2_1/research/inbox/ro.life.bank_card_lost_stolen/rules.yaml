@@ -89,7 +89,8 @@ gates:
   when: provider_id in [other, unknown]
   effect: needs_confirmation
   code: ISSUER_CHANNEL_REQUIRED
-  message: Nu folosi un număr găsit într-un mesaj; identifică emitentul și canalul oficial.
+  message: Nu folosi un număr găsit într-un mesaj; identifică emitentul și canalul
+    oficial.
   recovery_actions:
   - Deschide site-ul oficial al emitentului.
   - Folosește numărul de pe spatele altui card/document contractual, dacă este verificabil.
@@ -100,7 +101,8 @@ gates:
   when: provider_id == cec
   effect: warn
   code: CEC_SECONDARY_PHONE_CONFLICT
-  message: Sursele oficiale CEC afișează numere secundare diferite. Numărul comun ambelor pagini este 021 202 69 99.
+  message: Sursele oficiale CEC afișează numere secundare diferite. Numărul comun
+    ambelor pagini este 021 202 69 99.
   recovery_actions:
   - Folosește 021 202 69 99 sau aplicația/canalul oficial actual.
   source_claim_ids:
@@ -155,7 +157,8 @@ steps:
   - step.block_card
   deadline:
     kind: none
-  completion_evidence: Ai o listă datată a operațiunilor contestate sau ai confirmat că nu există.
+  completion_evidence: Ai o listă datată a operațiunilor contestate sau ai confirmat
+    că nu există.
   recovery_actions:
   - Descarcă extrasul sau contactează banca dacă nu ai acces.
   official_channel_ids:
@@ -219,7 +222,8 @@ steps:
 requirements:
 - id: req.issuer_identification
   title: Identificarea emitentului
-  description: Numele băncii emitente și, dacă este disponibil, ultimele cifre ale cardului.
+  description: Numele băncii emitente și, dacă este disponibil, ultimele cifre ale
+    cardului.
   obligation: mandatory
   timing: now
   applies_when:
@@ -237,8 +241,8 @@ requirements:
   - claim.bank_card_lost_stolen.notify_without_delay
 - id: req.security_identification
   title: Date pentru identificarea sigură
-  description: Datele pe care banca le solicită pentru autentificare; nu transmite PIN, CVV sau OTP unui apelant neinițiat
-    de tine.
+  description: Datele pe care banca le solicită pentru autentificare; nu transmite
+    PIN, CVV sau OTP unui apelant neinițiat de tine.
   obligation: mandatory
   timing: now
   applies_when:
@@ -327,7 +331,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -351,7 +355,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -377,7 +381,7 @@ rules:
   authority_level: institution
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -386,7 +390,8 @@ rules:
     value: cec
   effects:
   - type: emit_warning
-    message_ro: Două surse oficiale CEC diferă asupra numărului secundar; folosește numărul comun 021 202 69 99.
+    message_ro: Două surse oficiale CEC diferă asupra numărului secundar; folosește
+      numărul comun 021 202 69 99.
   - type: set_freshness_state
     value: conflicting
   source_claim_ids:

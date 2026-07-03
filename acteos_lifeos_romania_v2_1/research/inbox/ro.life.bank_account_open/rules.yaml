@@ -119,7 +119,8 @@ gates:
   when: provider_id in [other, undecided]
   effect: needs_confirmation
   code: PROVIDER_RULES_REQUIRED
-  message: Cerințele exacte trebuie confirmate la banca aleasă; nu există un dosar bancar unic pentru toate băncile.
+  message: Cerințele exacte trebuie confirmate la banca aleasă; nu există un dosar
+    bancar unic pentru toate băncile.
   recovery_actions:
   - Selectează furnizorul.
   - Verifică pagina oficială a produsului.
@@ -130,7 +131,8 @@ gates:
   when: channel_preference == online and provider-specific eligibility is not met
   effect: warn
   code: ONLINE_FLOW_MAY_BE_UNAVAILABLE
-  message: Fluxul online cercetat poate să nu fie disponibil; verifică deschiderea la unitate.
+  message: Fluxul online cercetat poate să nu fie disponibil; verifică deschiderea
+    la unitate.
   recovery_actions:
   - Alege canalul fizic.
   - Confirmă eligibilitatea direct cu banca.
@@ -141,7 +143,8 @@ gates:
 steps:
 - id: step.choose_provider_product
   title: Alege banca și tipul de cont
-  instruction: Compară produsul standard cu contul de plăți cu servicii de bază și selectează banca.
+  instruction: Compară produsul standard cu contul de plăți cu servicii de bază și
+    selectează banca.
   sequence_hint: 1
   applies_when:
     op: const
@@ -163,7 +166,8 @@ steps:
   - claim.bank_account_open.cec_online_prerequisites
 - id: step.prepare_identity
   title: Pregătește identificarea
-  instruction: Folosește un act de identitate valabil și completează informațiile cerute pentru cunoașterea clientelei.
+  instruction: Folosește un act de identitate valabil și completează informațiile
+    cerute pentru cunoașterea clientelei.
   sequence_hint: 2
   applies_when:
     op: const
@@ -172,7 +176,8 @@ steps:
   - step.choose_provider_product
   deadline:
     kind: none
-  completion_evidence: Banca a putut verifica identitatea și a confirmat că solicitarea este completă.
+  completion_evidence: Banca a putut verifica identitatea și a confirmat că solicitarea
+    este completă.
   recovery_actions:
   - Corectează fotografiile sau datele.
   - Mergi la o unitate dacă verificarea online eșuează.
@@ -217,9 +222,11 @@ steps:
   - step.submit_application
   deadline:
     kind: none
-  completion_evidence: Ai contractul/confirmarea, IBAN-ul și accesul activat sau un refuz motivat.
+  completion_evidence: Ai contractul/confirmarea, IBAN-ul și accesul activat sau un
+    refuz motivat.
   recovery_actions:
-  - Pentru contul de bază, urmărește termenul legal de 10 zile lucrătoare de la cererea completă.
+  - Pentru contul de bază, urmărește termenul legal de 10 zile lucrătoare de la cererea
+    completă.
   - Pentru alte produse, confirmă termenul contractual.
   official_channel_ids:
   - channel.ing_account
@@ -253,7 +260,8 @@ requirements:
   - claim.bank_account_open.no_account_without_kyc
 - id: req.kyc_information
   title: Informațiile KYC solicitate de bancă
-  description: Datele și declarațiile necesare verificării clientului și, după caz, rezidenței fiscale.
+  description: Datele și declarațiile necesare verificării clientului și, după caz,
+    rezidenței fiscale.
   obligation: mandatory
   timing: now
   applies_when:
@@ -349,7 +357,7 @@ rules:
   competence_scope:
   - customer_due_diligence
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -372,7 +380,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -381,7 +389,8 @@ rules:
     value: false
   effects:
   - type: block
-    message_ro: Banca nu poate deschide contul fără aplicarea măsurilor de cunoaștere a clientelei.
+    message_ro: Banca nu poate deschide contul fără aplicarea măsurilor de cunoaștere
+      a clientelei.
   source_claim_ids:
   - claim.bank_account_open.no_account_without_kyc
   status: draft
@@ -394,7 +403,7 @@ rules:
   authority_level: national_normative
   competence_scope: []
   legal_rank: lege
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -420,7 +429,7 @@ rules:
   competence_scope:
   - provider:ing
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -460,7 +469,8 @@ rules:
     - undecided
   effects:
   - type: require_confirmation
-    message_ro: Cerințele și termenul produsului trebuie confirmate la furnizorul ales.
+    message_ro: Cerințele și termenul produsului trebuie confirmate la furnizorul
+      ales.
   source_claim_ids:
   - claim.bank_account_open.kyc_before_relationship
   status: draft

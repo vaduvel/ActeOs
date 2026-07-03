@@ -89,7 +89,8 @@ gates:
   when: romanian_citizen == false
   effect: needs_confirmation
   code: ROEID_CITIZENSHIP_SCOPE
-  message: Termenii cercetați definesc utilizatorul persoană fizică drept cetățean român.
+  message: Termenii cercetați definesc utilizatorul persoană fizică drept cetățean
+    român.
   recovery_actions:
   - Verifică un alt mijloc de identitate acceptat de serviciul public țintă.
   source_claim_ids:
@@ -118,7 +119,8 @@ gates:
   - claim.digital_identity_ro.roeid_rejected_capture_recovery
 - id: gate.no_capture_tools
   priority: 85
-  when: camera_available == false or microphone_available == false or internet_available == false
+  when: camera_available == false or microphone_available == false or internet_available
+    == false
   effect: block
   code: ROEID_CAPTURE_NOT_READY
   message: Camera, microfonul și internetul sunt necesare capturilor ROeID.
@@ -132,9 +134,11 @@ gates:
   when: enrollment_submitted == true
   effect: warn
   code: ROEID_APPROVAL_TIME_CONFLICT
-  message: Sursele oficiale ROeID indică atât maximum 24 de ore, cât și 24–72 de ore lucrătoare.
+  message: Sursele oficiale ROeID indică atât maximum 24 de ore, cât și 24–72 de ore
+    lucrătoare.
   recovery_actions:
-  - Nu promite un termen exact; urmărește notificarea oficială și contactează suportul dacă întârzie.
+  - Nu promite un termen exact; urmărește notificarea oficială și contactează suportul
+    dacă întârzie.
   source_claim_ids:
   - claim.digital_identity_ro.roeid_duration_24_72
   - claim.digital_identity_ro.roeid_duration_max_24
@@ -145,7 +149,8 @@ gates:
   code: ROEID_CAPTURE_REJECTED
   message: Refă imaginile și filmarea cu lumină bună, fără reflexii și cu actul original.
   recovery_actions:
-  - Respectă ghidajul din aplicație; dacă persistă, folosește formularul oficial de contact.
+  - Respectă ghidajul din aplicație; dacă persistă, folosește formularul oficial de
+    contact.
   source_claim_ids:
   - claim.digital_identity_ro.roeid_rejected_capture_recovery
 steps:
@@ -169,7 +174,8 @@ steps:
   - claim.digital_identity_ro.roeid_smartphone_internet
 - id: step.install_official_app
   title: Instalează aplicația oficială ROeID
-  instruction: Accesează magazinele oficiale prin pagina ROeID și deschide procesul de creare a contului.
+  instruction: Accesează magazinele oficiale prin pagina ROeID și deschide procesul
+    de creare a contului.
   sequence_hint: 2
   applies_when:
     op: const
@@ -178,7 +184,8 @@ steps:
   - step.check_readiness
   deadline:
     kind: none
-  completion_evidence: Aplicația oficială este instalată și procesul de înrolare este deschis.
+  completion_evidence: Aplicația oficială este instalată și procesul de înrolare este
+    deschis.
   recovery_actions:
   - Nu instala aplicații din linkuri neoficiale.
   official_channel_ids:
@@ -188,7 +195,8 @@ steps:
   - claim.digital_identity_ro.roeid_smartphone_internet
 - id: step.capture_identity
   title: Parcurge cele cinci etape de captură
-  instruction: Introdu datele, fotografiază actul, fă selfie-ul și înregistrările video/audio cerute.
+  instruction: Introdu datele, fotografiază actul, fă selfie-ul și înregistrările
+    video/audio cerute.
   sequence_hint: 3
   applies_when:
     op: const
@@ -208,7 +216,8 @@ steps:
   - claim.digital_identity_ro.roeid_rejected_capture_recovery
 - id: step.wait_validation
   title: Urmărește validarea
-  instruction: Așteaptă e-mailul și notificarea din aplicație; nu trata intervalul publicat ca termen garantat.
+  instruction: Așteaptă e-mailul și notificarea din aplicație; nu trata intervalul
+    publicat ca termen garantat.
   sequence_hint: 4
   applies_when:
     op: const
@@ -228,7 +237,8 @@ steps:
   - claim.digital_identity_ro.roeid_duration_max_24
 - id: step.use_roeid
   title: Folosește autentificarea ROeID
-  instruction: Pe serviciile compatibile, selectează butonul «Autentifică-te cu ROeID» și aprobă cererea în aplicație.
+  instruction: Pe serviciile compatibile, selectează butonul «Autentifică-te cu ROeID»
+    și aprobă cererea în aplicație.
   sequence_hint: 5
   applies_when:
     op: const
@@ -366,7 +376,7 @@ rules:
   authority_level: national_operational
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -391,7 +401,7 @@ rules:
   authority_level: national_operational
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -415,7 +425,7 @@ rules:
   authority_level: national_operational
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -442,7 +452,7 @@ rules:
   authority_level: national_operational
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -451,7 +461,8 @@ rules:
     value: true
   effects:
   - type: emit_warning
-    message_ro: 'Durata aprobării este publicată contradictoriu: maximum 24h versus 24–72h lucrătoare.'
+    message_ro: 'Durata aprobării este publicată contradictoriu: maximum 24h versus
+      24–72h lucrătoare.'
   - type: require_confirmation
     message_ro: Nu afișa un deadline garantat.
   source_claim_ids:

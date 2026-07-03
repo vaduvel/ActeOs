@@ -97,7 +97,8 @@ gates:
   when: danger_ongoing == true
   effect: warn
   code: ENSURE_SAFETY_FIRST
-  message: Pune persoanele în siguranță și contactează serviciile de urgență înaintea dosarului.
+  message: Pune persoanele în siguranță și contactează serviciile de urgență înaintea
+    dosarului.
   recovery_actions:
   - Apelează 112 dacă există pericol imediat.
   - Limitează paguba fără a te expune.
@@ -115,7 +116,8 @@ gates:
   - claim.home_insurance_claim.pad_notify_60_days
 - id: gate.pad_authority_doc
   priority: 90
-  when: policy_kind in [pad,both] and peril in [natural_flood,landslide] and authorities_notified == false
+  when: policy_kind in [pad,both] and peril in [natural_flood,landslide] and authorities_notified
+    == false
   effect: warn
   code: NOTIFY_LOCAL_AUTHORITIES
   message: Pentru această daună PAD, anunță ISU/primăria și cere proces-verbal.
@@ -139,7 +141,8 @@ gates:
   when: policy_kind in [facultative,both] and insurer_id in [other,unknown]
   effect: needs_confirmation
   code: CONTRACT_RULES_REQUIRED
-  message: Termenul și actele poliței facultative trebuie confirmate din contract și pagina asigurătorului.
+  message: Termenul și actele poliței facultative trebuie confirmate din contract
+    și pagina asigurătorului.
   recovery_actions:
   - Identifică asigurătorul și numărul poliței.
   source_claim_ids:
@@ -148,8 +151,8 @@ gates:
 steps:
 - id: step.secure_property
   title: Protejează persoanele și limitează paguba
-  instruction: Ia măsuri rezonabile de siguranță fără a începe reparații definitive înaintea constatării, unde polița cere
-    asta.
+  instruction: Ia măsuri rezonabile de siguranță fără a începe reparații definitive
+    înaintea constatării, unde polița cere asta.
   sequence_hint: 1
   applies_when:
     op: const
@@ -168,7 +171,8 @@ steps:
   - claim.home_insurance_claim.pad_no_repairs_before_inspection
 - id: step.notify_authorities
   title: Anunță autoritățile și cere documentul evenimentului
-  instruction: Pentru inundație naturală sau alunecare PAD, contactează ISU/primăria și solicită proces-verbal.
+  instruction: Pentru inundație naturală sau alunecare PAD, contactează ISU/primăria
+    și solicită proces-verbal.
   sequence_hint: 2
   applies_when:
     op: all
@@ -221,7 +225,8 @@ steps:
   - claim.home_insurance_claim.groupama_notice_48h
 - id: step.prepare_file
   title: Pregătește dosarul de daună
-  instruction: Adună actul de identitate, polița, actele de proprietate și documentele autorităților/daunei.
+  instruction: Adună actul de identitate, polița, actele de proprietate și documentele
+    autorităților/daunei.
   sequence_hint: 4
   applies_when:
     op: const
@@ -230,7 +235,8 @@ steps:
   - step.notify_insurer
   deadline:
     kind: none
-  completion_evidence: Asigurătorul confirmă că dosarul este complet sau comunică exact ce lipsește.
+  completion_evidence: Asigurătorul confirmă că dosarul este complet sau comunică
+    exact ce lipsește.
   recovery_actions:
   - Încarcă numai documentele cerute pentru polița concretă.
   - Păstrează originalele.
@@ -332,7 +338,8 @@ requirements:
   - claim.home_insurance_claim.pad_core_file_docs
 - id: req.property_title
   title: Acte privind dreptul asupra locuinței
-  description: Acte de proprietate sau alternativele oficial acceptate în dosarul PAD.
+  description: Acte de proprietate sau alternativele oficial acceptate în dosarul
+    PAD.
   obligation: mandatory
   timing: now
   applies_when:
@@ -354,7 +361,8 @@ requirements:
   - claim.home_insurance_claim.pad_core_file_docs
 - id: req.authority_report
   title: Proces-verbal/document al autorității
-  description: Document care confirmă evenimentul, când este cerut de riscul/polița aplicabilă.
+  description: Document care confirmă evenimentul, când este cerut de riscul/polița
+    aplicabilă.
   obligation: conditional
   timing: now
   applies_when:
@@ -470,7 +478,7 @@ rules:
   competence_scope:
   - policy:PAD
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -497,7 +505,7 @@ rules:
   authority_level: national_operational
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -530,7 +538,7 @@ rules:
   authority_level: mixed
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -560,7 +568,7 @@ rules:
   competence_scope:
   - provider:allianz
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -594,7 +602,7 @@ rules:
   competence_scope:
   - provider:groupama
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:

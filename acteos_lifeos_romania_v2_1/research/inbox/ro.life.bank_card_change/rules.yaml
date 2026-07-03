@@ -74,7 +74,8 @@ gates:
   when: change_reason == lost_or_stolen
   effect: block
   code: USE_LOST_STOLEN_FLOW
-  message: Pentru card pierdut sau furat, folosește fluxul urgent de blocare, nu simpla schimbare.
+  message: Pentru card pierdut sau furat, folosește fluxul urgent de blocare, nu simpla
+    schimbare.
   recovery_actions:
   - Deschide intentul «Blochez un card pierdut sau furat».
   source_claim_ids:
@@ -94,7 +95,8 @@ gates:
   when: change_reason == name_change and new_identity_document_ready == false
   effect: block
   code: UPDATE_IDENTITY_FIRST
-  message: Pregătește noul act și actualizează datele la bancă înainte de cardul cu numele nou.
+  message: Pregătește noul act și actualizează datele la bancă înainte de cardul cu
+    numele nou.
   recovery_actions:
   - Finalizează actul de identitate.
   - Actualizează profilul bancar.
@@ -187,7 +189,8 @@ steps:
   - claim.bank_card_change.cec_valid_month_end
 - id: step.receive_activate
   title: Primește și activează noul card
-  instruction: Verifică primirea, activează cardul și distruge/reciclează cardul vechi conform indicațiilor emitentului.
+  instruction: Verifică primirea, activează cardul și distruge/reciclează cardul vechi
+    conform indicațiilor emitentului.
   sequence_hint: 4
   applies_when:
     op: const
@@ -316,7 +319,7 @@ rules:
   authority_level: mixed
   competence_scope: []
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -341,7 +344,7 @@ rules:
   competence_scope:
   - provider:ing
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
@@ -357,7 +360,8 @@ rules:
   - type: include_step
     step_id: step.request_card
   - type: emit_warning
-    message_ro: La ING, lipsa opțiunii exprimate poate însemna că nu se reînnoiește automat.
+    message_ro: La ING, lipsa opțiunii exprimate poate însemna că nu se reînnoiește
+      automat.
   source_claim_ids:
   - claim.bank_card_change.ing_renewal_window
   - claim.bank_card_change.ing_no_automatic_renewal
@@ -372,7 +376,7 @@ rules:
   competence_scope:
   - provider:ing
   legal_rank: null
-  severity: critical
+  severity: operational
   effective_from: '2026-06-25'
   effective_to: null
   when:
