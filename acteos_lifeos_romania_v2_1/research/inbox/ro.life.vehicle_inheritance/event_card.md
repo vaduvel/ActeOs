@@ -10,7 +10,7 @@
 | `category_id` | `vehicles_mobility` |
 | `reference_date` | `2026-06-25` |
 | `geographic_scope` | național; pilot local Timiș / Timișoara |
-| `publication_status` | `research_inbox_pending_snapshot_and_human_review` |
+| `publication_status` | `research_inbox_claims_active` |
 
 ## Declanșator
 
