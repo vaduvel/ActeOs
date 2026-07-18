@@ -149,3 +149,33 @@ def verify_event_log(rows: Sequence[Mapping[str, Any]]) -> bool:
             return False
         prev = row["event_hash"]
     return True
+
+
+# --- PII scrubbing ------------------------------------------------------------
+# Keys that are known to carry personally-identifiable information.  Matching is
+# case-insensitive suffix-based so ``user_email``, ``contactEmail``, etc. are all
+# caught without maintaining an exhaustive allow-list.
+_PII_SUFFIXES = (
+    "email", "phone", "mobile", "cnp", "name", "firstname", "lastname",
+    "address", "street", "city", "county", "postalcode", "zipcode",
+    "iban", "card", "value", "note", "message", "ssn", "passport",
+)
+
+_REDACTED = "[redacted]"
+
+
+def _is_pii_key(key: str) -> bool:
+    return key.lower().rstrip("_s").endswith(_PII_SUFFIXES) or key.lower().rstrip("s").endswith(_PII_SUFFIXES)
+
+
+def scrub_payload(payload: Any) -> Any:
+    """Return a deep copy of *payload* with PII fields replaced by ``[redacted]``.
+
+    Applied by ``AuditRepo.append`` before hashing and storage so the audit log
+    never contains raw PII, even if a caller forgets to sanitize.
+    """
+    if isinstance(payload, dict):
+        return {k: _REDACTED if _is_pii_key(k) else scrub_payload(v) for k, v in payload.items()}
+    if isinstance(payload, list):
+        return [scrub_payload(v) for v in payload]
+    return payload

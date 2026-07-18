@@ -90,3 +90,12 @@ class FieldCipher:
 
     def decrypt_str(self, token: str, *, aad=b"") -> str:
         return self.decrypt(token, aad=aad).decode("utf-8")
+
+    def rewrap(self, token: str, *, aad=b"") -> str:
+        """Decrypt under the original key and re-encrypt under the active key.
+
+        Used after key rotation to progressively re-encrypt existing rows so
+        that the old key can eventually be retired.
+        """
+        plaintext = self.decrypt(token, aad=aad)
+        return self.encrypt(plaintext, aad=aad)

@@ -362,7 +362,7 @@ class AuditRepo:
                payload: dict | None = None) -> str:
         prev = self._head()
         occurred_at = _now()
-        payload = payload or {}
+        payload = scrub_payload(payload or {})
         event_hash = compute_event_hash(
             previous_event_hash=prev, occurred_at=occurred_at.isoformat(),
             actor_type=actor_type, actor_id=actor_id, action=action,

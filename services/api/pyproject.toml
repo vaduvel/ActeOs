@@ -14,16 +14,27 @@ dependencies = [
     "cryptography>=43",
     "fastapi>=0.138",
     "pydantic>=2.9",
+    "pydantic-settings>=2.8",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11"]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    # Integration tests need a real Postgres, provisioned on the fly by
+    # testcontainers (requires Docker running locally / in CI).
+    "testcontainers[postgres]>=4.8",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/wb_api"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "integration: tests that require Docker (testcontainers / Postgres)",
+]
 
 [tool.ruff]
 line-length = 100

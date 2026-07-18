@@ -231,8 +231,8 @@ class RuleClaimLink(Base):
     __tablename__ = "rule_claim_link"
     __table_args__ = {"schema": "content"}
 
-    rule_version_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_version.id"), primary_key=True)
-    source_claim_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.source_claim.id"), primary_key=True)
+    rule_version_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_version.id", ondelete="CASCADE"), primary_key=True)
+    source_claim_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.source_claim.id", ondelete="RESTRICT"), primary_key=True)
     rule_path: Mapped[str] = mapped_column(Text, primary_key=True)
     is_critical: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
 
@@ -242,7 +242,7 @@ class RuleReview(Base):
     __table_args__ = {"schema": "content"}
 
     id: Mapped[str] = _uuid_pk()
-    rule_version_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_version.id"))
+    rule_version_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_version.id", ondelete="CASCADE"))
     reviewer_id: Mapped[str] = mapped_column(UUID(as_uuid=False))
     reviewer_role: Mapped[str] = mapped_column(Text)
     decision: Mapped[str] = mapped_column(Text)
@@ -272,8 +272,8 @@ class RuleBundleMember(Base):
     __tablename__ = "rule_bundle_member"
     __table_args__ = {"schema": "content"}
 
-    bundle_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_bundle.id"), primary_key=True)
-    rule_version_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_version.id"), primary_key=True)
+    bundle_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_bundle.id", ondelete="CASCADE"), primary_key=True)
+    rule_version_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("content.rule_version.id", ondelete="RESTRICT"), primary_key=True)
     priority: Mapped[int] = mapped_column(Integer, server_default=text("0"))
 
 
