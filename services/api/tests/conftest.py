@@ -159,11 +159,16 @@ def pg_raw(_migrated_engine):
     """A session that commits for real — needed by tamper/trigger tests.
 
     Tests using this fixture own their cleanup (DELETE rows they insert).
+    The session is properly closed after each test to avoid stale connections.
     """
     from sqlalchemy.orm import sessionmaker
 
     factory = sessionmaker(bind=_migrated_engine, expire_on_commit=False, future=True)
-    return factory()
+    session = factory()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 @pytest.fixture
@@ -171,7 +176,7 @@ def make_cipher(test_keys) -> Callable[..., "object"]:
     """Factory that builds a ``FieldCipher`` from a keyring + active id."""
     from wb_api.crypto import FieldCipher
 
-    def _make(keys: dict[str, str] | None = None, active: str = "k1") -> FieldCipher:
-        return FieldCipher(keyring=keys or test_keys, active_key_id=active)
+    def _make(keys: dict[str, bytes] | None = None, active: str = "k1") -> FieldCipher:
+        return FieldCipher(keys=keys or test_keys, active_key_id=active)
 
     return _make

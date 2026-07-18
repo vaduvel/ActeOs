@@ -27,7 +27,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from . import models as m
-from .audit import GENESIS_HASH, compute_event_hash
+from .audit import GENESIS_HASH, compute_event_hash, scrub_payload
 from .canonical import sha256_hex
 from .crypto import FieldCipher
 from .errors import ConflictProblem, NotFoundError
@@ -344,6 +344,22 @@ class IdempotencyRepo:
         )
         self.s.add(rec)
         self.s.flush()
+
+    def delete_expired(self, *, now: datetime | None = None) -> int:
+        """Sweep all expired idempotency rows. Returns the number deleted.
+
+        Called by the staleness/cleanup scheduler (WB-045). Lazy read-time
+        expiry still happens in ``find``, but only rows that are re-read get
+        cleaned up; this proactively removes the rest.
+        """
+        threshold = now or _now()
+        stmt = select(m.IdempotencyRecord).where(m.IdempotencyRecord.expires_at <= threshold)
+        count = 0
+        for rec in self.s.scalars(stmt):
+            self.s.delete(rec)
+            count += 1
+        self.s.flush()
+        return count
 
 
 # =============================== audit ======================================
