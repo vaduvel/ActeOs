@@ -165,7 +165,21 @@ _REDACTED = "[redacted]"
 
 
 def _is_pii_key(key: str) -> bool:
-    return key.lower().rstrip("_s").endswith(_PII_SUFFIXES) or key.lower().rstrip("s").endswith(_PII_SUFFIXES)
+    """Check if a key name indicates PII content.
+
+    Matches case-insensitively by checking if the key (or its last
+    underscore/camelCase segment) ends with a known PII suffix.
+    """
+    lowered = key.lower()
+    # Direct suffix match (e.g. "address" ends with "address")
+    if lowered.endswith(_PII_SUFFIXES):
+        return True
+    # Check last segment after underscore (e.g. "user_email" → "email")
+    if "_" in lowered:
+        last_segment = lowered.rsplit("_", 1)[-1]
+        if last_segment.endswith(_PII_SUFFIXES):
+            return True
+    return False
 
 
 def scrub_payload(payload: Any) -> Any:
