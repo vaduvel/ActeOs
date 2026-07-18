@@ -96,7 +96,7 @@ test-contract:
 test-android:
 	@echo "[test-android] TODO P6"
 test-web:
-	@echo "[test-web] TODO P5"
+	cd apps/curator-web && pnpm vitest run
 test-security:
 	@echo "[test-security] TODO P9"
 
