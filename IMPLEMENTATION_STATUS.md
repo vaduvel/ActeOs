@@ -8,8 +8,9 @@
 | P1 | Contracte, persistență, cripto | WB-010…024 | 🟡 nucleu făcut (hashing/erori/validare/cripto); DB migrații + codegen = TODO |
 | P2 | Motor determinist de reguli | WB-030…035 | 🟢 nucleu + teste verzi |
 | P3 | Source ingestion & content lifecycle | WB-040…045 | 🟢 10 module, 114 teste verzi |
-| P4 | API & journey lifecycle | WB-050…055 | 🟢 105 teste verzi (contract + BOLA + integration + curator + PII + OpenAPI) |
-| P5–P10 | … | … | ⬜ neînceput |
+| P4 | API & journey lifecycle | WB-050…055 | 🟢 125 teste verzi (contract + BOLA + integration + curator + PII + OpenAPI) |
+| P5 | Curator portal | WB-060…065 | 🟡 Next.js app funcțional, 38 teste verzi; wire la API real = TODO |
+| P6–P10 | … | … | ⬜ neînceput |
 
 ## P1 — Contracte & cripto
 
@@ -79,6 +80,28 @@
 - [ ] p95 load testing local
 - [ ] OIDC real auth (currently placeholder Bearer token)
 
+## P5 — Curator portal
+
+**Realizat (`apps/curator-web`, Next.js 16 + TypeScript strict + Tailwind):**
+- [x] Login page cu Bearer token auth (dev format)
+- [x] DashboardShell cu auth guard + Nav filtrat pe scope-uri
+- [x] Sources page — registry table, create form, fetch, status/freshness badges
+- [x] Review page — 2-reviewer rule, rationale form, no self-approval
+- [x] Publish page — canary/production + rollback cu confirmare
+- [x] Staleness page — SLA dashboard (fresh/due/stale/critical)
+- [x] Feedback page — incident list
+- [x] auth.ts — RBAC, parseToken, canApproveChange (two-person rule)
+- [x] api.ts — typed API client
+- [x] sanitize.ts — stripHtml, escapeHtml, sanitizeUrl, containsXssPatterns
+- [x] 38 teste (21 XSS + 17 RBAC), toate verzi
+
+**De făcut pentru a închide P5:**
+- [ ] Wire la API real (currently mock data)
+- [ ] Structured rule editor (JSON schema-bound)
+- [ ] Snapshot diff viewer (side-by-side)
+- [ ] E2E review + rollback flow
+- [ ] OIDC real auth
+
 ## Test totals
 
 | Pachet | Teste | Status |
@@ -86,13 +109,15 @@
 | packages/contracts | 8 | ✅ |
 | packages/rule-engine | 58 passed, 1 skipped | ✅ |
 | packages/source-ingestion | 114 | ✅ |
-| services/api | 105 passed, 5 skipped (Docker) | ✅ |
-| **Total** | **285 passed, 6 skipped** | ✅ |
+| services/api | 125 passed | ✅ |
+| apps/curator-web | 38 | ✅ |
+| **Total** | **343 passed, 1 skipped** | ✅ |
 
 ## Cum rulezi
 
 ```bash
 make bootstrap          # instalează pachetele Python editabil cu dev deps
-make test-unit          # rulează pytest pe toate pachetele (excl. integration/Docker)
+make test-unit          # rulează pytest pe toate pachetele Python
 make test-integration   # rulează teste cu Docker (Postgres via testcontainers)
+make test-web           # rulează vitest pe curator-web
 ```
